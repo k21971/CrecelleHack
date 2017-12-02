@@ -42,6 +42,7 @@ staticfn void sortspells(void);
 staticfn boolean spellsortmenu(void);
 staticfn boolean dospellmenu(const char *, int, int *);
 staticfn int percent_success(int);
+staticfn int energy_cost(int);
 staticfn char *spellretention(int, char *);
 staticfn int throwspell(void);
 staticfn void cast_protection(void);
@@ -1249,7 +1250,6 @@ spell_backfire(int spell)
 staticfn boolean
 spelleffects_check(int spell, int *res, int *energy)
 {
-    int chance;
     boolean confused = (Confusion != 0);
 
     *energy = 0;
@@ -1310,6 +1310,13 @@ spelleffects_check(int spell, int *res, int *energy)
                 "Your concentration falters while carrying so much stuff.")) {
         *res = ECMD_TIME;
         return TRUE;
+    }
+
+    *energy = energy_cost(spell);
+    /* if spell is impossible to cast, kludge this to u.uen + 1 to make it fail
+     * the checks below as not having enough energy. */
+    if (*energy < 0) {
+        *energy = u.uen + 1;
     }
 
     /* if the cast attempt is already going to fail due to insufficient
@@ -1398,8 +1405,8 @@ spelleffects_check(int spell, int *res, int *energy)
         }
     }
 
-    chance = percent_success(spell);
-    if (confused || (rnd(100) > chance)) {
+    /* confused casting always fails, and is assessed after hunger penalty */
+    if (confused) {
         You("fail to cast the spell correctly.");
         u.uen -= *energy / 2;
         disp.botl = TRUE;
@@ -2115,7 +2122,7 @@ dospellmenu(
 {
     winid tmpwin;
     int i, n, how, splnum;
-    char buf[BUFSZ], retentionbuf[24], sep;
+    char buf[BUFSZ], retentionbuf[24], sep, pw_buf[5];
     const char *fmt;
     menu_item *selected;
     anything any;
@@ -2135,15 +2142,15 @@ dospellmenu(
      * need to be subtracted.
      */
     if (!iflags.menu_tab_sep) {
-        Sprintf(buf, "%s%-20s Level %-12s Fail Retention",
+        Sprintf(buf, "%s%-20s Level %-12s Pw Retention",
                 splaction == SPELLMENU_DUMP ? "" : "    ",
                 "Name",
                 "Category");
-        fmt = "%-20s  %2d   %-12s %3d%% %9s";
+        fmt = "%-20s  %2d   %-12s %4s %9s";
         sep = ' ';
     } else {
-        Sprintf(buf, "Name\tLevel\tCategory\tFail\tRetention");
-        fmt = "%s\t%-d\t%s\t%-d%%\t%s";
+        Sprintf(buf, "Name\tLevel\tCategory\\Pw\tRetention");
+        fmt = "%s\t%-d\t%s\t%s\t%s";
         sep = '\t';
     }
     if (wizard)
@@ -2157,9 +2164,15 @@ dospellmenu(
 
     for (i = 0; i < MAXSPELL && spellid(i) != NO_SPELL; i++) {
         splnum = !gs.spl_orderindx ? i : gs.spl_orderindx[i];
+        if (energy_cost(splnum) < 0) {
+            strcpy(pw_buf, "Inf");
+        } else {
+            /* maximum possible should be 3500 */
+            Sprintf(pw_buf, "%d", energy_cost(splnum));
+        }
         Sprintf(buf, fmt, spellname(splnum), spellev(splnum),
                 spelltypemnemonic(spell_skilltype(spellid(splnum))),
-                100 - percent_success(splnum),
+                pw_buf,
                 spellretention(splnum, retentionbuf));
         if (wizard)
             Sprintf(eos(buf), "%c%6d", sep, spellknow(i));
@@ -2331,6 +2344,29 @@ percent_success(int spell)
         chance = 0;
 
     return chance;
+}
+
+/* Return the amount of energy a spell will take to cast.
+   Spells can no longer fail. Instead, the percent_success() function is used
+   to increase the required energy of the spell, so a spell with a 100% success
+   chance costs the same as always, whereas a spell with a 50% success chance
+   costs twice as much Pw, and a spell with a 1% success chance costs 100 times
+   as much Pw.
+   Return -1 if the success rate would be 0 and the spell cannot be cast.
+*/
+staticfn int
+energy_cost(int spell)
+{
+    int energy = (spellev(spell) * 5); /* 5 <= energy <= 35 */
+    int old_success_rate = percent_success(spell);
+    if (old_success_rate == 0) {
+        /* With a 0% success chance, the spell should take infinite power to
+         * cast, and is thus still uncastable. However, this should work well
+         * enough to prevent it from being cast. */
+        return -1;
+    } else {
+        return (energy * 100) / old_success_rate;
+    }
 }
 
 staticfn char *
