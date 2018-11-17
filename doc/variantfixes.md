@@ -74,6 +74,8 @@
     in woodlands and are also metalivorous (because they eat tin cans).
   - Have variant male and female names.
 - Sand Golem
+- Spectre
+  - Ported from EvilHack, but originally from SpliceHack.
 
 ## New Objects
 - Resizing Kit

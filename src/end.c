@@ -330,6 +330,8 @@ done_in_by(struct monst *mtmp, int how)
         u.ugrave_arise = PM_GHOUL;
     else if (how == DROWNING && rn2(2))
         u.ugrave_arise = PM_SODDEN_ONE;
+    else if (mptr == &mons[PM_SPECTRE] || u.ulevel > 22)
+        u.ugrave_arise = PM_SPECTRE;
     /* this could happen if a high-end vampire kills the hero
        when ordinary vampires are genocided; ditto for wraiths */
     if (u.ugrave_arise >= LOW_PM
