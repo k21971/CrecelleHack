@@ -111,6 +111,7 @@ extern void do_blinding_ray(struct obj *) NONNULLPTRS;
 extern int doapply(void);
 extern int dorub(void);
 extern int dojump(void);
+extern boolean check_mon_jump(struct monst *, int, int);
 extern int jump(int);
 extern int number_leashed(void);
 extern void o_unleash(struct obj *) NONNULLPTRS;

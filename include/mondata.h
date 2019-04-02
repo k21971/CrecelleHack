@@ -17,6 +17,9 @@
                                || (ptr) == &mons[PM_VROCK] \
                                || (ptr) == &mons[PM_SKUNK_APE])
 
+#define can_wwalk(mon) (((mon)->mextrinsics & MR2_WATERWALK) != 0)
+#define can_jump(mon)  (((mon)->mextrinsics & MR2_JUMPING) != 0)
+#define is_jumper(ptr) ((ptr) == &mons[PM_KNIGHT])
 #define is_flyer(ptr) (((ptr)->mflags1 & M1_FLY) != 0L)
 #define is_floater(ptr) ((ptr)->mlet == S_EYE || (ptr)->mlet == S_LIGHT)
 /* clinger: piercers, mimics, wumpus -- generally don't fall down holes */

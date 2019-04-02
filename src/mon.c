@@ -1105,7 +1105,7 @@ minliquid_core(struct monst *mtmp)
          * be handled here.  Swimmers are able to protect their stuff...
          */
         if ((waterwall || !is_clinger(mtmp->data))
-            && !cant_drown(mtmp->data)) {
+            && !cant_drown(mtmp->data) && !can_wwalk(mtmp)) {
             /* like hero with teleport intrinsic or spell, teleport away
                if possible */
             if (can_teleport(mtmp->data) && !tele_restrict(mtmp)) {
@@ -2246,7 +2246,8 @@ mfndpos(
     nodiag = NODIAG(mdat - mons);
     wantpool = (mdat->mlet == S_EEL);
     poolok = ((!Is_waterlevel(&u.uz) && m_in_air(mon))
-              || (is_swimmer(mdat) && !wantpool));
+              || (is_swimmer(mdat) && !wantpool)
+              || can_wwalk(mon));
     /* note: floating eye is the only is_floater() so this could be
        simplified, but then adding another floater would be error prone */
     lavaok = (m_in_air(mon) || likes_lava(mdat));
