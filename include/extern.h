@@ -1473,6 +1473,7 @@ extern boolean is_home_elemental(struct permonst *) NONNULLARG1;
 struct permonst *m_get_squadmon(struct permonst *) NONNULLARG1;
 extern struct monst *clone_mon(struct monst *, coordxy, coordxy) NONNULLARG1;
 extern int monhp_per_lvl(struct monst *) NONNULLARG1;
+extern int monmaxhp(struct permonst *, int);
 extern void newmonhp(struct monst *, int) NONNULLARG1;
 extern struct mextra *newmextra(void) NONNULL;
 extern struct monst *makemon(struct permonst *, coordxy, coordxy, mmflags_nht);
