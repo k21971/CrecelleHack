@@ -2230,6 +2230,10 @@ show_conduct(int final)
         you_have_X(buf);
     }
 
+    if (!u.uconduct.conflicting) {
+        you_have_never("generated conflict");
+    }
+
     if (!u.uconduct.polyselfs) {
         you_have_never("changed form");
     } else if (wizard) {

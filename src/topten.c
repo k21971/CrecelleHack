@@ -446,6 +446,8 @@ encodeconduct(void)
         e |= 1L << 13;
     if (!u.uconduct.pets)
         e |= 1L << 14;
+    if (u.uconduct.conflicting)
+        e |= 1L << 15;
 
     return e;
 }

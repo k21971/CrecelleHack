@@ -312,6 +312,8 @@ moveloop_core(void)
 
                 if (u.ublesscnt)
                     u.ublesscnt--;
+                if (Conflict)
+                    u.uconduct.conflicting++;
 
 #ifdef EXTRAINFO_FN
                 if ((prev_dgl_extrainfo == 0) || (prev_dgl_extrainfo < (svm.moves + 250))) {

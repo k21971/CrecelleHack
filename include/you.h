@@ -208,6 +208,7 @@ struct u_conduct {     /* number of times... */
     long elbereth;     /* engraved Elbereth */
     long sokocheat;    /* violated special 'rules' in Sokoban */
     long pets;         /* obtained a pet */
+    long conflicting;  /* generated conflict */
     /* genocides already listed at end of game */
 };
 

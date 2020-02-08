@@ -79,6 +79,9 @@
 - shorten_buc: shortens full buc name to [B][U][C].
 - no_flipped_soko: stop sokoban levels from being flipped.
 
+## Conducts
+- Conflictless: Never generated conflict (from xNetHack).
+
 # 1.3
 
 ## Coating System
