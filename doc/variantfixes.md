@@ -55,6 +55,7 @@
   - Originally appears in Slash'EM. Identical here, but only spawn
     in woodlands and are also metalivorous (because they eat tin cans).
   - Have variant male and female names.
+- Sand Golem
 
 ## New Objects
 - Upgrade Kit
@@ -80,6 +81,10 @@
 ## Weather System
 - First weather change takes much longer.
 - First incoming weather system can no longer be a tornado.
+
+## Misc
+- Ported xnethack's player orientation patch, based on some ancient
+  Splice code I wrote.
 
 # 1.2
 

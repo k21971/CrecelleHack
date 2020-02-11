@@ -763,6 +763,13 @@ const struct Gender genders[] = {
     { "group", "they", "them", "their", "Grp", 0 },
 };
 
+/* Table of all orientations */
+const struct Orientation orientations[] = {
+    { "straight", "heterosexual", ORIENT_STRAIGHT },
+    { "gay",      "homosexual", ORIENT_GAY },
+    { "bi",       "bisexual", ORIENT_BISEXUAL }
+};
+
 /* Table of all alignments */
 const struct Align aligns[] = {
     { "law", "lawful", "Law", ROLE_LAWFUL, A_LAWFUL },
@@ -967,6 +974,38 @@ str2gend(const char *str)
     if ((len == 1 && (*str == '*' || *str == '@'))
         || !strncmpi(str, randomstr, len))
         return ROLE_RANDOM;
+
+    /* Couldn't find anything appropriate */
+    return ROLE_NONE;
+}
+
+int
+str2orientation(const char *str)
+{
+    int i, len;
+
+    /* Is str valid? */
+    if (!str || !str[0]) {
+        /* Defaulting to this is problematic, but it might be more problematic
+         * to give players who have never heard of the orientation option a
+         * random orientation.  No good solution. */
+        return ORIENT_STRAIGHT;
+    }
+
+    /* Match as much of str as is provided */
+    len = strlen(str);
+    for (i = 0; i < ROLE_ORIENTATIONS; i++) {
+        /* Does it match either the adjective or alternate form? */
+        if (!strncmpi(str, orientations[i].adj, len)
+            || !strncmpi(str, orientations[i].technical, len))
+            return orientations[i].mapping;
+    }
+
+    /* Orientations don't get blocked by choice of race/role/align/gender, so
+     * choosing randomly is simpler here than for the other birth options. */
+    if ((len == 1 && (*str == '*' || *str == '@'))
+        || !strncmpi(str, randomstr, len))
+        return rn2(ROLE_ORIENTATIONS);
 
     /* Couldn't find anything appropriate */
     return ROLE_NONE;

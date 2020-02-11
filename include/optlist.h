@@ -550,6 +550,9 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTB(obscure_role_obj_names, Advanced, 0, opt_in, set_in_game,
            On, Yes, No, No, NoAlias, &flags.obscure_role_obj_names, Term_False,
            "disable role-specific object names")
+    NHOPTC(orientation,  Advanced, 12, opt_in, set_gameview,
+                Yes, Yes, Yes, No, "sexuality",
+                "your sexual orientation")
     NHOPTC(packorder, Advanced, MAXOCLASSES, opt_in, set_in_game,
                 No, Yes, No, No, NoAlias,
                 "the inventory order of the items in your pack")

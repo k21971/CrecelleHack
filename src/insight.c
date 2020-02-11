@@ -578,6 +578,11 @@ background_enlightenment(int unused_mode UNUSED, int final)
             URIGHTY ? "right" : "left");
     you_are(buf, "");
 
+    /* sexual orientation */
+    buf[0] = '\0';
+    Sprintf(buf, "%s", orientations[flags.orientation].technical);
+    you_are(buf, "");
+
     /* As of 3.6.2: dungeon level, so that ^X really has all status info as
        claimed by the comment below; this reveals more information than
        the basic status display, but that's one of the purposes of ^X;

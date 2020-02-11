@@ -1865,6 +1865,46 @@ optfn_gender(
 }
 
 staticfn int
+optfn_orientation(
+    int optidx,
+    int req,
+    boolean negated,
+    char *opts,
+    char *op)
+{
+    int orientation;
+    if (req == do_init) {
+        return optn_ok;
+    }
+    if (req == do_set) {
+        /* gender:string */
+        if (!parse_role_opt(optidx, negated, allopt[optidx].name, opts, &op))
+            return optn_silenterr;
+
+        if (*op != '!') {
+            orientation = str2orientation(op);
+            if (orientation == ROLE_NONE) {
+                config_error_add("Unknown %s '%s'", allopt[optidx].name, op);
+                return optn_err;
+            }
+            flags.orientation = orientation;
+            saveoptstr(optidx, rolestring(flags.orientation, orientations, adj));
+        }
+        return optn_ok;
+    }
+    if (req == get_val) {
+        Sprintf(opts, "%s", rolestring(flags.orientation, orientations, adj));
+        return optn_ok;
+    }
+    if (req == get_cnf_val) {
+        op = get_cnf_role_opt(optidx);
+        Strcpy(opts, op ? op : "none");
+        return optn_ok;
+    }
+    return optn_ok;
+}
+
+staticfn int
 optfn_glyph(
     int optidx UNUSED, int req, boolean negated,
     char *opts, char *op)

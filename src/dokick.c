@@ -1241,10 +1241,14 @@ kick_nondoor(coordxy x, coordxy y, int avrg_attrib)
                    && !(svm.mvitals[PM_AMOROUS_DEMON].mvflags & G_GONE)) {
             /* can't resist... */
             pline("%s returns!", (Blind ? Something : "The dish washer"));
-            if (makemon(&mons[PM_AMOROUS_DEMON], x, y,
-                        MM_NOMSG | ((gend == 1 || (gend == 2 && rn2(2)))
-                                    ? MM_MALE : MM_FEMALE)))
-                newsym(x, y);
+            if (((gend == 2 || flags.orientation == ORIENT_BISEXUAL) && rn2(2))
+                || (gend == 1 && flags.orientation == ORIENT_STRAIGHT)
+                || (gend == 0 && flags.orientation == ORIENT_GAY)) {
+                makemon(&mons[PM_AMOROUS_DEMON], x, y, MM_MALE);
+            } else {
+                makemon(&mons[PM_AMOROUS_DEMON], x, y, MM_FEMALE);
+            }
+            newsym(x, y);
             gm.maploc->looted |= S_LDWASHER;
             exercise(A_DEX, TRUE);
             return ECMD_TIME;

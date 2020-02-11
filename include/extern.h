@@ -2804,6 +2804,7 @@ extern int randalign(int, int);
 extern int str2role(const char *) NO_NNARGS;
 extern int str2race(const char *) NO_NNARGS;
 extern int str2gend(const char *) NO_NNARGS;
+extern int str2orientation(const char *) NO_NNARGS;
 extern int str2align(const char *) NO_NNARGS;
 extern boolean ok_role(int, int, int, int);
 extern int pick_role(int, int, int, int);

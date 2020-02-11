@@ -2006,6 +2006,15 @@ could_seduce(
         || (adtyp != AD_SEDU && adtyp != AD_SSEX && adtyp != AD_SITM))
         return 0;
 
+    if (mdef == &gy.youmonst || magr == &gy.youmonst) {
+        switch (flags.orientation) {
+        case ORIENT_GAY:
+            return genagr == gendef;
+        case ORIENT_BISEXUAL:
+            return 1;
+        }
+        /* ORIENT_STRAIGHT falls through to return statement below */
+    }
     return (genagr == 1 - gendef) ? 1 : (pagr->mlet == S_NYMPH) ? 2 : 0;
 }
 
@@ -2322,7 +2331,7 @@ doseduce(struct monst *mon)
             disp.botl = TRUE;
         }
     }
-    if (!rn2(25))
+    if (!rn2(25) || (flags.orientation == ORIENT_BISEXUAL && !rn2(25)))
         mon->mcan = 1; /* monster is worn out */
     if (!tele_restrict(mon))
         (void) rloc(mon, RLOC_MSG);
