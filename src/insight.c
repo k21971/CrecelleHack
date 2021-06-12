@@ -1339,7 +1339,7 @@ weapon_insight(int final)
         if (sklvl == P_ISRESTRICTED)
             Strcpy(sklvlbuf, "no");
         else
-            (void) lcase(skill_level_name(wtype, sklvlbuf));
+            (void) lcase(skill_level_name(wtype, sklvlbuf, FALSE));
         /* "you have no/basic/expert/master/grand-master skill with <skill>"
            or "you are unskilled/skilled in <skill>" */
         Sprintf(buf, "%s %s %s", sklvlbuf,
@@ -1377,7 +1377,7 @@ weapon_insight(int final)
                    skill_level_name() returns "Unknown" for it */
                 Strcpy(twobuf, "restricted");
             } else {
-                (void) lcase(skill_level_name(P_TWO_WEAPON_COMBAT, twobuf));
+                (void) lcase(skill_level_name(P_TWO_WEAPON_COMBAT, twobuf, FALSE));
             }
 
             /* keep buf[] from above in case skill levels match */
@@ -1412,7 +1412,7 @@ weapon_insight(int final)
                identical to the comparison between primary and twoweap */
             if (wtype2 != wtype) {
                 Strcpy(sknambuf2, skill_name(wtype2));
-                (void) lcase(skill_level_name(wtype2, sklvlbuf2));
+                (void) lcase(skill_level_name(wtype2, sklvlbuf2, FALSE));
                 verb_present = "is", verb_past = "was";
                 pfx[0] = sfx[0] = buf[0] = '\0';
                 if (twoskl < sklvl2) {
