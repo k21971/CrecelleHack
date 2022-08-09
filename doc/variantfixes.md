@@ -1,5 +1,9 @@
 # 1.1
 
+## Commands
+- Add the #shout command. Present in many variants, but this uses
+  the 3.7-compatible code written by aosdict/Phol En Wodan
+
 ## Monsters
 - Orcs have a chance to spawn with a dual axe.
 - Slightly increase chance of random spawns of unique monsters.
