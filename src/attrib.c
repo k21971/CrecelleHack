@@ -1196,6 +1196,14 @@ acurr(int chridx)
     return (schar) result;
 }
 
+/* for ability score modifiers. */
+schar
+amodifier(int chridx)
+{
+    int attr = ACURR(chridx);
+    return ((attr - 10) + ((attr >= 0) ? 0 : -1)) / 2;
+}
+
 /* condense clumsy ACURR(A_STR) value into value that fits into formulas */
 schar
 acurrstr(void)

@@ -323,7 +323,7 @@ dig(void)
     }
 
     gc.context.digging.effort +=
-        10 + rn2(5) + abon() + uwep->spe - greatest_erosion(uwep) + u.udaminc;
+        10 + rn2(5) + abon(uwep) + uwep->spe - greatest_erosion(uwep) + u.udaminc;
     if (Race_if(PM_DWARF))
         gc.context.digging.effort *= 2;
     if (gc.context.digging.down) {

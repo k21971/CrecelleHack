@@ -1,0 +1,24 @@
+# 1.0
+
+## Attributes
+- Dexterity contributes to AC.
+- Strength is normally the sole contributor to to-hit.
+
+## Weapons
+- Some weapons are "finesse weapons." To-hit bonuses with
+  finesse weapons are determined based on strength or
+  dexterity, whichever is higher.
+- As in dNetHack, d(1, Luck) is added to your to-hit instead
+  of Luck.
+- New To-Hit bonuses:
+  Restricted: -2
+  Unskilled: 0
+  Basic: +1
+  Skilled: +2
+  Expert +3
+- New Damage bonuses:
+  Restricted: -2
+  Unskilled: 0
+  Basic: +1
+  Skilled: +2
+  Expert: +3

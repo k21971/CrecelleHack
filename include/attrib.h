@@ -22,6 +22,7 @@ enum attrib_types {
 #define ABON(x) (u.abon.a[x])
 #define AEXE(x) (u.aexe.a[x])
 #define ACURR(x) (acurr(x))
+#define AMOD(x) (amodifier(x))
 #define ACURRSTR (acurrstr())
 /* should be: */
 /* #define ACURR(x) (ABON(x) + ATEMP(x) + (Upolyd  ? MBASE(x) : ABASE(x)) */

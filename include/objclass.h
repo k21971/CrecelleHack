@@ -64,8 +64,9 @@ struct objclass {
 #define oc_bimanual oc_big /* for weapons & tools used as weapons */
 #define oc_bulky oc_big    /* for armor */
     Bitfield(oc_tough, 1); /* hard gems/rings */
+    Bitfield(oc_finesse, 1); /* uses dex bonus */
 
-    Bitfield(oc_spare1, 6);         /* padding to align oc_dir + oc_material;
+    Bitfield(oc_spare1, 5);         /* padding to align oc_dir + oc_material;
                                      * can be cannibalized for other use;
                                      * aka 6 free bits */
 

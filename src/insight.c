@@ -1270,6 +1270,11 @@ weapon_insight(int final)
         you_are(buf, "");
     }
 
+    /* Weapon attack bonus breakdown. */
+    Sprintf(buf, "+%d to-hit with your main hand (%s)", abon(uwep), (uwep && objects[uwep->otyp].oc_finesse) ? "Dex" : "Str");
+    you_have(buf, "");
+
+
     /*
      * Skill with current weapon.  Might help players who've never
      * noticed #enhance or decided that it was pointless.

@@ -892,68 +892,40 @@ mwepgone(struct monst *mon)
 }
 
 /* attack bonus for strength & dexterity */
+/* TODO: Take in a monster struct as well so that monsters can use finesse.*/
 int
-abon(void)
+abon(struct obj *obj)
 {
     int sbon;
-    int str = ACURR(A_STR), dex = ACURR(A_DEX);
+    int str = ACURR(A_STR);
+    int finesse = obj ? objects[obj->otyp].oc_finesse : 0;
 
     if (Upolyd)
         return (adj_lev(&mons[u.umonnum]) - 3);
-    if (str < 6)
-        sbon = -2;
-    else if (str < 8)
-        sbon = -1;
-    else if (str < 17)
-        sbon = 0;
-    else if (str <= STR18(50))
-        sbon = 1; /* up to 18/50 */
-    else if (str < STR18(100))
-        sbon = 2;
-    else
-        sbon = 3;
 
+    if (str <= STR18(50))
+        sbon = AMOD(A_STR);
+    else if (str < STR18(100))
+        sbon = 5;
+    else
+        sbon = 6;
+
+    if (finesse)
+        sbon = max(sbon, AMOD(A_DEX));
     /* Game tuning kludge: make it a bit easier for a low level character to
      * hit */
     sbon += (u.ulevel < 3) ? 1 : 0;
-
-    if (dex < 4)
-        return (sbon - 3);
-    else if (dex < 6)
-        return (sbon - 2);
-    else if (dex < 8)
-        return (sbon - 1);
-    else if (dex < 14)
-        return sbon;
-    else
-        return (sbon + dex - 14);
+    return sbon;
 }
 
 /* damage bonus for strength */
 int
 dbon(void)
 {
-    int str = ACURR(A_STR);
-
     if (Upolyd)
         return 0;
 
-    if (str < 6)
-        return -1;
-    else if (str < 16)
-        return 0;
-    else if (str < 18)
-        return 1;
-    else if (str == 18)
-        return 2; /* up to 18 */
-    else if (str <= STR18(75))
-        return 3; /* up to 18/75 */
-    else if (str <= STR18(90))
-        return 4; /* up to 18/90 */
-    else if (str < STR18(100))
-        return 5; /* up to 18/99 */
-    else
-        return 6;
+    return AMOD(A_STR);
 }
 
 /* called when wet_a_towel() or dry_a_towel() is changing a towel's wetness */
@@ -1462,11 +1434,13 @@ weapon_hit_bonus(struct obj *weapon)
         default:
             impossible(bad_skill, P_SKILL(type)); /* fall through */
         case P_ISRESTRICTED:
+            bonus = -1;
+            break;
         case P_UNSKILLED:
-            bonus = -4;
+            bonus = 0;
             break;
         case P_BASIC:
-            bonus = 0;
+            bonus = 1;
             break;
         case P_SKILLED:
             bonus = 2;
@@ -1557,17 +1531,19 @@ weapon_dam_bonus(struct obj *weapon)
             impossible("weapon_dam_bonus: bad skill %d", P_SKILL(type));
         /* fall through */
         case P_ISRESTRICTED:
-        case P_UNSKILLED:
             bonus = -2;
             break;
-        case P_BASIC:
+        case P_UNSKILLED:
             bonus = 0;
             break;
-        case P_SKILLED:
+        case P_BASIC:
             bonus = 1;
             break;
-        case P_EXPERT:
+        case P_SKILLED:
             bonus = 2;
+            break;
+        case P_EXPERT:
+            bonus = 3;
             break;
         }
     } else if (type == P_TWO_WEAPON_COMBAT) {

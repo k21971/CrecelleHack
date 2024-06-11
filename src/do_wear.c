@@ -2380,6 +2380,9 @@ find_ac(void)
     if (uamul && uamul->otyp == AMULET_OF_GUARDING)
         uac -= 2; /* fixed amount; main benefit is to MC */
 
+    /* armor class from dexterity */
+    uac -= AMOD(A_DEX);
+
     /* armor class from other sources */
     if (HProtection & INTRINSIC)
         uac -= u.ublessed;
