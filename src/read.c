@@ -3208,7 +3208,7 @@ create_particular_creation(
             mtmp->mpeaceful = d->makepeaceful ? 1 : 0;
             set_malign(mtmp);
         }
-        if (d->saddled && can_saddle(mtmp) && !which_armor(mtmp, W_SADDLE)) {
+        if (d->saddled && can_saddle(mtmp->data) && !which_armor(mtmp, W_SADDLE)) {
             struct obj *otmp = mksobj(SADDLE, TRUE, FALSE);
 
             put_saddle_on_mon(otmp, mtmp);

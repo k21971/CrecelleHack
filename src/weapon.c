@@ -1658,7 +1658,7 @@ skill_init(const struct def_skill *class_skill)
         P_SKILL(P_BARE_HANDED_COMBAT) = P_BASIC;
 
     /* Roles that start with a horse know how to ride it */
-    if (gu.urole.petnum == PM_PONY)
+    if (can_saddle(&mons[gu.urole.petnum])) 
         P_SKILL(P_RIDING) = P_BASIC;
 
     /*

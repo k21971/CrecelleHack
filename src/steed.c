@@ -7,6 +7,7 @@
 /* Monsters that might be ridden */
 static NEARDATA const char steeds[] = { S_QUADRUPED, S_UNICORN, S_ANGEL,
                                         S_CENTAUR,   S_DRAGON,  S_JABBERWOCK,
+                                        S_FELINE,    S_DOG,
                                         '\0' };
 
 staticfn boolean landing_spot(coord *, int, int);
@@ -23,9 +24,8 @@ rider_cant_reach(void)
 
 /* Can this monster wear a saddle? */
 boolean
-can_saddle(struct monst *mtmp)
+can_saddle(struct permonst *ptr)
 {
-    struct permonst *ptr = mtmp->data;
 
     return (strchr(steeds, ptr->mlet) && (ptr->msize >= MZ_MEDIUM)
             && (!humanoid(ptr) || ptr->mlet == S_CENTAUR) && !amorphous(ptr)
@@ -84,7 +84,7 @@ use_saddle(struct obj *otmp)
         pline("I think %s would mind.", mon_nam(mtmp));
         return ECMD_TIME;
     }
-    if (!can_saddle(mtmp)) {
+    if (!can_saddle(mtmp->data)) {
         You_cant("saddle such a creature.");
         return ECMD_TIME;
     }
@@ -140,7 +140,7 @@ use_saddle(struct obj *otmp)
 void
 put_saddle_on_mon(struct obj *saddle, struct monst *mtmp)
 {
-    if (!can_saddle(mtmp) || which_armor(mtmp, W_SADDLE))
+    if (!can_saddle(mtmp->data) || which_armor(mtmp, W_SADDLE))
         return;
     if (mpickobj(mtmp, saddle))
         panic("merged saddle?");
@@ -307,7 +307,7 @@ mount_steed(
                  hliquid("water"));
         return (FALSE);
     }
-    if (!can_saddle(mtmp) || !can_ride(mtmp)) {
+    if (!can_saddle(mtmp->data) || !can_ride(mtmp)) {
         You_cant("ride such a creature.");
         return FALSE;
     }
@@ -840,7 +840,7 @@ poly_steed(
     struct monst *steed,
     struct permonst *oldshape)
 {
-    if (!can_saddle(steed) || !can_ride(steed)) {
+    if (!can_saddle(steed->data) || !can_ride(steed)) {
         /* can't get here; newcham() -> mon_break_armor() -> m_lose_armor()
            removes saddle and/or forces hero to dismount, if applicable,
            before newcham() calls us */

@@ -65,7 +65,16 @@ initedog(struct monst *mtmp)
 
 staticfn int
 pet_type(void)
-{
+{   
+    /* Special pets */
+    if (Role_if(PM_KNIGHT)) {
+        if (Race_if(PM_ORC))
+            gu.urole.petnum = PM_WARG;
+        else if (Race_if(PM_ELF))
+            gu.urole.petnum = PM_JAGUAR;
+    }
+
+    /* Standard pets */
     if (gu.urole.petnum != NON_PM)
         return  gu.urole.petnum;
     else if (gp.preferred_pet == 'c')
@@ -223,7 +232,7 @@ makedog(void)
 
     gc.context.startingpet_mid = mtmp->m_id;
     /* Horses already wear a saddle */
-    if (pettype == PM_PONY && !!(otmp = mksobj(SADDLE, TRUE, FALSE))) {
+    if (can_saddle(&mons[gu.urole.petnum]) && !!(otmp = mksobj(SADDLE, TRUE, FALSE))) {
         otmp->dknown = otmp->bknown = otmp->rknown = 1;
         put_saddle_on_mon(otmp, mtmp);
     }

@@ -1427,7 +1427,7 @@ makemon(
         m_dowear(mtmp, TRUE);
 
         if (!rn2(100) && is_domestic(ptr)
-            && can_saddle(mtmp) && !which_armor(mtmp, W_SADDLE)) {
+            && can_saddle(mtmp->data) && !which_armor(mtmp, W_SADDLE)) {
             struct obj *otmp = mksobj(SADDLE, TRUE, FALSE);
 
             put_saddle_on_mon(otmp, mtmp);

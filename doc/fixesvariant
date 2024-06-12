@@ -22,3 +22,13 @@
   Basic: +1
   Skilled: +2
   Expert: +3
+
+# Roles and Races
+- Roles are not restricted by race, with the exception of
+  tourists (always human).
+- Knights receive a different mount depending on race.
+  Orcs: Warg
+  Elves: Jaguar
+
+# Monsters
+- The following monster classes are now valid mounts: f, d

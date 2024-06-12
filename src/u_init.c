@@ -86,8 +86,6 @@ static struct trobj Knight[] = {
     { HELMET, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
     { SMALL_SHIELD, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
     { LEATHER_GLOVES, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
-    { APPLE, 0, FOOD_CLASS, 10, 0 },
-    { CARROT, 0, FOOD_CLASS, 10, 0 },
     { 0, 0, 0, 0, 0 }
 };
 static struct trobj Monk[] = {
@@ -202,6 +200,9 @@ static struct trobj Wishing[] = { { WAN_WISHING, 3, WAND_CLASS, 1, 0 },
                                   { 0, 0, 0, 0, 0 } };
 static struct trobj Money[] = { { GOLD_PIECE, 0, COIN_CLASS, 1, 0 },
                                 { 0, 0, 0, 0, 0 } };
+static struct trobj Veggies[] = { { APPLE, UNDEF_SPE, FOOD_CLASS, 10, 0 },
+                                    { CARROT, UNDEF_SPE, FOOD_CLASS, 10, 0 },
+                                    { 0, 0, 0, 0, 0 } };
 
 /* race-based substitutions for initial inventory;
    the weaker cloak for elven rangers is intentional--they shoot better */
@@ -658,6 +659,8 @@ u_init_role(void)
         ini_inv(Knight);
         knows_class(WEAPON_CLASS); /* all weapons */
         knows_class(ARMOR_CLASS);
+        if (!(Race_if(PM_ORC) || Race_if(PM_ELF)))
+            ini_inv(Veggies);
         /* give knights chess-like mobility--idea from wooledge@..cwru.edu */
         HJumping |= FROMOUTSIDE;
         skill_init(Skill_K);

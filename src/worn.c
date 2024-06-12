@@ -1210,7 +1210,7 @@ mon_break_armor(struct monst *mon, boolean polyspot)
             m_lose_armor(mon, otmp, polyspot);
         }
     }
-    if (!can_saddle(mon)) {
+    if (!can_saddle(mon->data)) {
         if ((otmp = which_armor(mon, W_SADDLE)) != 0) {
             m_lose_armor(mon, otmp, polyspot);
             if (vis)
