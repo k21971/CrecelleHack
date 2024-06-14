@@ -117,6 +117,7 @@ NetHackQtStatusWindow::NetHackQtStatusWindow() :
     cha(this, "Cha"),
     /* sixth row, text only:  some contain two slash-separated values */
     hp(this,"Hit Points"),
+    stamina(this, "Stamina"),
     power(this,"Power"),
     ac(this,"Armor Class"),
     level(this,"Level"), // Xp level, with "/"+Exp points optionally appended
@@ -295,6 +296,7 @@ NetHackQtStatusWindow::NetHackQtStatusWindow() :
     vbox->addWidget(&hline2);
     QHBoxLayout *statbox = new QHBoxLayout(); // core status fields
         statbox->addWidget(&hp);
+        statbox->addWidget(&stamina);
         statbox->addWidget(&power);
         statbox->addWidget(&ac);
         statbox->addWidget(&level);
@@ -384,6 +386,7 @@ void NetHackQtStatusWindow::doUpdate()
     wis.setFont(normal);
     cha.setFont(normal);
     hp.setFont(normal);
+    stamina.setFont(normal);
     power.setFont(normal);
     ac.setFont(normal);
     level.setFont(normal);
@@ -483,6 +486,7 @@ void NetHackQtStatusWindow::resizeEvent(QResizeEvent*)
     iw=width()/6;
     gold.setGeometry(x,y,iw,lh); x+=iw;
     hp.setGeometry(x,y,iw,lh); x+=iw;
+    stamina.setGeometry(x, y, iw, lh); x+=iw;
     power.setGeometry(x,y,iw,lh); x+=iw;
     ac.setGeometry(x,y,iw,lh); x+=iw;
     level.setGeometry(x,y,iw,lh); x+=iw;
@@ -558,6 +562,7 @@ void NetHackQtStatusWindow::fadeHighlighting()
 
     gold.dissipateHighlight();
     hp.dissipateHighlight();
+    stamina.dissipateHighlight();
     power.dissipateHighlight();
     ac.dissipateHighlight();
     level.dissipateHighlight();
@@ -725,7 +730,7 @@ RESTORE_WARNING_FORMAT_NONLITERAL
  *    name, Str/Dex/&c characteristics, alignment, score
  *
  * Information on the second line:
- *    dlvl, gold, hp, power, ac, {level & exp or HD **}
+ *    dlvl, gold, hp, stamina, power, ac, {level & exp or HD **}
  *    status (hunger, encumbrance, sick, stun, conf, halu, blind), time
  *
  * [**] HD is shown instead of level and exp when hero is polymorphed.
@@ -923,6 +928,8 @@ void NetHackQtStatusWindow::updateStats()
 
     buf = nh_qsprintf("/%d", u.uenmax);
     power.setLabel("Pow:", (long) u.uen, buf);
+    buf = nh_qsprintf("/%d", u.ustamax);
+    stamina.setLabel("Sta:", (long) u.usta, buf);
     ac.setLabel("AC:", (long) u.uac);
     // gold prefix used to be "Au:", tty uses "$:"; never too wide to fit;
     // practical limit due to carrying capacity limit is less than 300K
@@ -1028,6 +1035,7 @@ void NetHackQtStatusWindow::updateStats()
 	cha.highlightWhenChanging();
 
 	hp.highlightWhenChanging();
+    stamina.highlightWhenChanging();
 	power.highlightWhenChanging();
         ac.highlightWhenChanging();
             ac.setCompareMode(SmallerIsBetter);

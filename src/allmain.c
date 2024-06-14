@@ -18,6 +18,7 @@ staticfn void maybe_do_tutorial(void);
 #ifdef POSITIONBAR
 staticfn void do_positionbar(void);
 #endif
+staticfn void regen_stamina(int);
 staticfn void regen_pw(int);
 staticfn void regen_hp(int);
 staticfn void interrupt_multi(const char *);
@@ -148,6 +149,9 @@ u_calc_moveamt(int wtcap)
     default:
         break;
     }
+
+    /* If you're tired, you can barely move. */
+    if (Tired) moveamt -= (moveamt / 3);
 
     u.umovement += moveamt;
     if (u.umovement < 0)
@@ -283,6 +287,7 @@ moveloop_core(void)
                     }
                 }
 
+                regen_stamina(mvl_wtcap);
                 regen_pw(mvl_wtcap);
 
                 if (!u.uinvulnerable) {
@@ -560,6 +565,23 @@ moveloop(boolean resuming)
 }
 
 staticfn void
+regen_stamina(int wtcap)
+{
+    if (u.usta < u.ustamax && (wtcap < MOD_ENCUMBER)) {
+        if (u.usta <= 0 && rn2(12)) {
+            return;
+        } else if (gm.moves % 2) {
+            u.usta += 1;
+            if (u.usta > u.ustamax)
+                u.usta = u.ustamax;
+            disp.botl = TRUE;
+            if (u.usta == u.ustamax)
+                interrupt_multi("You are at peak performance.");
+        }
+    }
+}
+
+staticfn void
 regen_pw(int wtcap)
 {
     if (u.uen < u.uenmax
@@ -600,7 +622,8 @@ regen_hp(int wtcap)
                 && (!Half_physical_damage || !(gm.moves % 2L)))
                 heal = -1;
         } else if (u.mh < u.mhmax) {
-            if (U_CAN_REGEN() || (encumbrance_ok && !(gm.moves % 20L)))
+            if (U_CAN_REGEN() || 
+                (encumbrance_ok && u.usta == u.ustamax && !(gm.moves % 20L)))
                 heal = 1;
         }
         if (heal) {
@@ -615,7 +638,7 @@ regen_hp(int wtcap)
            no !Upolyd check here, so poly'd hero recovered lost u.uhp
            once u.mh reached u.mhmax; that may have been convenient
            for the player, but it didn't make sense for gameplay...] */
-        if (u.uhp < u.uhpmax && (encumbrance_ok || U_CAN_REGEN())) {
+        if (u.uhp < u.uhpmax && ((encumbrance_ok && u.usta == u.ustamax) || U_CAN_REGEN())) {
             heal = (u.ulevel + (int)ACURR(A_CON)) > rn2(100);
 
             if (U_CAN_REGEN())

@@ -4243,7 +4243,7 @@ static const char *const encvals[3][6] = {
 static const enum statusfields
     twolineorder[3][MAX_PER_ROW] = {
     { BL_TITLE, BL_STR, BL_DX, BL_CO, BL_IN, BL_WI, BL_CH, BL_ALIGN,
-      BL_SCORE, BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD },
+      BL_SCORE, BL_STA, BL_STAMAX, BL_FLUSH, blPAD, blPAD, blPAD, blPAD },
     { BL_LEVELDESC, BL_GOLD, BL_HP, BL_HPMAX, BL_ENE, BL_ENEMAX,
       BL_AC, BL_XP, BL_EXP, BL_HD, BL_TIME, BL_HUNGER,
       BL_CAP, BL_CONDITION, BL_VERS, BL_FLUSH },
@@ -4255,9 +4255,9 @@ static const enum statusfields
     threelineorder[3][MAX_PER_ROW] = {
     { BL_TITLE, BL_STR, BL_DX, BL_CO, BL_IN, BL_WI, BL_CH,
       BL_SCORE, BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD },
-    { BL_ALIGN, BL_GOLD, BL_HP, BL_HPMAX, BL_ENE, BL_ENEMAX,
+    { BL_ALIGN, BL_GOLD, BL_HP, BL_HPMAX, BL_STA, BL_STAMAX, BL_ENE, BL_ENEMAX,
       BL_AC, BL_XP, BL_EXP, BL_HD, BL_HUNGER,
-      BL_CAP, BL_FLUSH, blPAD, blPAD, blPAD },
+      BL_CAP, BL_FLUSH, blPAD },
     { BL_LEVELDESC, BL_TIME, BL_CONDITION, BL_VERS, BL_FLUSH, blPAD,
       blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD }
 };
@@ -4343,7 +4343,7 @@ tty_status_enablefield(
  *         is an integer index value from botl.h
  *      -- fldindex could be any one of the following from botl.h:
  *         BL_TITLE, BL_STR, BL_DX, BL_CO, BL_IN, BL_WI, BL_CH,
- *         BL_ALIGN, BL_SCORE, BL_CAP, BL_GOLD, BL_ENE, BL_ENEMAX,
+ *         BL_ALIGN, BL_SCORE, BL_CAP, BL_GOLD, BL_STA, BL_STAMAX, BL_ENE, BL_ENEMAX,
  *         BL_XP, BL_AC, BL_HD, BL_TIME, BL_HUNGER, BL_HP, BL_HPMAX,
  *         BL_LEVELDESC, BL_EXP, BL_CONDITION, BL_VERS
  *      -- fldindex could also be BL_FLUSH (-1), which is not really
@@ -4709,10 +4709,11 @@ status_sanity_check(void)
     static const char *const idxtext[] = {
         "BL_TITLE", "BL_STR", "BL_DX", "BL_CO", "BL_IN", "BL_WI", /*  0.. 5 */
         "BL_CH","BL_ALIGN", "BL_SCORE", "BL_CAP", "BL_GOLD",      /*  6..10 */
-        "BL_ENE", "BL_ENEMAX", "BL_XP", "BL_AC", "BL_HD",         /* 11..15 */
-        "BL_TIME", "BL_HUNGER", "BL_HP", "BL_HPMAX",              /* 16..19 */
-        "BL_LEVELDESC", "BL_EXP", "BL_CONDITION",                 /* 20..22 */
-        "BL_VERS",                                                /*   23   */
+        "BL_STA", "BL_STAMAX",
+        "BL_ENE", "BL_ENEMAX", "BL_XP", "BL_AC", "BL_HD",         /* 13..17 */
+        "BL_TIME", "BL_HUNGER", "BL_HP", "BL_HPMAX",              /* 18..21 */
+        "BL_LEVELDESC", "BL_EXP", "BL_CONDITION",                 /* 23..24 */
+        "BL_VERS",                                                /*   25   */
     };
     static boolean in_sanity_check = FALSE;
     int i;

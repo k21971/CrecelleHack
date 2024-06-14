@@ -325,7 +325,7 @@ staticfn void
 newman(void)
 {
     const char *newform;
-    int i, oldlvl, newlvl, oldgend, newgend, hpmax, enmax;
+    int i, oldlvl, newlvl, oldgend, newgend, hpmax, enmax, stamax;
 
     oldlvl = u.ulevel;
     newlvl = oldlvl + rn1(5, -2);     /* new = old + {-2,-1,0,+1,+2} */
@@ -398,6 +398,21 @@ newman(void)
     u.uen = rounddiv((long) u.uen * (long) enmax,
                      ((u.uenmax < 1) ? 1 : u.uenmax));
     u.uenmax = enmax;
+    /*
+     * It's cruel, but do the same for stamina.
+     */
+    stamax = u.ustamax;
+    for (i = 0; i < oldlvl; i++)
+        stamax -= (int) u.ustainc[i];
+    /* stamax * rn1(4,8) / 10; 0.95*stamax on average */
+    stamax = rounddiv((long) stamax * (long) rn1(4, 8), 10);
+    for (i = 0; (u.ulevel = i) < newlvl; i++)
+        stamax += newsta();
+    if (stamax < u.ulevel)
+        stamax = u.ulevel; /* min of 1 sta per level */
+    /* retain same proportion for current sta; u.usta * stamax / u.ustamax */
+    u.usta = rounddiv((long) u.usta * (long) stamax, u.ustamax);
+    u.ustamax = stamax;
     /* [should alignment record be tweaked too?] */
 
     u.uhunger = rn1(500, 500);

@@ -53,15 +53,17 @@
 #define F_GOLD      9
 #define F_HP       10
 #define F_MAXHP    11
-#define F_POWER    12
-#define F_MAXPOWER 13
-#define F_AC       14
-#define F_XP_LEVL  15
+#define F_STAMINA  12
+#define F_MAXSTAMINA 13
+#define F_POWER    14
+#define F_MAXPOWER 15
+#define F_AC       16
+#define F_XP_LEVL  17
 /*#define F_HD F_XP_LEVL*/
-#define F_EXP_PTS  16
-#define F_ALIGN    17
-#define F_TIME     18
-#define F_SCORE    19
+#define F_EXP_PTS  18
+#define F_ALIGN    19
+#define F_TIME     20
+#define F_SCORE    21
 
 /* status conditions grouped by columns; tty orders these differently;
    hunger/encumbrance/movement used to be in the middle with fatal
@@ -69,32 +71,32 @@
    renumbered to match new order (forcing shown_stats[] to be reordered);
    some mutually exclusive conditions are overloaded during display--
    they're separate within shown_stats[] but share the same widget */
-#define F_HUNGER   20
-#define F_ENCUMBER 21
-#define F_TRAPPED  22
-#define F_TETHERED 23 /* overloads trapped rather than having its own slot */
-#define F_LEV      24
-#define F_FLY      25
-#define F_RIDE     26
+#define F_HUNGER   22
+#define F_ENCUMBER 23
+#define F_TRAPPED  24
+#define F_TETHERED 25 /* overloads trapped rather than having its own slot */
+#define F_LEV      26
+#define F_FLY      27
+#define F_RIDE     28
 
-#define F_GRABBED  27
-#define F_STONE    28
-#define F_SLIME    29
-#define F_STRNGL   30
-#define F_FOODPOIS 31
-#define F_TERMILL  32
-#define F_IN_LAVA  33 /* could overload trapped but severity differs a lot */
+#define F_GRABBED  29
+#define F_STONE    30
+#define F_SLIME    31
+#define F_STRNGL   32
+#define F_FOODPOIS 33
+#define F_TERMILL  34
+#define F_IN_LAVA  35 /* could overload trapped but severity differs a lot */
 
-#define F_HELD     34 /* could overload grabbed but severity differs a lot */
-#define F_HOLDING  35 /* overloads held */
-#define F_BLIND    36
-#define F_DEAF     37
-#define F_STUN     38
-#define F_CONF     39
-#define F_HALLU    40
+#define F_HELD     36 /* could overload grabbed but severity differs a lot */
+#define F_HOLDING  37 /* overloads held */
+#define F_BLIND    38
+#define F_DEAF     39
+#define F_STUN     40
+#define F_CONF     41
+#define F_HALLU    42
 
-#define F_VERS     41 /* version info */
-#define NUM_STATS  42
+#define F_VERS     43 /* version info */
+#define NUM_STATS  44
 
 static int condcolor(long, unsigned long *);
 static int condattr(long, unsigned long *);
@@ -135,13 +137,13 @@ static int next_cond_indx = 0, prev_cond_indx = 0;
 
 /* TODO: support statuslines:3 in addition to 2 for the tty-style status */
 #define X11_NUM_STATUS_LINES 2
-#define X11_NUM_STATUS_FIELD 16
+#define X11_NUM_STATUS_FIELD 18
 
 static enum statusfields X11_fieldorder[][X11_NUM_STATUS_FIELD] = {
     { BL_TITLE, BL_STR, BL_DX, BL_CO, BL_IN, BL_WI, BL_CH, BL_ALIGN,
       BL_SCORE, BL_FLUSH, BL_FLUSH, BL_FLUSH, BL_FLUSH, BL_FLUSH,
       BL_FLUSH, BL_FLUSH },
-    { BL_LEVELDESC, BL_GOLD, BL_HP, BL_HPMAX, BL_ENE, BL_ENEMAX,
+    { BL_LEVELDESC, BL_GOLD, BL_HP, BL_HPMAX, BL_STA, BL_STAMAX, BL_ENE, BL_ENEMAX,
       BL_AC, BL_XP, BL_EXP, BL_HD, BL_TIME, BL_HUNGER,
       BL_CAP, BL_CONDITION, BL_VERS, BL_FLUSH }
 };
@@ -859,6 +861,8 @@ X11_status_update_fancy(
         { BL_SCORE, F_SCORE },
         { BL_CAP, F_ENCUMBER },
         { BL_GOLD, F_GOLD },
+        { BL_STA, F_STAMINA },
+        { BL_STAMAX, F_MAXSTAMINA },
         { BL_ENE, F_POWER },
         { BL_ENEMAX, F_MAXPOWER },
         { BL_XP, F_XP_LEVL }, /* shares with BL_HD, depending upon Upolyd */
@@ -1968,6 +1972,12 @@ update_fancy_status_field(int i, int color, int attributes)
         case F_MAXHP:
             val = (long) (Upolyd ? u.mhmax : u.uhpmax);
             break;
+        case F_STAMINA:
+            val = (long) u.usta;
+            break;
+        case F_MAXSTAMINA:
+            val = (long) u.ustamax;
+            break;
         case F_POWER:
             val = (long) u.uen;
             break;
@@ -2151,6 +2161,9 @@ width_string(int sv_index)
 
     case F_HP:
     case F_MAXHP:
+        return "9999";
+    case F_STAMINA:
+    case F_MAXSTAMINA:
         return "9999";
     case F_POWER:
     case F_MAXPOWER:
@@ -2384,10 +2397,10 @@ static int status_indices[3][11] = {
 static int leftover_indices[] = { F_DUMMY, -1, 0, 0 };
 /* -2: top two rows of these columns are reserved for title and location */
 static int col1_indices[11 - 2] = {
-    F_HP,    F_POWER,    F_AC,    F_XP_LEVL, F_GOLD,  F_DUMMY,  -1, 0, 0
+    F_HP, F_STAMINA,    F_POWER,    F_AC,    F_XP_LEVL, F_GOLD,  F_DUMMY,  -1, 0
 };
 static int col2_indices[11 - 2] = {
-    F_MAXHP, F_MAXPOWER, F_ALIGN, F_EXP_PTS, F_SCORE, F_TIME,   -1, 0, 0
+    F_MAXHP, F_MAXSTAMINA, F_MAXPOWER, F_ALIGN, F_EXP_PTS, F_SCORE, F_TIME,   -1, 0
 };
 static int characteristics_indices[11 - 2] = {
     F_STR, F_DEX, F_CON, F_INT, F_WIS, F_CHA, -1, 0, 0

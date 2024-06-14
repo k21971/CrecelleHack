@@ -1823,6 +1823,8 @@ nhl_meta_u_index(lua_State *L)
         { "uhpmax", &(u.uhpmax), ANY_INT },
         { "uen", &(u.uen), ANY_INT },
         { "uenmax", &(u.uenmax), ANY_INT },
+        { "usta", &(u.usta), ANY_INT },
+        { "ustamax", &(u.ustamax), ANY_INT },
     };
     const char *tkey = luaL_checkstring(L, 2);
     int i;

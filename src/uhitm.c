@@ -644,9 +644,27 @@ known_hitum(
                 cutworm(mon, gb.bhitpos.x, gb.bhitpos.y, slice_or_chop);
         }
     }
+    /* Cost stamina */
+    consume_stamina(weapon);
     return malive;
 }
 
+/* Stamina */
+int 
+consume_stamina(struct obj *obj) {
+    if (u.usta > 0) {
+        if (obj && objects[obj->otyp].oc_stamina)
+            u.usta -= objects[obj->otyp].oc_stamina;
+            //u.usta -= obj->spe;
+        else
+            u.usta -= 5;
+    }
+    if (u.usta < 0) {
+        You("exhaust yourself!"); 
+        u.usta = 0;
+    }
+    return u.usta;
+}
 /* hit the monster next to you and the monsters to the left and right of it;
    return False if the primary target is killed, True otherwise */
 staticfn boolean

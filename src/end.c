@@ -708,6 +708,7 @@ savelife(int how)
     if (u.uhpmax < uhpmin)
         setuhpmax(uhpmin);
     u.uhp = min(u.uhpmax, givehp);
+    u.usta = u.ustamax;
     if (Upolyd) /* Unchanging, or death which bypasses losing hit points */
         u.mh = min(u.mhmax, givehp);
     if (u.uhunger < 500 || how == CHOKING) {

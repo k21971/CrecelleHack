@@ -914,7 +914,7 @@ abon(struct obj *obj)
         sbon = max(sbon, AMOD(A_DEX));
     /* Game tuning kludge: make it a bit easier for a low level character to
      * hit */
-    sbon += (u.ulevel < 3) ? 1 : 0;
+    // sbon += (u.ulevel < 3) ? 1 : 0;
     return sbon;
 }
 

@@ -339,6 +339,8 @@
 #define ERegeneration u.uprops[REGENERATION].extrinsic
 #define Regeneration (HRegeneration || ERegeneration)
 
+#define Tired (!u.usta)
+
 #define HEnergy_regeneration u.uprops[ENERGY_REGENERATION].intrinsic
 #define EEnergy_regeneration u.uprops[ENERGY_REGENERATION].extrinsic
 #define Energy_regeneration (HEnergy_regeneration || EEnergy_regeneration)

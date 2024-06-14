@@ -3214,6 +3214,12 @@ lesshungry(int num)
 
     debugpline1("lesshungry(%d)", num);
     u.uhunger += num;
+    
+    /* Stamina */
+    u.usta += (num / 10);
+    if (u.usta > u.ustamax)
+        u.usta = u.ustamax;
+
     if (u.uhunger >= 2000) {
         if (!iseating || gc.context.victual.canchoke) {
             if (iseating) {

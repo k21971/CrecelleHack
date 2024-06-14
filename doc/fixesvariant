@@ -23,6 +23,17 @@
   Skilled: +2
   Expert: +3
 
+# Stamina
+- Stamina is a new stat that increases with level. Swinging
+  a weapon costs stamina, and it regenerates rapidly over
+  time. If your stamina hits zero, all actions will cost
+  additional movement until your stamina is no longer zero.
+- Different weapons require different amounts of stamina to
+  swing.
+- Only naturally regen health if stamina is full.
+- Ascending a staircase or ladder requires full stamina.
+- Eating food restores stamina.
+
 # Roles and Races
 - Roles are not restricted by race, with the exception of
   tourists (always human).

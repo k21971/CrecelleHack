@@ -98,6 +98,7 @@ struct objclass {
     schar oc_wsdam, oc_wldam; /* max small/large monster damage */
     schar oc_oc1, oc_oc2;
 #define oc_hitbon oc_oc1 /* weapons: "to hit" bonus */
+#define oc_stamina oc_oc2 /* weapons: stamina cost to swing */
 
 #define a_ac oc_oc1     /* armor class, used in ARM_BONUS in do.c */
 #define a_can oc_oc2    /* armor: used in mhitu.c */

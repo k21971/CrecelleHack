@@ -1299,6 +1299,11 @@ doup(void)
              levl[u.ux][u.uy].typ == STAIRS ? "stairs" : "ladder");
         return ECMD_TIME;
     }
+    if (u.usta < u.ustamax) {
+        pline("Climbing the %s will require all of your stamina.",
+               levl[u.ux][u.uy].typ == STAIRS ? "stairs" : "ladder");
+        return ECMD_TIME;
+    }
     if (ledger_no(&u.uz) == 1) {
         if (iflags.debug_fuzzer)
             return ECMD_OK;

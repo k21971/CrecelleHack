@@ -696,8 +696,9 @@ basics_enlightenment(int mode UNUSED, int final)
 {
     static char Power[] = "energy points (spell power)";
     char buf[BUFSZ];
-    int pw = u.uen, hp = (Upolyd ? u.mh : u.uhp),
-        pwmax = u.uenmax, hpmax = (Upolyd ? u.mhmax : u.uhpmax);
+    int pw = u.uen, hp = (Upolyd ? u.mh : u.uhp), sta = u.usta,
+        pwmax = u.uenmax, hpmax = (Upolyd ? u.mhmax : u.uhpmax),
+        stamax = u.ustamax;
 
     enlght_out(""); /* separator after background */
     enlght_out("Basics:");
@@ -718,6 +719,9 @@ basics_enlightenment(int mode UNUSED, int final)
         Sprintf(buf, "all %d %s", pwmax, Power);
     else
         Sprintf(buf, "%d out of %d %s", pw, pwmax, Power);
+    you_have(buf, "");
+
+    Sprintf(buf, "%d out of %d stamina points (physical stamina)", sta, stamax);
     you_have(buf, "");
 
     if (Upolyd) {
