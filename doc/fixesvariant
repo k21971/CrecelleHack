@@ -43,3 +43,7 @@
 
 # Monsters
 - The following monster classes are now valid mounts: f, d
+- Elves and princes can engrave Elbereth to ward off the player.
+  - TODO: Forbid ranged attacks while on Elbereth?
+  - TODO: Intentionally break Elbereth when player hp is low?
+  - TODO: Elbereth vanishment?

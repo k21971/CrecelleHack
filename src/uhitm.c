@@ -530,6 +530,12 @@ do_attack(struct monst *mtmp)
         goto atk_done;
     }
 
+    if (m_onscary(mtmp)) {
+        You("are stricken with fear by the engraving beneath %s!",
+            mon_nam(mtmp));
+        goto atk_done;
+    }
+
     if (check_capacity("You cannot fight while so heavily loaded.")
         /* consume extra nutrition during combat; maybe pass out */
         || overexertion())

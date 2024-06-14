@@ -277,12 +277,20 @@ onscary(coordxy x, coordxy y, struct monst *mtmp)
                  || Inhell || In_endgame(&u.uz)));
 }
 
+boolean 
+m_onscary(struct monst *mtmp)
+{
+    return (!Blind && !In_hell(&u.uz) && !In_endgame(&u.uz)
+         && u.uconduct.literate
+         && sengr_at("Elbereth", mtmp->mx, mtmp->my, TRUE));
+}
+
 /* regenerate lost hit points */
 void
 mon_regen(struct monst *mon, boolean digest_meal)
 {
     if (mon->mhp < mon->mhpmax
-        && (gm.moves % 20 == 0 || regenerates(mon->data)))
+        && (gm.moves % 20 == 0 || m_onscary(mon) || regenerates(mon->data)))
         mon->mhp++;
     if (mon->mspec_used)
         mon->mspec_used--;
@@ -679,7 +687,8 @@ dochug(struct monst *mtmp)
     }
 
     /* not frozen or sleeping: wipe out texts written in the dust */
-    wipe_engr_at(mtmp->mx, mtmp->my, 1, FALSE);
+    if (!rn2(40))
+        wipe_engr_at(mtmp->mx, mtmp->my, 1, FALSE);
 
     /* confused monsters get unconfused with small probability */
     if (mtmp->mconf && !rn2(50))
@@ -1785,6 +1794,12 @@ m_move(struct monst *mtmp, int after)
                 ggy = cp->y;
             }
         }
+    }
+
+    if (!mtmp->mpeaceful && mtmp->mhp < mtmp->mhpmax && m_onscary(mtmp)) {
+        /* Monsters taking advantage of Elbereth stay on Elbereth */
+        return postmov(mtmp, ptr, omx, omy, MMOVE_MOVED,
+                       sawmon, can_tunnel, can_unlock, can_open);
     }
 
     if ((!mtmp->mpeaceful || !rn2(10)) && (!Is_rogue_level(&u.uz))) {

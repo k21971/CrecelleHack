@@ -315,6 +315,7 @@ mquaffmsg(struct monst *mtmp, struct obj *otmp)
 #define MUSE_POT_FULL_HEALING 18
 #define MUSE_LIZARD_CORPSE 19
 #define MUSE_WAN_UNDEAD_TURNING 20 /* also an offensive item */
+#define MUSE_ELBERETH 21
 /*
 #define MUSE_INNATE_TPT 9999
  * We cannot use this.  Since monsters get unlimited teleportation, if they
@@ -433,6 +434,7 @@ find_defensive(struct monst *mtmp, boolean tryescape)
     struct obj *obj;
     struct trap *t;
     int fraction;
+    struct engr *ep;
     coordxy x = mtmp->mx, y = mtmp->my;
     boolean stuck = (mtmp == u.ustuck),
             immobile = (mtmp->data->mmove == 0);
@@ -568,6 +570,15 @@ find_defensive(struct monst *mtmp, boolean tryescape)
         } else if (stway && stway->tolev.dnum != u.uz.dnum) {
             if (stway->up || !is_floater(mtmp->data))
                 gm.m.has_defense = MUSE_SSTAIRS;
+        }
+    } else if (ACCESSIBLE(SURFACE_AT(x, y)) && !IS_AIR(SURFACE_AT(x, y))
+               && !mtmp->mpeaceful
+               && !In_hell(&u.uz) && !is_demon(mtmp->data)
+               && !mindless(mtmp->data) && !In_endgame(&u.uz)
+               && (is_elf(mtmp->data) || is_prince(mtmp->data))) {
+        ep = engr_at(x, y);
+        if (!ep) {
+            gm.m.has_defense = MUSE_ELBERETH;
         }
     } else {
         /* Note: trap doors take precedence over teleport traps. */
@@ -1106,6 +1117,29 @@ use_defensive(struct monst *mtmp)
         migrate_to_level(mtmp, ledger_no(&(stway->tolev)), MIGR_SSTAIRS,
                          (coord *) 0);
         return 2;
+    case MUSE_ELBERETH: {
+        char buf[BUFSZ];
+        struct engr *ep;
+        if (canseemon(mtmp)) {
+            pline("%s kneels and draws something in %s.",
+                  Monnam(mtmp), (levl[mtmp->mx][mtmp->my].typ == ICE) ? "the frost" : 
+                  is_vampire(mtmp->data) ? "blood" : "the dust");
+        } else if (cansee(mtmp->mx, mtmp->my)) {
+            pline("Words appear on the nearby ground."); /* use pline_dir for accessibility? */
+        }
+        Sprintf(buf, "Elbereth");
+        make_engr_at(mtmp->mx, mtmp->my, buf, 0L, 
+                     is_vampire(mtmp->data) ? BLOOD : DUST);
+        ep = engr_at(mtmp->mx, mtmp->my);
+        /* Ok, so technically the hero shouldn't be able to read something on a
+           different square, but we'll assume that if the hero sees someone
+           writing something in the dust they know it's Elbereth. Don't break
+           illiterate conduct for this though; that's too cruel. */
+        if (ep && u.uconduct.literate) {
+            ep->eread = 1;
+        }
+        return 2;
+    } 
     case MUSE_TELEPORT_TRAP:
         m_flee(mtmp);
         t = t_at(gt.trapx, gt.trapy);
