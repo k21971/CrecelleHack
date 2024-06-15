@@ -12,6 +12,7 @@ staticfn struct obj *make_corpse(struct monst *, unsigned);
 staticfn int minliquid_core(struct monst *);
 staticfn void m_calcdistress(struct monst *);
 staticfn boolean monlineu(struct monst *, int, int);
+staticfn boolean mon_avoids_chokepoint(struct monst *);
 staticfn long mm_2way_aggression(struct monst *, struct monst *);
 staticfn long mm_aggression(struct monst *, struct monst *);
 staticfn long mm_displacement(struct monst *, struct monst *);
@@ -2011,6 +2012,40 @@ monlineu(struct monst *mon, int nx, int ny)
     return online2(nx, ny, mon->mux, mon->muy);
 }
 
+/* Does the monster pursue you down a corridor or wait it out?
+   This is really expensive, especially when called repeatedly.
+   TODO: Find another way to do this. */
+staticfn boolean
+mon_avoids_chokepoint(struct monst *mon) {
+    int score = 0;
+    int x, y;
+    /* Rule out the easy ones. Monsters don't use ambush
+       tactics in mazes because that would probably confuse
+       their AI. Monsters will also not pull these tactics
+       unless a player is specifically in a corridor, simply
+       to cut down on the amount of iteration. */
+    if (mon->mpeaceful || !is_ambusher(mon->data)
+        || levl[mon->mx][mon->my].typ == CORR
+        || levl[mon->mx][mon->my].typ == SCORR
+        || gl.level.flags.is_maze_lev
+        || (levl[u.ux][u.uy].typ != CORR && levl[u.ux][u.uy].typ != SCORR))
+        return 0;
+    /* If the player is badly hurt, it's time to go in. */
+    if (u.uhp < u.uhpmax / 2)
+        return 0;
+    /* Loop over player's surroundings. */
+    for (int dx = -1; dx <= 1; dx++) {
+        for (int dy = -1; dy <= 1; dy++) {
+            x = u.ux + dx;
+            y = u.uy + dy;
+            if (!dx && !dy) continue;
+            if (!isok(x, y) || IS_STWALL(levl[x][y].typ)) score++;
+        }
+    }
+    if (score >= 6) return 1;
+    return 0;
+}
+
 /* return flags based on monster data, for mfndpos() */
 long
 mon_allowflags(struct monst *mtmp)
@@ -2068,6 +2103,9 @@ mon_allowflags(struct monst *mtmp)
     /* unicorn may not be able to avoid hero on a noteleport level */
     if (is_unicorn(mtmp->data) && !noteleport_level(mtmp))
         allowflags |= NOTONL;
+    if (mon_avoids_chokepoint(mtmp)) {
+        allowflags |= NOTONL;
+    }
     if (is_human(mtmp->data) || mtmp->data == &mons[PM_MINOTAUR])
         allowflags |= ALLOW_SSM;
     if ((is_undead(mtmp->data) && mtmp->data->mlet != S_GHOST)
