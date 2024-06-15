@@ -161,6 +161,7 @@ struct monst {
     Bitfield(meverseen, 1); /* mon has been seen at some point */
 
     Bitfield(mspotted, 1);  /* mon is currently seen by hero */
+    Bitfield(mtraitor, 1);  /* mon has turned traitor */
 
 #define MAX_NUM_WORMS 32    /* should be 2^(wormno bitfield size) */
 

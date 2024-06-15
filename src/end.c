@@ -222,6 +222,8 @@ done_in_by(struct monst *mtmp, int how)
     (void) monhealthdescr(mtmp, TRUE, eos(buf));
     if (mtmp->minvis)
         Strcat(buf, "invisible ");
+    if (mtmp->mtraitor)
+        Strcat(buf, "traitorous ");
     if (distorted)
         Strcat(buf, "hallucinogen-distorted ");
 

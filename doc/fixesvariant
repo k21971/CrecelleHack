@@ -50,3 +50,4 @@
   - TODO: Intentionally break Elbereth when player hp is low?
   - TODO: Elbereth vanishment?
 - Some monsters will avoid following the player into chokepoints.
+- Incorporated Slash'Em's traitor system, but updated to 3.7.

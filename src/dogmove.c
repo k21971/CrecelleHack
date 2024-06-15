@@ -945,6 +945,32 @@ pet_ranged_attk(struct monst *mtmp)
     return MMOVE_NOTHING;
 }
 
+boolean
+betrayed(struct monst *mtmp)
+{
+    boolean has_edog = !mtmp->isminion;
+    struct edog *edog = EDOG(mtmp);
+    int udist = distu(mtmp->mx, mtmp->my);
+
+    if (udist < 4 && has_edog && !rn2(3)
+		    && is_traitor(mtmp->data)
+		    && !mindless(mtmp->data)
+		    && mtmp->mhp >= u.uhp	/* Pet is buff enough */
+		    && rn2(22) > mtmp->mtame	/* Roll against tameness */
+		    && rn2(edog->abuse + 2)) {
+        /* Treason */
+        if (canseemon(mtmp))
+            pline("%s turns on you!", Monnam(mtmp));
+        else
+            pline("You feel uneasy about %s.", y_monnam(mtmp));
+        mtmp->mpeaceful = 0;
+        mtmp->mtame = 0;
+        mtmp->mtraitor = TRUE;
+        return TRUE;
+    }
+    return FALSE;
+}
+
 /* Return values (same as m_move):
  * 0: did not move, but can still attack and do other stuff.
  * 1: moved, possibly can attack.
@@ -1002,6 +1028,9 @@ dog_move(
         /* maybe we tamed him while being swallowed --jgm */
         return MMOVE_NOTHING;
     }
+
+    /* Intelligent pets may rebel (apart from minions, spell beings) */
+	if (!rn2(850) && betrayed(mtmp)) return MMOVE_MOVED;
 
     nix = omx; /* set before newdogpos */
     niy = omy;
