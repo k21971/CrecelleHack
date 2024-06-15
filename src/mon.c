@@ -1,4 +1,4 @@
-/* NetHack 3.7	mon.c	$NHDT-Date: 1717570485 2024/06/05 06:54:45 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.573 $ */
+/* NetHack 3.7	mon.c	$NHDT-Date: 1718303201 2024/06/13 18:26:41 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.576 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Derek S. Ray, 2015. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -586,7 +586,8 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_BLACK_UNICORN:
         if (mtmp->mrevived && rn2(2)) {
             if (canseemon(mtmp))
-                pline("%s recently regrown horn crumbles to dust.",
+                pline_mon(mtmp,
+                      "%s recently regrown horn crumbles to dust.",
                       s_suffix(Monnam(mtmp)));
         } else {
             obj = mksobj_at(UNICORN_HORN, x, y, TRUE, FALSE);
@@ -970,7 +971,7 @@ minliquid_core(struct monst *mtmp)
         int dam = d(2, 6);
 
         if (cansee(mtmp->mx, mtmp->my))
-            pline("%s rusts.", Monnam(mtmp));
+            pline_mon(mtmp, "%s rusts.", Monnam(mtmp));
         mtmp->mhp -= dam;
         if (mtmp->mhpmax > dam)
             mtmp->mhpmax -= dam;
@@ -1001,7 +1002,7 @@ minliquid_core(struct monst *mtmp)
                     struct attack *dummy = &mtmp->data->mattk[0];
                     const char *how = on_fire(mtmp->data, dummy);
 
-                    pline("%s %s.", Monnam(mtmp),
+                    pline_mon(mtmp, "%s %s.", Monnam(mtmp),
                           !strcmp(how, "boiling") ? "boils away"
                              : !strcmp(how, "melting") ? "melts away"
                                 : "burns to a crisp");
@@ -1018,10 +1019,12 @@ minliquid_core(struct monst *mtmp)
                 mtmp->mhp -= 1;
                 if (DEADMONSTER(mtmp)) {
                     if (cansee(mtmp->mx, mtmp->my))
-                        pline("%s surrenders to the fire.", Monnam(mtmp));
+                        pline_mon(mtmp, "%s surrenders to the fire.",
+                                  Monnam(mtmp));
                     mondead(mtmp); /* no corpse */
                 } else if (cansee(mtmp->mx, mtmp->my))
-                    pline("%s burns slightly.", Monnam(mtmp));
+                    pline_mon(mtmp, "%s burns slightly.",
+                              Monnam(mtmp));
             }
             if (!DEADMONSTER(mtmp)) {
                 (void) fire_damage_chain(mtmp->minvent, FALSE, FALSE,
@@ -1045,7 +1048,7 @@ minliquid_core(struct monst *mtmp)
             }
             if (cansee(mtmp->mx, mtmp->my)) {
                 if (gc.context.mon_moving)
-                    pline("%s drowns.", Monnam(mtmp));
+                    pline_mon(mtmp, "%s drowns.", Monnam(mtmp));
                 else
                     /* hero used fire to melt ice that monster was on */
                     You("drown %s.", mon_nam(mtmp));
@@ -1393,7 +1396,8 @@ m_consume_obj(struct monst *mtmp, struct obj *otmp)
                 mon_to_stone(mtmp);
             } else if (!resists_ston(mtmp)) {
                 if (vis)
-                    pline("%s turns to stone!", Monnam(mtmp));
+                    pline_mon(mtmp, "%s turns to stone!",
+                              Monnam(mtmp));
                 monstone(mtmp);
             }
         }
@@ -1444,7 +1448,8 @@ meatmetal(struct monst *mtmp)
                        !verbose so won't be printed */
                     otmpname = distant_name(otmp, doname);
                     if (flags.verbose)
-                        pline("%s eats %s!", Monnam(mtmp), otmpname);
+                        pline_mon(mtmp, "%s eats %s!",
+                                  Monnam(mtmp), otmpname);
                 }
                 /* The object's rustproofing is gone now */
                 otmp->oerodeproof = 0;
@@ -1453,7 +1458,7 @@ meatmetal(struct monst *mtmp)
                     /* (see above; format even if it won't be printed) */
                     otmpname = distant_name(otmp, doname);
                     if (flags.verbose)
-                        pline("%s spits %s out in disgust!",
+                        pline_mon(mtmp, "%s spits %s out in disgust!",
                               Monnam(mtmp), otmpname);
                 }
             } else {
@@ -1461,7 +1466,8 @@ meatmetal(struct monst *mtmp)
                     /* (see above; format even if it won't be printed) */
                     otmpname = distant_name(otmp, doname);
                     if (flags.verbose)
-                        pline("%s eats %s!", Monnam(mtmp), otmpname);
+                        pline_mon(mtmp, "%s eats %s!",
+                                  Monnam(mtmp), otmpname);
                 } else {
                     if (flags.verbose) {
                         Soundeffect(se_crunching_sound, 50);
@@ -1569,7 +1575,8 @@ meatobj(struct monst* mtmp) /* for gelatinous cubes */
                 /* (see above; distant_name() sometimes has side-effects */
                 otmpname = distant_name(otmp, doname);
                 if (flags.verbose)
-                    pline("%s eats %s!", Monnam(mtmp), otmpname);
+                    pline_mon(mtmp, "%s eats %s!",
+                              Monnam(mtmp), otmpname);
                 /* give this one even if !verbose */
                 if (otmp->oclass == SCROLL_CLASS
                     && objdescr_is(otmp, "YUM YUM"))
@@ -1651,7 +1658,8 @@ meatcorpse(
             char *otmpname = distant_name(otmp, doname);
 
             if (flags.verbose)
-                pline("%s eats %s!", Monnam(mtmp), otmpname);
+                pline_mon(mtmp, "%s eats %s!",
+                          Monnam(mtmp), otmpname);
         } else {
             Soundeffect(se_masticating_sound, 50);
             if (flags.verbose)
@@ -1720,7 +1728,7 @@ mon_give_prop(struct monst *mtmp, int prop)
 
     if (canseemon(mtmp) && msg) {
         DISABLE_WARNING_FORMAT_NONLITERAL
-        pline(msg, Monnam(mtmp));
+        pline_mon(mtmp, msg, Monnam(mtmp));
         RESTORE_WARNING_FORMAT_NONLITERAL
     }
 }
@@ -1757,7 +1765,7 @@ mon_givit(struct monst *mtmp, struct permonst *ptr)
             Strcpy(mtmpbuf, Monnam(mtmp));
             mon_set_minvis(mtmp);
             if (vis)
-                pline("%s %s.", mtmpbuf,
+                pline_mon(mtmp, "%s %s.", mtmpbuf,
                       !canspotmon(mtmp) ? "vanishes"
                       : mtmp->invis_blkd ? "seems to flicker"
                         : "becomes invisible");
@@ -1787,8 +1795,7 @@ mpickgold(struct monst *mtmp)
         add_to_minv(mtmp, gold);
         if (cansee(mtmp->mx, mtmp->my)) {
             if (flags.verbose && !mtmp->isgd)
-                pline_xy(mtmp->mx, mtmp->my,
-                         "%s picks up some %s.", Monnam(mtmp),
+                pline_mon(mtmp, "%s picks up some %s.", Monnam(mtmp),
                          mat_idx == GOLD ? "gold" : "money");
             newsym(mtmp->mx, mtmp->my);
         }
@@ -1848,8 +1855,8 @@ mpickstuff(struct monst *mtmp)
                 char *otmpname = distant_name(otmp, doname);
 
                 if (flags.verbose)
-                    pline_xy(mtmp->mx, mtmp->my,
-                             "%s picks up %s.", Monnam(mtmp), otmpname);
+                    pline_mon(mtmp, "%s picks up %s.",
+                              Monnam(mtmp), otmpname);
             }
             obj_extract_self(otmp3);      /* remove from floor */
             (void) mpickobj(mtmp, otmp3); /* may merge and free otmp3 */
@@ -2709,13 +2716,15 @@ m_detach(
     mon_leaving_level(mtmp);
 
     mtmp->mhp = 0; /* simplify some tests: force mhp to 0 */
+    /* death handling for the Wizard needs to take place even if he is
+       leaving the dungeon alive rather than dying */
+    if (mtmp->iswiz)
+        wizdeadorgone();
     /* foodead() might give quest feedback for foo having died; skip that
        if we're called for mongone() rather than mondead(); saving bones
        or wizard mode genocide of "*" can result in special monsters going
        away without having been killed */
     if (due_to_death) {
-        if (mtmp->iswiz)
-            wizdead();
         if (mtmp->data->msound == MS_NEMESIS) {
             nemdead();
             /* The Archeologist, Caveman, and Priest quest texts describe
@@ -2892,7 +2901,7 @@ vamprises(struct monst *mtmp)
             /* 3.6.0 used a_monnam(mtmp); that was weird if mtmp was
                named: "Dracula suddenly transforms and rises as Dracula";
                3.6.1 used mtmp->data->mname; that ignored hallucination */
-            pline(upstart(buf),
+            pline_mon(mtmp, upstart(buf),
                   x_monnam(mtmp, ARTICLE_A, (char *) 0,
                            (SUPPRESS_NAME | SUPPRESS_IT | SUPPRESS_INVISIBLE),
                            FALSE));
@@ -3101,7 +3110,8 @@ corpse_chance(
 
     if (mdat == &mons[PM_VLAD_THE_IMPALER] || mdat->mlet == S_LICH) {
         if (cansee(mon->mx, mon->my) && !was_swallowed)
-            pline("%s body crumbles into dust.", s_suffix(Monnam(mon)));
+            pline_mon(mon, "%s body crumbles into dust.",
+                      s_suffix(Monnam(mon)));
         return FALSE;
     }
 
@@ -3127,9 +3137,12 @@ corpse_chance(
                         mondied(magr);
                     if (DEADMONSTER(magr)) { /* maybe lifesaved */
                         if (canspotmon(magr))
-                            pline("%s rips open!", Monnam(magr));
+                            pline_mon(magr, "%s rips open!",
+                                      Monnam(magr));
                     } else if (canseemon(magr))
-                        pline("%s seems to have indigestion.", Monnam(magr));
+                        pline_mon(magr,
+                                  "%s seems to have indigestion.",
+                                  Monnam(magr));
                 }
 
                 return FALSE;
@@ -3288,7 +3301,7 @@ monkilled(
 
     if (fltxt && (mdef->wormno ? worm_known(mdef)
                                : cansee(mdef->mx, mdef->my)))
-        pline("%s is %s%s%s!", Monnam(mdef),
+        pline_mon(mdef, "%s is %s%s%s!", Monnam(mdef),
               nonliving(mptr) ? "destroyed" : "killed",
               *fltxt ? " by the " : "", fltxt);
     else
@@ -3638,7 +3651,7 @@ mon_to_stone(struct monst *mtmp)
     if (mtmp->data->mlet == S_GOLEM) {
         /* it's a golem, and not a stone golem */
         if (canseemon(mtmp))
-            pline("%s solidifies...", Monnam(mtmp));
+            pline_mon(mtmp, "%s solidifies...", Monnam(mtmp));
         if (newcham(mtmp, &mons[PM_STONE_GOLEM], NO_NC_FLAGS)) {
             if (canseemon(mtmp))
                 pline("Now it's %s.", an(pmname(mtmp->data, Mgender(mtmp))));
@@ -3686,7 +3699,7 @@ vamp_stone(struct monst *mtmp)
                 }
             }
             if (canspotmon(mtmp)) {
-                pline("%s!", buf);
+                pline_mon(mtmp, "%s!", buf);
                 display_nhwindow(WIN_MESSAGE, FALSE);
             }
             (void) newcham(mtmp, &mons[mndx], NO_NC_FLAGS);
@@ -3695,7 +3708,8 @@ vamp_stone(struct monst *mtmp)
             else
                 mtmp->cham = mndx;
             if (canspotmon(mtmp)) {
-                pline("%s rises from the %s with renewed agility!",
+                pline_mon(mtmp,
+                      "%s rises from the %s with renewed agility!",
                       Amonnam(mtmp), surface(mtmp->mx, mtmp->my));
             }
             newsym(mtmp->mx, mtmp->my);
@@ -4074,7 +4088,7 @@ peacefuls_respond(struct monst *mtmp)
                        surprise, but they won't become angry here */
                     if (mon->isshk || mon->ispriest) {
                         if (exclaimed)
-                            pline("%s%s", buf, " then shrugs.");
+                            pline_mon(mon, "%s%s", buf, " then shrugs.");
                         continue;
                     }
 
@@ -4090,7 +4104,7 @@ peacefuls_respond(struct monst *mtmp)
                             exclaimed = TRUE; /* got msg from monflee() */
                     }
                     if (*buf)
-                        pline("%s%s", buf, needpunct ? "." : "");
+                        pline_mon(mon, "%s%s", buf, needpunct ? "." : "");
                     if (mon->mtame) {
                         ; /* mustn't set mpeaceful to 0 as below;
                            * perhaps reduce tameness? */
@@ -4098,7 +4112,7 @@ peacefuls_respond(struct monst *mtmp)
                         mon->mpeaceful = 0;
                         adjalign(-1);
                         if (!exclaimed)
-                            pline("%s gets angry!", Monnam(mon));
+                            pline_mon(mon, "%s gets angry!", Monnam(mon));
                     }
                 }
             } else if (mon->data->mlet == mtmp->data->mlet
@@ -4168,7 +4182,7 @@ setmangry(struct monst *mtmp, boolean via_attack)
         adjalign(-1); /* attacking peaceful monsters is bad */
     if (humanoid(mtmp->data) || mtmp->isshk || mtmp->isgd) {
         if (couldsee(mtmp->mx, mtmp->my))
-            pline("%s gets angry!", Monnam(mtmp));
+            pline_mon(mtmp, "%s gets angry!", Monnam(mtmp));
     } else {
         growl(mtmp);
     }
@@ -4187,7 +4201,8 @@ void
 wake_msg(struct monst *mtmp, boolean interesting)
 {
     if (mtmp->msleeping && canseemon(mtmp)) {
-        pline("%s wakes up%s%s", Monnam(mtmp), interesting ? "!" : ".",
+        pline_mon(mtmp, "%s wakes up%s%s",
+              Monnam(mtmp), interesting ? "!" : ".",
               mtmp->data == &mons[PM_FLESH_GOLEM] ? " It's alive!" : "");
     }
 }
@@ -5507,7 +5522,7 @@ golemeffects(struct monst *mon, int damtype, int dam)
             if (mon->mhp > mon->mhpmax)
                 mon->mhp = mon->mhpmax;
             if (cansee(mon->mx, mon->my))
-                pline("%s seems healthier.", Monnam(mon));
+                pline_mon(mon, "%s seems healthier.", Monnam(mon));
         }
     }
 }
@@ -5590,7 +5605,7 @@ mimic_hit_msg(struct monst *mtmp, short otyp)
         break;
     case M_AP_OBJECT:
         if (otyp == SPE_HEALING || otyp == SPE_EXTRA_HEALING) {
-            pline("%s seems a more vivid %s than before.",
+            pline_mon(mtmp, "%s seems a more vivid %s than before.",
                   The(simple_typename(ap)),
                   c_obj_colors[objects[ap].oc_color]);
         }
