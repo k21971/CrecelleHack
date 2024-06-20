@@ -122,5 +122,7 @@ enum trap_immunities {
                                || (ttyp) == POLY_TRAP)
 /* "transportation" traps */
 #define is_xport(ttyp) ((ttyp) >= TELEP_TRAP && (ttyp) <= MAGIC_PORTAL)
+#define fixed_tele_trap(t) ((t)->ttyp == TELEP_TRAP \
+                            && isok((t)->teledest.x,(t)->teledest.y))
 
 #endif /* TRAP_H */
