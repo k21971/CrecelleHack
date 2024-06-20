@@ -51,3 +51,5 @@
   - TODO: Elbereth vanishment?
 - Some monsters will avoid following the player into chokepoints.
 - Incorporated Slash'Em's traitor system, but updated to 3.7.
+- Monsters will only flee from the player if they could conceivably
+  outrun them.

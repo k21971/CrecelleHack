@@ -631,7 +631,7 @@ known_hitum(
         if (malive) {
             /* monster still alive */
             if (!rn2(25) && mon->mhp < mon->mhpmax / 2
-                && !engulfing_u(mon)) {
+                && !engulfing_u(mon) && mon->permspeed >= gy.youmonst.data->mmove) {
                 /* maybe should regurgitate if swallowed? */
                 monflee(mon, !rn2(3) ? rnd(100) : 0, FALSE, TRUE);
 
