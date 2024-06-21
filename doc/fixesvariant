@@ -53,3 +53,5 @@
 - Incorporated Slash'Em's traitor system, but updated to 3.7.
 - Monsters will only flee from the player if they could conceivably
   outrun them.
+- Monsters will slather items with cans of grease if the player is
+  polymorphed into a relevant form.

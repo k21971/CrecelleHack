@@ -2035,11 +2035,12 @@ rnd_offensive_item(struct monst *mtmp)
 #define MUSE_BULLWHIP 8
 #define MUSE_POT_POLYMORPH 9
 #define MUSE_BAG 10
+#define MUSE_GREASE 11
 
 boolean
 find_misc(struct monst *mtmp)
 {
-    struct obj *obj;
+    struct obj *obj, *obj2;
     struct permonst *mdat = mtmp->data;
     coordxy x = mtmp->mx, y = mtmp->my;
     struct trap *t;
@@ -2137,6 +2138,23 @@ find_misc(struct monst *mtmp)
         /* Note: peaceful/tame monsters won't make themselves
          * invisible unless you can see them.  Not really right, but...
          */
+        nomore(MUSE_GREASE);
+        /* Ok, so this looks complicated, but what it boils down to is that we only
+           grease if the player is slithy or a mind flayer and we have something
+           greasable in the applicable slot. */
+        if (obj->otyp == CAN_OF_GREASE && obj->spe > 0
+            && ((is_mind_flayer(gy.youmonst.data) && mtmp->misc_worn_check & W_ARMH) 
+                || (slithy(gy.youmonst.data) && mtmp->misc_worn_check & W_ARM))) {
+                for (obj2 = mtmp->minvent; obj2; obj2 = obj2->nobj) {
+                    if ((obj2->owornmask & mtmp->misc_worn_check) && !obj2->greased) {
+                        if (((is_mind_flayer(gy.youmonst.data) && obj2->owornmask & W_ARMH)
+                            || (slithy(gy.youmonst.data) && obj2->owornmask & W_ARM))) {
+                            gm.m.misc = obj;
+                            gm.m.has_misc = MUSE_GREASE;
+                        }
+                    }
+                }
+        }
         nomore(MUSE_WAN_MAKE_INVISIBLE);
         if (obj->otyp == WAN_MAKE_INVISIBLE && obj->spe > 0 && !mtmp->minvis
             && !mtmp->invis_blkd && (!mtmp->mpeaceful || See_invisible)
@@ -2328,6 +2346,7 @@ use_misc(struct monst *mtmp)
     int i;
     struct trap *t;
     struct obj *otmp = gm.m.misc;
+    struct obj *otmp2;
 
     if ((i = precheck(mtmp, otmp)) != 0)
         return i;
@@ -2460,6 +2479,19 @@ use_misc(struct monst *mtmp)
         return 2;
     case MUSE_BAG:
         return mloot_container(mtmp, otmp, vismon);
+    case MUSE_GREASE:
+        for (otmp2 = mtmp->minvent; otmp2; otmp2 = otmp2->nobj) {
+            if ((otmp2->owornmask & mtmp->misc_worn_check) && !otmp2->greased) {
+                if (canseemon(mtmp))
+                    pline("%s slathers %s with %s.", Monnam(mtmp), 
+                          an(xname(otmp2)), an(xname(otmp)));
+                otmp->spe--;
+                otmp2->greased = 1;
+                return 2;
+            }
+        }
+        panic("mon attempting to grease with no greasables?");
+        return 0;
     case MUSE_BULLWHIP:
         /* attempt to disarm hero */
         {
@@ -2680,7 +2712,7 @@ searches_for_item(struct monst *mon, struct obj *obj)
         if (Is_container(obj) && !(Is_mbag(obj) && obj->cursed)
             && !obj->olocked)
             return TRUE;
-        if (typ == EXPENSIVE_CAMERA)
+        if (typ == EXPENSIVE_CAMERA || typ == CAN_OF_GREASE)
             return (obj->spe > 0);
         break;
     case FOOD_CLASS:
