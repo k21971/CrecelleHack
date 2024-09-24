@@ -62,6 +62,8 @@ struct arti_info {
 /* array of flags tracking which artifacts exist, indexed by ART_xx;
    ART_xx values are 1..N, element [0] isn't used; no terminator needed */
 static struct arti_info artiexist[1 + NROFARTIFACTS];
+
+static short artiotypes[NROFARTIFACTS];
 /* discovery list; for N discovered artifacts, the first N entries are ART_xx
    values in discovery order, the remaining (NROFARTIFACTS-N) slots are 0 */
 static xint16 artidisco[NROFARTIFACTS];
@@ -73,6 +75,7 @@ static xint16 artidisco[NROFARTIFACTS];
 static const struct arti_info zero_artiexist = {0}; /* all bits zero */
 
 staticfn void hack_artifacts(void);
+staticfn void hack_artifact_otyps(void);
 
 /* handle some special cases; must be called after u_init() */
 staticfn void
@@ -95,7 +98,42 @@ hack_artifacts(void)
         artilist[gu.urole.questarti].alignment = alignmnt;
         artilist[gu.urole.questarti].role = Role_switch;
     }
+    /* Fix up otyp randomization */
+    for (int i = 0; i < NROFARTIFACTS; i++) {
+        artilist[i + 1].otyp = artiotypes[i];
+    }
+    artilist[ART_FIRE_BRAND].otyp = artilist[ART_FROST_BRAND].otyp;
     return;
+}
+
+/* Mildly randomize artifact otyps */
+staticfn void
+hack_artifact_otyps(void)
+{
+    struct artifact *art;
+    int otyp;
+    int i = 0;
+    for (art = artilist + 1; art->otyp; art++) {
+        if (art->role != NON_PM || art == &artilist[ART_EXCALIBUR]
+            || art == &artilist[ART_GRAYSWANDIR]
+            || art == &artilist[ART_ORCRIST] || art == &artilist[ART_STING]
+            || art == &artilist[ART_STORMBRINGER] || art == &artilist[ART_WEREBANE]) { 
+            artiotypes[i] = art->otyp;
+        } else {
+            do {
+                otyp = rn2(BULLWHIP - SPEAR) + SPEAR;
+            } while (objects[art->otyp].oc_dir != objects[otyp].oc_dir);
+            artiotypes[i] = otyp;
+        }
+        i++;
+    }
+}
+
+/* Obtain the otyp of a given artifact. Used for artifacts with semi-randomized
+   otyps. */
+int
+get_artifact_otyp(int art) {
+    return artilist[art].otyp;
 }
 
 /* zero out the artifact existence list */
@@ -104,6 +142,8 @@ init_artifacts(void)
 {
     (void) memset((genericptr_t) artiexist, 0, sizeof artiexist);
     (void) memset((genericptr_t) artidisco, 0, sizeof artidisco);
+    (void) memset((genericptr_t) artiotypes, 0, sizeof artiotypes);
+    hack_artifact_otyps();
     hack_artifacts();
 }
 
@@ -113,6 +153,7 @@ save_artifacts(NHFILE *nhfp)
     if (nhfp->structlevel) {
         bwrite(nhfp->fd, (genericptr_t) artiexist, sizeof artiexist);
         bwrite(nhfp->fd, (genericptr_t) artidisco, sizeof artidisco);
+        bwrite(nhfp->fd, (genericptr_t) artidisco, sizeof artiotypes);
     }
 }
 
@@ -122,6 +163,7 @@ restore_artifacts(NHFILE *nhfp)
     if (nhfp->structlevel) {
         mread(nhfp->fd, (genericptr_t) artiexist, sizeof artiexist);
         mread(nhfp->fd, (genericptr_t) artidisco, sizeof artidisco);
+        mread(nhfp->fd, (genericptr_t) artidisco, sizeof artiotypes);
     }
     hack_artifacts();   /* redo non-saved special cases */
 }

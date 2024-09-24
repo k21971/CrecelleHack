@@ -918,7 +918,7 @@ gcrownu(void)
             Your("%s goes snicker-snack!", xname(obj));
             obj->dknown = 1;
         } else if (!already_exists) {
-            obj = mksobj(LONG_SWORD, FALSE, FALSE);
+            obj = mksobj(get_artifact_otyp(ART_VORPAL_BLADE), FALSE, FALSE);
             obj = oname(obj, artiname(ART_VORPAL_BLADE),
                         ONAME_GIFT | ONAME_KNOW_ARTI);
             obj->spe = 1;

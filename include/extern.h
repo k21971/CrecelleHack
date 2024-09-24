@@ -132,6 +132,7 @@ extern int unfixable_trouble_count(boolean);
 
 /* ### artifact.c ### */
 
+extern int get_artifact_otyp(int);
 extern void init_artifacts(void);
 extern void save_artifacts(NHFILE *);
 extern void restore_artifacts(NHFILE *);

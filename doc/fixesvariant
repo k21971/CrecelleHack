@@ -4,6 +4,13 @@
 - Dexterity contributes to AC.
 - Strength is normally the sole contributor to to-hit.
 
+## Artifacts
+- Many artifacts have semi-randomized object types.
+  - The randomized object type must have a similar damage
+    type to the original type of the artifact. For example,
+    Sunsword cannot be a mace.
+  - The brands are always the same type.
+
 ## Weapons
 - Some weapons are "finesse weapons." To-hit bonuses with
   finesse weapons are determined based on strength or

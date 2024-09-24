@@ -330,7 +330,7 @@ m_initweap(struct monst *mtmp)
     case S_ANGEL:
         if (humanoid(ptr)) {
             /* create minion stuff; can't use mongets */
-            otmp = mksobj(LONG_SWORD, FALSE, FALSE);
+            otmp = mksobj(get_artifact_otyp(ART_SUNSWORD), FALSE, FALSE);
 
             /* maybe make it special */
             if ((!rn2(20) || is_lord(ptr))
