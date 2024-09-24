@@ -8,6 +8,9 @@
 - Some weapons are "finesse weapons." To-hit bonuses with
   finesse weapons are determined based on strength or
   dexterity, whichever is higher.
+- Some weapons have a speed bonus or a speed penalty.
+  - Generally, orc weapons are faster, elven weapons deal more damage,
+    and dwarvish weapons deal more damage but are slower.
 - As in dNetHack, d(1, Luck) is added to your to-hit instead
   of Luck.
 - New To-Hit bonuses:

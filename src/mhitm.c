@@ -405,6 +405,9 @@ mattackm(
                     mswingsm(magr, mdef, mwep);
                 tmp += hitval(mwep, mdef);
             }
+            if (mwep) {
+                magr->movement += objects[mwep->otyp].oc_hspeed;
+            }
             /*FALLTHRU*/
         case AT_CLAW:
         case AT_KICK:

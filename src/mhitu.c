@@ -872,6 +872,9 @@ mattacku(struct monst *mtmp)
                         tmp += hittmp;
                         mswings(mtmp, mon_currwep, bash);
                     }
+                    if (mon_currwep) {
+                        mtmp->movement += objects[mon_currwep->otyp].oc_hspeed;
+                    }
                     if (tmp > (j = gm.mhitu_dieroll = rnd(20 + i)))
                         sum[i] = hitmu(mtmp, mattk);
                     else
