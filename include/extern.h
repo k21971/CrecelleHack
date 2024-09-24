@@ -201,7 +201,6 @@ extern void redist_attr(void);
 extern void vary_init_attr(void);
 extern void adjabil(int, int);
 extern int newhp(void);
-extern int newsta(void);
 extern int minuhpmax(int);
 extern void setuhpmax(int);
 extern schar acurr(int);
@@ -3248,7 +3247,6 @@ extern int find_roll_to_hit(struct monst *, uchar, struct obj *,
                             int *, int *) NONNULLARG145;
 extern boolean force_attack(struct monst *, boolean) NONNULLARG1;
 extern boolean do_attack(struct monst *) NONNULLARG1;
-int consume_stamina(struct obj *);
 extern boolean hmon(struct monst *, struct obj *, int, int) NONNULLARG1;
 extern boolean shade_miss(struct monst *, struct monst *, struct obj *,
                           boolean, boolean) NONNULLARG12;

@@ -204,7 +204,6 @@ struct Role {
     xint16 attrbase[A_MAX];    /* lowest initial attributes */
     xint16 attrdist[A_MAX];    /* distribution of initial attributes */
     struct RoleAdvance hpadv; /* hit point advancement */
-    struct RoleAdvance staadv; /* stamina advancement */
     struct RoleAdvance enadv; /* energy advancement */
     xint16 xlev;               /* cutoff experience level */
     xint16 initrecord;         /* initial alignment record */
@@ -265,7 +264,6 @@ struct Race {
     xint16 attrmin[A_MAX];     /* minimum allowable attribute */
     xint16 attrmax[A_MAX];     /* maximum allowable attribute */
     struct RoleAdvance hpadv; /* hit point advancement */
-    struct RoleAdvance staadv; /* stamina advancement */
     struct RoleAdvance enadv; /* energy advancement */
 #if 0 /* DEFERRED */
     int   nv_range;           /* night vision range */
@@ -467,11 +465,8 @@ struct you {
         uhppeak;             /* highest value of uhpmax so far */
     int uen, uenmax,         /* magical energy, aka spell power */
         uenpeak;             /* highest value of uenmax so far */
-    int usta, ustamax,         /* hit points, aka health */
-        ustapeak;             /* highest value of uhpmax so far */
     xint16 uhpinc[MAXULEV],  /* increases to uhpmax for each level gain */
-          ueninc[MAXULEV],   /* increases to uenmax for each level gain */
-          ustainc[MAXULEV];  /* increases to ustamax for each level gain */
+          ueninc[MAXULEV];   /* increases to uenmax for each level gain */
     int ugangr;              /* if the gods are angry at you */
     int ugifts;              /* number of artifacts bestowed */
     int ublessed, ublesscnt; /* blessing/duration from #pray */

@@ -987,7 +987,6 @@ u_init(void)
     u.ulevel = 0; /* set up some of the initial attributes */
     u.uhp = u.uhpmax = u.uhppeak = newhp();
     u.uen = u.uenmax = u.uenpeak = newpw();
-    u.usta = u.ustamax = u.ustapeak = newsta();
     u.uspellprot = 0;
     adjabil(0, 1);
     u.ulevel = u.ulevelmax = 1;

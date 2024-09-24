@@ -161,7 +161,6 @@ static const struct Role urole_init_data = {
     { 20, 15, 15, 20, 20, 10 },
     /* Init   Lower  Higher */
     { 10, 0, 0, 8, 1, 0 }, /* Hit points */
-    { 12, 0, 0, 4, 1, 0 }, /* Stamina */
     { 2, 0, 0, 2, 0, 3 },
     14, /* Energy */
      0,
@@ -192,7 +191,6 @@ static const struct Race urace_init_data = {
     { STR18(100), 18, 18, 18, 18, 18 },
     /* Init   Lower  Higher */
     { 2, 0, 0, 2, 1, 0 }, /* Hit points */
-    { 2, 0, 0, 2, 1, 0 }, /* Stamina */
     { 1, 0, 2, 0, 2, 0 }  /* Energy */
 };
 

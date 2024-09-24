@@ -144,9 +144,8 @@ do_statusline2(void)
     hpmax = Upolyd ? u.mhmax : u.uhpmax;
     if (hp < 0)
         hp = 0;
-    Sprintf(hlth, "HP:%d(%d) St:%d(%d) Pw:%d(%d) AC:%-2d",
+    Sprintf(hlth, "HP:%d(%d) Pw:%d(%d) AC:%-2d",
             min(hp, 9999), min(hpmax, 9999),
-            min(u.usta, 9999), min(u.ustamax, 9999),
             min(u.uen, 9999), min(u.uenmax, 9999), u.uac);
     hln = strlen(hlth);
 
@@ -570,8 +569,6 @@ static struct istat_s initblstats[MAXBLSTATS] = {
     INIT_BLSTAT("score", " S:%s", ANY_LONG, 20, BL_SCORE),
     INIT_BLSTAT("carrying-capacity", " %s", ANY_INT, 20, BL_CAP),
     INIT_BLSTAT("gold", " %s", ANY_LONG, 30, BL_GOLD),
-    INIT_BLSTATP("stamina", " ST:%s", ANY_INT, 10, BL_STAMAX, BL_STA),
-    INIT_BLSTAT("stamina-max", "(%s)", ANY_INT, 10, BL_STAMAX),
     INIT_BLSTATP("power", " Pw:%s", ANY_INT, 10, BL_ENEMAX, BL_ENE),
     INIT_BLSTAT("power-max", "(%s)", ANY_INT, 10, BL_ENEMAX),
     INIT_BLSTATP("experience-level", " Xp:%s", ANY_INT, 10, BL_EXP, BL_XP),
@@ -864,12 +861,6 @@ bot_via_windowport(void)
     gb.blstats[idx][BL_ENE].a.a_int = min(u.uen, 9999);
     gb.blstats[idx][BL_ENEMAX].rawval.a_int = u.uenmax;
     gb.blstats[idx][BL_ENEMAX].a.a_int = min(u.uenmax, 9999);
-
-    /* Stamina (physical energy) */
-    gb.blstats[idx][BL_STA].rawval.a_int = u.usta;
-    gb.blstats[idx][BL_STA].a.a_int = min(u.usta, 9999);
-    gb.blstats[idx][BL_STAMAX].rawval.a_int = u.ustamax;
-    gb.blstats[idx][BL_STAMAX].a.a_int = min(u.ustamax, 9999);
 
     /* Armor class */
     gb.blstats[idx][BL_AC].a.a_int = u.uac;
@@ -1583,7 +1574,6 @@ compare_blstats(struct istat_s *bl1, struct istat_s *bl2)
     fld = bl1->fld;
     use_rawval = (fld == BL_HP || fld == BL_HPMAX
                   || fld == BL_ENE || fld == BL_ENEMAX
-                  || fld == BL_STA || fld == BL_STAMAX
                   || fld == BL_GOLD);
     a1 = use_rawval ? &bl1->rawval : &bl1->a;
     a2 = use_rawval ? &bl2->rawval : &bl2->a;
@@ -1743,7 +1733,7 @@ percentage(struct istat_s *bl, struct istat_s *maxbl)
     }
 
     fld = bl->fld;
-    use_rawval = (fld == BL_HP || fld == BL_ENE || fld == BL_STA);
+    use_rawval = (fld == BL_HP || fld == BL_ENE);
     ival = 0, lval = 0L, uval = 0U, ulval = 0UL;
     anytype = bl->anytype;
     if (maxbl->a.a_void) {
@@ -1946,8 +1936,6 @@ static const struct fieldid_t {
     { "con",      BL_CO },
     { "points",   BL_SCORE },
     { "cap",      BL_CAP },
-    { "st",       BL_STA },
-    { "st-max",   BL_STAMAX },
     { "pw",       BL_ENE },
     { "pw-max",   BL_ENEMAX },
     { "xl",       BL_XP },

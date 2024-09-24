@@ -1074,7 +1074,7 @@ typedef struct {
       /* Bitmasks */                            \
       0,                                        \
       /* Attributes */                          \
-      {0}, {0}, {0}, {0}, {0}, 0, 0,                 \
+      {0}, {0}, {0}, {0}, 0, 0,                 \
       /* spell statistics */                    \
       0, 0, 0, 0, 0, 0, 0 }
 
@@ -1090,7 +1090,7 @@ typedef struct {
       /* Characteristic limits */               \
       {0}, {0},                                 \
       /* Level change HP and Pw adjustments */  \
-      {0}, {0}, {0},                                  \
+      {0}, {0}                                  \
     }
 
 #define MATCH_WARN_OF_MON(mon) \

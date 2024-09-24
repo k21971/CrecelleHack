@@ -266,12 +266,6 @@ losexp(
     else if (u.uhp > u.uhpmax)
         u.uhp = u.uhpmax;
 
-    num = (int) u.ustainc[u.ulevel];
-    if (u.usta < 1)
-        u.usta = 1;
-    else if (u.usta > u.ustamax)
-        u.usta = u.ustamax;
-
     num = (int) u.ueninc[u.ulevel];
     u.uenmax -= num;
     if (u.uenmax < 0)
@@ -314,7 +308,7 @@ pluslvl(
     boolean incr) /* True: incremental experience growth;
                    * False: potion of gain level or wraith corpse */
 {
-    int hpinc, eninc, stainc;
+    int hpinc, eninc;
 
     if (!incr)
         You_feel("more experienced.");
@@ -336,13 +330,6 @@ pluslvl(
     if (u.uenmax > u.uenpeak)
         u.uenpeak = u.uenmax;
     u.uen += eninc;
-
-    /* increase stamina points */
-    stainc = newsta();
-    u.ustamax += stainc;
-    if (u.ustamax > u.ustapeak)
-        u.ustapeak = u.ustamax;
-    u.usta += stainc;
 
     /* increase level (unless already maxxed) */
     if (u.ulevel < MAXULEV) {

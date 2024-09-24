@@ -3250,7 +3250,6 @@ use_whip(struct obj *obj)
     } else {
         pline1(msg_snap);
     }
-    consume_stamina(obj);
     return ECMD_TIME;
 }
 

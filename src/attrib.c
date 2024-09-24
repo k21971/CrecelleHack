@@ -1136,66 +1136,6 @@ newhp(void)
     return hp;
 }
 
-int
-newsta(void)
-{
-    int sta, conplus;
-
-    if (u.ulevel == 0) {
-        /* Initialize stamina */
-        sta = gu.urole.staadv.infix + gu.urace.staadv.infix;
-        if (gu.urole.staadv.inrnd > 0)
-            sta += rnd(gu.urole.staadv.inrnd);
-        if (gu.urace.staadv.inrnd > 0)
-            sta += rnd(gu.urace.staadv.inrnd);
-        /* no Con adjustment for initial stamina points */
-    } else {
-        if (u.ulevel < gu.urole.xlev) {
-            sta = gu.urole.staadv.lofix + gu.urace.staadv.lofix;
-            if (gu.urole.staadv.lornd > 0)
-                sta += rnd(gu.urole.staadv.lornd);
-            if (gu.urace.staadv.lornd > 0)
-                sta += rnd(gu.urace.staadv.lornd);
-        } else {
-            sta = gu.urole.staadv.hifix + gu.urace.staadv.hifix;
-            if (gu.urole.staadv.hirnd > 0)
-                sta += rnd(gu.urole.staadv.hirnd);
-            if (gu.urace.staadv.hirnd > 0)
-                sta += rnd(gu.urace.staadv.hirnd);
-        }
-        if (ACURR(A_CON) <= 3)
-            conplus = -2;
-        else if (ACURR(A_CON) <= 6)
-            conplus = -1;
-        else if (ACURR(A_CON) <= 14)
-            conplus = 0;
-        else if (ACURR(A_CON) <= 16)
-            conplus = 1;
-        else if (ACURR(A_CON) == 17)
-            conplus = 2;
-        else if (ACURR(A_CON) == 18)
-            conplus = 3;
-        else
-            conplus = 4;
-        sta += conplus;
-    }
-    if (sta <= 0)
-        sta = 1;
-    if (u.ulevel < MAXULEV) {
-        /* remember increment; future level drain could take it away again */
-        u.ustainc[u.ulevel] = (xint16) sta;
-    } else {
-        /* after level 30, throttle hit point gains from extra experience;
-           once max reaches 1200, further increments will be just 1 more */
-        char lim = 5 - u.ustamax / 300;
-
-        lim = max(lim, 1);
-        if (sta > lim)
-            sta = lim;
-    }
-    return sta;
-}
-
 /* minimum value for uhpmax is ulevel but for life-saving it is always at
    least 10 if ulevel is less than that */
 int

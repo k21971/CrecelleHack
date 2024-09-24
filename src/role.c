@@ -56,7 +56,6 @@ const struct Role roles[NUM_ROLES+1] = {
       { 20, 20, 20, 10, 20, 10 },
       /* Init   Lower  Higher */
       { 11, 0, 0, 8, 1, 0 }, /* Hit points */
-      { 13, 0, 0, 4, 1, 0 },
       { 1, 0, 0, 1, 0, 1 },
       14, /* Energy */
       10,
@@ -98,7 +97,6 @@ const struct Role roles[NUM_ROLES+1] = {
       { 30, 6, 7, 20, 30, 7 },
       /* Init   Lower  Higher */
       { 14, 0, 0, 10, 2, 0 }, /* Hit points */
-      { 20, 0, 0,  4, 2, 0 },
       { 1, 0, 0, 1, 0, 1 },
       10, /* Energy */
       10,
@@ -140,7 +138,6 @@ const struct Role roles[NUM_ROLES+1] = {
       { 30, 6, 7, 20, 30, 7 },
       /* Init   Lower  Higher */
       { 14, 0, 0, 8, 2, 0 }, /* Hit points */
-      { 18, 0, 0, 8, 3, 0 },
       { 1, 0, 0, 1, 0, 1 },
       10, /* Energy */
       0,
@@ -182,7 +179,6 @@ const struct Role roles[NUM_ROLES+1] = {
       { 15, 20, 20, 15, 25, 5 },
       /* Init   Lower  Higher */
       { 11, 0, 0, 8, 1, 0 }, /* Hit points */
-      { 10, 0, 0, 8, 1, 0 },
       { 1, 4, 0, 1, 0, 2 },
       20, /* Energy */
       10,
@@ -224,7 +220,6 @@ const struct Role roles[NUM_ROLES+1] = {
       { 30, 15, 15, 10, 20, 10 },
       /* Init   Lower  Higher */
       { 14, 0, 0, 8, 2, 0 }, /* Hit points */
-      { 16, 0, 0, 6, 2, 0 },
       { 1, 4, 0, 1, 0, 2 },
       10, /* Energy */
       10,
@@ -266,7 +261,6 @@ const struct Role roles[NUM_ROLES+1] = {
       { 25, 10, 20, 20, 15, 10 },
       /* Init   Lower  Higher */
       { 12, 0, 0, 8, 1, 0 }, /* Hit points */
-      { 14, 0, 0, 4, 1, 0 },
       { 2, 2, 0, 2, 0, 2 },
       10, /* Energy */
       10,
@@ -308,7 +302,6 @@ const struct Role roles[NUM_ROLES+1] = {
       { 15, 10, 30, 15, 20, 10 },
       /* Init   Lower  Higher */
       { 12, 0, 0, 8, 1, 0 }, /* Hit points */
-      { 12, 0, 0, 4, 1, 0 },
       { 4, 3, 0, 2, 0, 2 },
       10, /* Energy */
       0,
@@ -352,7 +345,6 @@ const struct Role roles[NUM_ROLES+1] = {
       { 20, 10, 10, 30, 20, 10 },
       /* Init   Lower  Higher */
       { 10, 0, 0, 8, 1, 0 }, /* Hit points */
-      { 12, 0, 0, 4, 1, 0 },
       { 1, 0, 0, 1, 0, 1 },
       11, /* Energy */
       10,
@@ -408,7 +400,6 @@ const struct Role roles[NUM_ROLES+1] = {
       { 30, 10, 10, 20, 20, 10 },
       /* Init   Lower  Higher */
       { 13, 0, 0, 6, 1, 0 }, /* Hit points */
-      { 14, 0, 0, 6, 2, 0 },
       { 1, 0, 0, 1, 0, 1 },
       12, /* Energy */
       10,
@@ -450,7 +441,6 @@ const struct Role roles[NUM_ROLES+1] = {
       { 30, 10, 8, 30, 14, 8 },
       /* Init   Lower  Higher */
       { 13, 0, 0, 8, 1, 0 }, /* Hit points */
-      { 14, 0, 0, 8, 2, 0 },
       { 1, 0, 0, 1, 0, 1 },
       11, /* Energy */
       10,
@@ -491,7 +481,6 @@ const struct Role roles[NUM_ROLES+1] = {
       { 15, 10, 10, 15, 30, 20 },
       /* Init   Lower  Higher */
       { 8, 0, 0, 8, 0, 0 }, /* Hit points */
-      { 8, 0, 0, 8, 0, 0 },
       { 1, 0, 0, 1, 0, 1 },
       14, /* Energy */
       0,
@@ -533,7 +522,6 @@ const struct Role roles[NUM_ROLES+1] = {
       { 30, 6, 7, 20, 30, 7 },
       /* Init   Lower  Higher */
       { 14, 0, 0, 8, 2, 0 }, /* Hit points */
-      { 16, 0, 0, 8, 2, 0 },
       { 1, 0, 0, 1, 0, 1 },
       10, /* Energy */
       0,
@@ -575,7 +563,6 @@ const struct Role roles[NUM_ROLES+1] = {
       { 10, 30, 10, 20, 20, 10 },
       /* Init   Lower  Higher */
       { 10, 0, 0, 8, 1, 0 }, /* Hit points */
-      { 10, 0, 0, 3, 1, 0 },
       { 4, 3, 0, 2, 0, 3 },
       12, /* Energy */
       0,
@@ -611,7 +598,6 @@ const struct Race races[] = {
         { STR18(100), 18, 18, 18, 18, 18 },
         /* Init   Lower  Higher */
         { 2, 0, 0, 2, 1, 0 }, /* Hit points */
-        { 2, 0, 0, 1, 1, 0 },
         { 1, 0, 2, 0, 2, 0 }  /* Energy */
     },
     {
@@ -633,7 +619,6 @@ const struct Race races[] = {
         { 18, 20, 20, 18, 16, 18 },
         /* Init   Lower  Higher */
         { 1, 0, 0, 1, 1, 0 }, /* Hit points */
-        { 2, 0, 0, 1, 0, 0 },
         { 2, 0, 3, 0, 3, 0 }  /* Energy */
     },
     {
@@ -655,7 +640,6 @@ const struct Race races[] = {
         { STR18(100), 16, 16, 20, 20, 16 },
         /* Init   Lower  Higher */
         { 4, 0, 0, 3, 2, 0 }, /* Hit points */
-        { 4, 0, 0, 3, 2, 0 },
         { 0, 0, 0, 0, 0, 0 }  /* Energy */
     },
     {
@@ -677,7 +661,6 @@ const struct Race races[] = {
         { STR18(50), 19, 18, 18, 18, 18 },
         /* Init   Lower  Higher */
         { 1, 0, 0, 1, 0, 0 }, /* Hit points */
-        { 3, 0, 0, 2, 1, 0 },
         { 2, 0, 2, 0, 2, 0 }  /* Energy */
     },
     {
@@ -699,7 +682,6 @@ const struct Race races[] = {
         { STR18(50), 16, 16, 18, 18, 16 },
         /* Init   Lower  Higher */
         { 1, 0, 0, 1, 0, 0 }, /* Hit points */
-        { 6, 0, 0, 2, 2, 0 },
         { 1, 0, 1, 0, 1, 0 }  /* Energy */
     },
     /* Array terminator */

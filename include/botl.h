@@ -9,10 +9,10 @@
  * than COLNO
  *
  * longest practical second status line at the moment is
-Astral Plane \GXXXXNNNN:123456 HP:1234(1234) St:1234(1234) Pw:1234(1234) AC:-127
+Astral Plane \GXXXXNNNN:123456 HP:1234(1234) Pw:1234(1234) AC:-127
  Xp:30/123456789 T:123456  Stone Slime Strngl FoodPois TermIll
  Satiated Overloaded Blind Deaf Stun Conf Hallu Lev Ride
- * -- or about 199 characters.  '$' gets encoded even when it
+ * -- or about 185 characters.  '$' gets encoded even when it
  * could be used as-is.  The first five status conditions are fatal
  * so it's rare to have more than one at a time.
  *
@@ -38,11 +38,11 @@ enum statusfields {
     BL_FLUSH = -1,           /* Finished cycling through bot fields */
     BL_TITLE = 0,
     BL_STR, BL_DX, BL_CO, BL_IN, BL_WI, BL_CH,  /* 1..6 */
-    BL_ALIGN, BL_SCORE, BL_CAP, BL_GOLD, BL_STA, BL_STAMAX, BL_ENE, BL_ENEMAX, /* 7..14 */
-    BL_XP, BL_AC, BL_HD, BL_TIME, BL_HUNGER, BL_HP, /* 15..20 */
-    BL_HPMAX, BL_LEVELDESC, BL_EXP, BL_CONDITION, /* 21..24 */
-    BL_VERS, /* 25 */
-    MAXBLSTATS, /* [26] */
+    BL_ALIGN, BL_SCORE, BL_CAP, BL_GOLD, BL_ENE, BL_ENEMAX, /* 7..12 */
+    BL_XP, BL_AC, BL_HD, BL_TIME, BL_HUNGER, BL_HP, /* 13..18 */
+    BL_HPMAX, BL_LEVELDESC, BL_EXP, BL_CONDITION, /* 19..22 */
+    BL_VERS, /* 23 */
+    MAXBLSTATS, /* [24] */
 };
 
 enum relationships {

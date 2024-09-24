@@ -1312,11 +1312,9 @@ use_pick_axe2(struct obj *obj)
             }
             set_occupation(dig, verbing, 0);
         }
-        consume_stamina(obj);
     } else if (Is_airlevel(&u.uz) || Is_waterlevel(&u.uz)) {
         /* it must be air -- water checked above */
         You("swing %s through thin air.", yobjnam(obj, (char *) 0));
-        consume_stamina(obj);
     } else if (!can_reach_floor(FALSE)) {
         cant_reach_floor(u.ux, u.uy, FALSE, FALSE);
     } else if (is_pool_or_lava(u.ux, u.uy)) {
@@ -1337,7 +1335,6 @@ use_pick_axe2(struct obj *obj)
         pline("%s merely scratches the %s.", Yobjnam2(obj, (char *) 0),
               surface(u.ux, u.uy));
         u_wipe_engr(3);
-        consume_stamina(obj);
     } else {
         if (svc.context.digging.pos.x != u.ux
             || svc.context.digging.pos.y != u.uy
@@ -1359,7 +1356,6 @@ use_pick_axe2(struct obj *obj)
             You("continue %s downward.", verbing);
         gd.did_dig_msg = FALSE;
         set_occupation(dig, verbing, 0);
-        consume_stamina(obj);
     }
     return ECMD_TIME;
 }

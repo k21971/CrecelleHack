@@ -533,7 +533,6 @@ wiz_panic(void)
     if (iflags.debug_fuzzer) {
         u.uhp = u.uhpmax = 1000;
         u.uen = u.uenmax = 1000;
-        u.usta = u.ustamax = 1000;
         return ECMD_OK;
     }
     if (paranoid_query(TRUE,
@@ -1419,11 +1418,6 @@ you_sanity_check(void)
         impossible("current hero energy (%d) better than maximum? (%d)",
                    u.uen, u.uenmax);
         u.uen = u.uenmax;
-    }
-    if (u.usta > u.ustamax) {
-        impossible("current hero stamina (%d) better than maximum? (%d)",
-                   u.usta, u.ustamax);
-        u.usta = u.ustamax;
     }
 
     check_wornmask_slots();

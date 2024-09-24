@@ -86,7 +86,7 @@ curses_status_finish(void)
  *         is an integer index value from botl.h
  *      -- fldindex could be any one of the following from botl.h:
  *         BL_TITLE, BL_STR, BL_DX, BL_CO, BL_IN, BL_WI, BL_CH,
- *         BL_ALIGN, BL_SCORE, BL_CAP, BL_GOLD, BL_STA, BL_STAMAX, BL_ENE, BL_ENEMAX,
+ *         BL_ALIGN, BL_SCORE, BL_CAP, BL_GOLD, BL_ENE, BL_ENEMAX,
  *         BL_XP, BL_AC, BL_HD, BL_TIME, BL_HUNGER, BL_HP, BL_HPMAX,
  *         BL_LEVELDESC, BL_EXP, BL_CONDITION
  *      -- fldindex could also be BL_FLUSH (-1), which is not really
@@ -258,8 +258,7 @@ draw_horizontal(boolean border)
           /*xspace*/ BL_STR, BL_DX, BL_CO, BL_IN, BL_WI, BL_CH,
           /*xspace*/ BL_ALIGN,
           /*xspace*/ BL_SCORE,
-          /*xspace*/ BL_STA, BL_STAMAX,
-          BL_FLUSH, blPAD, blPAD, blPAD, blPAD },
+          BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD },
         { BL_LEVELDESC,
           /*xspace*/ BL_GOLD,
           /*xspace*/ BL_HP, BL_HPMAX,
@@ -270,7 +269,7 @@ draw_horizontal(boolean border)
           /*xspace*/ BL_HUNGER, BL_CAP, BL_CONDITION, BL_VERS,
           BL_FLUSH },
         { BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD,
-          blPAD, blPAD, blPAD, blPAD, blPAD, blPAD }
+          blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD }
     },
     threelineorder[3][16] = { /* moves align to line 2, leveldesc+ to 3 */
         { BL_TITLE,
@@ -280,12 +279,11 @@ draw_horizontal(boolean border)
         { BL_ALIGN,
           /*xspace*/ BL_GOLD,
           /*xspace*/ BL_HP, BL_HPMAX,
-          /*xspace*/ BL_STA, BL_STAMAX,
           /*xspace*/ BL_ENE, BL_ENEMAX,
           /*xspace*/ BL_AC,
           /*xspace*/ BL_XP, BL_EXP, BL_HD,
           /*xspace*/ BL_HUNGER, BL_CAP,
-          BL_FLUSH, blPAD },
+          BL_FLUSH, blPAD, blPAD, blPAD },
         { BL_LEVELDESC,
           /*xspace*/ BL_TIME,
           /*xspecial*/ BL_CONDITION,
@@ -398,7 +396,6 @@ draw_horizontal(boolean border)
                 if (!exp_points)
                     continue;
                 break;
-            case BL_STAMAX:
             case BL_HPMAX:
             case BL_ENEMAX:
                 spacing[fld] = 0; /* no leading or extra space */
@@ -436,7 +433,6 @@ draw_horizontal(boolean border)
             case BL_VERS:
             case BL_STR:
             case BL_HP:
-            case BL_STA:
             case BL_ENE:
             case BL_AC:
             case BL_GOLD:
@@ -692,7 +688,6 @@ draw_vertical(boolean border)
         BL_TITLE, /* might be overlaid by hitpoint bar */
         /* 5:blank */
         BL_HP, BL_HPMAX,
-        BL_STA, BL_STAMAX,
         BL_ENE, BL_ENEMAX,
         BL_AC,
         /* 4:blank */
@@ -768,7 +763,6 @@ draw_vertical(boolean border)
     for (i = 0; (fld = i) < SIZE(spacing); ++i) {
         switch ((enum statusfields) fld) {
         case BL_HPMAX:
-        case BL_STAMAX:
         case BL_ENEMAX:
         case BL_EXP:
             spacing[fld] = 0; /* these will continue the previous line */
@@ -900,7 +894,7 @@ draw_vertical(boolean border)
                 while (*p == ' ')
                     ++p;
                 if ((fld == BL_EXP && *p == '/')
-                    || ((fld == BL_HPMAX || fld == BL_STAMAX || fld == BL_ENEMAX) && *p == '('))
+                    || ((fld == BL_HPMAX || fld == BL_ENEMAX) && *p == '('))
                     ++p;
                 /* prefix portion, if any, is output without highlighting */
                 if (p > text) {
@@ -909,7 +903,7 @@ draw_vertical(boolean border)
                     waddstr(win, text); /* output the prefix */
                     *p = savedch;
                     text = p; /* rest of field */
-                    if ((fld == BL_HPMAX || fld == BL_STAMAX || fld == BL_ENEMAX)
+                    if ((fld == BL_HPMAX || fld == BL_ENEMAX)
                         && (p = strchr(text, ')')) != 0) {
                         savedch = *p;
                         *p = '\0';
@@ -936,7 +930,7 @@ draw_vertical(boolean border)
                 if (attrmask)
                     wattroff(win, attrmask);
             } /* resume normal rendition */
-            if ((fld == BL_HPMAX || fld == BL_STAMAX || fld == BL_ENEMAX) && savedch == ')') {
+            if ((fld == BL_HPMAX || fld == BL_ENEMAX) && savedch == ')') {
                 *p = savedch;
                 waddstr(win, p);
             }
@@ -1169,9 +1163,6 @@ curs_vert_status_vals(int win_width)
     en_tmp = (int) strlen(status_vals[BL_ENEMAX]) - 2;
     if (en_tmp > hp_width)
         hp_width = en_tmp;
-    en_tmp = (int) strlen(status_vals[BL_STAMAX]) -2;
-    if (en_tmp > hp_width)
-        hp_width = en_tmp;
     /*
      * status_vals[] are used for horizontal orientation
      *  (wide lines of multiple short values).
@@ -1215,7 +1206,6 @@ curs_vert_status_vals(int win_width)
                     ++text;
                 break;
             case BL_HP:
-            case BL_STA:
             case BL_ENE:
                 /* pad HP and En so that they're right aligned */
                 fld_width = (int) strlen(text);
@@ -1234,7 +1224,6 @@ curs_vert_status_vals(int win_width)
                      Strcpy(leadingspace, " ");
                 break;
             case BL_HPMAX:
-            case BL_STAMAX:
             case BL_ENEMAX:
                  /* pad HPmax and Enmax so that they're right aligned with
                     each other with a one-space gap after current HP/En */
@@ -1280,7 +1269,6 @@ curs_vert_status_vals(int win_width)
                 Sprintf(status_vals_long[fldidx], "%s%s", leadingspace, text);
                 /* when appending, base field uses field name as label */
                 use_name = (fldidx == BL_HPMAX || fldidx == BL_ENEMAX
-                            || fldidx == BL_STAMAX
                             || fldidx == BL_EXP);
             }
             /* check whether 'label : value' is too wide; if so, we'll
@@ -1292,9 +1280,6 @@ curs_vert_status_vals(int win_width)
                 switch ((enum statusfields) fldidx) {
                 case BL_HPMAX:
                     fld_width += (int) strlen(status_vals_long[BL_HP]);
-                    break;
-                case BL_STAMAX:
-                    fld_width += (int) strlen(status_vals_long[BL_STA]);
                     break;
                 case BL_ENEMAX:
                     fld_width += (int) strlen(status_vals_long[BL_ENE]);
