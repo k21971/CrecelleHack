@@ -195,7 +195,7 @@ attack_checks(
     if (engulfing_u(mtmp))
         return FALSE;
 
-    if (gc.context.forcefight) {
+    if (svc.context.forcefight) {
         /* Do this in the caller, after we checked that the monster
          * didn't die from the blow.  Reason: putting the 'I' there
          * causes the hero to forget the square's contents since
@@ -285,7 +285,7 @@ attack_checks(
                       notseen ? "is present" : "appears");
             else if (Blind || (is_pool(mtmp->mx, mtmp->my) && !Underwater))
                 pline("Wait!  There's a hidden monster there!");
-            else if ((obj = gl.level.objects[mtmp->mx][mtmp->my]) != 0)
+            else if ((obj = svl.level.objects[mtmp->mx][mtmp->my]) != 0)
                 pline("Wait!  There's %s hiding under %s!",
                       notseen ? something : (const char *) an(lmonbuf),
                       doname(obj));
@@ -314,7 +314,7 @@ attack_checks(
 
             Sprintf(qbuf, "Really attack %s?", mon_nam(mtmp));
             if (!paranoid_query(ParanoidHit, qbuf)) {
-                gc.context.move = 0;
+                svc.context.move = 0;
                 return TRUE;
             }
         }
@@ -435,12 +435,12 @@ force_attack(struct monst *mtmp, boolean pets_too)
 {
     boolean attacked, save_Forcefight;
 
-    save_Forcefight = gc.context.forcefight;
+    save_Forcefight = svc.context.forcefight;
     /* always set forcefight On for hostiles and peacefuls, maybe for pets */
     if (pets_too || !mtmp->mtame)
-        gc.context.forcefight = TRUE;
+        svc.context.forcefight = TRUE;
     attacked = do_attack(mtmp);
-    gc.context.forcefight = save_Forcefight;
+    svc.context.forcefight = save_Forcefight;
     return attacked;
 }
 
@@ -461,7 +461,7 @@ do_attack(struct monst *mtmp)
      * you'll usually just swap places if this is a movement command
      */
     /* Intelligent chaotic weapons (Stormbringer) want blood */
-    if (is_safemon(mtmp) && !gc.context.forcefight) {
+    if (is_safemon(mtmp) && !svc.context.forcefight) {
         if (!u_wield_art(ART_STORMBRINGER)) {
             /* There are some additional considerations: this won't work
              * if in a shop or Punished or you miss a random roll or
@@ -483,7 +483,7 @@ do_attack(struct monst *mtmp)
             /* only check for in-shop if don't already have reason to stop */
             if (!foo) {
                 for (p = in_rooms(mtmp->mx, mtmp->my, SHOPBASE); *p; p++)
-                    if (tended_shop(&gr.rooms[*p - ROOMOFFSET])) {
+                    if (tended_shop(&svr.rooms[*p - ROOMOFFSET])) {
                         inshop = TRUE;
                         break;
                     }
@@ -491,7 +491,7 @@ do_attack(struct monst *mtmp)
             if (inshop || foo) {
                 char buf[BUFSZ];
 
-                if (!gc.context.travel && !gc.context.run)
+                if (!svc.context.travel && !svc.context.run)
                     if (canspotmon(mtmp) && mtmp->isshk)
                         return ECMD_TIME | dopay();
 
@@ -582,7 +582,7 @@ do_attack(struct monst *mtmp)
      * and it returned 0 (it's okay to attack), and the monster didn't
      * evade.
      */
-    if (gc.context.forcefight && !DEADMONSTER(mtmp) && !canspotmon(mtmp)
+    if (svc.context.forcefight && !DEADMONSTER(mtmp) && !canspotmon(mtmp)
         && !glyph_is_invisible(levl[u.ux + u.dx][u.uy + u.dy].glyph)
         && !engulfing_u(mtmp))
         map_invisible(u.ux + u.dx, u.uy + u.dy);
@@ -3336,8 +3336,8 @@ mhitm_ad_wrap(
                                    && !Is_waterlevel(&u.uz);
 
                     urgent_pline("%s drowns you...", Monnam(magr));
-                    gk.killer.format = KILLED_BY_AN;
-                    Sprintf(gk.killer.name, "%s by %s",
+                    svk.killer.format = KILLED_BY_AN;
+                    Sprintf(svk.killer.name, "%s by %s",
                             moat ? "moat" : "pool of water",
                             an(pmname(magr->data, Mgender(magr))));
                     done(DROWNING);
@@ -4276,7 +4276,7 @@ mhitm_ad_heal(
             mhm->damage = 0;
         } else {
             if (Role_if(PM_HEALER)) {
-                if (!Deaf && !(gm.moves % 5)) {
+                if (!Deaf && !(svm.moves % 5)) {
                     SetVoice(magr, 0, 80, 0);
                     verbalize("Doc, I can't help you unless you cooperate.");
                 }
@@ -4456,7 +4456,7 @@ mhitm_ad_dgst(
          */
         num = monsndx(pd);
         if (magr->mtame && !magr->isminion
-            && !(gm.mvitals[num].mvflags & G_NOCORPSE)) {
+            && !(svm.mvitals[num].mvflags & G_NOCORPSE)) {
             struct obj *virtualcorpse = mksobj(CORPSE, FALSE, FALSE);
             int nutrit;
 
@@ -4944,9 +4944,9 @@ gulpum(struct monst *mdef, struct attack *mattk)
                 if (is_rider(pd)) {
                     pline("Unfortunately, digesting any of it is fatal.");
                     end_engulf();
-                    Sprintf(gk.killer.name, "unwisely tried to eat %s",
+                    Sprintf(svk.killer.name, "unwisely tried to eat %s",
                             pmname(pd, Mgender(mdef)));
-                    gk.killer.format = NO_KILLER_PREFIX;
+                    svk.killer.format = NO_KILLER_PREFIX;
                     done(DIED);
                     return M_ATTK_MISS; /* lifesaved */
                 }
@@ -4974,7 +4974,7 @@ gulpum(struct monst *mdef, struct attack *mattk)
                 } else {
                     tmp = 1 + (pd->cwt >> 8);
                     if (corpse_chance(mdef, &gy.youmonst, TRUE)
-                        && !(gm.mvitals[monsndx(pd)].mvflags & G_NOCORPSE)) {
+                        && !(svm.mvitals[monsndx(pd)].mvflags & G_NOCORPSE)) {
                         /* nutrition only if there can be a corpse */
                         u.uhunger += (pd->cnutrit + 1) / 2;
                     } else {
@@ -5936,11 +5936,11 @@ passive(
                 You("are suddenly very cold!");
                 mdamageu(mon, tmp);
                 /* monster gets stronger with your heat! */
-                mon->mhp += tmp / 2;
+                mon->mhp += (tmp + rn2(2)) / 2;
                 if (mon->mhpmax < mon->mhp)
                     mon->mhpmax = mon->mhp;
                 /* at a certain point, the monster will reproduce! */
-                if (mon->mhpmax > ((int) (mon->m_lev + 1) * 8))
+                if (mon->mhpmax > (((int) mon->m_lev) + 1) * 8)
                     (void) split_mon(mon, &gy.youmonst);
             }
             break;
@@ -6184,7 +6184,7 @@ flash_hits_mon(
                 light_hits_gremlin(mtmp, amt);
             }
             if (!DEADMONSTER(mtmp)) {
-                if (!gc.context.mon_moving)
+                if (!svc.context.mon_moving)
                     setmangry(mtmp, TRUE);
                 if (tmp < 9 && !mtmp->isshk && rn2(4))
                     monflee(mtmp, rn2(4) ? rnd(100) : 0, FALSE, TRUE);
@@ -6219,7 +6219,7 @@ light_hits_gremlin(struct monst *mon, int dmg)
     mon->mhp -= dmg;
     wake_nearto(mon->mx, mon->my, 30);
     if (DEADMONSTER(mon)) {
-        if (gc.context.mon_moving)
+        if (svc.context.mon_moving)
             monkilled(mon, (char *) 0, AD_BLND);
         else
             killed(mon);

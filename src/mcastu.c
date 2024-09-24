@@ -1,4 +1,4 @@
-/* NetHack 3.7	mcastu.c	$NHDT-Date: 1705428596 2024/01/16 18:09:56 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.95 $ */
+/* NetHack 3.7	mcastu.c	$NHDT-Date: 1726168598 2024/09/12 19:16:38 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.105 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2011. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -64,7 +64,7 @@ cursetxt(struct monst *mtmp, boolean undirected)
             point_msg = "at you, then curses";
 
         pline_mon(mtmp, "%s points %s.", Monnam(mtmp), point_msg);
-    } else if ((!(gm.moves % 4) || !rn2(4))) {
+    } else if ((!(svm.moves % 4) || !rn2(4))) {
         if (!Deaf)
             Norep("You hear a mumbled curse.");   /* Deaf-aware */
     }
@@ -342,14 +342,12 @@ castmu(
         break;
     case AD_SPEL: /* wizard spell */
     case AD_CLRC: /* clerical spell */
-    {
         if (mattk->adtyp == AD_SPEL)
             cast_wizard_spell(mtmp, dmg, spellnum);
         else
             cast_cleric_spell(mtmp, dmg, spellnum);
         dmg = 0; /* done by the spell casting functions */
         break;
-    }
     } /* switch */
     if (dmg)
         mdamageu(mtmp, dmg);
@@ -388,14 +386,25 @@ touch_of_death(struct monst *mtmp)
         u.mh = 0;
         rehumanize(); /* fatal iff Unchanging */
     } else if (drain >= u.uhpmax) {
-        gk.killer.format = KILLED_BY;
-        Strcpy(gk.killer.name, kbuf);
+        svk.killer.format = KILLED_BY;
+        Strcpy(svk.killer.name, kbuf);
         done(DIED);
     } else {
-        u.uhpmax -= drain;
+        /* HP manipulation similar to poisoned(attrib.c) */
+        int olduhp = u.uhp,
+            newuhpmax = u.uhpmax - drain;
+
+        setuhpmax(max(newuhpmax, minuhpmax(3)));
+        /* reduce pending loss if uhp has already been reduced due to
+           drop in uhpmax */
+        if (u.uhp < olduhp) {
+            dmg -= (olduhp - u.uhp);
+            if (dmg < 1)
+                dmg = 1;
+        }
         losehp(dmg, kbuf, KILLED_BY);
     }
-    gk.killer.name[0] = '\0'; /* not killed if we get here... */
+    svk.killer.name[0] = '\0'; /* not killed if we get here... */
 }
 
 /* give a reason for death by some monster spells */
@@ -441,6 +450,11 @@ death_inflicted_by(
 staticfn void
 cast_wizard_spell(struct monst *mtmp, int dmg, int spellnum)
 {
+    if (dmg < 0) {
+        impossible("monster cast wizard spell (%d) with negative dmg (%d)?",
+                   spellnum, dmg);
+        return;
+    }
     if (dmg == 0 && !is_undirected_spell(AD_SPEL, spellnum)) {
         impossible("cast directed wizard spell (%d) with dmg=0?", spellnum);
         return;
@@ -468,7 +482,7 @@ cast_wizard_spell(struct monst *mtmp, int dmg, int spellnum)
         dmg = 0;
         break;
     case MGC_CLONE_WIZ:
-        if (mtmp->iswiz && gc.context.no_of_wizards == 1) {
+        if (mtmp->iswiz && svc.context.no_of_wizards == 1) {
             pline("Double Trouble...");
             clonewiz();
             dmg = 0;
@@ -544,7 +558,7 @@ cast_wizard_spell(struct monst *mtmp, int dmg, int spellnum)
             losestr(rnd(dmg),
                     death_inflicted_by(kbuf, "strength loss", mtmp),
                     KILLED_BY);
-            gk.killer.name[0] = '\0'; /* not killed if we get here... */
+            svk.killer.name[0] = '\0'; /* not killed if we get here... */
             monstunseesu(M_SEEN_MAGR);
         }
         dmg = 0;
@@ -620,6 +634,12 @@ staticfn void
 cast_cleric_spell(struct monst *mtmp, int dmg, int spellnum)
 {
     int orig_dmg = 0;
+
+    if (dmg < 0) {
+        impossible("monster cast cleric spell (%d) with negative dmg (%d)?",
+                   spellnum, dmg);
+        return;
+    }
     if (dmg == 0 && !is_undirected_spell(AD_CLRC, spellnum)) {
         impossible("cast directed cleric spell (%d) with dmg=0?", spellnum);
         return;
@@ -928,7 +948,7 @@ spell_would_be_useless(struct monst *mtmp, unsigned int adtyp, int spellnum)
         if (!mcouldseeu && (spellnum == MGC_SUMMON_MONS
                             || (!mtmp->iswiz && spellnum == MGC_CLONE_WIZ)))
             return TRUE;
-        if ((!mtmp->iswiz || gc.context.no_of_wizards > 1)
+        if ((!mtmp->iswiz || svc.context.no_of_wizards > 1)
             && spellnum == MGC_CLONE_WIZ)
             return TRUE;
         /* aggravation (global wakeup) when everyone is already active */

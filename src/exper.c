@@ -231,9 +231,9 @@ losexp(
         SoundAchievement(0, sa2_xpleveldown, 0);
     } else { /* u.ulevel==1 */
         if (drainer) {
-            gk.killer.format = KILLED_BY;
-            if (gk.killer.name != drainer)
-                Strcpy(gk.killer.name, drainer);
+            svk.killer.format = KILLED_BY;
+            if (svk.killer.name != drainer)
+                Strcpy(svk.killer.name, drainer);
             done(DIED);
         }
         /* no drainer or lifesaved */
@@ -327,8 +327,8 @@ pluslvl(
         u.mh += hpinc;
     }
     hpinc = newhp();
-    setuhpmax(u.uhpmax + hpinc);
     u.uhp += hpinc;
+    setuhpmax(u.uhpmax + hpinc); /* will lower u.uhp if it exceeds uhpmax */
 
     /* increase spell power/energy points */
     eninc = newpw();

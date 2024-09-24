@@ -1,4 +1,4 @@
-NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.1445 $ $NHDT-Date: 1718303201 2024/06/13 18:26:41 $
+NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.1484 $ $NHDT-Date: 1726862062 2024/09/20 19:54:22 $
 
 General Fixes and Modified Features
 -----------------------------------
@@ -118,7 +118,8 @@ tribute (Discworld snippets) typos, in book order rather than fix order:
 	Moving Pictures passage #10 initial single quote should be double,
 	 #12 "or" -> "of", #14 second instance of "megalomaniac" misspelled
 	Lords and Ladies passage #5, near end add missing opening double
-	 quote, passage #7 last paragraph, "to" -> "be"
+	 quote, passage #6 first footnote, insert omitted "be", passage #7
+	 last paragraph, "to" -> "be"
 	Men at Arms passage #1, italicize /for/, passage #2, insert omitted
 	 word "had": 'it was /fate/ that _had_ let Edward'
 	Interesting Times passage #1, italicize several words
@@ -778,9 +779,8 @@ covetous monsters will teleport to downstairs or upstairs to heal
 have fake player monsters use verbalize instead of pline when reacting to chat
 fix mention_walls distinguishing unseen walls from solid stone
 don't push unknown boulders when moving
-in flush_screen, reorder the code slightly to complete the bot() and
-	timebot() calls prior to the window port call to place the cursor
-	on the hero
+in flush_screen, reorder the code slightly to complete the bot() and timebot()
+	calls prior to the window port call to place the cursor on the hero
 magic traps can toggle intrinsic invisibility
 Death attacking a monster does drain life attack
 add unique Rider revival messages
@@ -1135,7 +1135,6 @@ give feedback when some types of damage are avoided due to MC (aka negation)
 feedback if a named, shape-shifted vampire reverted to original shape rather
 	than dying when engulfed could say "Dracula turns into Dracula"
 adjust archeologist and valkyrie starting intrinsics
-once per game if receiving killing blow from near-full hp, leave 1 hp
 spell of knock can knock back small monsters
 protection from shape changers now prevents the Wizard from mimicking monsters
 having worn levitation boots removed and destroyed (scroll, monster spell,
@@ -1162,6 +1161,8 @@ prevent hug attacks and touch or engulf attacks for wrap, stick-to, and
 	vortices, a few others) or against worm tails
 wand of speed gives temporary speed, potion gives intrinsic
 some monsters (riders, shopkeepers, priests, quest leader) can break boulders
+if hero owes shop for a boulder and shopkeeper breaks it, continue to bill hero
+	for the boulder rather than switching to the resulting rocks
 corpse-eating monsters will go out of their way to eat corpses on the floor
 warnings via impossible() would be unseen if message suppression via ESC at
 	--More-- prompt was in effect
@@ -1401,6 +1402,7 @@ gold thrown or kicked at a sleeping monster with the 'greedy' attribute gets
 	neglected to report that target monster was awakened in the process
 hero movement affects the water bubble movement direction
 pets and peacefuls avoid a location hero just kicked
+pets avoid a possible boulder pushing location in sokoban
 shopkeepers bill you for using their bear trap or land mine
 when engraving with a stack of eligible weapons, split one off the stack and
 	dull it rather than dull the whole stack
@@ -1422,6 +1424,49 @@ if hero is on scroll of scare monster or Elbereth, werecreature switching from
 	"n <count> ESC c" wasn't treated as "n <count> M-c" because reading
 	the 'n' changed program_state.input_state from commandInp to otherInp,
 	preventing special ESC handling; not an issue when number_pad was Off
+a 3.6 fix to avoid a potential "object lost" panic when drinking potions had
+	unintended side-effect of making used up potions on shop's bill become
+	separate bill entries all with count 1 despite having come from same
+	unpaid stack; affected Ix inventory listing and itemized shop billing
+buying shop items which include any unpaid ones inside containers would reveal
+	them even when the containers hadn't been opened (obj->cknown==0);
+	recent change to pay via menu made the problem become more visible;
+	shopping has been changed such that buying anything that is inside a
+	container requires that the whole container be bought as a unit
+using #loot -> 'i'n to put multiple items into a shop-owned container would
+	ask whether to sell each item to the shop, and was prepared to accept
+	'a' to sell the current one plus all the rest beyond it, or to accept
+	'q' to not sell the current one or any beyond it, but the sell vs
+	don't-sell state was being reset for each item so 'a' and 'q' didn't
+	stick beyond the current one
+join wall "spines" with walls of water and lava
+some theft messages by nymphs force "she", others use default monster naming
+	which yields "it" when unseen; change the latter to "someone" which
+	still differs from "she" in a series of messages but isn't as jarring
+if a nymph stole worn armor and got killed (perhaps by pet) before hero's next
+	turn, feedback would be "You finish taking off your suit." regardless
+	of the type of armor being taken off
+when setting an option interactively [via O or 3.7's mO], if the particular
+	option uses a prompt to get a line of input (for compounds: 'fruit',
+	'scores', most numeric ones), input was treated as a comma-separated
+	list of option[:value] rather than just the new value of that option
+when there was a trap on a no-dig level, the floor beneath it was always
+	"too hard to dig into", making it impossible to remove the trap
+the #terrain command didn't know how to cope with visible gas/cloud regions;
+	treat as traps as far as player choice of whether to show or hide;
+	if/when a spot contains both region and trap, show the trap
+region expiration reported "the gas cloud around you dissipates" even when the
+	hero was swallowed
+region expiration could report "the gas cloud around you dissipates" and also
+	"you see a gas cloud dissipate" for the same cloud spot
+reduce shopkeeper's innate speed from 18 to 16 so that a hasted shopkeeper
+	doesn't always get 2 moves per turn
+when a secret corridor was discovered by wand of secret door detection or by
+	wizard mode ^E and converted into a regular corridor, if there was a
+	formerly embedded object at the spot, presence of the object would be
+	forgotten unless within range of a light source
+when poly'd into a giant, kicking a closed door always succeeds in breaking it
+reduce crystal plate mail weight
 
 
 Fixes to 3.7.0-x General Problems Exposed Via git Repository
@@ -1967,6 +2012,34 @@ fix regression of a post-3.6 fix:  if 2 Wizards of Yendor were in play and 1
 sometimes a repeat count from the preceding command carried over to most
 	recent one when using do-again (^A); if the most recent one was an
 	extended command, the spurious repeat was for '#'
+if peaceful monsters react when seeing hero attack a peaceful monster, don't
+	have quest guardians run away; also, quest leader only becomes angry
+	if the monster being attacked is a quest guardian
+farlook of water/lava location listed wall of lava before molten lava; because
+	of that, lava was omitted ("molten" suppressed to reduce vebosity,
+	resulting in "lava" which got skipped as substring of "wall of lava")
+having #terrain display gas cloud regions as if they were traps didn't work
+	for monsters in such regions that are shown when adjacent to hero or
+	sensed via ESP
+when a monster within a gas cloud was displayed on the map because the hero
+	was next to it, it remained displayed if hero moved away
+eating a pyrolisk egg on the floor triggered an "object lost" panic
+core object creation and the curses interface's window handling both became
+	confused by the 'pauper' option/conduct because they assumed that
+	invent being Null meant that the game hadn't started yet
+wizards were discovering unread spellbooks whenever any skill was advanced;
+	do so only when a spell skill is advanced
+if tips were enabled, the getpos/farlook tip clobbered the initial prompt (at
+	least for tty's one line message window), so reissue the prompt after
+	the tip has been displayed
+a post-3.6 change to try to cope with invalid light source data when restoring
+	corrupted save file caused "panic: relink_light_sources" for valid
+	save file if saved while hero was poly'd into a light emitting monster
+priestname() didn't handle "a" vs" "an" prefix correctly; normally priests are
+	named as "the priest of <deity>" but hearing an unseen priest read a
+	scroll doesn't force "the" and yielded "You hear an priest of <deity>
+	incant <scroll>."
+
 
 
 Fixes to 3.7.0-x Platform and/or Interface Problems Exposed Via git Repository
@@ -2125,6 +2198,14 @@ curses: allow changing default colors with the 'palette' config option
 curses: if messages have been issued during start-up (for instance, warnings
 	about issues in run-time config file), prompt user to press <return>
 	so that they can be read before curses erases the screen
+curses: when the map was narrower than the space set aside for it, wide popup
+	windows could write into the unused space and whatever was written
+	there would stick after the popup was removed
+documentation: when building plain text Guidebook.txt from Guidebook.mn, avoid
+	attempting to use CR font; change doesn't affect building Guidebook.ps
+	which utilizes CR to get various instances of fixed-width text
+documentation: improve Guidebook *roff formatting and prepare for use of
+	future release of groff 1.24.0 (pr #1280 by g-branden-robinson)
 macOS: Xcode project was failing to build if the path to the NetHack source
 	tree contained a space; the issue was within some shell script code
 	contained within the project
@@ -2254,6 +2335,20 @@ Qt+macOS: since menu entry help->"About Qt NetHack" gets hijacked and becomes
 	which stays where intended and brings up the same information
 Qt+macOS: suppress unwanted "Search [______]" action from being inserted as the
 	first entry in the menubar's "Help" dropdown menu
+sound: add a soundlib interface that consists of a specification
+	documented in doc/sound.txt; default 'nosound' soundlib implementation
+	of the specification in src/sounds.c
+sound: added 'macsound' soundlib implementation for use on macOS; the
+	interface implementation resides in the objective C file
+	sound/macsound/macsound.m; built on top of the built-in AppKit
+	NSSound, #import <AppKit/AppKit.h>, linked using -framework AppKit.
+sound: added 'windsound' soundlib implementation for use on Windows; the
+	interface implementation resides in the file
+	sound/windsound/windsound.c; built on top of the win32 api,
+	header file mmsystem.h, linked with winmm.
+sound: add 'qtsound' soundlib implementation for use on any platform
+	with Qt; the interface implementation resides win/Qt/qt_bind.cpp;
+	built on top of Qt.
 tiles: add indicator of thonged portion to aklys tile
 tty: role and race selection menus weren't filtering out potential choices
 	which got excluded by OPTIONS=align:!lawful or !neutral or !chaotic
@@ -2280,6 +2375,7 @@ Unix: work-around a build issue in ubuntu 21.10 by using ifdef to skip the
 Unix: re-do command line parsing
 Unix: add ../include/nhlua.h to the alloc.o dependencies in Makefile.utl to
 	match Makefile.src
+Unix: implement SELF_RECOVER compile-time option, on by default on linux
 user_sounds: move the message hook from inside individual window display ports
 	to the core where it allows MSGTYP_NOSHOW msgtyp's to still trigger
 	sounds to correct a reported github issue; also fixes a past reported
@@ -2313,24 +2409,6 @@ X11: (possibly X11+macOS): try harder to resize the getlin() prompt, if needed,
 X11: set all selectable menu lines to the same length, left justified
 X11: initializing the get-extended-command widget modified memory beyond what
 	it dynamically allocated
-sound: add a soundlib interface that consists of a specification
-	documented in doc/sound.txt; default 'nosound' soundlib implementation
-	of the specification in src/sounds.c
-sound: added 'macsound' soundlib implementation for use on macOS; the
-	interface implementation resides in the objective C file
-	sound/macsound/macsound.m; built on top of the built-in AppKit
-	NSSound, #import <AppKit/AppKit.h>, linked using -framework AppKit.
-sound: added 'windsound' soundlib implementation for use on Windows; the
-	interface implementation resides in the file
-	sound/windsound/windsound.c; built on top of the win32 api,
-	header file mmsystem.h, linked with winmm.
-sound: add 'qtsound' soundlib implementation for use on any platform
-	with Qt; the interface implementation resides win/Qt/qt_bind.cpp;
-	built on top of Qt.
-documentation: when building plain text Guidebook.txt from Guidebook.mn, avoid
-	attempting to use CR font; change doesn't affect building Guidebook.ps
-	which utilizes CR to get various instances of fixed-width text
-Unix: implement SELF_RECOVER compile-time option, on by default on linux
 
 
 General New Features
@@ -2505,6 +2583,8 @@ paranoid_confirm:swim to prevent accidental dunking into dangerous liquids;
 paranoid_confirm:trap to confirm entering a known trap unless it is harmless;
 	like revised paranoid_confirm:pray, requires y/n response; add
 	paranoid_confirm:Confirm to require yes/no instead
+extend 'paranoid_confirm:trap' to request confirmation when entering visible
+	gas cloud regions
 paranoid_confirm:Autoall to confirm picking 'A' in menustyle:Full filter menu
 looking at a monster will indicate whether it is asleep, and waking up a
 	monster yields a message
@@ -2538,6 +2618,8 @@ for ranger characters, shooting any type of arrow while wielding the Longbow
 change the #vanquished command from debug-only to general user command
 add 'sortvanquished' option to be able to set the preferred sort order without
 	using 'm #vanquished' and to have it persist across save/restore
+when sorting vanquished monsters by monster class, treat the Riders as a
+	separate class from major demons
 add #genocided command
 have 'I u' mention whether there are any unpaid items on the floor (unusual
 	but not impossible); it doesn't itemize them or show shop price
@@ -2606,6 +2688,17 @@ if hero is punished or tethered to a buried iron ball and has no inventory (or
 	during streaming video
 'query_menu' option to use a menu when asked certain yes/no questions
 pyrolisk eggs explode when broken
+pauper-option to start the character with no possessions
+wand of secret door detection, spell of detect unseen, and wizard mode ^E now
+	flash the cursor at each location where detection finds something
+saving-grace: once per game if receiving a killing blow from full or nearly
+	full HP, survive with 1 HP
+livelog/#chronicle for saving-grace: if saving-grace prevents hero's death,
+	report it [at present, it uses the livelog classification for breaking
+	a conduct]
+enlightenment/attribute disclosure for saving-grace: include a line for have
+	or haven't been saved (game in progress) or did or didn't get saved
+	(game over) via saving-grace
 
 
 Platform- and/or Interface-Specific New Features
@@ -2797,6 +2890,11 @@ remove a null sobj check from gold_detect that was situated after
 check for valid indexes of def_monsyms[] and def_oc_syms[] in
 	choose_classes_menu() (pr #1179 by argrath)
 split damage from acid potion into separate function (pr #1195 by argrath)
+add swallow and explosion glyphs to glyph_to_cmap() (pr #1277 by ars3niy)
+split "cannot_push" on moverock_done() into a separate function (pr #1282
+	by argrath)
+split making pits on do_earthquake() into a separate function and
+	eliminate some gotos on do_earthquake() (pr #1287 by argrath)
 
 
 Code Cleanup and Reorganization
@@ -2929,4 +3027,5 @@ remove TEXTCOLOR build option
 relocate general-purpose function choose_classes_menu(), from
 	options.c to windows.c
 remove register from variable declarations
+make glyph_to_cmap() a function instead of a macro
 
