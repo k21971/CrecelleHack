@@ -127,6 +127,8 @@ hack_artifact_otyps(void)
         }
         i++;
     }
+    /* Magicbane is a random weapon. */
+    artiotypes[ART_MAGICBANE - 1] = rn2(BULLWHIP - SPEAR) + SPEAR;
 }
 
 /* Obtain the otyp of a given artifact. Used for artifacts with semi-randomized
@@ -1250,7 +1252,7 @@ Mb_hit(struct monst *magr, /* attacker */
     verb = mb_verb[!!Hallucination][attack_indx];
     if (youattack || youdefend || vis) {
         result = TRUE;
-        pline_The("magic-absorbing blade %s %s!",
+        pline_The("magic-absorbing weapon %s %s!",
                   vtense((const char *) 0, verb), hittee);
         /* assume probing has some sort of noticeable feedback
            even if it is being done by one monster to another */
