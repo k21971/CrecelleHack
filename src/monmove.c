@@ -1162,6 +1162,10 @@ m_balks_at_approaching(struct monst *mtmp)
     if (m_has_launcher_and_ammo(mtmp))
         return TRUE;
 
+    /* poltergeists always stay away so they can fling stuff */
+    if (mtmp->data == &mons[PM_POLTERGEIST])
+        return TRUE;
+
     /* is using a polearm and in range */
     if (MON_WEP(mtmp) && is_pole(MON_WEP(mtmp))
         && dist2(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy) <= MON_POLE_DIST)

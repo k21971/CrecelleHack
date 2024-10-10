@@ -49,6 +49,10 @@
 
 ## Monsters
 - The following monster classes are now valid mounts: f, d
+- New Monster: Poltergeist
+  - Invisible ghost class monster.
+  - Does not approach, collects objects like a nypmph. Throws any and
+    all objects it gets its hands on.
 
 ## Monster AI
 - Elves and princes can engrave Elbereth to ward off the player.

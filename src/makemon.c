@@ -1300,9 +1300,11 @@ makemon(
             (void) hideunder(mtmp);
         }
         break;
+    case S_GHOST:
     case S_LIGHT:
     case S_ELEMENTAL:
-        if (mndx == PM_STALKER || mndx == PM_BLACK_LIGHT) {
+        if (mndx == PM_STALKER || mndx == PM_BLACK_LIGHT
+            || mndx == PM_POLTERGEIST) {
             mtmp->perminvis = TRUE;
             mtmp->minvis = TRUE;
         }

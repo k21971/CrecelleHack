@@ -2897,6 +2897,16 @@
      *  ghosts and shades don't leave corpses; assigning human weight
      *  to them matters for statues
      */
+    MON(NAM("poltergeist"), S_GHOST,
+        LVL(8, 15, 8, 40, -7), (G_NOCORPSE | 1),
+        A(ATTK(AT_WEAP, AD_PHYS, 1, 4),
+          NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(WT_HUMAN, 0, MS_LAUGH, MZ_HUMAN),
+        MR_COLD | MR_DISINT | MR_SLEEP | MR_POISON | MR_STONE, 0,
+        M1_FLY | M1_BREATHLESS | M1_WALLWALK | M1_HUMANOID | M1_UNSOLID,
+        M2_NOPOLY | M2_UNDEAD | M2_STALK | M2_HOSTILE | M2_COLLECT | M2_WANDER,
+        M3_INFRAVISION | M3_INFRAVISIBLE,
+        12, CLR_WHITE, POLTERGEIST),
     MON(NAM("ghost"), S_GHOST,
         LVL(10, 3, -5, 50, -5), (G_NOCORPSE | G_NOGEN),
         A(ATTK(AT_TUCH, AD_PHYS, 1, 1),

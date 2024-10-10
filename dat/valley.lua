@@ -153,7 +153,7 @@ des.monster("ghost")
 des.monster("ghost")
 des.monster("ghost")
 des.monster("ghost")
-des.monster("ghost")
+des.monster("poltergeist")
 -- Add a few bats for atmosphere.
 des.monster("vampire bat")
 des.monster("vampire bat")

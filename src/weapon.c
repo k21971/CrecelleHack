@@ -476,8 +476,10 @@ oselect(struct monst *mtmp, int type)
     struct obj *otmp;
 
     for (otmp = mtmp->minvent; otmp; otmp = otmp->nobj) {
-        if (otmp->otyp != type)
+        if (otmp->otyp != type && type != STRANGE_OBJECT)
             continue;
+
+        if (otmp->otyp == STRANGE_OBJECT) pline("BANG");
 
         /* never select non-cockatrice corpses */
         if ((type == CORPSE || type == EGG)
@@ -498,8 +500,8 @@ static NEARDATA const int rwep[] = {
     DWARVISH_SPEAR, SILVER_SPEAR, ELVEN_SPEAR, SPEAR, ORCISH_SPEAR, JAVELIN,
     SHURIKEN, YA, SILVER_ARROW, ELVEN_ARROW, ARROW, ORCISH_ARROW,
     CROSSBOW_BOLT, SILVER_DAGGER, ELVEN_DAGGER, DAGGER, ORCISH_DAGGER, KNIFE,
-    FLINT, ROCK, LOADSTONE, LUCKSTONE, DART, BOTTLE,
-    /* BOOMERANG, */ CREAM_PIE
+    FLINT, ROCK, LOADSTONE, LUCKSTONE, DART,
+    /* BOOMERANG, */ CREAM_PIE, BOTTLE
 };
 
 static NEARDATA const int pwep[] = { HALBERD,       BARDICHE, SPETUM,
@@ -525,6 +527,8 @@ select_rwep(struct monst *mtmp)
         Oselect(CREAM_PIE);
     if (throws_rocks(mtmp->data)) /* ...boulders for giants */
         Oselect(BOULDER);
+    if (mtmp->data == &mons[PM_POLTERGEIST]) /* poltergeists throw anything */
+        Oselect(STRANGE_OBJECT);
 
     /* Select polearms first; they do more damage and aren't expendable.
        But don't pick one if monster's weapon is welded, because then
