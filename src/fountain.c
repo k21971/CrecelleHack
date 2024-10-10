@@ -442,6 +442,9 @@ dipfountain(struct obj *obj)
         if (in_town(u.ux, u.uy))
             (void) angry_guards(FALSE);
         return;
+    } else if (obj->otyp == BOTTLE) {
+        You("fill %s with the liquid in the fountain.", yobjnam(obj, (const char *) 0));
+        poly_obj(obj, POT_WATER);
     } else if (is_hands || obj == uarmg) {
         er = wash_hands();
     } else {
@@ -720,6 +723,10 @@ dipsink(struct obj *obj)
         return;
     } else if (is_hands) {
         (void) wash_hands();
+        return;
+    } else if (obj->otyp == BOTTLE) {
+        You("fill %s with tap water.", yobjnam(obj, (const char *) 0));
+        poly_obj(obj, POT_WATER);
         return;
     } else if (obj->oclass != POTION_CLASS) {
         You("hold %s under the tap.", the(xname(obj)));

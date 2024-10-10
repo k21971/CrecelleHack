@@ -291,6 +291,9 @@ mquaffmsg(struct monst *mtmp, struct obj *otmp)
         Soundeffect(se_mon_chugging_potion, 25);
         You_hear("a chugging sound.");
     }
+    /* We shouldn't do this here, but it's neater. */
+    otmp = mksobj(BOTTLE, FALSE, FALSE);
+    (void) mpickobj(mtmp, otmp);
 }
 
 /* Defines for various types of stuff.  The order in which monsters prefer

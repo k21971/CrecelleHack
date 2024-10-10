@@ -40,17 +40,17 @@
 - Boiling: Causes damage when drunk. When broken, releases steam.
 - Freezing: Causes damage when drunk.
 
-# Roles and Races
+## Roles and Races
 - Roles are not restricted by race, with the exception of
   tourists (always human).
 - Knights receive a different mount depending on race.
   Orcs: Warg
   Elves: Jaguar
 
-# Monsters
+## Monsters
 - The following monster classes are now valid mounts: f, d
 
-# Monster AI
+## Monster AI
 - Elves and princes can engrave Elbereth to ward off the player.
   - TODO: Forbid ranged attacks while on Elbereth?
   - TODO: Intentionally break Elbereth when player hp is low?
@@ -61,3 +61,9 @@
   outrun them.
 - Monsters will slather items with cans of grease if the player is
   polymorphed into a relevant form.
+
+## Objects
+- Potions of water are considered inert and do not polymorph.
+- Potions leave behind empty bottles when drunk. These bottles
+  can be refilled with water at fountains, sinks, and other
+  locations.

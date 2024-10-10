@@ -785,6 +785,7 @@ xname_flags(
         break;
     case COIN_CLASS:
     case CHAIN_CLASS:
+    case BOTTLE_CLASS:
         Strcpy(buf, actualn);
         break;
     case ROCK_CLASS:

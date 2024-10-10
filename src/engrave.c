@@ -689,6 +689,7 @@ doengrave_sfx_item(struct _doengrave_ctx *de)
     default:
     case AMULET_CLASS:
     case CHAIN_CLASS:
+    case BOTTLE_CLASS:
     case POTION_CLASS:
     case COIN_CLASS:
         break;

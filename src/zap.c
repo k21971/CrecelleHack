@@ -1664,6 +1664,8 @@ poly_obj(struct obj *obj, int id)
 
     if (obj->otyp == BOULDER)
         sokoban_guilt();
+    if (obj->otyp == POT_WATER) /* water is inert (balance bottles) */
+        return obj;
     if (id == STRANGE_OBJECT) { /* preserve symbol */
         int try_limit = 3;
         unsigned magic_obj = objects[obj->otyp].oc_magic;

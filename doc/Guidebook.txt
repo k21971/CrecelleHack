@@ -6363,6 +6363,7 @@
         +  S_book                 (spellbook)
         )  S_boomleft             (boomerang open left)
         (  S_boomright            (boomerang open right)
+        !  S_bottle               (empty bottle)
         `  S_boulder              (boulder)
         -  S_brcorn               (bottom right corner)
         >  S_brdnladder           (branch ladder down)

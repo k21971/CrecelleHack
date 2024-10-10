@@ -166,8 +166,11 @@ drop_throw(
     boolean broken;
 
     if (obj->otyp == CREAM_PIE || obj->oclass == VENOM_CLASS
-        || (ohit && obj->otyp == EGG)) {
+        || (ohit && (obj->otyp == EGG || obj->otyp == BOTTLE))) {
         broken = TRUE;
+    } else if (breaks(obj, x, y)) {
+        /* Need this so that we can handle broken bottles */
+        return TRUE;
     } else {
         broken = (ohit && should_mulch_missile(obj));
     }
@@ -693,6 +696,9 @@ m_throw(
                          /* if damage triggered life-saving,
                             poison is limited to attrib loss */
                          (u.umortality > oldumort) ? 0 : 10, TRUE);
+            }
+            if (hitu && singleobj->otyp == BOTTLE) {
+                pline_The("bottle shatters over your %s.", body_part(HEAD));
             }
             if (hitu && can_blnd((struct monst *) 0, &gy.youmonst,
                                  (uchar) ((singleobj->otyp == BLINDING_VENOM)

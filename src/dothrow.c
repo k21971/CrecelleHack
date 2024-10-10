@@ -2568,6 +2568,7 @@ breaktest(struct obj *obj)
     switch (obj->oclass == POTION_CLASS ? POT_WATER : obj->otyp) {
     case EXPENSIVE_CAMERA:
     case POT_WATER: /* really, all potions */
+    case BOTTLE:
     case EGG:
     case CREAM_PIE:
     case MELON:
@@ -2599,6 +2600,7 @@ breakmsg(struct obj *obj, boolean in_view)
     case EXPENSIVE_CAMERA:
         to_pieces = " into a thousand pieces";
     /*FALLTHRU*/
+    case BOTTLE:
     case POT_WATER: /* really, all potions */
         if (!in_view)
             You_hear("%s shatter!", something);

@@ -319,7 +319,7 @@ dmgval(struct obj *otmp, struct monst *mon)
 
     /* Put weapon vs. monster type damage bonuses in below: */
     if (Is_weapon || otmp->oclass == GEM_CLASS || otmp->oclass == BALL_CLASS
-        || otmp->oclass == CHAIN_CLASS) {
+        || otmp->oclass == CHAIN_CLASS || otmp->oclass == BOTTLE_CLASS) {
         int bonus = 0;
 
         if (otmp->blessed && mon_hates_blessings(mon))
@@ -498,7 +498,7 @@ static NEARDATA const int rwep[] = {
     DWARVISH_SPEAR, SILVER_SPEAR, ELVEN_SPEAR, SPEAR, ORCISH_SPEAR, JAVELIN,
     SHURIKEN, YA, SILVER_ARROW, ELVEN_ARROW, ARROW, ORCISH_ARROW,
     CROSSBOW_BOLT, SILVER_DAGGER, ELVEN_DAGGER, DAGGER, ORCISH_DAGGER, KNIFE,
-    FLINT, ROCK, LOADSTONE, LUCKSTONE, DART,
+    FLINT, ROCK, LOADSTONE, LUCKSTONE, DART, BOTTLE,
     /* BOOMERANG, */ CREAM_PIE
 };
 
@@ -650,7 +650,7 @@ static const NEARDATA short hwep[] = {
     DWARVISH_SPEAR, SILVER_SPEAR, ELVEN_SPEAR, SPEAR, ORCISH_SPEAR, FLAIL,
     BULLWHIP, QUARTERSTAFF, JAVELIN, AKLYS, CLUB, PICK_AXE, RUBBER_HOSE,
     WAR_HAMMER, SILVER_DAGGER, ELVEN_DAGGER, DAGGER, ORCISH_DAGGER, ATHAME,
-    SCALPEL, KNIFE, WORM_TOOTH
+    SCALPEL, KNIFE, WORM_TOOTH, BOTTLE
 };
 
 /* select a hand to hand weapon for the monster */
