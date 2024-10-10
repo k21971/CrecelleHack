@@ -125,6 +125,7 @@ precheck(struct monst *mon, struct obj *obj)
             }
             return 2;
         }
+        /* TODO: Add boiling and freezing effects here at some point. */
     }
     if (obj->oclass == WAND_CLASS && obj->cursed
         && !rn2(WAND_BACKFIRE_CHANCE)) {
