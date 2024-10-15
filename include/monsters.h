@@ -455,6 +455,14 @@
         M1_SWIM | M1_HUMANOID | M1_POIS, M2_STALK, 
         M3_INFRAVISIBLE | M3_TRAITOR,
         8, CLR_GREEN, GREMLIN),
+    MON(NAM("mascaron"), S_GREMLIN,
+        LVL(5, 1, 12, 10, 4), (G_GENO | G_SGROUP | 1),
+        A(ATTK(AT_GAZE, AD_STUN, 2, 6), ATTK(AT_BITE, AD_PHYS, 3, 8), 
+          NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(10, 10, MS_SILENT, MZ_SMALL), MR_STONE, MR_STONE,
+        M1_FLY | M1_AMPHIBIOUS | M1_NOLIMBS | M1_NOHEAD | M1_NOTAKE,
+        M2_MINION | M2_PEACEFUL, 0,
+        3, CLR_BLUE, MASCARON),
     /* gargoyle and winged gargoyle are inspired by a cheesy made-for-TV
        horror movie (starring Cornel Wilde and Jennifer Salt, 1972) */
     MON(NAM("gargoyle"), S_GREMLIN,
@@ -473,6 +481,14 @@
         M1_FLY | M1_HUMANOID | M1_THICK_HIDE | M1_BREATHLESS | M1_OVIPAROUS,
         M2_LORD | M2_HOSTILE | M2_STRONG | M2_MAGIC, M3_TRAITOR,
         11, HI_LORD, WINGED_GARGOYLE),
+    MON(NAM("grotesque"), S_GREMLIN,
+        LVL(9, 6, -8, 0, -12), (G_GENO | G_SGROUP | G_HELL | 1),
+        A(ATTK(AT_CLAW, AD_PHYS, 5, 6), ATTK(AT_CLAW, AD_PHYS, 5, 6),
+          ATTK(AT_BITE, AD_PHYS, 4, 4), NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(1200, 300, MS_GRUNT, MZ_HUMAN), MR_STONE, MR_STONE,
+        M1_HUMANOID | M1_THICK_HIDE | M1_BREATHLESS | M1_OVIPAROUS,
+        M2_LORD | M2_HOSTILE | M2_STRONG | M2_MAGIC, 0,
+        11, CLR_GRAY, GROTESQUE),
     /*
      * humanoids
      */

@@ -49,10 +49,14 @@
 
 ## Monsters
 - The following monster classes are now valid mounts: f, d
-- New Monster: Poltergeist
-  - Invisible ghost class monster.
+- New Monster: Poltergeist ( )
   - Does not approach, collects objects like a nypmph. Throws any and
     all objects it gets its hands on.
+- New Monster: Grotesque (g)
+  - Slow, hard to hit, and very high damage. Spawns in groups.
+- New Monster: Mascaron (g)
+  - Stunning gaze. Spawns in groups.
+  - Peaceful, but turns hostile if alignment is abused.
 
 ## Monster AI
 - Elves and princes can engrave Elbereth to ward off the player.

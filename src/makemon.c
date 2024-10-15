@@ -1314,6 +1314,10 @@ makemon(
             (void) hideunder(mtmp);
         }
         break;
+    case S_GREMLIN:
+        if (mndx == PM_MASCARON && u.ualign.abuse > 5)
+            mtmp->mpeaceful = 0;
+        break;
     case S_LEPRECHAUN:
         mtmp->msleeping = 1;
         break;
