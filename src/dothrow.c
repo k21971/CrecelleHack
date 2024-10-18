@@ -2463,11 +2463,6 @@ breakobj(
         break;
     case POT_WATER:      /* really, all potions */
         obj->in_use = 1; /* in case it's fatal */
-        if (objdescr_is(obj, "volatile")) {
-            explode(x, y, -11, d(3, 6), 0, EXPL_FIERY);
-        } else if (objdescr_is(obj, "boiling")) {
-            create_gas_cloud(x, y, 1, 0);
-        }
         if (obj->otyp == POT_OIL && obj->lamplit) {
             explode_oil(obj, x, y);
         } else if (next2u(x, y)) {
@@ -2476,7 +2471,7 @@ breakobj(
                 if (obj->otyp != POT_WATER && !Half_gas_damage) {
                     if (!breathless(gy.youmonst.data)) {
                         /* [what about "familiar odor" when known?] */
-                        You("smell a %s odor...", objdescr_is(obj, "smelly") ? "revolting" : "peculiar");
+                        You("smell a peculiar odor...");
                     } else {
                         const char *eyes = body_part(EYE);
 

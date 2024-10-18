@@ -609,12 +609,6 @@ dodrink(void)
         djinni_from_bottle(otmp);
         useup(otmp);
         return ECMD_TIME;
-    } else if (objdescr_is(otmp, "boiling")) {
-        pline("Ouch! That's hot!");
-        losehp(Maybe_Half_Phys(d(1, 3)), "drinking boiling liquid", KILLED_BY);
-    } else if (objdescr_is(otmp, "freezing")) {
-        pline("Ouch! That's cold!");
-        losehp(Maybe_Half_Phys(d(1, 3)), "drinking liquid nitrogen", KILLED_BY);
     }
     return dopotion(otmp);
 }
@@ -1887,11 +1881,6 @@ potionhit(struct monst *mon, struct obj *obj, int how)
             else
                 mon->msleeping = 0;
         }
-    }
-
-    /* volatile potions explode upon agitation */
-    if (objdescr_is(obj, "volatile")) {
-        explode(mon->mx, mon->my, -11, d(3, 6), 0, EXPL_FIERY);
     }
 
     /* Note: potionbreathe() does its own docall() */

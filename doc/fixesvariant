@@ -33,14 +33,7 @@
   Skilled: +2
   Expert: +3
 
-## Object Descriptions
-### Potions
-- Volatile: Explodes upon breaking or colliding with an object.
-- Smelly: Smells revolting instead of peculiar.
-- Boiling: Causes damage when drunk. When broken, releases steam.
-- Freezing: Causes damage when drunk.
-
-## Roles and Races
+# Roles and Races
 - Roles are not restricted by race, with the exception of
   tourists (always human).
 - Knights receive a different mount depending on race.
