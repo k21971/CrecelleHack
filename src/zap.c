@@ -5250,8 +5250,10 @@ zap_over_floor(
 
     case ZT_POISON_GAS:
         /* poison gas with range 1: green dragon/iron golem breath (AD_DRST);
-           caller is placing a series of 1x1 clouds along the zap's path */
-        (void) create_gas_cloud(x, y, 1, 8);
+           caller is placing a series of 1x1 clouds along the zap's path;
+           <x,y> for wall locations might be included--reject those */
+        if (ZAP_POS(lev->typ))
+            (void) create_gas_cloud(x, y, 1, 8);
         break;
     case ZT_DEATH:
         /* Kill any grass on a surface. */
@@ -5957,8 +5959,8 @@ destroy_items(
         i = (elig_stacks < limit) ? elig_stacks : rn2(elig_stacks);
         /* do this afterwards to avoid not filling items_to_destroy[0] */
         elig_stacks++;
-        if (i >= limit) {
-            /* random index was too high */
+        if (i < 0 || i >= limit) {
+            /* random index was too high; mollify analyzer by including < 0 */
             continue;
         }
         items_to_destroy[i].oid = obj->o_id;

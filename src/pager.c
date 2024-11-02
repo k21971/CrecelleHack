@@ -719,6 +719,8 @@ lookat(coordxy x, coordxy y, char *buf, char *monbuf)
         int warnindx = glyph_to_warning(glyph);
 
         Strcpy(buf, def_warnsyms[warnindx].explanation);
+    } else if (glyph_is_invisible(glyph)) {
+        Strcpy(buf, invisexplain); /* redundant; handled by caller */
     } else if (glyph_is_nothing(glyph)) {
         Strcpy(buf, "dark part of a room");
     } else if (glyph_is_unexplored(glyph)) {
@@ -729,11 +731,7 @@ lookat(coordxy x, coordxy y, char *buf, char *monbuf)
         } else {
             Strcpy(buf, "unexplored area");
         }
-    } else if (glyph_is_invisible(glyph)) {
-        /* already handled */
-    } else if (!glyph_is_cmap(glyph)) {
-        Strcpy(buf, "unexplored area");
-    } else {
+    } else if (glyph_is_cmap(glyph)) {
         int amsk;
         aligntyp algn;
         short symidx = glyph_to_cmap(glyph);
@@ -796,6 +794,8 @@ lookat(coordxy x, coordxy y, char *buf, char *monbuf)
             Strcpy(buf, defsyms[symidx].explanation);
             break;
         }
+    } else { /* not mon, obj, trap, or cmap */
+        Strcpy(buf, "unexplored area");
     }
     return (pm && !Hallucination) ? pm : (struct permonst *) 0;
 }

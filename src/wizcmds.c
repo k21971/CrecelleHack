@@ -444,16 +444,17 @@ wiz_flip_level(void)
 int
 wiz_level_change(void)
 {
-    char buf[BUFSZ] = DUMMY;
+    char buf[BUFSZ], dummy = '\0';
     int newlevel = 0;
     int ret;
 
+    buf[0] = '\0'; /* in case EDIT_GETLIN is enabled */
     getlin("To what experience level do you want to be set?", buf);
     (void) mungspaces(buf);
     if (buf[0] == '\033' || buf[0] == '\0')
         ret = 0;
     else
-        ret = sscanf(buf, "%d", &newlevel);
+        ret = sscanf(buf, "%d%c", &newlevel, &dummy);
 
     if (ret != 1) {
         pline1(Never_mind);
@@ -480,6 +481,7 @@ wiz_level_change(void)
         while (u.ulevel < newlevel)
             pluslvl(FALSE);
     }
+    /* blessed full healing or restore ability won't fix any lost levels */
     u.ulevelmax = u.ulevel;
     return ECMD_OK;
 }
@@ -549,8 +551,14 @@ wiz_fuzzer(void)
         pline("The fuzz tester will make NetHack execute random keypresses.");
         There("is no conventional way out of this mode.");
     }
-    if (paranoid_query(TRUE, "Do you want to start fuzz testing?"))
-        iflags.debug_fuzzer = TRUE; /* Thoth, take the reins */
+    if (paranoid_query(TRUE, "Do you want to start fuzz testing?")) {
+        /* Thoth, take the reins */
+        if (y_n("Do you want to call panic() after impossible()?") == 'n') {
+            iflags.debug_fuzzer = fuzzer_impossible_continue;
+        } else {
+            iflags.debug_fuzzer = fuzzer_impossible_panic;
+        }
+    }
     return ECMD_OK;
 }
 
