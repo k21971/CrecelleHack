@@ -240,13 +240,16 @@ enum levl_typ_types {
 #define ICED_MOAT 16
 
 /*
- * Surfaces can be covered by things
+ * Surfaces can be covered by things.
+ * In coat-related functions, these are treated as an unsigned char,
+ * even though they technically occupy 5 bits. I'm sure that won't
+ * cause any issues in the future.
  */
 #define COAT_NONE   0x00
-#define COAT_GRASS  0x02
-#define COAT_ASHES  0x04
-#define COAT_POTION 0x08
-#define COAT_BLOOD  0x10
+#define COAT_GRASS  0x01
+#define COAT_ASHES  0x02
+#define COAT_POTION 0x04
+#define COAT_BLOOD  0x08
 
 /*
  * The structure describing a coordinate position.

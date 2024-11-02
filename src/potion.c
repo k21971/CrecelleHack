@@ -1612,16 +1612,19 @@ impact_arti_light(
 }
 
 boolean
-has_coating(coordxy x, coordxy y, long coatflags) {
+has_coating(coordxy x, coordxy y, unsigned char coatflags) {
     return (IS_COATABLE(levl[x][y].typ)
             && (levl[x][y].coat_info & coatflags) != 0);
 }
 
 boolean
-add_coating(coordxy x, coordxy y, long coatflags, int pindex) {
+add_coating(coordxy x, coordxy y, unsigned char coatflags, int pindex) {
     if (!IS_COATABLE(levl[x][y].typ))
         return FALSE;
     else {
+        /* If in mklev we need to clear the coat info first. */
+        if (gi.in_mklev)
+            levl[x][y].coat_info = 0;
         levl[x][y].coat_info |= coatflags;
         if ((coatflags & COAT_POTION) != 0) {
             levl[x][y].pindex = pindex;
@@ -1637,7 +1640,7 @@ add_coating(coordxy x, coordxy y, long coatflags, int pindex) {
 }
 
 boolean
-remove_coating(coordxy x, coordxy y, long coatflags) {
+remove_coating(coordxy x, coordxy y, unsigned char coatflags) {
     if (!IS_COATABLE(levl[x][y].typ))
         return FALSE;
     levl[x][y].coat_info &= ~coatflags;
