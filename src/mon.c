@@ -3136,6 +3136,15 @@ corpse_chance(
         return FALSE;
     }
 
+    if (mdat == &mons[PM_WOOD_NYMPH]) {
+        if (cansee(mon->mx, mon->my) && !was_swallowed) {
+            pline_mon(mon, "%s body returns to the earth.",
+                      s_suffix(Monnam(mon)));
+            add_coating(mon->mx, mon->my, COAT_GRASS, 0);
+        }
+        return FALSE;
+    }
+
     /* Gas spores always explode upon death */
     for (i = 0; i < NATTK; i++) {
         if (mdat->mattk[i].aatyp == AT_BOOM) {
