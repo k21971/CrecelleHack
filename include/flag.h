@@ -505,6 +505,7 @@ enum plnmsg_types {
     PLNMSG_GROWL,               /* growl() gave some message */
     PLNMSG_HIDE_UNDER,          /* hero saw a monster hide under something */
     PLNMSG_MON_TAKES_OFF_ITEM,  /* thief (nymph, monkey) taking worn item */
+    PLNMSG_ENVELOPED_IN_FLAMES, /* create_bonfire() feedback */
     PLNMSG_enum /* 'none of the above' */
 };
 

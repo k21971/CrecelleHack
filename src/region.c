@@ -11,8 +11,9 @@
  */
 
 #define NO_CALLBACK (-1)
-
+boolean inside_bonfire(genericptr, genericptr);
 boolean inside_gas_cloud(genericptr, genericptr);
+boolean expire_bonfire(genericptr, genericptr);
 boolean expire_gas_cloud(genericptr, genericptr);
 boolean inside_rect(NhRect *, int, int);
 NhRegion *create_region(NhRect *, int);
@@ -38,14 +39,18 @@ NhRegion *create_force_field(coordxy,coordxy,int,long);
 #endif
 
 staticfn void reset_region_mids(NhRegion *);
-staticfn boolean is_hero_inside_gas_cloud(void);
+staticfn boolean is_hero_inside_gas_cloud(short);
 staticfn void make_gas_cloud(NhRegion *, int, boolean) NONNULLARG1;
 
 static const callback_proc callbacks[] = {
 #define INSIDE_GAS_CLOUD 0
     inside_gas_cloud,
 #define EXPIRE_GAS_CLOUD 1
-    expire_gas_cloud
+    expire_gas_cloud,
+#define INSIDE_BONFIRE 2
+    inside_bonfire,
+#define EXPIRE_BONFIRE 3
+    expire_bonfire
 };
 
 /* Should be inlined. */
@@ -321,7 +326,7 @@ add_region(NhRegion *reg)
                 }
             }
             if (reg->visible) {
-                if (is_inside)
+                if (is_inside && is_gasregion(reg))
                     block_point(i, j);
                 if (cansee(i, j))
                     newsym(i, j);
@@ -409,7 +414,9 @@ run_regions(void)
 
     /* reset some messaging variables */
     gg.gas_cloud_diss_within = FALSE;
+    gg.bonfire_diss_within = FALSE;
     gg.gas_cloud_diss_seen = 0;
+    gg.bonfire_diss_seen = 0;
 
     /* End of life ? */
     /* Do it backward because the array will be modified */
@@ -426,6 +433,10 @@ run_regions(void)
         /* Make the region age */
         if (gr.regions[i]->ttl > 0L)
             gr.regions[i]->ttl--;
+        /* Make bonfires spread */
+        if (gr.regions[i]->inside_f == INSIDE_BONFIRE) {
+            spread_bonfire(gr.regions[i]);
+        }
         /* Check if player is inside region */
         f_indx = gr.regions[i]->inside_f;
         if (f_indx != NO_CALLBACK && hero_inside(gr.regions[i]))
@@ -456,11 +467,46 @@ run_regions(void)
             gg.gas_cloud_diss_seen = 0;
         gg.gas_cloud_diss_within = FALSE;
     }
+    if (gg.bonfire_diss_within) {
+        pline_The("flames around you die.");
+        gg.bonfire_diss_within = 0;
+        gg.bonfire_diss_seen = 0;
+    }
     if (gg.gas_cloud_diss_seen) {
         You_see("%s gas cloud%s dissipate.",
                 (gg.gas_cloud_diss_seen == 1) ? "a" : "some",
                 plur(gg.gas_cloud_diss_seen));
         gg.gas_cloud_diss_seen = 0;
+    }
+    if (gg.bonfire_diss_seen) {
+        You_see("%s fire go out.",
+                (gg.bonfire_diss_seen == 1) ? "a" : "some");
+        gg.bonfire_diss_seen = 0;
+    }
+}
+
+void
+spread_bonfire(NhRegion *reg) {
+    int startx = max(0, reg->bounding_box.lx - 1);
+    int starty = max(0, reg->bounding_box.ly - 1);
+    int stopx = min(COLNO - 1, reg->bounding_box.hx + 1);
+    int stopy = min(ROWNO - 1, reg->bounding_box.hy + 1);
+    for (int x = startx; x <= stopx; x++) {
+        for (int y = starty; y <= stopy; y++) {
+            if (has_coating(x, y, COAT_GRASS) && !rn2(10)) {
+                remove_coating(x, y, COAT_GRASS);
+                add_coating(x, y, COAT_ASHES, 0);
+                create_bonfire(x, y, rnd(10), d(2, 4));
+            }
+            if (has_coating(x, y, COAT_POTION)
+                        && levl[x][y].pindex == POT_OIL) {
+                remove_coating(x, y, COAT_POTION);
+                create_bonfire(x, y, rn1(20, 10), d(4, 4));
+            }
+            if (x == reg->bounding_box.lx && y == reg->bounding_box.ly) {
+                evaporate_potion_puddles(x, y);
+            }
+        }
     }
 }
 
@@ -689,10 +735,14 @@ visible_region_summary(winid win)
            adding 1 is intended to make the display be less confusing */
         Sprintf(buf, "%5ld", reg->ttl + 1L);
         damg = reg->arg.a_int;
-        if (damg)
-            Sprintf(typbuf, "poison gas (%d)", damg);
-        else
-            Strcpy(typbuf, "vapor");
+        if (reg->inside_f == INSIDE_GAS_CLOUD) {
+            if (damg)
+                Sprintf(typbuf, "poison gas (%d)", damg);
+            else
+                Strcpy(typbuf, "vapor");
+        } else {
+            Sprintf(typbuf, "fire (%d)", damg);
+        }
         Sprintf(eos(buf), "%s%-16s", fldsep, typbuf);
         Sprintf(eos(buf), "%s@[%d,%d..%d,%d]", fldsep,
                 reg->bounding_box.lx, reg->bounding_box.ly,
@@ -1063,6 +1113,32 @@ create_force_field(coordxy x, coordxy y, int radius, long ttl)
  *                                                              *
  *--------------------------------------------------------------*/
 
+boolean
+expire_bonfire(genericptr_t p1, genericptr_t p2 UNUSED)
+{
+    NhRegion *reg;
+    int damage;
+
+    reg = (NhRegion *) p1;
+    damage = reg->arg.a_int;
+
+    /* If it was a thick cloud, it dissipates a little first */
+    if (damage >= 5) {
+        damage /= 2; /* It dissipates, let's do less damage */
+        reg->arg = cg.zeroany;
+        reg->arg.a_int = damage;
+        reg->ttl = 2L; /* Here's the trick : reset ttl */
+        return FALSE;  /* THEN return FALSE, means "still there" */
+    }
+    if (u_at(reg->bounding_box.lx, reg->bounding_box.ly)) {
+        if (!u.uswallow)
+            gg.bonfire_diss_within = TRUE;
+    } else if (cansee(reg->bounding_box.lx, reg->bounding_box.ly)) {
+        gg.bonfire_diss_seen++;
+    }
+    return TRUE;
+}
+
 /*
  * Here is an example of an expire function that may prolong
  * region life after some mods...
@@ -1110,6 +1186,84 @@ expire_gas_cloud(genericptr_t p1, genericptr_t p2 UNUSED)
     }
 
     return TRUE; /* OK, it's gone, you can free it! */
+}
+
+/* returns True if p2 is killed by region p1, False otherwise */
+boolean
+inside_bonfire(genericptr_t p1, genericptr_t p2)
+{
+    NhRegion *reg = (NhRegion *) p1;
+    struct monst *mtmp = (struct monst *) p2;
+    struct monst *umon = mtmp ? mtmp : &gy.youmonst;
+    int dam = reg->arg.a_int;
+
+    if (reg->ttl < 20 && umon && umon->data == &mons[PM_FIRE_ELEMENTAL])
+        reg->ttl += 5;
+
+    if (dam < 1) {
+        impossible("bonfire with 0 damage?");
+        return FALSE;
+    }
+
+    if (!mtmp) {
+        if (m_bonfire_ok(&gy.youmonst) == M_BONFIRE_OK) {
+            if (Fire_resistance) monstseesu(M_SEEN_FIRE); /* Kludge */
+            return FALSE;
+        }
+        pline("You're burning up!");
+        if (completelyburns(gy.youmonst.data)) { /* paper or straw golem */
+            You("go up in flames!");
+            monstunseesu(M_SEEN_FIRE);
+            rehumanize();
+            return FALSE;
+        } else if (Fire_resistance) {
+            monstseesu(M_SEEN_FIRE);
+            dam = 1;
+        } else {
+            monstunseesu(M_SEEN_FIRE);
+        }
+        if (rn2(6)) {
+            dam += destroy_items(&gy.youmonst, AD_FIRE, dam);
+            ignite_items(gi.invent);
+        }
+        burn_away_slime();
+        u.uhp -= dam;
+        if (u.uhp < 1) {
+            Sprintf(svk.killer.name, "was consumed in an inferno");
+            svk.killer.format = NO_KILLER_PREFIX;
+            done(DIED);
+        }
+    } else {
+        mtmp = (struct monst *) p2;
+        if (m_bonfire_ok(mtmp) == M_BONFIRE_OK)
+            return FALSE;
+        /* Message and complete burning */
+        if (completelyburns(mtmp->data)) { 
+            xkilled(mtmp, XKILL_NOMSG | XKILL_NOCORPSE);
+            if (canseemon(mtmp)) pline("%s burns up!", Monnam(mtmp));
+            return TRUE;
+        } else if (canseemon(mtmp)) {
+            pline("%s is burning!", Monnam(mtmp));
+        }
+        /* Fire res and golem effects */
+        if (resists_fire(mtmp) || defended(mtmp, AD_FIRE)) {
+            if (canseemon(mtmp))
+                pline_The("%s resists the heat!", Monnam(mtmp));
+            golemeffects(mtmp, AD_FIRE, dam);
+            shieldeff(mtmp->mx, mtmp->my);
+            dam = 1;
+        }
+        /* Damage */
+        dam += destroy_items(mtmp, AD_FIRE, dam);
+        ignite_items(mtmp->minvent);
+        mtmp->mhp -= rnd(dam);
+        if (DEADMONSTER(mtmp)) {
+            mondied(mtmp);
+            return TRUE;
+        }
+    }
+
+    return FALSE;
 }
 
 /* returns True if p2 is killed by region p1, False otherwise */
@@ -1191,13 +1345,13 @@ inside_gas_cloud(genericptr_t p1, genericptr_t p2)
 }
 
 staticfn boolean
-is_hero_inside_gas_cloud(void)
+is_hero_inside_gas_cloud(short rtype)
 {
     int i;
 
     for (i = 0; i < svn.n_regions; i++)
         if (hero_inside(gr.regions[i])
-            && gr.regions[i]->inside_f == INSIDE_GAS_CLOUD)
+            && gr.regions[i]->inside_f == rtype)
             return TRUE;
     return FALSE;
 }
@@ -1220,7 +1374,7 @@ make_gas_cloud(
     cloud->glyph = cmap_to_glyph(damage ? S_poisoncloud : S_cloud);
     add_region(cloud);
 
-    if (!gi.in_mklev && !inside_cloud && is_hero_inside_gas_cloud()) {
+    if (!gi.in_mklev && !inside_cloud && is_hero_inside_gas_cloud(INSIDE_GAS_CLOUD)) {
         You("are enveloped in a cloud of %s!",
             /* FIXME: "steam" is wrong if this cloud is just the trail of
                a fog cloud's movement; changing to "vapor" would handle
@@ -1228,6 +1382,36 @@ make_gas_cloud(
             damage ? "noxious gas" : "steam");
         iflags.last_msg = PLNMSG_ENVELOPED_IN_GAS;
     }
+}
+
+/* Creates a bonfire on a single square. While we could generalize
+   the create gas cloud function, fire is only ever started on
+   singular squares. The spreading happens later on. */
+NhRegion *
+create_bonfire(coordxy x, coordxy y, int lifetime, int damage)
+{
+    NhRegion *flames = create_region((NhRect *) 0, 0);
+    NhRect tmprect;
+    tmprect.lx = tmprect.hx = x;
+    tmprect.ly = tmprect.hy = y;
+    add_rect_to_reg(flames, &tmprect);
+    flames->ttl = lifetime;
+
+    if (!gi.in_mklev && !svc.context.mon_moving)
+        set_heros_fault(flames); /* assume player has created it */
+    flames->inside_f = INSIDE_BONFIRE;
+    flames->expire_f = EXPIRE_BONFIRE;
+    flames->arg = cg.zeroany;
+    flames->arg.a_int = damage;
+    flames->visible = TRUE;
+    flames->glyph = cmap_to_glyph(S_bonfire);
+    add_region(flames);
+
+    if (!gi.in_mklev && inside_region(flames, u.ux, u.uy)) {
+        You("are enveloped in roaring flames!");
+        iflags.last_msg = PLNMSG_ENVELOPED_IN_FLAMES;
+    }
+    return flames;
 }
 
 /* Create a gas cloud which starts at (x,y) and grows outward from it via
@@ -1252,7 +1436,7 @@ create_gas_cloud(
     ycoords[0] = y;
     int curridx;
     int newidx = 1; /* initial spot is already taken */
-    boolean inside_cloud = is_hero_inside_gas_cloud();
+    boolean inside_cloud = is_hero_inside_gas_cloud(INSIDE_GAS_CLOUD);
 
     /* a single-point cloud on hero and it deals no damage.
        probably a natural cause of being polyed. don't message about it */
@@ -1344,7 +1528,7 @@ create_gas_cloud_selection(
     NhRect tmprect;
     coordxy x, y;
     NhRect r = cg.zeroNhRect;
-    boolean inside_cloud = is_hero_inside_gas_cloud();
+    boolean inside_cloud = is_hero_inside_gas_cloud(INSIDE_GAS_CLOUD);
 
     selection_getbounds(sel, &r);
 
@@ -1384,6 +1568,15 @@ region_danger(void)
                 continue;
             ++n;
         }
+        if (f_indx == INSIDE_BONFIRE) {
+            /* harmless if you like fire */
+            if (likes_fire(gy.youmonst.data))
+                continue;
+            /* minor inconvenience if you resist fire */
+            if (Fire_resistance)
+                continue;
+            ++n;
+        }
     }
     return n ? TRUE : FALSE;
 }
@@ -1402,7 +1595,7 @@ region_safety(void)
             continue;
         f_indx = gr.regions[i]->inside_f;
         /* the only type of region we understand is gas_cloud */
-        if (f_indx == INSIDE_GAS_CLOUD) {
+        if (f_indx == INSIDE_GAS_CLOUD || f_indx == INSIDE_BONFIRE) {
             if (!n++ && gr.regions[i]->ttl >= 0)
                 r = gr.regions[i];
         }
@@ -1413,14 +1606,25 @@ region_safety(void)
         safe_teleds(TELEDS_NO_FLAGS);
     } else if (r) {
         remove_region(r);
-        pline_The("gas cloud enveloping you dissipates.");
+        if (f_indx == INSIDE_GAS_CLOUD)
+            pline_The("gas cloud enveloping you dissipates.");
+        else if (f_indx == INSIDE_BONFIRE)
+            pline_The("fire around you is snuffed out.");
     } else {
         /* cloud dissipated on its own, so nothing needs to be done */
-        pline_The("gas cloud has dissipated.");
+        if (f_indx == INSIDE_GAS_CLOUD)
+            pline_The("gas cloud has dissipated.");
+        else
+            pline_The("fire has died.");
     }
     /* maybe cure blindness too */
     if (BlindedTimeout == 1L)
         make_blinded(0L, TRUE);
+}
+
+boolean
+is_gasregion(NhRegion *reg) {
+    return (reg->inside_f == INSIDE_GAS_CLOUD);
 }
 
 /*region.c*/

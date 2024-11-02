@@ -18,6 +18,7 @@ staticfn void look_at_object(char *, coordxy, coordxy, int) NONNULLARG1;
 staticfn void look_at_monster(char *, char *, struct monst *,
                                                coordxy, coordxy) NONNULLARG13;
 /* lookat() can return Null */
+staticfn char *coat_descr(coordxy, coordxy, short, char *outbuf) NONNULLARG4;
 staticfn struct permonst *lookat(coordxy, coordxy, char *, char *) NONNULLPTRS;
 staticfn boolean checkfile(char *, struct permonst *, unsigned,
                                                             char *) NO_NNARGS;
@@ -581,6 +582,30 @@ waterbody_name(coordxy x, coordxy y)
     return "water"; /* don't hallucinate this as some other liquid */
 }
 
+staticfn char *
+coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
+    char buf[BUFSZ];
+    if (!levl[x][y].coat_info) {
+        Strcpy(outbuf, defsyms[symidx].explanation);
+        return outbuf;
+    }
+
+    if ((levl[x][y].coat_info & COAT_GRASS) != 0)
+        Strcat(outbuf, "grassy ");
+    if ((levl[x][y].coat_info & COAT_ASHES) != 0)
+        Strcat(outbuf, "ash-strewn ");
+    if ((levl[x][y].coat_info & COAT_BLOOD) != 0)
+        Strcat(outbuf, "blood-spattered ");
+
+    if ((levl[x][y].coat_info & COAT_POTION) != 0)
+        Sprintf(buf, "%s covered in %s liquid", defsyms[symidx].explanation, OBJ_DESCR(objects[levl[x][y].pindex]));
+    else
+        Sprintf(buf, "%s", defsyms[symidx].explanation);
+    Strcat(outbuf, buf);
+    
+    return outbuf;
+}
+
 char *
 ice_descr(coordxy x, coordxy y, char *outbuf)
 {
@@ -748,6 +773,10 @@ lookat(coordxy x, coordxy y, char *buf, char *monbuf)
         case S_engroom:
         case S_engrcorr:
             Strcpy(buf, "engraving");
+            break;
+        case S_room:
+        case S_litcorr:
+            coat_descr(x, y, symidx, buf);
             break;
         case S_stone:
             if (!levl[x][y].seenv) {

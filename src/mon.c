@@ -337,6 +337,18 @@ m_poisongas_ok(struct monst *mtmp)
     return M_POISONGAS_BAD;
 }
 
+/* Would a monster be ok with a hypothetical bonfire? */
+int
+m_bonfire_ok(struct monst *mtmp)
+{
+    boolean is_you = (mtmp == &gy.youmonst);
+    if (likes_fire(mtmp->data))
+        return M_BONFIRE_OK;
+    if (is_you ? Fire_resistance : resists_fire(mtmp))
+        return M_BONFIRE_MINOR;
+    return M_BONFIRE_BAD;
+}
+
 /* return True if mon is capable of converting other monsters into zombies */
 boolean
 zombie_maker(struct monst *mon)
@@ -2149,9 +2161,11 @@ mfndpos(
     boolean wantpool, poolok, lavaok, nodiag;
     boolean rockok = FALSE, treeok = FALSE, thrudoor;
     int maxx, maxy;
-    boolean poisongas_ok, in_poisongas;
+    boolean poisongas_ok, in_poisongas, bonfire_ok, in_bonfire;
     NhRegion *gas_reg;
+    NhRegion *bonf_reg;
     int gas_glyph = cmap_to_glyph(S_poisoncloud);
+    int bonfire_glyph = cmap_to_glyph(S_bonfire);
 
     x = mon->mx;
     y = mon->my;
@@ -2168,8 +2182,11 @@ mfndpos(
         lavaok = FALSE;
     thrudoor = ((flag & (ALLOW_WALL | BUSTDOOR)) != 0L);
     poisongas_ok = (m_poisongas_ok(mon) == M_POISONGAS_OK);
+    bonfire_ok = (m_bonfire_ok(mon) == M_BONFIRE_OK);
     in_poisongas = ((gas_reg = visible_region_at(x,y)) != 0
                     && gas_reg->glyph == gas_glyph);
+    in_bonfire = ((bonf_reg = visible_region_at(x,y)) != 0
+                    && bonf_reg->glyph == bonfire_glyph);
 
     if (flag & ALLOW_DIG) {
         struct obj *mw_tmp;
@@ -2239,6 +2256,11 @@ mfndpos(
             if (!poisongas_ok && !in_poisongas
                 && (gas_reg = visible_region_at(nx,ny)) != 0
                 && gas_reg->glyph == gas_glyph)
+                continue;
+            /* avoid bonfire? */
+            if (!bonfire_ok && !in_bonfire
+                && (bonf_reg = visible_region_at(nx,ny)) != 0
+                && bonf_reg->glyph == bonfire_glyph)
                 continue;
             /* first diagonal checks (tight squeezes handled below) */
             if (nx != x && ny != y

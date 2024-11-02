@@ -89,7 +89,7 @@ set_levltyp(coordxy x, coordxy y, schar newtyp)
 
             if (IS_LAVA(newtyp))
                 levl[x][y].lit = 1;
-
+            
             if (was_ice && newtyp != ICE)
                 spot_stop_timers(x, y, MELT_ICE_AWAY);
             if ((IS_FOUNTAIN(oldtyp) != IS_FOUNTAIN(newtyp))
@@ -1521,9 +1521,9 @@ void
 movebubbles(void)
 {
     static const struct rm water_pos = {
-        cmap_b_to_glyph(S_water), WATER, 0, 0, 0, 0, 0, 0, 0, 0
+        cmap_b_to_glyph(S_water), WATER, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, air_pos = {
-        cmap_b_to_glyph(S_cloud), AIR, 0, 0, 0, 1, 0, 0, 0, 0
+        cmap_b_to_glyph(S_cloud), AIR, 0, 0, 0, 0, 1, 0, 0, 0, 0
     };
     static boolean up = FALSE;
     struct bubble *b;

@@ -4598,6 +4598,17 @@ dfeature_at(coordxy x, coordxy y, char *buf)
         cmap = S_tree; /* "tree" */
     else if (ltyp == IRONBARS)
         dfeature = "set of iron bars";
+    else if (IS_COATABLE(ltyp)) { 
+        if ((lev->coat_info & COAT_POTION) != 0) {
+            Sprintf(altbuf, "pool of %s liquid", OBJ_DESCR(objects[lev->pindex]));
+            dfeature = altbuf;
+        } else if ((lev->coat_info & COAT_BLOOD) != 0)
+            dfeature = "spatter of blood";
+        else if ((lev->coat_info & COAT_GRASS) != 0)
+            dfeature = "patch of grass";
+        else if ((lev->coat_info & COAT_ASHES) != 0)
+            dfeature = "pile of ash";
+    }
 
     if (cmap >= 0)
         dfeature = defsyms[cmap].explanation;

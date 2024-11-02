@@ -1303,6 +1303,8 @@ dog_move(
                   vtense((char *) 0, locomotion(mtmp->data, "step")), what);
         }
         mon_track_add(mtmp, omx, omy);
+        if (slip_on_oil(nix, niy, mtmp))
+            return MMOVE_MOVED;
         /* We have to know if the pet's going to do a combined eat and
          * move before moving it, but it can't eat until after being
          * moved.  Thus the do_eat flag.

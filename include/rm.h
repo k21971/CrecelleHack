@@ -125,6 +125,7 @@ enum levl_typ_types {
 #define IS_AIR(typ) ((typ) == AIR || (typ) == CLOUD)
 #define IS_SOFT(typ) ((typ) == AIR || (typ) == CLOUD || IS_POOL(typ))
 #define IS_WATERWALL(typ) ((typ) == WATER)
+#define IS_COATABLE(typ) ((typ) == CORR || (typ) == ROOM)
 /* for surface checks when it's unknown whether a drawbridge is involved;
    drawbridge_up is the spot in front of a closed drawbridge and not the
    current surface at that spot; caveat: this evaluates its arguments more
@@ -239,6 +240,15 @@ enum levl_typ_types {
 #define ICED_MOAT 16
 
 /*
+ * Surfaces can be covered by things
+ */
+#define COAT_NONE   0x00
+#define COAT_GRASS  0x02
+#define COAT_ASHES  0x04
+#define COAT_POTION 0x08
+#define COAT_BLOOD  0x10
+
+/*
  * The structure describing a coordinate position.
  * Before adding fields, remember that this will significantly affect
  * the size of temporary files and save files.
@@ -248,6 +258,7 @@ enum levl_typ_types {
  */
 struct rm {
     int glyph;               /* what the hero thinks is there */
+    short pindex;            /* used for indexing into monster or object array */
     schar typ;               /* what is really there  [why is this signed?] */
     uchar seenv;             /* seen vector */
     Bitfield(flags, 5);      /* extra information for typ */
@@ -355,6 +366,7 @@ struct rm {
 #define drawbridgemask flags /* what's underneath when the span is open */
 #define looted     flags /* used for throne, tree, fountain, sink, door */
 #define icedpool   flags /* used for ice (in case it melts) */
+#define coat_info flags /* used for room surfaces */
 #define emptygrave flags /* no corpse in grave */
 /* horizontal applies to walls, doors (including sdoor); also to iron bars
    even though they don't have separate symbols for horizontal and vertical */

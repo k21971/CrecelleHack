@@ -428,7 +428,9 @@ struct instance_globals_g {
 
     /* region.c */
     boolean gas_cloud_diss_within;
+    boolean bonfire_diss_within;
     int gas_cloud_diss_seen;
+    int bonfire_diss_seen;
 
     /* new stuff */
     /* per-level glyph mapping flags */

@@ -71,6 +71,7 @@ start: Blank
         S_bear_trap: \032
         S_blcorn: \032
         S_blob: \032
+				S_bonfire: \032
         S_book: \032
         S_boomleft: \032
         S_boomright: \032

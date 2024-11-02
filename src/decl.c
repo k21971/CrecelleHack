@@ -406,7 +406,9 @@ static const struct instance_globals_g g_init_g = {
     UNDEFINED_PTR, /* gamelog */
     /* region.c */
     FALSE, /* gas_cloud_diss_within */
+    FALSE, /* bonfire_diss_within */
     0, /* gas_cloud_diss_seen */
+    0, /* bonfire_diss_seen */
     /* new */
     /* per-level glyph mapping flags */
     0L,     /* glyphmap_perlevel_flags */

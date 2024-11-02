@@ -33,6 +33,19 @@
   Skilled: +2
   Expert: +3
 
+# Floor Coating System
+- Floors can be coated with various substances, such as potions and grass.
+- Grass can be set afire. Fire is a new type of region which spreads over
+  nearby flammable terrain.
+- Known Issues:
+  - Areas with multiple coatings are not properly described when using
+    (:) to check what is here.
+  - Fire region code makes an assumption that fire will be 1x1 regions.
+    For efficiency purposes we may want to modify this in the future.
+  - Potions should alchemize on the floor when shed by a monster, not
+    only when a potion splatters. Need to pull out a function.
+  - inside_bonfire() code needs serious cleanup!
+
 # Roles and Races
 - Roles are not restricted by race, with the exception of
   tourists (always human).

@@ -6360,6 +6360,7 @@
         ^  S_bear_trap            (bear trap)
         -  S_blcorn               (bottom left corner)
         b  S_blob                 (blob)
+        ^  S_bonfire              (bonfire)
         +  S_book                 (spellbook)
         )  S_boomleft             (boomerang open left)
         (  S_boomright            (boomerang open right)

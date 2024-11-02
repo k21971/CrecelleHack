@@ -3901,6 +3901,9 @@ tty_print_glyph(
                && iflags.use_inverse) {
         term_start_attr(ATR_INVERSE);
         inverse_on = TRUE;
+    } else if ((special & MG_SURFACE) != 0 && iflags.use_inverse) {
+        term_start_attr(ATR_INVERSE);
+        inverse_on = TRUE;
     }
 
 #if defined(TILES_IN_GLYPHMAP) && defined(MSDOS)
@@ -4387,6 +4390,7 @@ tty_status_enablefield(
  *               BL_MASK_UNCONSC      0x08000000L
  *               BL_MASK_WOUNDEDL     0x10000000L
  *               BL_MASK_HOLDING      0x20000000L
+ *               BL_MASK_INFIRE       0x40000000L
  *
  *      -- The value passed for BL_GOLD usually includes an encoded leading
  *         symbol for GOLD "\GXXXXNNNN:nnn". If the window port needs to use

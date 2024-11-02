@@ -4230,6 +4230,9 @@ zhitm(
                 sho_shieldeff = TRUE;
                 break;
             }
+            if (!sho_shieldeff) {
+                add_coating(mon->mx, mon->my, COAT_ASHES, 0);
+            }
             type = -1; /* so they don't get saving throws */
         } else {
             struct obj *otmp2;
@@ -5132,6 +5135,18 @@ zap_over_floor(
                 pline("Steam billows from the fountain.");
             rangemod -= 1;
             dryup(x, y, type > 0);
+        } else {
+            if (has_coating(x, y, COAT_GRASS)) {
+                remove_coating(x, y, COAT_GRASS);
+                add_coating(x, y, COAT_ASHES, 0);
+                create_bonfire(x, y, rnd(10), d(2, 4));
+            } 
+            if (has_coating(x, y, COAT_POTION)
+                        && levl[x][y].pindex == POT_OIL) {
+                remove_coating(x, y, COAT_POTION);
+                create_bonfire(x, y, rn1(10, 10), d(4, 4));
+            }
+            evaporate_potion_puddles(x, y);
         }
         break; /* ZT_FIRE */
 
@@ -5238,8 +5253,14 @@ zap_over_floor(
            caller is placing a series of 1x1 clouds along the zap's path */
         (void) create_gas_cloud(x, y, 1, 8);
         break;
+    case ZT_DEATH:
+        /* Kill any grass on a surface. */
+        remove_coating(x, y, COAT_GRASS);
+        break;
 
     case ZT_LIGHTNING:
+        remove_coating(x, y, COAT_GRASS);
+        add_coating(x, y, COAT_ASHES, 0);
         /*FALLTHRU*/
     case ZT_ACID:
         if (lev->typ == IRONBARS) {

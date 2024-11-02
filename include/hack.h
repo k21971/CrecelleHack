@@ -1176,6 +1176,11 @@ typedef uint32_t mmflags_nht;     /* makemon MM_ flags */
 #define M_POISONGAS_MINOR 1 /* poison gas is ok, maybe causes coughing */
 #define M_POISONGAS_OK    2 /* ignores poison gas completely */
 
+/* m_bonfire_ok() return values */
+#define M_BONFIRE_BAD   0
+#define M_BONFIRE_MINOR 1
+#define M_BONFIRE_OK    2
+
 /* flags for deliver_obj_to_mon */
 #define DF_NONE     0x00
 #define DF_RANDOM   0x01

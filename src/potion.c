@@ -1611,6 +1611,117 @@ impact_arti_light(
     return;
 }
 
+boolean
+has_coating(coordxy x, coordxy y, long coatflags) {
+    return (IS_COATABLE(levl[x][y].typ)
+            && (levl[x][y].coat_info & coatflags) != 0);
+}
+
+boolean
+add_coating(coordxy x, coordxy y, long coatflags, int pindex) {
+    if (!IS_COATABLE(levl[x][y].typ))
+        return FALSE;
+    else {
+        levl[x][y].coat_info |= coatflags;
+        if ((coatflags & COAT_POTION) != 0) {
+            levl[x][y].pindex = pindex;
+            if (pindex < POT_GAIN_ABILITY || pindex > POT_WATER) {
+                impossible("coating floor with invalid object index %d?", pindex);
+            }
+        } else if (pindex) {
+            impossible("non-potion pindex coating?");
+        }
+        newsym(x, y);
+    }
+    return TRUE;
+}
+
+boolean
+remove_coating(coordxy x, coordxy y, long coatflags) {
+    if (!IS_COATABLE(levl[x][y].typ))
+        return FALSE;
+    levl[x][y].coat_info &= ~coatflags;
+    if ((coatflags & COAT_POTION) != 0)
+        levl[x][y].pindex = 0;
+    return TRUE;
+}
+
+boolean
+slip_on_oil(coordxy x, coordxy y, struct monst *mon) {
+    if (has_coating(x, y, COAT_POTION) && levl[x][y].pindex == POT_OIL
+        && !is_flyer(mon->data) && !is_floater(mon->data)
+        && !amorphous(mon->data) && !noncorporeal(mon->data)) {
+        if (mon == &gy.youmonst && !Levitation && !Flying) {
+            You("slip on a patch of oil!");
+            nomul(-2);
+            gm.multi_reason = "slipping on oil";
+            gn.nomovemsg = "You regain your footing.";
+        } else {
+            if (canseemon(mon)) {
+                pline("%s slips on a patch of oil!", Monnam(mon));
+            }
+            mon->mfrozen = 2;
+            mon->mcanmove = 0;
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
+void
+evaporate_potion_puddles(coordxy x, coordxy y) {
+    if (!IS_COATABLE(levl[x][y].typ))
+        return;
+    if (levl[x][y].coat_info & COAT_POTION) {
+        create_gas_cloud(x, y, 1, 0);
+        if ((!breathless(gy.youmonst.data) || haseyes(gy.youmonst.data)) 
+            && next2u(x, y)) {
+            struct obj fakeobj = cg.zeroobj;
+            fakeobj.cursed = TRUE;
+            fakeobj.otyp = levl[x][y].pindex;
+            potionbreathe(&fakeobj);
+        }
+        remove_coating(x, y, COAT_POTION);
+    }
+}
+
+void
+potion_splatter(coordxy x, coordxy y, int otyp) {
+    int startx = max(x - 1, 0);
+    int starty = max(y - 1, 0);
+    int stopx = min(x + 1, COLNO);
+    int stopy = min(y + 1, ROWNO);
+    struct obj fakeobj1, fakeobj2 = cg.zeroobj;
+    struct obj *otmp;
+    boolean seenalchemy = FALSE;
+
+    fakeobj1.otyp = otyp;
+    fakeobj1.oclass = POTION_CLASS;
+
+    for (int i = startx; i <= stopx; i++) {
+        for (int j = starty; j <= stopy; j++) {
+            if (has_coating(i, j, COAT_POTION)) {
+                if (!rn2(10) && otyp != levl[i][j].pindex) {
+                    explode(i, j, 11, d(1, 10), 0, EXPL_NOXIOUS);
+                    continue;
+                }
+                fakeobj2.otyp = levl[i][j].pindex;
+                otyp = mixtype(&fakeobj1, &fakeobj2);
+                if (otyp == STRANGE_OBJECT) {
+                    otmp = mkobj(POTION_CLASS, FALSE);
+                    otyp = otmp->otyp;
+                    obfree(otmp, (struct obj *) 0);
+                }
+                if (!seenalchemy && cansee(x, y)) {
+                    pline("The liquids on the ground begin to mix.");
+                    seenalchemy = TRUE;
+                }
+            }
+            add_coating(i, j, COAT_POTION, otyp);
+        }
+    }
+}
+
 /* potion obj hits monster mon, which might be youmonst; obj always used up */
 void
 potionhit(struct monst *mon, struct obj *obj, int how)
@@ -1882,6 +1993,9 @@ potionhit(struct monst *mon, struct obj *obj, int how)
                 mon->msleeping = 0;
         }
     }
+
+    /* potions coat the ground */
+    potion_splatter(mon->mx, mon->my, obj->otyp);
 
     /* Note: potionbreathe() does its own docall() */
     if ((distance == 0 || (distance < 3 && !rn2((1+ACURR(A_DEX))/2)))

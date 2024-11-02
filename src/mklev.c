@@ -756,7 +756,7 @@ void
 clear_level_structures(void)
 {
     static struct rm zerorm = { GLYPH_UNEXPLORED,
-                                0, 0, 0, 0, 0, 0, 0, 0, 0 };
+                                0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     coordxy x, y;
     struct rm *lev;
 
@@ -1406,6 +1406,12 @@ level_finalize_topology(void)
        entered; svr.rooms[].orig_rtype always retains original rtype value */
     for (ridx = 0; ridx < SIZE(svr.rooms); ridx++)
         svr.rooms[ridx].orig_rtype = svr.rooms[ridx].rtype;
+#if 1
+    for (int x = 1; x < COLNO; x++)
+        for (int y = 0; y < ROWNO; y++) {
+            add_coating(x, y, COAT_GRASS, 0);
+    }
+#endif
 }
 
 void

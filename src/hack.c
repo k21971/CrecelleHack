@@ -2680,9 +2680,13 @@ domove_core(void)
         ) {
         char qbuf[QBUFSZ];
 
-        Snprintf(qbuf, sizeof qbuf, "%s into that %s cloud?",
-                 locomotion(gy.youmonst.data, "step"),
-                 (reg_damg(newreg) > 0) ? "poison gas" : "vapor");
+        if (is_gasregion(newreg))
+            Snprintf(qbuf, sizeof qbuf, "%s into that %s cloud?",
+                    locomotion(gy.youmonst.data, "step"),
+                    (reg_damg(newreg) > 0) ? "poison gas" : "vapor");
+        else
+            Snprintf(qbuf, sizeof qbuf, "%s into those raging flames?",
+                     locomotion(gy.youmonst.data, "step"));
         if (!paranoid_query(ParanoidConfirm, upstart(qbuf))) {
             nomul(0);
             svc.context.move = 0;
@@ -3161,6 +3165,7 @@ spoteffects(boolean pick)
     if (pooleffects(TRUE))
         goto spotdone;
 
+    slip_on_oil(u.ux, u.uy, &gy.youmonst);
     check_special_room(FALSE);
     if (IS_SINK(levl[u.ux][u.uy].typ) && Levitation)
         dosinkfall();

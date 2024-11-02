@@ -652,6 +652,14 @@ m_postmove_effect(struct monst *mtmp)
         create_gas_cloud(x, y, 1, 8);
     else if (mtmp->data == &mons[PM_STEAM_VORTEX] && !mtmp->mcan)
         create_gas_cloud(x, y, 1, 0); /* harmless vapor */
+    else if (mtmp->data == &mons[PM_FIRE_ELEMENTAL] && !mtmp->mcan)
+        create_bonfire(x, y, 1, rnd(4));
+    else if (mtmp->data == &mons[PM_ACID_BLOB] 
+            || mtmp->data == &mons[PM_GELATINOUS_CUBE]) {
+        add_coating(x, y, COAT_POTION, POT_ACID);
+    } else if (mtmp->data == &mons[PM_WATER_ELEMENTAL]) {
+        add_coating(x, y, COAT_POTION, POT_WATER);
+    }
 }
 
 /* returns 1 if monster died moving, 0 otherwise */
@@ -2015,6 +2023,8 @@ m_move(struct monst *mtmp, int after)
             worm_move(mtmp);
 
         maybe_unhide_at(mtmp->mx, mtmp->my);
+
+        slip_on_oil(mtmp->mx, mtmp->my, mtmp);
 
         mon_track_add(mtmp, omx, omy);
     } else {

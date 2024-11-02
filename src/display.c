@@ -2604,6 +2604,24 @@ map_glyphinfo(
         }
         glyphinfo->gm.glyphflags |= MG_HERO;
     }
+    /* If the floor has extra surface info, we need to track it to swap the color around. */
+    if (IS_COATABLE(levl[x][y].typ)
+        && glyph_is_cmap_a(glyph) &&  cansee(x, y)
+        && levl[x][y].coat_info) {
+        /* Order matters here. Generally the more important the coating, the higher
+            priority it gets. Potions are the highest because they could kill the player. */
+        if ((levl[x][y].coat_info & COAT_POTION) != 0)
+            glyphinfo->gm.sym.color = objects[levl[x][y].pindex].oc_color;
+        else if ((levl[x][y].coat_info & COAT_BLOOD) != 0)
+            glyphinfo->gm.sym.color = CLR_RED;
+        else if ((levl[x][y].coat_info & COAT_ASHES) != 0)
+            glyphinfo->gm.sym.color = CLR_WHITE;
+        else if ((levl[x][y].coat_info & COAT_GRASS) != 0)
+            glyphinfo->gm.sym.color = CLR_GREEN;
+        /* indicator for colorless games */
+        if (!iflags.use_color)
+            glyphinfo->gm.glyphflags |= MG_SURFACE;
+    }
     if (sysopt.accessibility == 1
         && (mgflags & MG_FLAG_NOOVERRIDE) && glyph_is_pet(glyph)) {
         /* one more accessibility kludge;
