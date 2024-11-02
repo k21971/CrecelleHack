@@ -24,6 +24,7 @@ staticfn void makevtele(void);
 staticfn void fill_ordinary_room(struct mkroom *, boolean) NONNULLARG1;
 staticfn void themerooms_post_level_generate(void);
 staticfn void makelevel(void);
+staticfn void coat_floors(void);
 staticfn boolean bydoor(coordxy, coordxy);
 staticfn void mktrap_victim(struct trap *);
 staticfn int traptype_rnd(unsigned);
@@ -1378,6 +1379,22 @@ mineralize(int kelp_pool, int kelp_moat, int goldprob, int gemprob,
             }
 }
 
+staticfn void
+coat_floors(void)
+{
+    for (int x = 0; x < COLNO; x++) {
+        for (int y = 0; y < ROWNO; y++) {
+            /* TODO: This is very, VERY quick and dirty. Theoretically, we 
+               should be doing this on a room by room basis and growing
+               patches of grass. */
+            if (!Is_special(&u.uz) && IS_ROOM(levl[x][y].typ) 
+                && !rn2(u.uz.dlevel))
+                add_coating(x, y, COAT_GRASS, 0);
+            if (svl.level.flags.arboreal) add_coating(x, y, COAT_GRASS, 0);
+        }
+    }
+}
+
 void
 level_finalize_topology(void)
 {
@@ -1386,6 +1403,7 @@ level_finalize_topology(void)
 
     bound_digging();
     mineralize(-1, -1, -1, -1, FALSE);
+    coat_floors();
     gi.in_mklev = FALSE;
     /* avoid coordinates in future lua-loads for this level being thrown off
      * because xstart and ystart aren't saved with the level and will be 0
@@ -1409,12 +1427,6 @@ level_finalize_topology(void)
        entered; svr.rooms[].orig_rtype always retains original rtype value */
     for (ridx = 0; ridx < SIZE(svr.rooms); ridx++)
         svr.rooms[ridx].orig_rtype = svr.rooms[ridx].rtype;
-#if 0
-    for (int x = 1; x < COLNO; x++)
-        for (int y = 0; y < ROWNO; y++) {
-            add_coating(x, y, COAT_GRASS, 0);
-    }
-#endif
 }
 
 void

@@ -1437,7 +1437,8 @@ bound_digging(void)
 
     for (x = 0; x < COLNO; x++)
         for (y = 0; y < ROWNO; y++)
-            if (y <= ymin || y >= ymax || x <= xmin || x >= xmax)
+            if ((y <= ymin || y >= ymax || x <= xmin || x >= xmax)
+                && IS_ROCK(levl[x][y].typ))
                 levl[x][y].wall_info |= W_NONDIGGABLE;
 }
 

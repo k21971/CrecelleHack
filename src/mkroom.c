@@ -383,6 +383,8 @@ fill_zoo(struct mkroom *sroom)
                                      TRUE, FALSE);
                 if (!rn2(5))
                     make_grave(sx, sy, (char *) 0);
+                if (!rn2(3))
+                    add_coating(sx, sy, COAT_ASHES, 0);
                 break;
             case BEEHIVE:
                 if (!rn2(3))
@@ -559,9 +561,12 @@ mkswamp(void) /* Michiel Huisjes & Fred de Wilde */
                                            sx, sy, NO_MM_FLAGS);
                             eelct++;
                         }
-                    } else if (!rn2(4)) /* swamps tend to be moldy */
+                    } else if (!rn2(4)) {/* swamps tend to be moldy */
                         (void) makemon(mkclass(S_FUNGUS, 0), sx, sy,
                                        NO_MM_FLAGS);
+                    } else { /* swamps tend to have a lot of grass */
+                        add_coating(sx, sy, COAT_GRASS, 0);
+                    }
                 }
             }
         svl.level.flags.has_swamp = 1;

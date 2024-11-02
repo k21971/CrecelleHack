@@ -45,6 +45,8 @@
   - Potions should alchemize on the floor when shed by a monster, not
     only when a potion splatters. Need to pull out a function.
   - inside_bonfire() code needs serious cleanup!
+  - Special rooms are outlined by a coating due to some type of flag
+    collision.
 
 # Roles and Races
 - Roles are not restricted by race, with the exception of
