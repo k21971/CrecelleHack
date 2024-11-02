@@ -1387,7 +1387,8 @@ coat_floors(void)
             /* TODO: This is very, VERY quick and dirty. Theoretically, we 
                should be doing this on a room by room basis and growing
                patches of grass. */
-            if (!Is_special(&u.uz) && IS_ROOM(levl[x][y].typ) 
+            if (!Is_special(&u.uz) && !In_hell(&u.uz) && !In_endgame(&u.uz)
+                && IS_ROOM(levl[x][y].typ) 
                 && !rn2(u.uz.dlevel))
                 add_coating(x, y, COAT_GRASS, 0);
             if (svl.level.flags.arboreal) add_coating(x, y, COAT_GRASS, 0);
