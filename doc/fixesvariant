@@ -32,6 +32,8 @@
   Basic: +1
   Skilled: +2
   Expert: +3
+- To compensate for the new to-hit and damage bonuses, the player
+  starts the game with no skills allocated to their weapons.
 
 # Floor Coating System
 - Floors can be coated with various substances, such as potions and grass.
