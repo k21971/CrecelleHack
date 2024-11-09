@@ -1376,7 +1376,7 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
         /* Make trip */
         if (wep) {
             pline("%s attempts to trip you with %s %s.",
-                  mhis(magr), xname(wep));
+                  Monnam(magr), mhis(magr), xname(wep));
         } else {
             pline("%s attempts to trip you.", Monnam(magr));
         }
