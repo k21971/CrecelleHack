@@ -670,7 +670,8 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
                             rn2(2) ? QUARTERSTAFF
                             : rn2(3) ? SMALL_SHIELD
                             : rn2(3) ? CLUB
-                            : rn2(3) ? ELVEN_SPEAR : BOOMERANG,
+                            : rn2(3) ? ELVEN_SPEAR
+                            : rn2(3) ? SHEPHERD_S_CROOK : BOOMERANG,
                             x, y, TRUE, FALSE);
         }
         free_mgivenname(mtmp);

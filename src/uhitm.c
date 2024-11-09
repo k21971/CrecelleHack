@@ -411,6 +411,8 @@ find_roll_to_hit(
         tmp -= (tmp2 * 2) - 1;
     if (u.utrap)
         tmp -= 3;
+    if (Prone)
+        tmp -= 3;
 
     /*
      * hitval applies if making a weapon attack while wielding a weapon;

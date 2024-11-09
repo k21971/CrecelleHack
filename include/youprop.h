@@ -382,6 +382,8 @@
 
 #define Lifesaved u.uprops[LIFESAVED].extrinsic
 
+#define Prone u.uprops[PRONE].extrinsic
+
 /*
  * Some pseudo-properties.
  */

@@ -1887,6 +1887,8 @@ struct ext_func_tab extcmdlist[] = {
               dotip, AUTOCOMPLETE | CMD_M_PREFIX, NULL },
     { '_',    "travel", "travel to a specific location on the map",
               dotravel, CMD_M_PREFIX, NULL },
+    { '\0',   "trip", "trip a nearby monster",
+              dotrip,  AUTOCOMPLETE, NULL },
     { M('t'), "turn", "turn undead away",
               doturn, IFBURIED | AUTOCOMPLETE, NULL },
     { 'X',    "twoweapon", "toggle two-weapon combat",
@@ -4146,6 +4148,7 @@ enum menucmd {
     MCMD_LOOK_HERE,
     MCMD_LOOK_AT,
     MCMD_ATTACK_NEXT2U,
+    MCMD_TRIP,
     MCMD_UNTRAP_HERE,
     MCMD_OFFER,
     MCMD_INVENTORY,
@@ -4348,6 +4351,8 @@ there_cmd_menu_next2u(
 
     if ((mtmp && !(mtmp->mpeaceful || mtmp->mtame))
         || glyph_is_invisible(glyph_at(x, y))) {
+        Sprintf(buf, "Trip %s", mtmp ? mon_nam(mtmp) : "unseen creature");
+        mcmd_addmenu(win, MCMD_TRIP, buf), ++K;
         Sprintf(buf, "Attack %s", mtmp ? mon_nam(mtmp) : "unseen creature");
         mcmd_addmenu(win, MCMD_ATTACK_NEXT2U, buf), ++K;
         /* attacking overrides any other automatic action */
@@ -4494,6 +4499,10 @@ act_on_act(
     case MCMD_ATTACK_NEXT2U:
         dir = xytod(dx, dy);
         cmdq_add_ec(CQ_CANNED, move_funcs[dir][MV_WALK]);
+        break;
+    case MCMD_TRIP:
+        dir = xytod(dx, dy);
+        cmdq_add_ec(CQ_CANNED, dotrip);
         break;
     case MCMD_TALK:
         cmdq_add_ec(CQ_CANNED, dotalk);

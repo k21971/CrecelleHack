@@ -1001,6 +1001,8 @@ genl_status_update(
                 Strcpy(nb = eos(nb), " FoodPois");
             if (cond & BL_MASK_TERMILL)
                 Strcpy(nb = eos(nb), " TermIll");
+            if (cond & BL_MASK_PRONE)
+                Strcpy(nb = eos(nb), " Prone");
             if (cond & BL_MASK_BLIND)
                 Strcpy(nb = eos(nb), " Blind");
             if (cond & BL_MASK_DEAF)

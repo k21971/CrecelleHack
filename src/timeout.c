@@ -107,6 +107,7 @@ static const struct propname {
     { REFLECTING, "reflecting" },
     { FREE_ACTION, "free action" },
     { FIXED_ABIL, "fixed abilities" },
+    { PRONE, "knocked prone" },
     { LIFESAVED, "life will be saved" },
     {  0, 0 },
 };

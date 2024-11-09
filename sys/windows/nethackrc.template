@@ -221,6 +221,7 @@ OPTIONS=hilite_status:hunger/satiated/yellow/hungry/orange/weak/red&bold/faintin
 OPTIONS=hilite_status:condition/hallu/yellow
 OPTIONS=hilite_status:condition/conf/orange
 OPTIONS=hilite_status:condition/stun/red&bold
+OPTIONS=hilite_status:condition/prone/orange&bold
 
 ## Health
 OPTIONS=hilite_status:condition/termill/red&inverse

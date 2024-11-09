@@ -1290,6 +1290,10 @@ dog_move(
         wasseen = canseemon(mtmp);
         remove_monster(omx, omy);
         place_monster(mtmp, nix, niy);
+        if (mtmp->mprone) {
+            mtmp->mprone = 0;
+            if (wasseen) pline("%s regains %s footing.", Monnam(mtmp), mhis(mtmp));
+        }
         if (cursemsg[chi] && (wasseen || canseemon(mtmp))) {
             /* describe top item of pile, not necessarily cursed item itself;
                don't use glyph_at() here--it would return the pet but we want

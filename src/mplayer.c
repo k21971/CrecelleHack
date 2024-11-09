@@ -181,7 +181,7 @@ mk_mplayer(struct permonst *ptr, coordxy x, coordxy y, boolean special)
             break;
         case PM_HEALER:
             if (rn2(4))
-                weapon = QUARTERSTAFF;
+                weapon = SHEPHERD_S_CROOK;
             else if (rn2(2))
                 weapon = rn2(2) ? UNICORN_HORN : SCALPEL;
             if (rn2(4))

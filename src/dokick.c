@@ -1252,6 +1252,166 @@ kick_nondoor(coordxy x, coordxy y, int avrg_attrib)
     return ECMD_TIME;
 }
 
+/* the #trip command */
+int
+dotrip(void)
+{
+    coordxy x, y;
+    boolean no_trip = FALSE;
+    boolean trip_wep = uwep && is_tripweapon(uwep);
+    struct monst *target;
+
+    if (Hallucination) {
+        pline("You're already tripping!");
+        no_trip = TRUE;
+    } else if (nolimbs(gy.youmonst.data) || (Upolyd && !is_tripper(gy.youmonst.data))) {
+        You("have no means of tripping anyone in your current form.");
+        no_trip = TRUE;
+    } else if (u.usteed) {
+        if (yn_function("Trip your steed?", ynchars, 'y', TRUE) == 'y') {
+            dismount_steed(DISMOUNT_FELL);
+        }
+        no_trip = TRUE;
+    } else if (Wounded_legs && !trip_wep) {
+        legs_in_no_shape("tripping", FALSE);
+        no_trip = TRUE;
+    } else if (u.uswallow) {
+        You("are already on an incredible trip.");
+        no_trip = TRUE;
+    } else if (u.utrap  && !trip_wep 
+                && (u.utraptype == TT_BEARTRAP || u.utraptype == TT_PIT)) {
+        pline("Your leg is in no position to trip anyone.");
+    }
+
+
+    if (no_trip) {
+        display_nhwindow(WIN_MESSAGE, TRUE); /* --More-- */
+        return ECMD_FAIL;
+    }
+
+    if (!getdir((char *) 0))
+        return ECMD_CANCEL;
+    if (!u.dx && !u.dy) {
+        if (Prone)
+            You("flounder.");
+        else
+            You("trip yourself!");
+        make_prone();
+        return ECMD_TIME;
+    }
+
+    x = u.ux + u.dx;
+    y = u.uy + u.dy;
+
+    if (!isok(x, y))
+        return ECMD_CANCEL;
+
+    target = m_at(x, y);
+    if (!target) {
+        You("lash out at nothing.");
+        return ECMD_OK;
+    }
+    if (target->mprone) {
+        pline("%s is already prone.", Monnam(target));
+        return ECMD_CANCEL;
+    }
+    trip_monster(&gy.youmonst, target, uwep);
+    return ECMD_TIME;
+}
+
+/* Execute a tripping attempt */
+int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
+    int trip_diff = 10;
+    int trip_roll = rn2(20);
+    int tmp;
+    if (wep) {
+        trip_diff -= 2;
+        trip_diff -= wep->spe;
+    }
+    if (!is_trippable(mdef->data)) {
+        trip_diff += 100;
+    }
+
+    switch (P_SKILL(P_RIDING)) {
+        case P_BASIC:
+            tmp = 1;
+            break;
+        case P_SKILLED:
+            tmp = 2;
+            break;
+        case P_EXPERT:
+            tmp = 3;
+            break;
+        default:
+            tmp = 0;
+            break;
+    }
+
+    if (magr == &gy.youmonst) {
+        You("attempt to trip %s.", Monnam(mdef));
+        display_nhwindow(WIN_MESSAGE, TRUE);
+        trip_diff -= tmp;
+        trip_diff += (magr->m_lev / 10);
+        if (Wounded_legs && !wep)
+            trip_diff += 5;
+        /* Make trip */
+        if (trip_roll > trip_diff) {
+            pline("%s is knocked to the %s!", 
+                    Monnam(mdef), surface(mdef->mx, mdef->my));
+            mdef->mprone = 1;
+            setmangry(mdef, TRUE);
+            if (mdef->mtame) abuse_dog(mdef);
+            mselftouch(mdef, "Falling, ", TRUE);
+            use_skill(P_TRIPPING, 1);
+        } else if (wep) {
+            pline("%s avoids the sweep of %s.", Monnam(mdef), the(xname(wep)));
+        } else {
+            pline("%s avoids your %s.", Monnam(mdef), body_part(LEG));
+        }
+    } else {
+        if (Wounded_legs)
+            trip_diff -= 5;
+        trip_diff -= (magr->m_lev / 10);
+        trip_diff += tmp;
+        /* Make trip */
+        if (wep) {
+            pline("%s attempts to trip you with %s %s.",
+                  mhis(magr), xname(wep));
+        } else {
+            pline("%s attempts to trip you.", Monnam(magr));
+        }
+        display_nhwindow(WIN_MESSAGE, TRUE);
+        if (trip_roll > trip_diff) {
+            You("are knocked to the %s!", surface(u.ux, u.uy));
+            make_prone();
+        } else {
+            You("avoid the trip.");
+            use_skill(P_TRIPPING, 1);
+        }
+        return 1;
+    }
+    return 0;
+}
+
+/* Make the player prone. */
+void
+make_prone(void) {
+    stairway *stway;
+    u.uprops[PRONE].extrinsic = 1L;
+    disp.botl = TRUE;
+    selftouch("As you tumble, you");
+    if (has_coating(u.ux, u.uy, COAT_POTION)) {
+        struct obj fakeobj = cg.zeroobj;
+        fakeobj.cursed = TRUE;
+        fakeobj.otyp = levl[u.ux][u.uy].pindex;
+        potionbreathe(&fakeobj);
+    }
+    if ((stway = stairway_at(u.ux, u.uy)) != 0 && !stway->up) {
+        u.dz = 1;
+        next_level(TRUE);
+    }
+}
+
 /* the #kick command */
 int
 dokick(void)

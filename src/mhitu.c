@@ -679,6 +679,16 @@ mattacku(struct monst *mtmp)
         return 0;
     }
 
+    /* monster might attempt a trip to gain an advantage */
+    if (!ranged && (is_tripper(mtmp->data) 
+          || (MON_WEP(mtmp) && is_tripweapon(MON_WEP(mtmp))))
+        && !Prone && !Flying && !Levitation 
+        && is_trippable(gy.youmonst.data) && (u.uhp > mtmp->m_lev)
+        && !rn2((10 - u.uac > mtmp->m_lev) ? 8 : 100)) {
+        trip_monster(mtmp, &gy.youmonst, MON_WEP(mtmp));
+        return 0;
+    }
+
     /*  Work out the armor class differential   */
     tmp = AC_VALUE(u.uac) + 10; /* tmp ~= 0 - 20 */
     tmp += mtmp->m_lev;
@@ -687,6 +697,8 @@ mattacku(struct monst *mtmp)
     if ((Invis && !perceives(mdat)) || !mtmp->mcansee)
         tmp -= 2;
     if (mtmp->mtrapped)
+        tmp -= 2;
+    if (mtmp->mprone)
         tmp -= 2;
     if (tmp <= 0)
         tmp = 1;

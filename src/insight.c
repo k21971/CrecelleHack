@@ -1019,6 +1019,8 @@ status_enlightenment(int mode, int final)
     }
     if (Vomiting)
         you_are("nauseated", "");
+    if (Prone)
+        you_are("prone", "");
     if (Stunned)
         you_are("stunned", "");
     if (Confusion)

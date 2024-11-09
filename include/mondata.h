@@ -156,6 +156,9 @@
 #define is_displacer(ptr) (((ptr)->mflags3 & M3_DISPLACES) != 0L)
 #define is_ambusher(ptr) ((ptr)->mflags3 & M3_AMBUSHER)
 #define is_traitor(ptr) ((ptr)->mflags3 & M3_TRAITOR)
+#define is_tripper(ptr) ((ptr)->mflags3 & M3_TRIPPER)
+#define is_trippable(ptr) ((ptr)->mlet != S_BLOB && (ptr)->mlet != S_JELLY \
+                            && grounded(ptr))
 #define is_mplayer(ptr) \
     (((ptr) >= &mons[PM_ARCHEOLOGIST]) && ((ptr) <= &mons[PM_WIZARD]))
 #define is_watch(ptr) \

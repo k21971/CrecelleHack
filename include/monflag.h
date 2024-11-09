@@ -175,6 +175,7 @@ enum ms_sounds {
 #define M3_DISPLACES    0x0400 /* moves monsters out of its way */
 #define M3_AMBUSHER     0x0800 /* monster uses advanced corridor tactics */
 #define M3_TRAITOR      0x1000 /* monster can turn traitor (SLASH'EM)*/
+#define M3_TRIPPER      0x2000 /* monster can trip the player */
 
 #define MZ_TINY         0 /* < 2' */
 #define MZ_SMALL        1 /* 2-4' */

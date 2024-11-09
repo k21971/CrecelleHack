@@ -83,3 +83,12 @@
 - Potions leave behind empty bottles when drunk. These bottles
   can be refilled with water at fountains, sinks, and other
   locations.
+
+## Commands
+- #trip: Trip a monster.
+  - Tripping traditionally uses one's lower body, but polearms,
+    whips, and flails can be used to trip as well.
+  - Being tripped puts one into a downed state. Until one moves
+    to a different location, AC and to-hit are reduced.
+  - Select monsters or monsters wielding tripping weapons will
+    sometimes attempt to trip the player.

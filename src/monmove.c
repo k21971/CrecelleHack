@@ -2026,6 +2026,13 @@ m_move(struct monst *mtmp, int after)
 
         slip_on_oil(mtmp->mx, mtmp->my, mtmp);
 
+        /* Reset prone */
+        if (mtmp->mprone) {
+            if (canseemon(mtmp)) 
+                pline("%s regains %s footing.", Monnam(mtmp), mhis(mtmp));
+            mtmp->mprone = 0;
+        }
+
         mon_track_add(mtmp, omx, omy);
     } else {
         if (is_unicorn(ptr) && rn2(2) && !tele_restrict(mtmp)) {

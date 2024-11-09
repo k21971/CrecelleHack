@@ -2399,7 +2399,11 @@ find_ac(void)
         uac -= 2; /* fixed amount; main benefit is to MC */
 
     /* armor class from dexterity */
-    uac -= AMOD(A_DEX);
+    if (!Prone)
+        uac -= AMOD(A_DEX);
+
+    if (Prone)
+        uac += 3;
 
     /* armor class from other sources */
     if (HProtection & INTRINSIC)

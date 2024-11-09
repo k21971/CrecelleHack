@@ -263,6 +263,13 @@ struct obj {
     ((objects[(o)->otyp].oc_material == GEMSTONE             \
              || (objects[(o)->otyp].oc_material == MINERAL))        \
          && (o)->oclass != RING_CLASS)
+/* can be used for trip attempts */
+#define is_tripweapon(otmp) \
+    ((otmp->oclass == WEAPON_CLASS || otmp->oclass == TOOL_CLASS) \
+     && (objects[otmp->otyp].oc_skill == P_POLEARMS \
+        || objects[otmp->otyp].oc_skill == P_WHIP \
+        || objects[otmp->otyp].oc_skill == P_FLAIL \
+        || otmp->otyp == SHEPHERD_S_CROOK))
 
 /* Armor */
 #define is_shield(otmp)          \

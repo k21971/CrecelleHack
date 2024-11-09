@@ -2911,6 +2911,13 @@ domove_core(void)
         invocation_message();
     }
 
+    /* Stand up from prone */
+    if (Prone) {
+        You("get to your %s.", makeplural(body_part(FOOT)));
+        u.uprops[PRONE].extrinsic = 0L;
+        disp.botl = TRUE;
+    }
+
     if (Punished) /* put back ball and chain */
         move_bc(0, bc_control, ballx, bally, chainx, chainy);
 
