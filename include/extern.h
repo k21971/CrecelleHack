@@ -1332,6 +1332,7 @@ extern void silly_thing(const char *, struct obj *) NONNULLARG1;
 extern void sync_perminvent(void);
 extern void perm_invent_toggled(boolean negated);
 extern void prepare_perminvent(winid window);
+extern struct obj *carrying_stoning_corpse(void);
 
 /* ### ioctl.c ### */
 
@@ -1491,6 +1492,11 @@ extern int gazemu(struct monst *, struct attack *) NONNULLARG12;
 extern void mdamageu(struct monst *, int) NONNULLARG1;
 extern int could_seduce(struct monst *, struct monst *, struct attack *) NONNULLARG12;
 extern int doseduce(struct monst *) NONNULLARG1;
+extern boolean mon_avoiding_this_attack(struct monst *, int) NONNULLARG1;
+/* extern boolean ranged_attk_assessed(struct monst *mtmp,
+                             boolean (*assessfunct)(struct monst *, int)) NONNULLARG1;
+*/
+extern boolean ranged_attk_available(struct monst *mtmp) NONNULLARG1;
 
 /* ### minion.c ### */
 
@@ -2366,6 +2372,7 @@ extern int loot_mon(struct monst *, int *, boolean *) NO_NNARGS;
 extern int dotip(void);
 extern struct autopickup_exception *check_autopickup_exceptions(struct obj *) NONNULLARG1;
 extern boolean autopick_testobj(struct obj *, boolean) NONNULLARG1;
+extern boolean u_safe_from_fatal_corpse(struct obj *obj, int) NONNULLARG1;
 
 /* ### pline.c ### */
 
