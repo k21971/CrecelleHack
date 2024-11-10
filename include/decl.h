@@ -1197,6 +1197,7 @@ struct instance_globals_saved_p {
     char plname[PL_NSIZ]; /* player name */
     char pl_character[PL_CSIZ];
     char pl_fruit[PL_FSIZ];
+    char pl_taunt[PL_TSIZ];
 };
 
 struct instance_globals_saved_q {

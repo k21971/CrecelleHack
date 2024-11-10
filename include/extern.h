@@ -2935,6 +2935,7 @@ extern char *get_sound_effect_filename(int32_t seidint,
 extern char *base_soundname_to_filename(char *, char *, size_t, int32_t) NONNULLARG1;
 extern void set_voice(struct monst *, int32_t, int32_t, int32_t) NO_NNARGS;
 extern void sound_speak(const char *) NO_NNARGS;
+extern int dotaunt(void);
 
 /* ### sp_lev.c ### */
 

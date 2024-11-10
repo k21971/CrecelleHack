@@ -332,6 +332,7 @@ savegamestate(NHFILE *nhfp)
         bwrite(nhfp->fd, (genericptr_t) svp.pl_character,
                sizeof svp.pl_character);
         bwrite(nhfp->fd, (genericptr_t) svp.pl_fruit, sizeof svp.pl_fruit);
+        bwrite(nhfp->fd, (genericptr_t) svp.pl_taunt, sizeof svp.pl_taunt);
     }
     savefruitchn(nhfp);
     savenames(nhfp);

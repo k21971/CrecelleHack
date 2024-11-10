@@ -1868,6 +1868,8 @@ struct ext_func_tab extcmdlist[] = {
               dotakeoff, 0, NULL },
     { 'A',    "takeoffall", "remove all armor",
               doddoremarm, 0, NULL },
+    { '\0',    "taunt", "taunt your foes to show off",
+              dotaunt, IFBURIED | AUTOCOMPLETE, NULL },
     { C('t'), "teleport", "teleport around the level",
               dotelecmd, IFBURIED | CMD_M_PREFIX, NULL },
     /* \177 == <del> aka <delete> aka <rubout>; some terminals have an
@@ -4123,6 +4125,7 @@ enum menucmd {
     MCMD_KICK_DOOR,
     MCMD_CLOSE_DOOR,
     MCMD_SEARCH,
+    MCMD_TAUNT,
     MCMD_LOOK_TRAP,
     MCMD_UNTRAP_TRAP,
     MCMD_MOVE_DIR,
@@ -4247,6 +4250,7 @@ there_cmd_menu_self(winid win, coordxy x, coordxy y, int *act UNUSED)
     }
     mcmd_addmenu(win, MCMD_REST, "Rest one turn"), ++K;
     mcmd_addmenu(win, MCMD_SEARCH, "Search around you"), ++K;
+    mcmd_addmenu(win, MCMD_TAUNT, "Taunt nearby creatures"), ++K;
     mcmd_addmenu(win, MCMD_LOOK_HERE, "Look at what is here"), ++K;
 
     if (num_spells() > 0)
@@ -4465,6 +4469,9 @@ act_on_act(
         break;
     case MCMD_SEARCH:
         cmdq_add_ec(CQ_CANNED, dosearch);
+        break;
+    case MCMD_TAUNT:
+        cmdq_add_ec(CQ_CANNED, dotaunt);
         break;
     case MCMD_LOOK_TRAP:
         cmdq_add_ec(CQ_CANNED, doidtrap);

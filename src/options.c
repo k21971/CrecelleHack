@@ -1675,6 +1675,31 @@ optfn_font_text(
 }
 
 staticfn int
+optfn_taunt(
+    int optidx, int req, boolean negated UNUSED,
+    char *opts, char *op)
+{
+    if (req == do_init) {
+        return optn_ok;
+    }
+    if (req == do_set) {
+        /* name:string */
+
+        if ((op = string_for_env_opt(allopt[optidx].name, opts, FALSE))
+            != empty_optstr) {
+            nmcpy(svp.pl_taunt, op, PL_TSIZ);
+        } else
+            return optn_err;
+        return optn_ok;
+    }
+    if (req == get_val || req == get_cnf_val) {
+        Sprintf(opts, "%s", svp.pl_taunt);
+        return optn_ok;
+    }
+    return optn_ok;
+}
+
+staticfn int
 optfn_fruit(
     int optidx UNUSED, int req, boolean negated,
     char *opts, char *op)

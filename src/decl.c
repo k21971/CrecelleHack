@@ -988,6 +988,7 @@ static const struct instance_globals_saved_p init_svp = {
     DUMMY,                               /* plname */
     DUMMY,                               /* pl_character */
     DUMMY,                               /* pl_fruit */
+    DUMMY,                               /* pl_taunt */
 };
 
 static const struct instance_globals_saved_q init_svq = {

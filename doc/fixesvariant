@@ -94,3 +94,5 @@
     to a different location, AC and to-hit are reduced.
   - Select monsters or monsters wielding tripping weapons will
     sometimes attempt to trip the player.
+- #taunt: Taunt nearby monsters.
+  - Wastes a few turns and wakes up nearby monsters.

@@ -2201,4 +2201,39 @@ sound_speak(const char *text SPEECHONLY)
 #endif
 }
 
+int
+dotaunt(void)
+{
+    boolean defiant = critically_low_hp(TRUE);
+    if (svp.pl_taunt[0] != '\0') {
+        You("%s", svp.pl_taunt);
+        /* TODO: Make multireason the custom taunt? */
+    } else {
+        switch (Role_switch) {
+        case PM_CAVE_DWELLER:
+            You("let loose a %s war scream!", 
+                defiant ? "defiant" : "thunderous");
+            break;
+        case PM_KNIGHT:
+            You("%simpugn your enemies' honor.", 
+                defiant ? "defiantly " : "");
+            break;
+        default:
+            if (u.ualign.type == A_LAWFUL) {
+                You("issue a %s challenge to your enemies.",
+                    defiant ? "defiant" : "loud");
+            } else {
+                You("%s mock your enemies.",
+                    defiant ? "defiantly" : "thoroughly");
+            }
+            break;
+        }
+    }
+    nomul(-3);
+    gm.multi_reason = rn2(2) ? "taunting" : "showing off";
+    gn.nomovemsg = "";
+    wake_nearby(FALSE);
+    return ECMD_TIME;
+}
+
 /*sounds.c*/

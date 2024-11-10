@@ -731,6 +731,8 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTC(symset, Map, 70, opt_in, set_in_game,
                 No, Yes, No, Yes, NoAlias,
                 "load a set of display symbols from symbols file")
+    NHOPTC(taunt, General, PL_TSIZ, opt_in, set_in_game,
+                No, Yes, No, No, NoAlias, "custom taunt text")
     NHOPTC(term_cols, Advanced, 6, opt_in, set_in_config,
                 No, Yes, No, No, "termcolumns", "number of columns")
     NHOPTC(term_rows, Advanced, 6, opt_in, set_in_config,

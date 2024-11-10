@@ -680,6 +680,7 @@ restgamestate(NHFILE *nhfp)
     if (nhfp->structlevel) {
         Mread(nhfp->fd, svp.pl_character, sizeof svp.pl_character);
         Mread(nhfp->fd, svp.pl_fruit, sizeof svp.pl_fruit);
+        Mread(nhfp->fd, svp.pl_taunt, sizeof svp.pl_taunt);
     }
     freefruitchn(gf.ffruit); /* clean up fruit(s) made by initoptions() */
     gf.ffruit = loadfruitchn(nhfp);
