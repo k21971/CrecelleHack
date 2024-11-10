@@ -122,7 +122,8 @@ hack_artifact_otyps(void)
         } else {
             do {
                 otyp = rn2(BULLWHIP - SPEAR) + SPEAR;
-            } while (objects[art->otyp].oc_dir != objects[otyp].oc_dir);
+            } while (!(objects[otyp].oc_dir & objects[art->otyp].oc_dir)
+                     || objects[otyp].oc_skill == P_POLEARMS);
             artiotypes[i] = otyp;
         }
         i++;
