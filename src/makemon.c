@@ -420,8 +420,10 @@ m_initweap(struct monst *mtmp)
                 (void) mongets(mtmp, SCIMITAR);
             if (!rn2(3))
                 (void) mongets(mtmp, ORCISH_SHIELD);
-            if (!rn2(3))
+            if (!rn2(5))
                 (void) mongets(mtmp, KNIFE);
+            if (!rn2(5))
+                (void) mongets(mtmp, FALCHION);
             if (!rn2(3))
                 (void) mongets(mtmp, ORCISH_CHAIN_MAIL);
             break;
