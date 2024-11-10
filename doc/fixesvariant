@@ -85,6 +85,9 @@
 - Potions leave behind empty bottles when drunk. These bottles
   can be refilled with water at fountains, sinks, and other
   locations.
+- New Weapon: Shepherd's Crook
+  - Similar to a quarterstaff.
+  - Can be used for tripping purposes.
 
 ## Commands
 - #trip: Trip a monster.
@@ -96,3 +99,4 @@
     sometimes attempt to trip the player.
 - #taunt: Taunt nearby monsters.
   - Wastes a few turns and wakes up nearby monsters.
+  - A custom taunt can be defined in the options file.
