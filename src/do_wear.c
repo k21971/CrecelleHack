@@ -2371,7 +2371,7 @@ doputon(void)
     return otmp ? accessory_or_armor_on(otmp) : ECMD_CANCEL;
 }
 
-/* calculate current armor class */
+/* calculate current armor class and magic cancellation */
 void
 find_ac(void)
 {
@@ -2431,6 +2431,8 @@ find_ac(void)
         else if (u.uac <= 0)
             record_achievement(ACH_AC_00);
 #endif
+
+    u.umc = magic_negation(&gy.youmonst);
     }
 }
 

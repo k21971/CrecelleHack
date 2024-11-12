@@ -1776,14 +1776,8 @@ attributes_enlightenment(
             you_have(enlght_combatinc("defense", prot, final, buf), "");
     }
     if ((armpro = magic_negation(&gy.youmonst)) > 0) {
-        /* magic cancellation factor, conferred by worn armor */
-        static const char *const mc_types[] = {
-            "" /*ordinary*/, "warded", "guarded", "protected",
-        };
-        /* sanity check */
-        if (armpro >= SIZE(mc_types))
-            armpro = SIZE(mc_types) - 1;
-        you_are(mc_types[armpro], "");
+        Sprintf(buf, "%d%% warding from special attacks", armpro);
+        you_have(buf, "");
     }
     if (Half_physical_damage)
         enlght_halfdmg(HALF_PHDAM, final);

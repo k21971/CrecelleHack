@@ -575,6 +575,7 @@ static struct istat_s initblstats[MAXBLSTATS] = {
     INIT_BLSTAT("power-max", "(%s)", ANY_INT, 10, BL_ENEMAX),
     INIT_BLSTATP("experience-level", " Xp:%s", ANY_INT, 10, BL_EXP, BL_XP),
     INIT_BLSTAT("armor-class", " AC:%s", ANY_INT, 10, BL_AC),
+    INIT_BLSTAT("magic-cancellation", " MC:%s%%", ANY_INT, 10, BL_MC),
     INIT_BLSTAT("HD", " HD:%s", ANY_INT, 10, BL_HD),
     INIT_BLSTAT("time", " T:%s", ANY_LONG, 20, BL_TIME),
     /* hunger used to be 'ANY_UINT'; see note below in bot_via_windowport() */
@@ -868,6 +869,9 @@ bot_via_windowport(void)
 
     /* Armor class */
     gb.blstats[idx][BL_AC].a.a_int = u.uac;
+
+    /* MC */
+    gb.blstats[idx][BL_MC].a.a_int = u.umc;
 
     /* Monster level (if Upolyd) */
     gb.blstats[idx][BL_HD].a.a_int = Upolyd ? (int) mons[u.umonnum].mlevel : 0;
@@ -1946,6 +1950,7 @@ static const struct fieldid_t {
     { "xl",       BL_XP },
     { "xplvl",    BL_XP },
     { "ac",       BL_AC },
+    { "mc",       BL_MC },
     { "hit-dice", BL_HD },
     { "turns",    BL_TIME },
     { "hp",       BL_HP },

@@ -457,6 +457,7 @@ struct you {
     schar uhitinc;
     schar udaminc;
     schar uac;
+    uchar umc;
 #define AC_MAX    99  /* abs(u.uac) <= 99; likewise for monster AC */
     uchar uspellprot;        /* protection by SPE_PROTECTION */
     uchar usptime;           /* #moves until uspellprot-- */

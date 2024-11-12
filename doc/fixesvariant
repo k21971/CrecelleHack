@@ -11,6 +11,16 @@
     Sunsword cannot be a mace.
   - The brands are always the same type.
 
+## Armor
+
+  - MC: Chance of cancelling a special effect.
+    - Every piece of armor adds some amount of magic cancellation.
+    - Maxes out at 90%.
+    - Each point of enchantment reduces the MC of that piece of equipment by 1%.
+
+## GUI
+- MC is displayed on the status line as a percentage.
+
 ## Weapons
 - Some weapons are "finesse weapons." To-hit bonuses with
   finesse weapons are determined based on strength or

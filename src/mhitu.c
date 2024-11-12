@@ -1067,9 +1067,8 @@ magic_negation(struct monst *mon)
 {
     struct obj *o;
     long wearmask;
-    int armpro, mc = 0;
+    int mc = 0;
     boolean is_you = (mon == &gy.youmonst),
-            via_amul = FALSE,
             gotprot = is_you ? (EProtection != 0L)
                              /* high priests have innate protection */
                              : (mon->data == &mons[PM_HIGH_CLERIC]);
@@ -1077,11 +1076,9 @@ magic_negation(struct monst *mon)
     for (o = is_you ? gi.invent : mon->minvent; o; o = o->nobj) {
         /* a_can field is only applicable for armor (which must be worn) */
         if ((o->owornmask & W_ARMOR) != 0L) {
-            armpro = objects[o->otyp].a_can;
-            if (armpro > mc)
-                mc = armpro;
-        } else if ((o->owornmask & W_AMUL) != 0L) {
-            via_amul = (o->otyp == AMULET_OF_GUARDING);
+            mc += max(0, (objects[o->otyp].a_can) - o->spe);
+        } else if ((o->owornmask & W_AMUL) != 0L && o->otyp == AMULET_OF_GUARDING) {
+            mc += 30;
         }
         /* if we've already confirmed Protection, skip additional checks */
         if (is_you || gotprot)
@@ -1095,21 +1092,16 @@ magic_negation(struct monst *mon)
             gotprot = TRUE;
     }
 
-    if (gotprot) {
-        /* extrinsic Protection increases mc by 1 (2 for amulet of guarding);
-           multiple sources don't provide multiple increments */
-        mc += via_amul ? 2 : 1;
-        if (mc > 3)
-            mc = 3;
-    } else if (mc < 1) {
+    if (mc < 30) {
         /* intrinsic Protection is weaker (play balance; obtaining divine
            protection is too easy); it confers minimum mc 1 instead of 0 */
         if ((is_you && ((HProtection && u.ublessed > 0) || u.uspellprot))
             /* aligned priests and angels have innate intrinsic Protection */
             || (mon->data == &mons[PM_ALIGNED_CLERIC]
                 || is_minion(mon->data)))
-            mc = 1;
+            mc = 30;
     }
+    if (mc > 90) mc = 90;
     return mc;
 }
 

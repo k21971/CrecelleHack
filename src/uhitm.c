@@ -81,7 +81,7 @@ mhitm_mgc_atk_negated(
         return TRUE; /* no message if attacker has been cancelled */
 
     armpro = magic_negation(mdef);
-    negated = !(rn2(10) >= 3 * armpro);
+    negated = rn2(100) < armpro;
     if (negated) {
         /* attack has been thwarted by negation, aka magical cancellation */
         if (verbosely) {
