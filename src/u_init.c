@@ -860,6 +860,7 @@ u_init_race(void)
         knows_object(ORCISH_SHIELD, FALSE);
         knows_object(URUK_HAI_SHIELD, FALSE);
         knows_object(ORCISH_CLOAK, FALSE);
+        knows_object(DUAL_AXE, FALSE);
         break;
 
     default: /* impossible */

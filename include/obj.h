@@ -271,6 +271,9 @@ struct obj {
         || objects[otmp->otyp].oc_skill == P_WHIP \
         || objects[otmp->otyp].oc_skill == P_FLAIL \
         || otmp->otyp == SHEPHERD_S_CROOK))
+#define is_dualweapon(otmp) \
+    (otmp->otyp == TWO_BLADED_SWORD || otmp->otyp == QUARTERSTAFF \
+        || otmp->otyp == DUAL_AXE || otmp->otyp == SHEPHERD_S_CROOK)
 
 /* Armor */
 #define is_shield(otmp)          \

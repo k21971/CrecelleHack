@@ -789,6 +789,13 @@ hitum(struct monst *mon, struct attack *uattk)
        gt.twohits into struct _hitmon_data hmd.twohits */
     gt.twohits = (uwep ? u.twoweap : double_punch()) ? 1 : 0;
 
+    /* Dual-headed weapons hit once with their first head, once with their
+       second head. */
+    if (uwep && is_dualweapon(uwep) && u.dualweap) {
+        secondwep = uwep;
+        gt.twohits = 1;
+    }
+
     tmp = find_roll_to_hit(mon, uattk->aatyp, uwep, &attknum, &armorpenalty);
     mon_maybe_unparalyze(mon);
     dieroll = rnd(20);

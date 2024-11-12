@@ -648,7 +648,7 @@ monmightthrowwep(struct obj *obj)
 /* Weapons in order of preference */
 static const NEARDATA short hwep[] = {
     CORPSE, /* cockatrice corpse */
-    TSURUGI, RUNESWORD, DWARVISH_MATTOCK, FALCHION, TWO_HANDED_SWORD, BATTLE_AXE,
+    TSURUGI, RUNESWORD, DWARVISH_MATTOCK, FALCHION, TWO_HANDED_SWORD, DUAL_AXE, BATTLE_AXE,
     KATANA, UNICORN_HORN, CRYSKNIFE, TRIDENT, LONG_SWORD, ELVEN_BROADSWORD,
     BROADSWORD, SCIMITAR, SILVER_SABER, MORNING_STAR, ELVEN_SHORT_SWORD,
     DWARVISH_SHORT_SWORD, SHORT_SWORD, ORCISH_SHORT_SWORD, MACE, AXE,
@@ -1416,7 +1416,7 @@ weapon_type(struct obj *obj)
 int
 uwep_skill_type(void)
 {
-    if (u.twoweap)
+    if (u.twoweap || u.dualweap)
         return P_TWO_WEAPON_COMBAT;
     return weapon_type(uwep);
 }
@@ -1435,7 +1435,7 @@ weapon_hit_bonus(struct obj *weapon)
     wep_type = weapon_type(weapon);
     /* use two weapon skill only if attacking with one of the wielded weapons
      */
-    type = (u.twoweap && (weapon == uwep || weapon == uswapwep))
+    type = ((u.twoweap && (weapon == uwep || weapon == uswapwep)) || u.dualweap)
                ? P_TWO_WEAPON_COMBAT
                : wep_type;
     if (type == P_NONE) {

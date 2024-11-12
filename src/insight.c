@@ -1274,6 +1274,12 @@ weapon_insight(int final)
         you_are(buf, "");
     }
 
+    if (u.dualweap) {
+        you_are("utilizing both halves of your weapon", "");
+    } else if (uwep && is_dualweapon(uwep)) {
+        you_are("utilizing only one half of your weapon", "");
+    }
+
     /* Weapon attack bonus breakdown. */
     Sprintf(buf, "+%d to-hit with your main hand (%s)", abon(uwep), (uwep && objects[uwep->otyp].oc_finesse) ? "Dex" : "Str");
     you_have(buf, "");

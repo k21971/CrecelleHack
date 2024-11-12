@@ -835,6 +835,17 @@ set_twoweap(boolean on_off)
 int
 dotwoweapon(void)
 {
+    /* Handle dual weapons */
+    if (uwep && is_dualweapon(uwep) && could_twoweap(gy.youmonst.data)) {
+        if (u.dualweap) {
+            You("focus on a single end of your weapon.");
+            u.dualweap = 0;
+        } else {
+            You("begin using both ends of your weapon.");
+            u.dualweap = 1;
+        }
+        return ECMD_OK;
+    }
     /* You can always toggle it off */
     if (u.twoweap) {
         You("switch to your primary weapon.");
@@ -869,6 +880,7 @@ uwepgone(void)
             if (!Blind)
                 pline("%s shining.", Tobjnam(uwep, "stop"));
         }
+        u.dualweap = FALSE;
         setworn((struct obj *) 0, W_WEP);
         gu.unweapon = TRUE;
         update_inventory();

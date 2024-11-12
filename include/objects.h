@@ -236,6 +236,9 @@ WEAPON("axe", NoDes,
 WEAPON("battle-axe", "double-headed axe",       /* "double-bitted"? */
        0, 0, 1, 0, 10, 120,  40,  8,  6, 0, 0, S,   P_AXE, IRON, HI_METAL,
                                                         BATTLE_AXE),
+WEAPON("dual axe", "two-sided axe",       
+       0, 0, 1, 0, 10, 120,  40,  8,  6, 0, 0, S,   P_AXE, IRON, HI_METAL,
+                                                        DUAL_AXE),
 
 /* swords */
 WEAPON("short sword", NoDes,
@@ -274,6 +277,9 @@ WEAPON("two-handed sword", NoDes,
        1, 0, 1, 0, 22, 150,  50, 12,  6, 0, -2, S,   P_TWO_HANDED_SWORD,
                                                             IRON, HI_METAL,
                                                         TWO_HANDED_SWORD),
+WEAPON("two-bladed sword", NoDes,
+       1, 0, 1, 0,  1, 130, 200, 8,  8, 0, -2, S,   P_SABER, IRON, HI_METAL,
+                                                        TWO_BLADED_SWORD),
         /* +2d6 large */
 WEAPON("katana", "samurai sword",
        0, 0, 0, 0, 4,  40,  80, 10, 12, 1,  0, S,   P_LONG_SWORD, IRON, HI_METAL,
