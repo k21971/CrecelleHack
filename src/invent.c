@@ -49,7 +49,6 @@ staticfn void ia_addmenu(winid, int, char, const char *);
 staticfn void itemactions_pushkeys(struct obj *, int);
 staticfn int itemactions(struct obj *);
 staticfn int dispinv_with_action(char *, boolean, const char *);
-staticfn struct obj *carrying_cockatrice_corpse(void);
 
 /* enum and structs are defined in wintype.h */
 static win_request_info wri_info;
@@ -1232,7 +1231,7 @@ hold_another_object(
         obj = addinv_core0(obj, (struct obj *) 0, FALSE);
         goto drop_it;
     } else if (obj->otyp == CORPSE
-               && !u_safe_from_fatal_corpse(obj, 0xF)
+               && !u_safe_from_fatal_corpse(obj, st_all)
                && obj->wishedfor) {
         obj->wishedfor = 0;
         obj = addinv_core0(obj, (struct obj *) 0, FALSE);

@@ -29,7 +29,7 @@ staticfn void offer_different_alignment_altar(struct obj *, aligntyp);
 staticfn void sacrifice_your_race(struct obj *, boolean, aligntyp);
 staticfn int bestow_artifact(void);
 staticfn int sacrifice_value(struct obj *);
-staticfn int offer_corpse(struct obj *, boolean, aligntyp);
+staticfn void offer_corpse(struct obj *, boolean, aligntyp);
 staticfn boolean pray_revive(void);
 staticfn boolean water_prayer(boolean);
 staticfn boolean blocked_boulder(int, int);
@@ -1866,14 +1866,15 @@ dosacrifice(void)
     } /* fake Amulet */
 
     if (otmp->otyp == CORPSE) {
-        return offer_corpse(otmp, highaltar, altaralign);
+        offer_corpse(otmp, highaltar, altaralign);
+        return ECMD_TIME;
     }
 
     pline1(nothing_happens);
     return ECMD_TIME;
 }
 
-staticfn int
+staticfn void
 offer_corpse(struct obj *otmp, boolean highaltar, aligntyp altaralign)
 {
     int value;
@@ -1904,7 +1905,7 @@ offer_corpse(struct obj *otmp, boolean highaltar, aligntyp altaralign)
      */
     feel_cockatrice(otmp, TRUE);
     if (rider_corpse_revival(otmp, FALSE))
-        return ECMD_TIME;
+        return;
 
     value = sacrifice_value(otmp);
 
@@ -1912,8 +1913,9 @@ offer_corpse(struct obj *otmp, boolean highaltar, aligntyp altaralign)
        too old (value==0) */
     if (your_race(ptr)) {
         sacrifice_your_race(otmp, highaltar, altaralign);
-        return ECMD_TIME;
-    } else if (has_omonst(otmp)
+        return;
+    }
+    if (has_omonst(otmp)
                && (mtmp = get_mtraits(otmp, FALSE)) != 0
                && mtmp->mtame) {
             /* mtmp is a temporary pointer to a tame monster's attributes,
@@ -1922,12 +1924,14 @@ offer_corpse(struct obj *otmp, boolean highaltar, aligntyp altaralign)
         adjalign(-3);
         HAggravate_monster |= FROMOUTSIDE;
         offer_negative_valued(highaltar, altaralign);
-        return ECMD_TIME;
-    } else if (!value) {
+        return;
+    }
+    if (!value) {
         /* too old; don't give undead or unicorn bonus or penalty */
         pline1(nothing_happens);
-        return ECMD_TIME;
-    } else if (is_undead(ptr)) { /* Not demons--no demon corpses */
+        return;
+    }
+    if (is_undead(ptr)) { /* Not demons--no demon corpses */
         /* most undead that leave a corpse yield 'human' (or other race)
            corpse so won't get here; the exception is wraith; give the
            bonus for wraith to chaotics too because they are sacrificing
@@ -1947,7 +1951,7 @@ offer_corpse(struct obj *otmp, boolean highaltar, aligntyp altaralign)
                      : unicalign ? "law" : "balance");
             (void) adjattrib(A_WIS, -1, TRUE);
             offer_negative_valued(highaltar, altaralign);
-            return ECMD_TIME;
+            return;
         } else if (u.ualign.type == altaralign) {
             /* When different from altar, and altar is same as yours,
              * it's a very good action.
@@ -1975,91 +1979,90 @@ offer_corpse(struct obj *otmp, boolean highaltar, aligntyp altaralign)
 
     if (altaralign != u.ualign.type && highaltar) {
         desecrate_altar(highaltar, altaralign);
-    } else if (u.ualign.type != altaralign) {
+        return;
+    }
+    if (u.ualign.type != altaralign) {
         /* Sacrificing at an altar of a different alignment */
         offer_different_alignment_altar(otmp, altaralign);
-        return ECMD_TIME;
-    } else {
+        return;
+    }
+    consume_offering(otmp);
+    /* OK, you get brownie points. */
+    if (u.ugangr) {
         int saved_anger = u.ugangr;
+        u.ugangr -= ((value * (u.ualign.type == A_CHAOTIC ? 2 : 3))
+                     / MAXVALUE);
+        if (u.ugangr < 0)
+            u.ugangr = 0;
+        if (u.ugangr != saved_anger) {
+            if (u.ugangr) {
+                pline("%s seems %s.", u_gname(),
+                      Hallucination ? "groovy" : "slightly mollified");
+
+                if ((int) u.uluck < 0)
+                    change_luck(1);
+            } else {
+                pline("%s seems %s.", u_gname(),
+                      Hallucination ? "cosmic (not a new fact)"
+                                    : "mollified");
+
+                if ((int) u.uluck < 0)
+                    u.uluck = 0;
+            }
+        } else { /* not satisfied yet */
+            if (Hallucination)
+                pline_The("gods seem tall.");
+            else
+                You("have a feeling of inadequacy.");
+        }
+    } else if (ugod_is_angry()) {
+        if (value > MAXVALUE)
+            value = MAXVALUE;
+        if (value > -u.ualign.record)
+            value = -u.ualign.record;
+        adjalign(value);
+        You_feel("partially absolved.");
+    } else if (u.ublesscnt > 0) {
         int saved_cnt = u.ublesscnt;
-        int saved_luck = u.uluck;
-
-        consume_offering(otmp);
-        /* OK, you get brownie points. */
-        if (u.ugangr) {
-            u.ugangr -= ((value * (u.ualign.type == A_CHAOTIC ? 2 : 3))
-                         / MAXVALUE);
-            if (u.ugangr < 0)
-                u.ugangr = 0;
-            if (u.ugangr != saved_anger) {
-                if (u.ugangr) {
-                    pline("%s seems %s.", u_gname(),
-                          Hallucination ? "groovy" : "slightly mollified");
-
-                    if ((int) u.uluck < 0)
-                        change_luck(1);
-                } else {
-                    pline("%s seems %s.", u_gname(),
-                          Hallucination ? "cosmic (not a new fact)"
-                                        : "mollified");
-
-                    if ((int) u.uluck < 0)
-                        u.uluck = 0;
-                }
-            } else { /* not satisfied yet */
+        u.ublesscnt -= ((value * (u.ualign.type == A_CHAOTIC ? 500 : 300))
+                        / MAXVALUE);
+        if (u.ublesscnt < 0)
+            u.ublesscnt = 0;
+        if (u.ublesscnt != saved_cnt) {
+            if (u.ublesscnt) {
                 if (Hallucination)
-                    pline_The("gods seem tall.");
+                    You("realize that the gods are not like you and I.");
                 else
-                    You("have a feeling of inadequacy.");
-            }
-        } else if (ugod_is_angry()) {
-            if (value > MAXVALUE)
-                value = MAXVALUE;
-            if (value > -u.ualign.record)
-                value = -u.ualign.record;
-            adjalign(value);
-            You_feel("partially absolved.");
-        } else if (u.ublesscnt > 0) {
-            u.ublesscnt -= ((value * (u.ualign.type == A_CHAOTIC ? 500 : 300))
-                            / MAXVALUE);
-            if (u.ublesscnt < 0)
-                u.ublesscnt = 0;
-            if (u.ublesscnt != saved_cnt) {
-                if (u.ublesscnt) {
-                    if (Hallucination)
-                        You("realize that the gods are not like you and I.");
-                    else
-                        You("have a hopeful feeling.");
-                    if ((int) u.uluck < 0)
-                        change_luck(1);
-                } else {
-                    if (Hallucination)
-                        pline("Overall, there is a smell of fried onions.");
-                    else
-                        You("have a feeling of reconciliation.");
-                    if ((int) u.uluck < 0)
-                        u.uluck = 0;
-                }
-            }
-        } else {
-            if (bestow_artifact())
-                return ECMD_TIME;
-            change_luck((value * LUCKMAX) / (MAXVALUE * 2));
-            if ((int) u.uluck < 0)
-                u.uluck = 0;
-            if (u.uluck != saved_luck) {
-                if (Blind)
-                    You("think %s brushed your %s.", something,
-                        body_part(FOOT));
+                    You("have a hopeful feeling.");
+                if ((int) u.uluck < 0)
+                    change_luck(1);
+            } else {
+                if (Hallucination)
+                    pline("Overall, there is a smell of fried onions.");
                 else
-                    You(Hallucination
-                    ? "see crabgrass at your %s.  A funny thing in a dungeon."
-                            : "glimpse a four-leaf clover at your %s.",
-                        makeplural(body_part(FOOT)));
+                    You("have a feeling of reconciliation.");
+                if ((int) u.uluck < 0)
+                    u.uluck = 0;
             }
         }
+    } else {
+        int saved_luck = u.uluck;
+        if (bestow_artifact())
+            return;
+        change_luck((value * LUCKMAX) / (MAXVALUE * 2));
+        if ((int) u.uluck < 0)
+            u.uluck = 0;
+        if (u.uluck != saved_luck) {
+            if (Blind)
+                You("think %s brushed your %s.", something,
+                    body_part(FOOT));
+            else
+                You(Hallucination
+                ? "see crabgrass at your %s.  A funny thing in a dungeon."
+                        : "glimpse a four-leaf clover at your %s.",
+                    makeplural(body_part(FOOT)));
+        }
     }
-    return ECMD_TIME;
 }
 
 /* determine prayer results in advance; also used for enlightenment */
