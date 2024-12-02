@@ -1183,47 +1183,47 @@ POTION("water",                 "clear",  0, 0, 80, 100, CLR_CYAN,
            BITS(0, 1, 0, 0, mgc, 0, 0, 0, 0, 0, 0, 0, P_NONE, PAPER),    \
            0, SCROLL_CLASS, prob, 0, 5, cost, 0, 0, 0, 0, 6, \
            HI_PAPER, sn)
-SCROLL("enchant armor",              "ZELGO MER",  1,  63,  80,
+SCROLL("enchant armor",           "4TN ETC MOTD",  1,  63,  80,
                                                         SCR_ENCHANT_ARMOR),
-SCROLL("destroy armor",         "JUYED AWK YACC",  1,  45, 100,
+SCROLL("destroy armor",              "ECNEREFER",  1,  45, 100,
                                                         SCR_DESTROY_ARMOR),
-SCROLL("confuse monster",                 "NR 9",  1,  53, 100,
+SCROLL("confuse monster",              "DR 0451",  1,  53, 100,
                                                         SCR_CONFUSE_MONSTER),
-SCROLL("scare monster",   "XIXAXA XOXAXA XUXAXA",  1,  35, 100,
+SCROLL("scare monster",           "UDLER BASTRT",  1,  35, 100,
                                                         SCR_SCARE_MONSTER),
-SCROLL("remove curse",             "PRATYAVAYAH",  1,  65,  80,
+SCROLL("remove curse",                "BOFH PFY",  1,  65,  80,
                                                         SCR_REMOVE_CURSE),
-SCROLL("enchant weapon",         "DAIYEN FOOELS",  1,  80,  60,
+SCROLL("enchant weapon",         "FOOELS DAIYEN",  1,  80,  60,
                                                         SCR_ENCHANT_WEAPON),
-SCROLL("create monster",       "LEP GEX VEN ZEA",  1,  45, 200,
+SCROLL("create monster",            "FUHUHUHUHU",  1,  45, 200,
                                                         SCR_CREATE_MONSTER),
-SCROLL("taming",                   "PRIRUTSENIE",  1,  15, 200,
+SCROLL("taming",                      "OLOYWAGS",  1,  15, 200,
                                                         SCR_TAMING),
-SCROLL("genocide",                  "ELBIB YLOH",  1,  15, 300,
+SCROLL("genocide",               "DOT ERSUS MOK",  1,  15, 300,
                                                         SCR_GENOCIDE),
-SCROLL("light",                 "VERR YED HORRE",  1,  90,  50,
+SCROLL("light",                       "VIB GYOR",  1,  90,  50,
                                                         SCR_LIGHT),
-SCROLL("teleportation",        "VENZAR BORGAVVE",  1,  55, 100,
+SCROLL("teleportation",        "ORBITUS TERTIUS",  1,  55, 100,
                                                         SCR_TELEPORTATION),
-SCROLL("gold detection",                 "THARR",  1,  33, 100,
+SCROLL("gold detection",              "EERF MRD",  1,  33, 100,
                                                         SCR_GOLD_DETECTION),
-SCROLL("food detection",               "YUM YUM",  1,  25, 100,
+SCROLL("food detection",            "OM NOM NOM",  1,  25, 100,
                                                         SCR_FOOD_DETECTION),
-SCROLL("identify",                  "KERNOD WEL",  1, 180,  20,
+SCROLL("identify",               "YADANI CHEAVE",  1, 180,  20,
                                                         SCR_IDENTIFY),
-SCROLL("magic mapping",              "ELAM EBOW",  1,  45, 100,
+SCROLL("magic mapping",                "TRAESTO",  1,  45, 100,
                                                         SCR_MAGIC_MAPPING),
 SCROLL("amnesia",                   "DUAM XNAHT",  1,  35, 200,
                                                         SCR_AMNESIA),
-SCROLL("fire",                  "ANDOVA BEGARIN",  1,  30, 100,
+SCROLL("fire",                     "LP0 ON FIRE",  1,  30, 100,
                                                         SCR_FIRE),
-SCROLL("earth",                          "KIRJE",  1,  18, 200,
+SCROLL("earth",                         "NORMRF",  1,  18, 200,
                                                         SCR_EARTH),
-SCROLL("punishment",            "VE FORBRYDERNE",  1,  15, 300,
+SCROLL("punishment",                   "KTHXBYE",  1,  15, 300,
                                                         SCR_PUNISHMENT),
-SCROLL("charging",                "HACKEM MUCHE",  1,  15, 300,
+SCROLL("charging",                   "VENVIDVIC",  1,  15, 300,
                                                         SCR_CHARGING),
-SCROLL("stinking cloud",             "VELOX NEB",  1,  15, 300,
+SCROLL("stinking cloud",             "FIZZ BUZZ",  1,  15, 300,
                                                         SCR_STINKING_CLOUD),
     /* Extra descriptions, shuffled into use at start of new game.
      * Code in win/share/tilemap.c depends on SCR_STINKING_CLOUD preceding
@@ -1233,28 +1233,28 @@ SCROLL("stinking cloud",             "VELOX NEB",  1,  15, 300,
      * SC values must be distinct but are only used by 'nethack --dumpenums'.
      */
 #define XTRA_SCROLL_LABEL(text, sn) SCROLL(NoDes, text, 1, 0, 100, sn)
-XTRA_SCROLL_LABEL(     "FOOBIE BLETCH", SC01),
-XTRA_SCROLL_LABEL(             "TEMOV", SC02),
-XTRA_SCROLL_LABEL(        "GARVEN DEH", SC03),
-XTRA_SCROLL_LABEL(           "READ ME", SC04),
-XTRA_SCROLL_LABEL(     "ETAOIN SHRDLU", SC05),
-XTRA_SCROLL_LABEL(       "LOREM IPSUM", SC06),
-XTRA_SCROLL_LABEL(             "FNORD", SC07), /* Illuminati */
-XTRA_SCROLL_LABEL(           "KO BATE", SC08), /* Kurd Lasswitz */
-XTRA_SCROLL_LABEL(     "ABRA KA DABRA", SC09), /* traditional incantation */
-XTRA_SCROLL_LABEL(      "ASHPD SODALG", SC10), /* Portal */
-XTRA_SCROLL_LABEL(           "ZLORFIK", SC11), /* Zak McKracken */
-XTRA_SCROLL_LABEL(     "GNIK SISI VLE", SC12), /* Zak McKracken */
-XTRA_SCROLL_LABEL(   "HAPAX LEGOMENON", SC13),
-XTRA_SCROLL_LABEL( "EIRIS SAZUN IDISI", SC14), /* Merseburg Incantations */
-XTRA_SCROLL_LABEL(   "PHOL ENDE WODAN", SC15), /* Merseburg Incantations */
-XTRA_SCROLL_LABEL(             "GHOTI", SC16), /* pronounced as 'fish',
+XTRA_SCROLL_LABEL(      "OLEL UL ILAL", SC01), /* Metal Gear? */
+XTRA_SCROLL_LABEL(            "ERMACS", SC02), /* Mortal Kombat */
+XTRA_SCROLL_LABEL(          "HERAKLES", SC03), /* Vagrant Story */
+XTRA_SCROLL_LABEL(            "DOTNFO", SC04),
+XTRA_SCROLL_LABEL( "VEEBLUNK EN TRUPT", SC05), /* Gameboy */
+XTRA_SCROLL_LABEL(    "DOLOR SIT AMET", SC06),
+XTRA_SCROLL_LABEL(          "CQ CQ CQ", SC07), /* Amateur Radio */
+XTRA_SCROLL_LABEL(           "ELOMCWE", SC08), /* Dwarven sin, also "Welcome" (Mud Sorcerer) */
+XTRA_SCROLL_LABEL(          "ALAKAZAM", SC09), /* traditional incantation */
+XTRA_SCROLL_LABEL(      "KOOPY NAMTAR", SC10), 
+XTRA_SCROLL_LABEL( "MLIT WVC TEKU SFC", SC11), /* Kid Icarus [sic] */
+XTRA_SCROLL_LABEL(      "NARPAS SWORD", SC12), /* Metroid */
+XTRA_SCROLL_LABEL(         "BATTLE999", SC13), /* Final Fantasy 7 Debug Code */
+XTRA_SCROLL_LABEL( "SAZUN HERA DUODER", SC14), /* Merseburg Incantations */
+XTRA_SCROLL_LABEL(       "BEN ZI BENA", SC15), /* Merseburg Incantations */
+XTRA_SCROLL_LABEL(        "SORD GHOTI", SC16), /* pronounced as 'fish',
                                                 * George Bernard Shaw */
-XTRA_SCROLL_LABEL("MAPIRO MAHAMA DIROMAT", SC17), /* Wizardry */
-XTRA_SCROLL_LABEL( "VAS CORP BET MANI", SC18), /* Ultima */
-XTRA_SCROLL_LABEL(           "XOR OTA", SC19), /* Aarne Haapakoski */
-XTRA_SCROLL_LABEL("STRC PRST SKRZ KRK", SC20), /* Czech and Slovak
-                                                * tongue-twister */
+XTRA_SCROLL_LABEL(           "KADORTO", SC17), /* Wizardry */
+XTRA_SCROLL_LABEL(      "VAS KAL CORP", SC18), /* Ultima */
+XTRA_SCROLL_LABEL(            "H POKE", SC19), /* Glitch Pokemon */
+XTRA_SCROLL_LABEL( "SQUEMISH OSIFRAGE", SC20), /* RSA Cipher [sic] */
+
 #undef XTRA_SCROLL_LABEL
     /* These must come last because they have special fixed descriptions.
      */
