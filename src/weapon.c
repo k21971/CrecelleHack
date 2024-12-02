@@ -1621,7 +1621,7 @@ weapon_dam_bonus(struct obj *weapon)
 void
 skill_init(const struct def_skill *class_skill)
 {
-    // struct obj *obj;
+    struct obj *obj;
     int skmax, skill;
 
     /* initialize skill array; by default, everything is restricted */
@@ -1632,7 +1632,6 @@ skill_init(const struct def_skill *class_skill)
     }
 
     /* Set skill for all weapons in inventory to be basic */
-    #if 0
     for (obj = gi.invent; obj; obj = obj->nobj) {
         /* don't give skill just because of carried ammo, wait until
            we see the relevant launcher (prevents an archeologist's
@@ -1644,7 +1643,6 @@ skill_init(const struct def_skill *class_skill)
         if (skill != P_NONE)
             P_SKILL(skill) = P_BASIC;
     }
-    #endif
 
     /* set skills for magic */
     if (Role_if(PM_HEALER) || Role_if(PM_MONK)) {
