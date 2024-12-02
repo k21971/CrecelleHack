@@ -152,6 +152,11 @@ picklock(void)
         if (gx.xlock.box->otrapped)
             (void) chest_trap(gx.xlock.box, FINGER, FALSE);
     }
+    if (gx.xlock.pick && !gx.xlock.magic_key) {
+        You("discard %syour %s.", 
+                gx.xlock.pick->quan > 1L ? "one of " : "", xname(gx.xlock.pick));
+        useup(gx.xlock.pick);
+    }
     exercise(A_DEX, TRUE);
     return ((gx.xlock.usedtime = 0));
 }
@@ -260,6 +265,7 @@ reset_pick(void)
     gx.xlock.magic_key = FALSE;
     gx.xlock.door = (struct rm *) 0;
     gx.xlock.box = (struct obj *) 0;
+    gx.xlock.pick = (struct obj *) 0;
 }
 
 /* level change or object deletion; context may no longer be valid */
@@ -531,6 +537,7 @@ pick_lock(
                     ch /= 2;
 
                 gx.xlock.box = otmp;
+                gx.xlock.pick = pick;
                 gx.xlock.door = 0;
                 break;
             }
@@ -641,6 +648,7 @@ pick_lock(
             }
             gx.xlock.door = door;
             gx.xlock.box = 0;
+            gx.xlock.pick = pick;
         }
     }
     svc.context.move = 0;
@@ -740,6 +748,7 @@ doforce(void)
             gx.xlock.box = otmp;
             gx.xlock.chance = objects[uwep->otyp].oc_wldam * 2;
             gx.xlock.picktyp = picktyp;
+            gx.xlock.pick = uwep;
             gx.xlock.magic_key = FALSE;
             gx.xlock.usedtime = 0;
             break;

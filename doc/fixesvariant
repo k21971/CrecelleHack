@@ -93,6 +93,7 @@
 - Potions leave behind empty bottles when drunk. These bottles
   can be refilled with water at fountains, sinks, and other
   locations.
+- Unlocking tools now stack and are destroyed after use.
 - Quarterstaves can be wielded in dual weapon mode.
 - New Weapon: Shepherd's Crook
   - Similar to a quarterstaff.

@@ -912,11 +912,11 @@ CONTAINER("bag of tricks",  "bag", 0, 1, 1, 20,  15, 100, CLOTH, HI_CLOTH,
 #undef CONTAINER
 
 /* lock opening tools */
-TOOL("skeleton key",       "key", 0, 0, 0, 0, 80,  3, 10, IRON, HI_METAL,
+TOOL("skeleton key",       "key", 0, 1, 0, 0, 80,  3, 10, IRON, HI_METAL,
                                                                 SKELETON_KEY),
-TOOL("lock pick",           NoDes, 1, 0, 0, 0, 60,  4, 20, IRON, HI_METAL,
+TOOL("lock pick",           NoDes, 1, 1, 0, 0, 60,  4, 20, IRON, HI_METAL,
                                                                 LOCK_PICK),
-TOOL("credit card",         NoDes, 1, 0, 0, 0, 15,  1, 10, PLASTIC, CLR_WHITE,
+TOOL("credit card",         NoDes, 1, 1, 0, 0, 15,  1, 10, PLASTIC, CLR_WHITE,
                                                                 CREDIT_CARD),
 /* light sources */
 TOOL("tallow candle",   "candle", 0, 1, 0, 0, 20,  2, 10, WAX, CLR_WHITE,
