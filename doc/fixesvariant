@@ -1,10 +1,11 @@
 # 1.0
-
 ## Attributes
+### General
 - Dexterity contributes to AC.
 - Strength is normally the sole contributor to to-hit.
 
 ## Artifacts
+### Type Randomization
 - Many artifacts have semi-randomized object types.
   - The randomized object type must have a similar damage
     type to the original type of the artifact. For example,
@@ -12,22 +13,24 @@
   - The brands are always the same type.
 
 ## Armor
-
-  - MC: Chance of cancelling a special effect.
-    - Every piece of armor adds some amount of magic cancellation.
-    - Maxes out at 90%.
-    - Each point of enchantment reduces the MC of that piece of equipment by 1%.
+### MC
+- MC: Chance of cancelling a special effect.
+  - Every piece of armor adds some amount of magic cancellation.
+  - Maxes out at 90%.
+  - Each point of enchantment reduces the MC of that piece of equipment by 1%.
 
 ## GUI
 - MC is displayed on the status line as a percentage.
 
 ## Weapons
+### Finesse Weapons
 - Some weapons are "finesse weapons." To-hit bonuses with
   finesse weapons are determined based on strength or
   dexterity, whichever is higher.
 - Some weapons have a speed bonus or a speed penalty.
   - Generally, orc weapons are faster, elven weapons deal more damage,
     and dwarvish weapons deal more damage but are slower.
+### To-Hit Changes
 - As in dNetHack, d(1, Luck) is added to your to-hit instead
   of Luck.
 - New To-Hit bonuses:
@@ -43,7 +46,7 @@
   Skilled: +2
   Expert: +3
 
-# Floor Coating System
+## Floor Coating System
 - Floors can be coated with various substances, such as potions and grass.
 - Grass can be set afire. Fire is a new type of region which spreads over
   nearby flammable terrain.
@@ -59,59 +62,76 @@
     collision.
 
 # Roles and Races
+### General
 - Roles are not restricted by race, with the exception of
   tourists (always human).
+### Knights
 - Knights receive a different mount depending on race.
   Orcs: Warg
   Elves: Jaguar
 
 ## Monsters
+### Mounts
 - The following monster classes are now valid mounts: f, d
-- New Monster: Poltergeist ( )
-  - Does not approach, collects objects like a nypmph. Throws any and
-    all objects it gets its hands on.
-- New Monster: Grotesque (g)
-  - Slow, hard to hit, and very high damage. Spawns in groups.
-- New Monster: Mascaron (g)
-  - Stunning gaze. Spawns in groups.
-  - Peaceful, but turns hostile if alignment is abused.
+### New Monster: Poltergeist ( )
+- Does not approach, collects objects like a nypmph. Throws any and
+  all objects it gets its hands on.
+### New Monster: Grotesque (g)
+- Slow, hard to hit, and very high damage. Spawns in groups.
+### New Monster: Mascaron (g)
+- Stunning gaze. Spawns in groups.
+- Peaceful, but turns hostile if alignment is abused.
 
 ## Monster AI
+### Elberething
 - Elves and princes can engrave Elbereth to ward off the player.
   - TODO: Forbid ranged attacks while on Elbereth?
   - TODO: Intentionally break Elbereth when player hp is low?
   - TODO: Elbereth vanishment?
+### Pathfinding
 - Some monsters will avoid following the player into chokepoints.
-- Incorporated Slash'Em's traitor system, but updated to 3.7.
 - Monsters will only flee from the player if they could conceivably
   outrun them.
+### General
+- Incorporated Slash'Em's traitor system, but updated to 3.7.
 - Monsters will slather items with cans of grease if the player is
   polymorphed into a relevant form.
 
 ## Objects
+### General
+- Renamed Scroll of Genocide to Scroll of Erasure.
+### Potions of Water
 - Potions of water are considered inert and do not polymorph.
 - Potions leave behind empty bottles when drunk. These bottles
   can be refilled with water at fountains, sinks, and other
   locations.
+### Door and Chest Keys
+- Keys are now split into door keys and chest keys, both of
+  which must be identified.
+- Rogues automatically know the difference between door and chest
+  keys.
 - Unlocking tools now stack and are destroyed after use.
+### Quarterstaves
 - Quarterstaves can be wielded in dual weapon mode.
-- New Weapon: Shepherd's Crook
+### New Weapons
+- Shepherd's Crook
   - Similar to a quarterstaff.
   - Can be used for tripping purposes.
   - Can be wielded in dual mode.
-- New Weapon: Two-Bladed Sword
-- New Weapon: Dual Axe
+- Two-Bladed Sword
+- Dual Axe
 
 ## Commands
-- #trip: Trip a monster.
-  - Tripping traditionally uses one's lower body, but polearms,
-    whips, and flails can be used to trip as well.
-  - Being tripped puts one into a downed state. Until one moves
-    to a different location, AC and to-hit are reduced.
-  - Select monsters or monsters wielding tripping weapons will
-    sometimes attempt to trip the player.
-- #taunt: Taunt nearby monsters.
-  - Wastes a few turns and wakes up nearby monsters.
-  - A custom taunt can be defined in the options file.
-- #twoweapon can be used to attack with both ends of a double-headed
+### trip: Trip a monster.
+- Tripping traditionally uses one's lower body, but polearms,
+  whips, and flails can be used to trip as well.
+- Being tripped puts one into a downed state. Until one moves
+  to a different location, AC and to-hit are reduced.
+- Select monsters or monsters wielding tripping weapons will
+  sometimes attempt to trip the player.
+### taunt: Taunt nearby monsters.
+- Wastes a few turns and wakes up nearby monsters.
+- A custom taunt can be defined in the options file.
+### twoweapon
+- can be used to attack with both ends of a double-headed
   weapon, such as a quarterstaff, two-bladed sword, or dual axe.
