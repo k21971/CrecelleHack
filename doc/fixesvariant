@@ -1,4 +1,10 @@
 # 1.0
+## System Changes
+### Reflection
+- Reflection does not reflect rays directly back at
+  the one that fired them. Instead, the rays bounce off at a ninety degree
+  angle. As a consequence, reflection no longer instantly kills Medusa.
+
 ## Attributes
 ### General
 - Dexterity contributes to AC.
