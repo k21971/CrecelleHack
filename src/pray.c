@@ -27,8 +27,9 @@ staticfn void offer_negative_valued(boolean, aligntyp);
 staticfn void offer_fake_amulet(struct obj *, boolean, aligntyp);
 staticfn void offer_different_alignment_altar(struct obj *, aligntyp);
 staticfn void sacrifice_your_race(struct obj *, boolean, aligntyp);
-staticfn int bestow_artifact(void);
+staticfn int bestow_artifact(uchar);
 staticfn int sacrifice_value(struct obj *);
+staticfn int eval_offering(struct obj *, aligntyp);
 staticfn void offer_corpse(struct obj *, boolean, aligntyp);
 staticfn boolean pray_revive(void);
 staticfn boolean water_prayer(boolean);
@@ -402,7 +403,8 @@ fix_worst_trouble(int trouble)
         break;
     case TROUBLE_STARVING:
         /* temporarily lost strength recovery now handled by init_uhunger() */
-        /*FALLTHRU*/
+        FALLTHROUGH;
+        /* FALLTHRU*/
     case TROUBLE_HUNGRY:
         Your("%s feels content.", body_part(STOMACH));
         init_uhunger();
@@ -744,13 +746,16 @@ angrygods(aligntyp resp_god)
             gods_angry(resp_god);
             punish((struct obj *) 0);
             break;
-        } /* else fall thru */
+        }
+        FALLTHROUGH;
+        /* FALLTHRU */
     case 4:
     case 5:
         gods_angry(resp_god);
         if (!Blind && !Antimagic)
             pline("%s glow surrounds you.", An(hcolor(NH_BLACK)));
-        rndcurse();
+        if (rn2(2) || !attrcurse())
+            rndcurse();
         break;
     case 7:
     case 8:
@@ -1126,6 +1131,7 @@ pleased(aligntyp g_align)
         switch (min(action, 5)) {
         case 5:
             pat_on_head = 1;
+            FALLTHROUGH;
             /*FALLTHRU*/
         case 4:
             do
@@ -1134,9 +1140,12 @@ pleased(aligntyp g_align)
             break;
 
         case 3:
+            /* up to 10 troubles */
             fix_worst_trouble(trouble);
-        case 2:
-            /* arbitrary number of tries */
+            FALLTHROUGH;
+            /*FALLTHRU*/
+	    case 2:
+            /* up to 9 troubles */
             while ((trouble = in_trouble()) > 0 && (++tryct < 10))
                 fix_worst_trouble(trouble);
             break;
@@ -1144,6 +1153,7 @@ pleased(aligntyp g_align)
         case 1:
             if (trouble > 0)
                 fix_worst_trouble(trouble);
+            break;
         case 0:
             break; /* your god blows you off, too bad */
         }
@@ -1230,6 +1240,7 @@ pleased(aligntyp g_align)
                     break;
                 }
             }
+            FALLTHROUGH;
             /*FALLTHRU*/
         case 2:
             if (!Blind)
@@ -1331,6 +1342,7 @@ pleased(aligntyp g_align)
                 gcrownu();
                 break;
             }
+            FALLTHROUGH;
             /*FALLTHRU*/
         case 6:
             give_spell();
@@ -1765,17 +1777,24 @@ sacrifice_your_race(
 }
 
 staticfn int
-bestow_artifact(void)
+bestow_artifact(uchar max_giftvalue)
 {
     int nartifacts = nartifact_exist();
+    boolean do_bestow = u.ulevel > 2 && u.uluck >= 0;
+    if (do_bestow) {
+        /* you were already in pretty good standing */
+        /* The player can gain an artifact */
+        /* The chance goes down as the number of artifacts goes up */
+        if (wizard)
+            do_bestow = y_n("Gift an artifact?") == 'y';
+        else
+            do_bestow = !rn2(6 + (2 * u.ugifts * nartifacts));
+    }
 
-    /* you were already in pretty good standing */
-    /* The player can gain an artifact */
-    /* The chance goes down as the number of artifacts goes up */
-    if (u.ulevel > 2 && u.uluck >= 0
-        && !rn2(10 + (2 * u.ugifts * nartifacts))) {
+    if (do_bestow) {
         struct obj *otmp;
-        otmp = mk_artifact((struct obj *) 0, a_align(u.ux, u.uy));
+        otmp = mk_artifact((struct obj *) 0, a_align(u.ux, u.uy),
+                           max_giftvalue, TRUE);
         if (otmp) {
             char buf[BUFSZ];
 
@@ -1874,63 +1893,19 @@ dosacrifice(void)
     return ECMD_TIME;
 }
 
-staticfn void
-offer_corpse(struct obj *otmp, boolean highaltar, aligntyp altaralign)
+staticfn int
+eval_offering(struct obj *otmp, aligntyp altaralign)
 {
-    int value;
     struct permonst *ptr;
-    struct monst *mtmp;
-
-    /*
-     * Was based on nutritional value and aging behavior (< 50 moves).
-     * Sacrificing a food ration got you max luck instantly, making the
-     * gods as easy to please as an angry dog!
-     *
-     * Now only accepts corpses, based on the game's evaluation of their
-     * toughness.  Human and pet sacrifice, as well as sacrificing unicorns
-     * of your alignment, is strongly discouraged.
-     */
-#define MAXVALUE 24 /* Highest corpse value (besides Wiz) */
-
-    ptr = &mons[otmp->corpsenm];
-
-    /* KMH, conduct */
-    if (!u.uconduct.gnostic++)
-        livelog_printf(LL_CONDUCT, "rejected atheism"
-                                   " by offering %s on an altar of %s",
-                       corpse_xname(otmp, (const char *) 0, CXN_ARTICLE),
-                       a_gname());
-
-    /* you're handling this corpse, even if it was killed upon the altar
-     */
-    feel_cockatrice(otmp, TRUE);
-    if (rider_corpse_revival(otmp, FALSE))
-        return;
+    int value;
 
     value = sacrifice_value(otmp);
 
-    /* same race or former pet results apply even if the corpse is
-       too old (value==0) */
-    if (your_race(ptr)) {
-        sacrifice_your_race(otmp, highaltar, altaralign);
-        return;
-    }
-    if (has_omonst(otmp)
-               && (mtmp = get_mtraits(otmp, FALSE)) != 0
-               && mtmp->mtame) {
-            /* mtmp is a temporary pointer to a tame monster's attributes,
-             * not a real monster */
-        pline("So this is how you repay loyalty?");
-        adjalign(-3);
-        HAggravate_monster |= FROMOUTSIDE;
-        offer_negative_valued(highaltar, altaralign);
-        return;
-    }
-    if (!value) {
-        /* too old; don't give undead or unicorn bonus or penalty */
-        pline1(nothing_happens);
-        return;
-    }
+    if (!value)
+        return 0;
+
+    ptr = &mons[otmp->corpsenm];
+
     if (is_undead(ptr)) { /* Not demons--no demon corpses */
         /* most undead that leave a corpse yield 'human' (or other race)
            corpse so won't get here; the exception is wraith; give the
@@ -1950,8 +1925,7 @@ offer_corpse(struct obj *otmp, boolean highaltar, aligntyp altaralign)
                   (unicalign == A_CHAOTIC) ? "chaos"
                      : unicalign ? "law" : "balance");
             (void) adjattrib(A_WIS, -1, TRUE);
-            offer_negative_valued(highaltar, altaralign);
-            return;
+            return -1;
         } else if (u.ualign.type == altaralign) {
             /* When different from altar, and altar is same as yours,
              * it's a very good action.
@@ -1975,6 +1949,70 @@ offer_corpse(struct obj *otmp, boolean highaltar, aligntyp altaralign)
              */
             value += 3;
         }
+    }
+    return value;
+}
+
+staticfn void
+offer_corpse(struct obj *otmp, boolean highaltar, aligntyp altaralign)
+{
+    int value;
+    struct permonst *ptr;
+    struct monst *mtmp;
+
+    /*
+     * Was based on nutritional value and aging behavior (< 50 moves).
+     * Sacrificing a food ration got you max luck instantly, making the
+     * gods as easy to please as an angry dog!
+     *
+     * Now only accepts corpses, based on the game's evaluation of their
+     * toughness.  Human and pet sacrifice, as well as sacrificing unicorns
+     * of your alignment, is strongly discouraged.
+     */
+#define MAXVALUE 24 /* Highest corpse value (besides Wiz) */
+
+    /* KMH, conduct */
+    if (!u.uconduct.gnostic++)
+        livelog_printf(LL_CONDUCT, "rejected atheism"
+                                   " by offering %s on an altar of %s",
+                       corpse_xname(otmp, (const char *) 0, CXN_ARTICLE),
+                       a_gname());
+
+    /* you're handling this corpse, even if it was killed upon the altar
+     */
+    feel_cockatrice(otmp, TRUE);
+    if (rider_corpse_revival(otmp, FALSE))
+        return;
+
+    ptr = &mons[otmp->corpsenm];
+
+    /* same race or former pet results apply even if the corpse is
+       too old (value==0) */
+    if (your_race(ptr)) {
+        sacrifice_your_race(otmp, highaltar, altaralign);
+        return;
+    }
+    if (has_omonst(otmp)
+               && (mtmp = get_mtraits(otmp, FALSE)) != 0
+               && mtmp->mtame) {
+            /* mtmp is a temporary pointer to a tame monster's attributes,
+             * not a real monster */
+        pline("So this is how you repay loyalty?");
+        adjalign(-3);
+        HAggravate_monster |= FROMOUTSIDE;
+        offer_negative_valued(highaltar, altaralign);
+        return;
+    }
+
+    value = eval_offering(otmp, altaralign);
+    if (value == 0) {
+        /* too old; don't give undead or unicorn bonus or penalty */
+        pline1(nothing_happens);
+        return;
+    }
+    if (value < 0) {
+        offer_negative_valued(highaltar, altaralign);
+        return;
     }
 
     if (altaralign != u.ualign.type && highaltar) {
@@ -2046,13 +2084,27 @@ offer_corpse(struct obj *otmp, boolean highaltar, aligntyp altaralign)
             }
         }
     } else {
-        int saved_luck = u.uluck;
-        if (bestow_artifact())
+        int orig_luck, luck_increase;
+
+        if (bestow_artifact(value))
             return;
-        change_luck((value * LUCKMAX) / (MAXVALUE * 2));
+
+        orig_luck = u.uluck;
+        luck_increase = (value * LUCKMAX) / (MAXVALUE * 2);
+
+        /* sacrificing can't increase non-bonus Luck to above the value of the
+           sacrifice; this prevents players immediately maxing their Luck as
+           soon as they find an altar and a few rations via sacrificing lots
+           of low-valued corpses, which can unbalance the early game */
+        if (orig_luck > value)
+            luck_increase = 0;
+        else if (orig_luck + luck_increase > value)
+            luck_increase = value - orig_luck;
+
+        change_luck(luck_increase);
         if ((int) u.uluck < 0)
             u.uluck = 0;
-        if (u.uluck != saved_luck) {
+        if (u.uluck != orig_luck) {
             if (Blind)
                 You("think %s brushed your %s.", something,
                     body_part(FOOT));
@@ -2312,18 +2364,23 @@ maybe_turn_mon_iter(struct monst *mtmp)
                    than zombies. */
             case S_LICH:
                 xlev += 2;
+                FALLTHROUGH;
                 /*FALLTHRU*/
             case S_GHOST:
                 xlev += 2;
+                FALLTHROUGH;
                 /*FALLTHRU*/
             case S_VAMPIRE:
                 xlev += 2;
+                FALLTHROUGH;
                 /*FALLTHRU*/
             case S_WRAITH:
                 xlev += 2;
+                FALLTHROUGH;
                 /*FALLTHRU*/
             case S_MUMMY:
                 xlev += 2;
+                FALLTHROUGH;
                 /*FALLTHRU*/
             case S_ZOMBIE:
                 if (u.ulevel >= xlev && !resist(mtmp, '\0', 0, NOTELL)) {
@@ -2335,6 +2392,7 @@ maybe_turn_mon_iter(struct monst *mtmp)
                     }
                     break;
                 } /* else flee */
+                FALLTHROUGH;
                 /*FALLTHRU*/
             default:
                 monflee(mtmp, 0, FALSE, TRUE);
@@ -2633,6 +2691,7 @@ blocked_boulder(int dx, int dy)
         /* this is only approximate since multiple boulders might sink */
         if (is_pool_or_lava(nx, ny)) /* does its own isok() check */
             break; /* still need Sokoban check below */
+        FALLTHROUGH;
         /*FALLTHRU*/
     default:
         /* more than one boulder--blocked after they push the top one;

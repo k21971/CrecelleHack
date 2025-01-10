@@ -3,17 +3,17 @@
 /*-Copyright (c) Michael Allison, 2008. */
 /* NetHack may be freely redistributed.  See license for details. */
 
-#ifdef OPTION_LISTS_ONLY /* (AMIGA) external program for opt lists */
+#ifndef OPTION_LISTS_ONLY
+#include "hack.h"
+#include "tcap.h"
+#else /* OPTION_LISTS_ONLY: (AMIGA) external program for opt lists */
 #include "config.h"
 #include "objclass.h"
 #include "flag.h"
 NEARDATA struct flag flags; /* provide linkage */
 NEARDATA struct instance_flags iflags; /* provide linkage */
+NEARDATA struct accessibility_data a11y;
 #define static
-#else
-#include "hack.h"
-#include "tcap.h"
-#include <ctype.h>
 #endif
 
 #define BACKWARD_COMPAT
@@ -3649,6 +3649,7 @@ optfn_scores(
                                      allopt[optidx].name);
                     return optn_silenterr;
                 }
+                FALLTHROUGH;
                 /*FALLTHRU*/
             default:
                 config_error_add("Unknown %s parameter '%s'",
@@ -3765,8 +3766,11 @@ optfn_soundlib(
          */
         if ((op = string_for_env_opt(allopt[optidx].name, opts, FALSE))
             != empty_optstr) {
+            enum soundlib_ids option_id;
 
             get_soundlib_name(soundlibbuf, WINTYPELEN);
+            option_id = soundlib_id_from_opt(op);
+            gc.chosen_soundlib = option_id;
             assign_soundlib(gc.chosen_soundlib);
         } else
             return optn_err;
@@ -5322,6 +5326,9 @@ optfn_boolean(
         case opt_rest_on_space:
             update_rest_on_space();
             break;
+        case opt_accessiblemsg:
+            a11y.msg_loc.x = a11y.msg_loc.y = 0;
+            break;
         default:
             break;
         }
@@ -5402,7 +5409,11 @@ can_set_perm_invent(void)
         iflags.perminv_mode = InvOptOn;
 
 #ifdef TTY_PERM_INVENT
-    if (WINDOWPORT(tty) && !go.opt_initial) {
+    if ((WINDOWPORT(tty)
+#ifdef WIN32
+         || WINDOWPORT(safestartup)
+#endif
+         ) && !go.opt_initial) {
         perm_invent_toggled(FALSE);
         /* perm_invent_toggled()
            -> sync_perminvent()
@@ -5418,6 +5429,20 @@ can_set_perm_invent(void)
 #endif
     return TRUE;
 }
+
+
+#ifdef TTY_PERM_INVENT
+void
+check_perm_invent_again(void)
+{
+    if (iflags.perm_invent_pending) {
+        iflags.perm_invent = FALSE;
+        if (can_set_perm_invent())
+           iflags.perm_invent = TRUE;
+        iflags.perm_invent_pending = FALSE;
+    }
+}
+#endif
 
 staticfn int
 handler_menustyle(void)
@@ -6963,6 +6988,11 @@ initoptions(void)
      */
 #endif
 #endif /* SYSCF */
+
+    /* Carry out options that got deferred from early_options */
+    if (gd.deferred_showpaths)
+        do_deferred_showpaths(0);  /* does not return */
+
     initoptions_finish();
 }
 
@@ -6976,7 +7006,7 @@ initoptions_init(void)
     int i;
     boolean have_branch = (nomakedefs.git_branch && *nomakedefs.git_branch);
 
-    go.opt_phase = builtin_opt;		// Did I need to move this here?
+    go.opt_phase = builtin_opt;    /* Did I need to move this here? */
     memcpy(allopt, allopt_init, sizeof(allopt));
     determine_ambiguities();
 

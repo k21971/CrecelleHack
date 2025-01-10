@@ -9,7 +9,6 @@
 #ifndef NO_SIGNAL
 #include <signal.h>
 #endif
-#include <ctype.h>
 #ifndef LONG_MAX
 #include <limits.h>
 #endif
@@ -36,12 +35,6 @@ staticfn void dump_everything(int, time_t);
 staticfn void fixup_death(int);
 staticfn int wordcount(char *);
 staticfn void bel_copy1(char **, char *);
-
-#if defined(__BEOS__) || defined(MICRO) || defined(OS2) || defined(WIN32)
-ATTRNORETURN extern void nethack_exit(int) NORETURN;
-#else
-#define nethack_exit exit
-#endif
 
 #define done_stopprint program_state.stopprint
 
@@ -118,7 +111,7 @@ done2(void)
 
         if (abandon_tutorial)
             schedule_goto(&u.ucamefrom, UTOTYPE_ATSTAIRS,
-                          "Resuming regular play", (char *) 0);
+                          "Resuming regular play.", (char *) 0);
         return ECMD_OK;
     }
 

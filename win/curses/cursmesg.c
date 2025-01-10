@@ -8,7 +8,6 @@
 #include "wincurs.h"
 #include "cursmesg.h"
 #include "curswins.h"
-#include <ctype.h>
 
 /* defined in sys/<foo>/<foo>tty.c or cursmain.c as last resort;
    set up by curses_init_nhwindows() */
@@ -276,7 +275,8 @@ curscolor(int nhcolor, boolean *boldon)
 }
 #endif
 
-void curses_got_input(void)
+void
+curses_got_input(void)
 {
     /* if messages are being suppressed, reenable them */
     curs_mesg_suppress_seq = -1L;
@@ -1069,11 +1069,12 @@ curses_putmsghistory(const char *msg, boolean restoring_msghist)
            however, we aren't only called when restoring history;
            core uses putmsghistory() for other stuff during play
            and those messages should have a normal turn value */
-        if (last_mesg) /* appease static analyzer */
+        if (last_mesg) { /* appease static analyzer */
             last_mesg->turn = restoring_msghist ? (1L << 3) : gh.hero_seq;
 #ifdef DUMPLOG_CORE
-        dumplogmsg(last_mesg->str);
+            dumplogmsg(last_mesg->str);
 #endif
+        }
     } else if (stash_count) {
         nhprev_mesg *mesg;
         long mesg_turn;

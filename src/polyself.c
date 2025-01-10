@@ -5,9 +5,9 @@
 /*
  * Polymorph self routine.
  *
- * Note:  the light source handling code assumes that both gy.youmonst.m_id
- * and gy.youmonst.mx will always remain 0 when it handles the case of the
- * player polymorphed into a light-emitting monster.
+ * Note:  the light source handling code assumes that gy.youmonst.m_id
+ * always remains 1 and gy.youmonst.mx will always remain 0 when it handles
+ * the case of the player polymorphed into a light-emitting monster.
  *
  * Transformation sequences:
  *              /-> polymon                 poly into monster form
@@ -41,6 +41,7 @@ set_uasmon(void)
     boolean was_vampshifter = valid_vampshiftform(gy.youmonst.cham, u.umonnum);
 
     set_mon_data(&gy.youmonst, mdat);
+    gy.youmonst.m_id = 1;
 
     if (Protection_from_shape_changers)
         gy.youmonst.cham = NON_PM;
@@ -103,6 +104,8 @@ set_uasmon(void)
     PROPSET(REGENERATION, regenerates(mdat));
     PROPSET(REFLECTING, (mdat == &mons[PM_SILVER_DRAGON]));
     PROPSET(BLINDED, !haseyes(mdat));
+    PROPSET(BLND_RES, (dmgtype_fromattack(mdat, AD_BLND, AT_EXPL)
+                       || dmgtype_fromattack(mdat, AD_BLND, AT_GAZE)));
 #undef PROPSET
 
     /* whether the player is flying/floating depends on their steed,
@@ -1448,6 +1451,7 @@ dospit(void)
             break;
         default:
             impossible("bad attack type in dospit");
+            FALLTHROUGH;
             /*FALLTHRU*/
         case AD_ACID:
             otmp = mksobj(ACID_VENOM, TRUE, FALSE);

@@ -721,7 +721,7 @@ possibly_unwield(struct monst *mon, boolean polyspot)
         mon->weapon_check = NO_WEAPON_WANTED;
         /* if we're going to call distant_name(), do so before extract_self */
         if (cansee(mon->mx, mon->my)) {
-            pline("%s drops %s.", Monnam(mon), distant_name(obj, doname));
+            pline_mon(mon, "%s drops %s.", Monnam(mon), distant_name(obj, doname));
             newsym(mon->mx, mon->my);
         }
         obj_extract_self(obj);
@@ -832,7 +832,7 @@ mon_wield_item(struct monst *mon)
                     pline("%s cannot wield that %s.", mon_nam(mon),
                           xname(obj));
                 } else {
-                    pline("%s tries to wield %s.", Monnam(mon), doname(obj));
+                    pline_mon(mon, "%s tries to wield %s.", Monnam(mon), doname(obj));
                     pline("%s %s!", Yname2(mw_tmp), welded_buf);
                 }
                 mw_tmp->bknown = 1;
@@ -1443,7 +1443,9 @@ weapon_hit_bonus(struct obj *weapon)
     } else if (type <= P_LAST_WEAPON) {
         switch (P_SKILL(type)) {
         default:
-            impossible(bad_skill, P_SKILL(type)); /* fall through */
+            impossible(bad_skill, P_SKILL(type));
+            FALLTHROUGH;
+            /* FALLTHRU */
         case P_ISRESTRICTED:
             bonus = -1;
             break;
@@ -1466,7 +1468,9 @@ weapon_hit_bonus(struct obj *weapon)
             skill = P_SKILL(wep_type);
         switch (skill) {
         default:
-            impossible(bad_skill, skill); /* fall through */
+            impossible(bad_skill, skill);
+            FALLTHROUGH;
+            /* FALLTHRU */
         case P_ISRESTRICTED:
         case P_UNSKILLED:
             bonus = -9;
@@ -1540,7 +1544,8 @@ weapon_dam_bonus(struct obj *weapon)
         switch (P_SKILL(type)) {
         default:
             impossible("weapon_dam_bonus: bad skill %d", P_SKILL(type));
-        /* fall through */
+            FALLTHROUGH;
+        /* FALLTHRU */
         case P_ISRESTRICTED:
             bonus = -2;
             break;

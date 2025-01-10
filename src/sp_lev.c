@@ -2165,8 +2165,14 @@ create_monster(monster *m, struct mkroom *croom)
             if (vampshifted(mtmp) && m->appear != M_AP_MONSTER)
                 (void) newcham(mtmp, &mons[mtmp->cham], NO_NC_FLAGS);
         }
-        if (m->has_invent) {
+        if (!(m->has_invent & DEFAULT_INVENT)) {
+            /* guard against someone accidentally specifying e.g. quest nemesis
+             * with custom inventory that lacks Bell or quest artifact but
+             * forgetting to flag them as receiving their default inventory */
+            mdrop_special_objs(mtmp);
             discard_minvent(mtmp, TRUE);
+        }
+        if (m->has_invent & CUSTOM_INVENT) {
             invent_carrying_monster = mtmp;
         }
     }
@@ -2277,6 +2283,8 @@ create_object(object *o, struct mkroom *croom)
     }
     if (o->trapped == 0 || o->trapped == 1)
         otmp->otrapped = o->trapped;
+    if (o->trapped && (o->tknown == 0 || o->tknown == 1))
+        otmp->tknown = o->tknown;
     otmp->greased = o->greased ? 1 : 0;
 
     if (o->quan > 0 && objects[otmp->otyp].oc_merge) {
@@ -2922,7 +2930,12 @@ fill_empty_maze(void)
                             TRUE);
         }
         for (x = rnd((int) (12 * mapfact) / 100); x; x--) {
+            struct trap *ttmp;
+
             maze1xy(&mm, DRY);
+            if ((ttmp = t_at(mm.x, mm.y)) != 0
+                && (is_pit(ttmp->ttyp) || is_hole(ttmp->ttyp)))
+                continue;
             (void) mksobj_at(BOULDER, mm.x, mm.y, TRUE, FALSE);
         }
         for (x = rn2(2); x; x--) {
@@ -3210,7 +3223,7 @@ lspo_monster(lua_State *L)
     tmpmons.stunned = 0;
     tmpmons.confused = 0;
     tmpmons.seentraps = 0;
-    tmpmons.has_invent = 0;
+    tmpmons.has_invent = DEFAULT_INVENT;
     tmpmons.waiting = 0;
     tmpmons.mm_flags = NO_MM_FLAGS;
 
@@ -3258,6 +3271,7 @@ lspo_monster(lua_State *L)
                                 : (mgend == MALE) ? MALE : rn2(2);
         }
     } else {
+        int keep_default_invent = -1; /* -1 = unspecified */
         lcheck_param_table(L);
 
         tmpmons.peaceful = get_table_boolean_opt(L, "peaceful", BOOL_RANDOM);
@@ -3278,7 +3292,8 @@ lspo_monster(lua_State *L)
         tmpmons.confused = get_table_boolean_opt(L, "confused", FALSE);
         tmpmons.waiting = get_table_boolean_opt(L, "waiting", FALSE);
         tmpmons.seentraps = 0; /* TODO: list of trap names to bitfield */
-        tmpmons.has_invent = 0;
+        keep_default_invent =
+            get_table_boolean_opt(L, "keep_default_invent", -1);
 
         if (!get_table_boolean_opt(L, "tail", TRUE))
             tmpmons.mm_flags |= MM_NOTAIL;
@@ -3327,7 +3342,19 @@ lspo_monster(lua_State *L)
 
         lua_getfield(L, 1, "inventory");
         if (!lua_isnil(L, -1)) {
-            tmpmons.has_invent = 1;
+            /* overwrite DEFAULT_INVENT - most times inventory is specified,
+             * the monster should not get its species' default inventory. Only
+             * provide it if explicitly requested. */
+            tmpmons.has_invent = CUSTOM_INVENT;
+            if (keep_default_invent == TRUE)
+                tmpmons.has_invent |= DEFAULT_INVENT;
+        }
+        else {
+            /* if keep_default_invent was not specified (-1), keep has_invent as
+             * DEFAULT_INVENT and provide the species' default inventory.
+             * But if it was explicitly set to false, provide *no* inventory. */
+            if (keep_default_invent == FALSE)
+                tmpmons.has_invent = NO_INVENT;
         }
     }
 
@@ -3341,7 +3368,8 @@ lspo_monster(lua_State *L)
 
     create_monster(&tmpmons, gc.coder->croom);
 
-    if (tmpmons.has_invent && lua_type(L, -1) == LUA_TFUNCTION) {
+    if ((tmpmons.has_invent & CUSTOM_INVENT)
+        && lua_type(L, -1) == LUA_TFUNCTION) {
         lua_remove(L, -2);
         nhl_pcall_handle(L, 0, 0, "lspo_monster", NHLpa_panic);
         spo_end_moninvent();
@@ -3517,7 +3545,7 @@ lspo_object(lua_State *L)
             0,       /* quan */
             0,       /* buried */
             0,       /* lit */
-            0, 0, 0, 0, /* eroded, locked, trapped, recharged */
+            0, 0, 0, 0, 0, /* eroded, locked, trapped, tknown, recharged */
             0, 0, 0, 0, /* invis, greased, broken, achievement */
     };
 #if 0
@@ -3537,6 +3565,7 @@ lspo_object(lua_State *L)
     tmpobj.spe = -127;
     tmpobj.quan = -1;
     tmpobj.trapped = -1;
+    tmpobj.tknown = -1;
     tmpobj.locked = -1;
     tmpobj.corpsenm = NON_PM;
 
@@ -3590,6 +3619,7 @@ lspo_object(lua_State *L)
         tmpobj.eroded = get_table_int_opt(L, "eroded", 0);
         tmpobj.locked = get_table_boolean_opt(L, "locked", -1);
         tmpobj.trapped = get_table_boolean_opt(L, "trapped", -1);
+        tmpobj.tknown = get_table_boolean_opt(L, "trap_known", -1);
         tmpobj.recharged = get_table_int_opt(L, "recharged", 0);
         tmpobj.greased = get_table_boolean_opt(L, "greased", 0);
         tmpobj.broken = get_table_boolean_opt(L, "broken", 0);

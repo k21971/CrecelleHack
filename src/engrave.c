@@ -285,6 +285,31 @@ wipe_engr_at(coordxy x, coordxy y, xint16 cnt, boolean magical)
     }
 }
 
+/*
+ * Returns:
+ *    non-zero if it can be felt
+ */
+boolean
+engr_can_be_felt(struct engr *ep)
+{
+    boolean canfeel = FALSE;
+
+    switch (ep->engr_type) {
+        case ENGRAVE:
+        case HEADSTONE:
+        case BURN:
+            canfeel = TRUE;
+            break;
+        case DUST:
+        case MARK:
+        case ENGR_BLOOD:
+        default:
+            canfeel = FALSE;
+            break;
+    }
+    return canfeel;
+}
+
 void
 read_engr_at(coordxy x, coordxy y)
 {
@@ -292,7 +317,7 @@ read_engr_at(coordxy x, coordxy y)
     const char *eloc = surface(x, y);
     int sensed = 0;
 
-    /* Sensing an engraving does not require sight,
+    /* Sensing an engraving does not require sight for some engraving types,
      * nor does it necessarily imply comprehension (literacy).
      */
     if (ep && ep->engr_txt[actual_text][0]) {
@@ -355,6 +380,7 @@ read_engr_at(coordxy x, coordxy y)
             You("%s: \"%s\".", (Blind) ? "feel the words" : "read", et);
             Strcpy(ep->engr_txt[remembered_text], ep->engr_txt[actual_text]);
             ep->eread = 1;
+            ep->erevealed = 1;
             if (svc.context.run > 0)
                 nomul(0);
         }
@@ -399,7 +425,8 @@ make_engr_at(
     ep->engr_type = (xint8) ((e_type > 0) ? e_type : rnd(N_ENGRAVE - 1));
     ep->engr_szeach = smem;
     ep->engr_alloc = smem * 3;
-    /* we do not set ep->eread; the caller will need to if required */
+    /* we do not set ep->eread or ep->erevealed;
+     * the caller will need to if required */
 }
 
 /* delete any engraving at location <x,y> */
@@ -606,6 +633,7 @@ doengrave_sfx_item_WAN(struct _doengrave_ctx *de)
                    "A few ice cubes drop from the wand.");
         if (!de->oep || (de->oep->engr_type != BURN))
             break;
+        FALLTHROUGH;
         /*FALLTHRU*/
     case WAN_CANCELLATION:
     case WAN_MAKE_INVISIBLE:
@@ -707,6 +735,7 @@ doengrave_sfx_item(struct _doengrave_ctx *de)
             de->type = DUST;
             break;
         }
+        FALLTHROUGH;
         /*FALLTHRU*/
     /* Objects too large to engrave with */
     case BALL_CLASS:
@@ -995,6 +1024,7 @@ doengrave(void)
     if (de->teleengr) {
         rloc_engr(de->oep);
         de->oep->eread = 0;
+        de->oep->erevealed = 0;
         de->disprefresh = TRUE;
         de->oep = (struct engr *) 0;
     }
@@ -1013,6 +1043,7 @@ doengrave(void)
             if (tmp_ep != 0) {
                 pline_The("engraving now reads: \"%s\".", de->buf);
                 tmp_ep->eread = 1;
+                tmp_ep->erevealed = 1;
                 de->disprefresh = TRUE;
             }
         }
@@ -1394,8 +1425,10 @@ engrave(void)
     make_engr_at(u.ux, u.uy, buf, svm.moves - gm.multi,
                  svc.context.engraving.type);
     oep = engr_at(u.ux, u.uy);
-    if (oep)
+    if (oep) {
         oep->eread = 1;
+        oep->erevealed = 1;
+    }
 
     if (*endc) {
         svc.context.engraving.nextc = endc;
@@ -1432,6 +1465,22 @@ sanitize_engravings(void)
 
     for (ep = head_engr; ep; ep = ep->nxt_engr) {
         sanitize_name(ep->engr_txt[actual_text]);
+    }
+}
+
+/* mark all engravings as not-discovered/not-read when saving bones */
+void
+forget_engravings(void)
+{
+    struct engr *ep;
+
+    for (ep = head_engr; ep; ep = ep->nxt_engr) {
+        ep->erevealed = ep->eread = 0;
+
+        /* Note: engr_txt[actual_text], engr_txt[rememberd_text], and
+         * engr_txt[pristine_text] retain their original text rather
+         * than get updated to reflect each engraving's current text.
+         * Does it matter? */
     }
 }
 
@@ -1633,15 +1682,18 @@ see_engraving(struct engr *ep)
     newsym(ep->engr_x, ep->engr_y);
 }
 
-/* like see_engravings() but overrides vision, but
-   only for some types of engravings that can be felt */
+/* like see_engravings() but overrides vision, but only for some types
+   of engravings that can be felt  [this isn't actually used anywhere?] */
 void
 feel_engraving(struct engr *ep)
 {
-    ep->eread = 1;
-    map_engraving(ep, 1);
-    /* in case it's beneath something, redisplay the something */
-    newsym(ep->engr_x, ep->engr_y);
+    if (engr_can_be_felt(ep)) {
+        ep->eread = 1;
+        ep->erevealed = 1;
+        map_engraving(ep, 1);
+        /* in case it's beneath something, redisplay the something */
+        newsym(ep->engr_x, ep->engr_y);
+    }
 }
 
 static const char blind_writing[][21] = {

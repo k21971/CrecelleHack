@@ -1,4 +1,4 @@
-/* NetHack 3.7	hack.h	$NHDT-Date: 1725653009 2024/09/06 20:03:29 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.262 $ */
+/* NetHack 3.7	hack.h	$NHDT-Date: 1736530208 2025/01/10 09:30:08 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.266 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Pasi Kallinen, 2017. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -347,7 +347,6 @@ enum digcheck_result {
     DIGCHECK_FAIL_OBJ_POOL_OR_TRAP
 };
 
-    
 
 /* Dismount: causes for why you are no longer riding */
 enum dismount_types {
@@ -673,6 +672,7 @@ struct mvitals {
     uchar born;
     uchar died;
     uchar mvflags;
+    Bitfield(seen_close, 1);
 };
 
 
@@ -1261,11 +1261,12 @@ typedef uint32_t mmflags_nht;     /* makemon MM_ flags */
 /* flag for suppressing perm_invent update when name gets assigned */
 #define ONAME_SKIP_INVUPD 0x0200U /* don't call update_inventory() */
 
-/* Flags to control find_mid() */
+/* Flags to control find_mid() and whereis_mon() */
 #define FM_FMON 0x01    /* search the fmon chain */
 #define FM_MIGRATE 0x02 /* search the migrating monster chain */
 #define FM_MYDOGS 0x04  /* search gm.mydogs */
-#define FM_EVERYWHERE (FM_FMON | FM_MIGRATE | FM_MYDOGS)
+#define FM_YOU 0x08     /* check for gy.youmonst */
+#define FM_EVERYWHERE (FM_YOU | FM_FMON | FM_MIGRATE | FM_MYDOGS)
 
 /* Flags to control pick_[race,role,gend,align] routines in role.c */
 #define PICK_RANDOM 0

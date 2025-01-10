@@ -1,4 +1,4 @@
-/* NetHack 3.7	hack.c	$NHDT-Date: 1723410639 2024/08/11 21:10:39 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.452 $ */
+/* NetHack 3.7	hack.c	$NHDT-Date: 1736530208 2025/01/10 09:30:08 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.477 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Derek S. Ray, 2015. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -47,7 +47,6 @@ staticfn struct monst *monstinroom(struct permonst *, int) NONNULLARG1;
 staticfn boolean furniture_present(int, int);
 staticfn void move_update(boolean);
 staticfn int pickup_checks(void);
-staticfn boolean doorless_door(coordxy, coordxy);
 staticfn void maybe_wail(void);
 staticfn boolean water_turbulence(coordxy *, coordxy *);
 
@@ -571,6 +570,7 @@ moverock_core(coordxy sx, coordxy sy)
                         dopush(sx, sy, rx, ry, otmp, costly);
                         continue;
                     }
+                    FALLTHROUGH;
                     /*FALLTHRU*/
                 case TELEP_TRAP:
                     rock_disappear_msg(otmp);
@@ -962,7 +962,7 @@ invocation_pos(coordxy x, coordxy y)
                       && x == svi.inv_pos.x && y == svi.inv_pos.y);
 }
 
-/* return TRUE if (dx,dy) is an OK place to move;
+/* return TRUE if (ux+dx,uy+dy) is an OK place to move;
    mode is one of DO_MOVE, TEST_MOVE, TEST_TRAV, or TEST_TRAP */
 boolean
 test_move(
@@ -972,10 +972,16 @@ test_move(
 {
     coordxy x = ux + dx;
     coordxy y = uy + dy;
-    struct rm *tmpr = &levl[x][y];
+    struct rm *tmpr;
     struct rm *ust;
 
     svc.context.door_opened = FALSE;
+
+    if (!isok(x, y))
+        return FALSE;
+
+    tmpr = &levl[x][y];
+
     /*
      *  Check for physical obstacles.  First, the place we are going.
      */
@@ -1067,9 +1073,19 @@ test_move(
                             " but can't squeeze your possessions through.");
                     if (flags.autoopen && !svc.context.run
                         && !Confusion && !Stunned && !Fumbling) {
-                        svc.context.door_opened
-                        = svc.context.move
-                          = (doopen_indir(x, y) == ECMD_TIME ? 1 : 0);
+                        int tmp = doopen_indir(x, y);
+                        /* if 'autounlock' includes Kick, we might have a
+                           kick at the door queued up after doopen_indir() */
+                        struct _cmd_queue *cq = cmdq_peek(CQ_CANNED);
+
+                        if (tmp == ECMD_OK && cq && cq->typ == CMDQ_EXTCMD
+                            && cq->ec_entry == ext_func_tab_from_func(dokick))
+                            /* door hasn't been opened, but fake it so that
+                               canned kick will be executed as next command */
+                            svc.context.door_opened = TRUE;
+                        else
+                            svc.context.door_opened = !closed_door(x, y);
+                        svc.context.move = (ux != u.ux || uy != u.uy);
                     } else if (x == ux || y == uy) {
                         if (Blind || Stunned || ACURR(A_DEX) < 10
                             || Fumbling) {
@@ -1776,9 +1792,14 @@ u_locomotion(const char *def)
 {
     boolean capitalize = (*def == highc(*def));
 
+    /* regular locomotion() takes a monster type rather than a specific
+       monster, so can't tell whether it is operating on hero;
+       its is_flyer() and is_floater() tests wouldn't work on hero except
+       when hero is polymorphed and not wearing an amulet of flying
+       or boots/ring/spell of levitation */
     return Levitation ? (capitalize ? "Float" : "float")
-        : Flying ? (capitalize ? "Fly" : "fly")
-        : locomotion(gy.youmonst.data, def);
+           : Flying ? (capitalize ? "Fly" : "fly")
+             : locomotion(gy.youmonst.data, def);
 }
 
 /* Return a simplified floor solid/liquid state based on hero's state */
@@ -1838,8 +1859,7 @@ staticfn boolean
 swim_move_danger(coordxy x, coordxy y)
 {
     schar newtyp = u_simple_floortyp(x, y);
-    boolean liquid_wall = IS_WATERWALL(newtyp)
-        || newtyp == LAVAWALL;
+    boolean liquid_wall = IS_WATERWALL(newtyp) || newtyp == LAVAWALL;
 
     if (Underwater && (is_pool(x,y) || IS_WATERWALL(newtyp)))
         return FALSE;
@@ -2047,7 +2067,9 @@ domove_fight_web(coordxy x, coordxy y)
 
 /* maybe swap places with a pet? returns TRUE if swapped places */
 staticfn boolean
-domove_swap_with_pet(struct monst *mtmp, coordxy x, coordxy y)
+domove_swap_with_pet(
+    struct monst *mtmp,
+    coordxy x, coordxy y)
 {
     struct trap *trap;
     /* if it turns out we can't actually move */
@@ -2549,6 +2571,7 @@ escape_from_sticky_mon(coordxy x, coordxy y)
                     u.ustuck->mfrozen = 1;
                     u.ustuck->msleeping = 0;
                 }
+                FALLTHROUGH;
                 /*FALLTHRU*/
             default:
                 if (u.ustuck->mtame && !Conflict && !u.ustuck->mconf)
@@ -2716,11 +2739,11 @@ domove_core(void)
 
         if (is_gasregion(newreg))
             Snprintf(qbuf, sizeof qbuf, "%s into that %s cloud?",
-                    locomotion(gy.youmonst.data, "step"),
+                    u_locomotion("step"),
                     (reg_damg(newreg) > 0) ? "poison gas" : "vapor");
         else
             Snprintf(qbuf, sizeof qbuf, "%s into those raging flames?",
-                     locomotion(gy.youmonst.data, "step"));
+                    u_locomotion("step"));
         if (!paranoid_query(ParanoidConfirm, upstart(qbuf))) {
             nomul(0);
             svc.context.move = 0;
@@ -2747,23 +2770,10 @@ domove_core(void)
             || Hallucination)) {
         char qbuf[QBUFSZ];
         int traptype = (Hallucination ? rnd(TRAPNUM - 1) : (int) trap->ttyp);
-        boolean into = FALSE; /* "onto" the trap vs "into" */
+        boolean into = into_vs_onto(traptype);
 
-        switch (traptype) {
-        case BEAR_TRAP:
-        case PIT:
-        case SPIKED_PIT:
-        case HOLE:
-        case TELEP_TRAP:
-        case LEVEL_TELEP:
-        case MAGIC_PORTAL:
-        case WEB:
-            into = TRUE;
-            break;
-        }
         Snprintf(qbuf, sizeof qbuf, "Really %s %s that %s?",
-                 locomotion(gy.youmonst.data, "step"),
-                 into ? "into" : "onto",
+                 u_locomotion("step"), into ? "into" : "onto",
                  defsyms[trap_to_defsym(traptype)].explanation);
         /* handled like paranoid_confirm:pray; when paranoid_confirm:trap
            isn't set, don't ask at all but if it is set (checked above),
@@ -3582,6 +3592,7 @@ check_special_room(boolean newlev)
         }
         case TEMPLE:
             intemple(roomno + ROOMOFFSET);
+            FALLTHROUGH;
         /*FALLTHRU*/
         default:
             msg_given = (rt == TEMPLE || rt >= SHOPBASE);
@@ -3916,7 +3927,7 @@ lookaround(void)
 }
 
 /* check for a doorway which lacks its door (NODOOR or BROKEN) */
-staticfn boolean
+boolean
 doorless_door(coordxy x, coordxy y)
 {
     struct rm *lev_p = &levl[x][y];
@@ -4326,6 +4337,7 @@ spot_checks(coordxy x, coordxy y, schar old_typ)
     switch (old_typ) {
     case DRAWBRIDGE_UP:
         db_ice_now = ((levl[x][y].drawbridgemask & DB_UNDER) == DB_ICE);
+        FALLTHROUGH;
         /*FALLTHRU*/
     case ICE:
         if ((new_typ != old_typ)

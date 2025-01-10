@@ -1373,6 +1373,11 @@ freeinv_core(struct obj *obj)
     } else if (obj->otyp == FIGURINE && obj->timed) {
         (void) stop_timer(FIG_TRANSFORM, obj_to_any(obj));
     }
+
+    if (obj == svc.context.tin.tin) {
+        svc.context.tin.tin = (struct obj *) 0;
+        svc.context.tin.o_id = 0;
+    }
 }
 
 /* remove an object from the hero's inventory */
@@ -2463,6 +2468,7 @@ askchain(
         switch (sym) {
         case 'a':
             allflag = 1;
+            FALLTHROUGH;
             /*FALLTHRU*/
         case 'y':
             tmp = (*fn)(otmp);
@@ -2481,10 +2487,13 @@ askchain(
             cnt += tmp;
             if (--mx == 0)
                 goto ret;
+            FALLTHROUGH;
             /*FALLTHRU*/
         case 'n':
             if (nodot)
                 dud++;
+            FALLTHROUGH;
+            /*FALLTHRU*/
         default:
             break;
         case 'q':
@@ -2533,7 +2542,7 @@ fully_identify_obj(struct obj *otmp)
 {
     makeknown(otmp->otyp);
     if (otmp->oartifact)
-        discover_artifact((coordxy) otmp->oartifact);
+        discover_artifact((xint16) otmp->oartifact);
     otmp->known = otmp->dknown = otmp->bknown = otmp->rknown = 1;
     set_cknown_lknown(otmp); /* set otmp->{cknown,lknown} if applicable */
     if (otmp->otyp == EGG && otmp->corpsenm != NON_PM)
@@ -2975,6 +2984,7 @@ itemactions_pushkeys(struct obj *otmp, int act)
         switch (act) {
         default:
             impossible("Unknown item action");
+            break;
         case IA_NONE:
             break;
         case IA_UNWIELD:
@@ -6155,6 +6165,12 @@ sync_perminvent(void)
             || in_perm_invent_toggled) {
             wri = ctrl_nhwindow(WIN_INVEN, request_settings, &wri_info);
             if (wri != 0) {
+                if ((wri->tocore.tocore_flags & (too_early)) != 0) {
+                    /* don't be too noisy about this as it's really
+                     * a startup timing issue. Just set a marker. */
+                    iflags.perm_invent_pending = TRUE;
+                    return;
+                }
                 if ((wri->tocore.tocore_flags & (too_small | prohibited))
                     != 0) {
                     /* sizes aren't good enough */

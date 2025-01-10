@@ -9,7 +9,6 @@
 # ifndef NO_SIGNAL
 #include <signal.h>
 # endif
-#include <ctype.h>
 # ifndef LONG_MAX
 #include <limits.h>
 # endif
@@ -220,7 +219,7 @@ crashreport_bidshow(void)
     mark = uend;                                \
     if (utmp >= urem)                           \
         goto full;                              \
-    memcpy(uend, str, utmp);			\
+    memcpy(uend, str, utmp);                    \
     uend += utmp; urem -= utmp;                 \
     *uend = '\0';
 

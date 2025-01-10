@@ -11,7 +11,6 @@
 #include "cursmisc.h"
 #include "cursdial.h"
 #include "func_tab.h"
-#include <ctype.h>
 
 #if defined(FILENAME_CMP) && !defined(strcasecmp)
 #define strcasecmp FILENAME_CMP
@@ -1556,6 +1555,7 @@ menu_get_selections(WINDOW *win, nhmenu *menu, int how)
                     break;
                 }
             }
+            FALLTHROUGH;
             /*FALLTHRU*/
         default:
             if (curletter > 0 && curletter < 256

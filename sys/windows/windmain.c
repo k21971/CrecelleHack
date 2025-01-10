@@ -10,8 +10,6 @@
 #ifdef DLB
 #include "dlb.h"
 #endif
-#include <ctype.h>
-#include <stdlib.h>
 #include <sys\stat.h>
 #include <errno.h>
 #include <ShlObj.h>
@@ -20,14 +18,13 @@
 #error You must #define SAFEPROCS to build windmain.c
 #endif
 
-static void process_options(int argc, char **argv);
 static void nhusage(void);
 static char *get_executable_path(void);
+static void early_options(int argc, char **argv);
 char *translate_path_variables(const char *, char *);
 char *exename(void);
 boolean fakeconsole(void);
 void freefakeconsole(void);
-ATTRNORETURN extern void nethack_exit(int) NORETURN;
 #if defined(MSWIN_GRAPHICS)
 extern void mswin_destroy_reg(void);
 #endif
@@ -69,7 +66,7 @@ void windows_nhbell(void);
 int windows_nh_poskey(int *, int *, int *);
 void windows_raw_print(const char *);
 char windows_yn_function(const char *, const char *, char);
-static void windows_getlin(const char *, char *);
+/* static void windows_getlin(const char *, char *); */
 
 #ifdef WIN32CON
 extern int windows_console_custom_nhgetch(void);
@@ -116,6 +113,11 @@ void copy_sysconf_content(void);
 void copy_config_content(void);
 void copy_hack_content(void);
 void copy_symbols_content(void);
+void copy_file(const char *, const char *,
+               const char *, const char *, boolean);
+void update_file(const char *, const char *,
+                 const char *, const char *, BOOL);
+void windows_raw_print_bold(const char *);
 
 #ifdef PORT_HELP
 void port_help(void);
@@ -150,6 +152,7 @@ DISABLE_WARNING_UNREACHABLE_CODE
 
 #if defined(MSWIN_GRAPHICS)
 #define MAIN nethackw_main
+int nethackw_main(int, char **);
 #else
 #define MAIN main
 #endif
@@ -238,6 +241,7 @@ _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);*/
     iflags.windowtype_deferred = TRUE;
     copy_sysconf_content();
     copy_symbols_content();
+    early_options(argc, argv);
     initoptions();
 
     /* Now that sysconf has had a chance to set the TROUBLEPREFIX, don't
@@ -245,7 +249,6 @@ _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);*/
     fqn_prefix_locked[TROUBLEPREFIX] = TRUE;
 
     copy_config_content();
-    process_options(argc, argv);
 
     /* did something earlier flag a need to exit without starting a game? */
     if (windows_startup_state > 0) {
@@ -369,7 +372,7 @@ _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);*/
     (void) fname_encode(
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_-.", '%',
         fnamebuf, encodedfnamebuf, BUFSZ);
-    Sprintf(gl.lock, "%s", encodedfnamebuf);
+    Snprintf(gl.lock, sizeof gl.lock, "%s", encodedfnamebuf);
     /* regularize(lock); */ /* we encode now, rather than substitute */
     if ((getlock_result = getlock()) == 0)
         nethack_exit(EXIT_SUCCESS);
@@ -458,23 +461,18 @@ attempt_restore:
 RESTORE_WARNING_UNREACHABLE_CODE
 
 static void
-process_options(int argc, char * argv[])
+early_options(int argc, char *argv[])
 {
     int i;
 
-    /*
-     * Process options.
-     */
     if (argc > 1) {
         if (argcheck(argc, argv, ARG_VERSION) == 2)
             nethack_exit(EXIT_SUCCESS);
 
         if (argcheck(argc, argv, ARG_SHOWPATHS) == 2) {
-            iflags.initoptions_noterminate = TRUE;
-            initoptions();
-            iflags.initoptions_noterminate = FALSE;
-            reveal_paths();
-            nethack_exit(EXIT_SUCCESS);
+            gd.deferred_showpaths = TRUE;
+            /* gd.deferred_showpaths is not used by windows */
+            return;
         }
 #ifndef NODUMPENUMS
         if (argcheck(argc, argv, ARG_DUMPENUMS) == 2) {
@@ -505,7 +503,7 @@ process_options(int argc, char * argv[])
              */
             argc--;
             argv++;
-            const char * dir = argv[0] + 2;
+            const char *dir = argv[0] + 2;
             if (*dir == '=' || *dir == ':')
                 dir++;
             if (!*dir && argc > 1) {
@@ -574,7 +572,8 @@ process_options(int argc, char * argv[])
 #endif
         case 'u':
             if (argv[0][2])
-                (void) strncpy(svp.plname, argv[0] + 2, sizeof(svp.plname) - 1);
+                (void) strncpy(svp.plname, argv[0] + 2,
+                               sizeof(svp.plname) - 1);
             else if (argc > 1) {
                 argc--;
                 argv++;
@@ -630,7 +629,8 @@ process_options(int argc, char * argv[])
                 break;
             } else
                 raw_printf("\nUnknown switch: %s", argv[0]);
-        /* FALL THROUGH */
+            FALLTHROUGH;
+        /* FALLTHRU */
         case '?':
             nhusage();
             nethack_exit(EXIT_SUCCESS);
@@ -989,6 +989,7 @@ copy_symbols_content(void)
         copy_file(gf.fqn_prefix[SYSCONFPREFIX], SYMBOLS,
                   gf.fqn_prefix[SYSCONFPREFIX], SYMBOLS_TEMPLATE, TRUE);
     }
+    nhUse(no_template);
 }
 
 void
@@ -1107,10 +1108,10 @@ boolean
 fakeconsole(void)
 {
     if (!hStdOut) {
-        HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
-        HANDLE hStdIn = GetStdHandle(STD_INPUT_HANDLE);
+        HANDLE fkhStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+        HANDLE fkhStdIn = GetStdHandle(STD_INPUT_HANDLE);
 
-        if (!hStdOut && !hStdIn) {
+        if (!fkhStdOut && !fkhStdIn) {
             /* Bool rval; */
             AllocConsole();
             AttachConsole(GetCurrentProcessId());
@@ -1277,11 +1278,13 @@ windows_yn_function(const char *query UNUSED, const char *resp UNUSED,
 }
 
 /*ARGSUSED*/
+#if 0
 static void
 windows_getlin(const char *prompt UNUSED, char *outbuf)
 {
     Strcpy(outbuf, "\033");
 }
+#endif
 
 #ifdef PC_LOCKING
 static int

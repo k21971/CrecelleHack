@@ -1214,7 +1214,6 @@ freedynamicdata(void)
 
     /* move-specific data */
     dmonsfree(); /* release dead monsters */
-    dobjsfree();
     alloc_itermonarr(0U); /* a request of 0 releases existing allocation */
 
     /* level-specific data */
@@ -1227,6 +1226,8 @@ freedynamicdata(void)
     free_light_sources(RANGE_GLOBAL);
     freeobjchn(gi.invent);
     freeobjchn(gm.migrating_objs);
+    if (go.objs_deleted)
+        dobjsfree(); /* really free deleted objects */
     freemonchn(gm.migrating_mons);
     freemonchn(gm.mydogs); /* ascension or dungeon escape */
     /* freelevchn();  --  [folded into free_dungeons()] */
@@ -1277,6 +1278,9 @@ freedynamicdata(void)
 
     if (options_set_window_colors_flag)
         options_free_window_colors();
+
+    if (glyphid_cache_status())
+        free_glyphid_cache();
 
     /* last, because it frees data that might be used by panic() to provide
        feedback to the user; conceivably other freeing might trigger panic */

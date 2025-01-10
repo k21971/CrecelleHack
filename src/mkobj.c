@@ -325,6 +325,7 @@ mkbox_cnts(struct obj *box)
             n = 0;
             break;
         }
+        FALLTHROUGH;
         /*FALLTHRU*/
     case BAG_OF_HOLDING:
         n = 1;
@@ -521,7 +522,7 @@ next_ident(void)
        uses 16-bit 'int'), just live with that and hope no o_id conflicts
        between objects or m_id conflicts between monsters arise */
     if (!svc.context.ident)
-        svc.context.ident = rnd(2);
+        svc.context.ident = rnd(2) + 1;   /* id 1 is reserved */
 
     return res;
 }
@@ -851,6 +852,7 @@ unknow_object(struct obj *obj)
 
     obj->bknown = obj->rknown = 0;
     obj->cknown = obj->lknown = 0;
+    obj->tknown = 0;
     /* for an existing object, awareness of charges or enchantment has
        gone poof...  [object types which don't use the known flag have
        it set True for some reason] */
@@ -879,7 +881,7 @@ mksobj_init(struct obj *otmp, boolean artif)
             otmp->opoisoned = 1;
 
         if (artif && !rn2(20 + (10 * nartifact_exist())))
-            otmp = mk_artifact(otmp, (aligntyp) A_NONE);
+            otmp = mk_artifact(otmp, (aligntyp) A_NONE, 99, TRUE);
         break;
     case FOOD_CLASS:
         otmp->oeaten = 0;
@@ -999,6 +1001,8 @@ mksobj_init(struct obj *otmp, boolean artif)
         case LARGE_BOX:
             otmp->olocked = !!(rn2(5));
             otmp->otrapped = !(rn2(10));
+            otmp->tknown = otmp->otrapped && !rn2(100); /* obvious trap */
+            FALLTHROUGH;
             /*FALLTHRU*/
         case ICE_BOX:
         case SACK:
@@ -1083,7 +1087,7 @@ mksobj_init(struct obj *otmp, boolean artif)
         } else
             blessorcurse(otmp, 10);
         if (artif && !rn2(40 + (10 * nartifact_exist())))
-            otmp = mk_artifact(otmp, (aligntyp) A_NONE);
+            otmp = mk_artifact(otmp, (aligntyp) A_NONE, 99, TRUE);
         /* simulate lacquered armor for samurai */
         if (Role_if(PM_SAMURAI) && otmp->otyp == SPLINT_MAIL
             && (svm.moves <= 1 || In_quest(&u.uz))) {
@@ -1185,6 +1189,7 @@ mksobj(int otyp, boolean init, boolean artif)
             if (svm.mvitals[otmp->corpsenm].mvflags & (G_NOCORPSE | G_GONE))
                 otmp->corpsenm = gu.urole.mnum;
         }
+        FALLTHROUGH;
         /*FALLTHRU*/
     case STATUE:
     case FIGURINE:
@@ -1198,6 +1203,7 @@ mksobj(int otyp, boolean init, boolean artif)
                            : is_male(ptr) ? CORPSTAT_MALE
                              : rn2(2) ? CORPSTAT_FEMALE : CORPSTAT_MALE);
         }
+        FALLTHROUGH;
         /*FALLTHRU*/
     case EGG:
     /* case TIN: */
@@ -1211,6 +1217,7 @@ mksobj(int otyp, boolean init, boolean artif)
         break;
     case POT_OIL:
         otmp->age = MAX_OIL_IN_FLASK; /* amount of oil */
+        FALLTHROUGH;
         /*FALLTHRU*/
     case POT_WATER: /* POTION_CLASS */
         otmp->fromsink = 0; /* overloads corpsenm, which was set to NON_PM */
@@ -1226,7 +1233,7 @@ mksobj(int otyp, boolean init, boolean artif)
 
     /* unique objects may have an associated artifact entry */
     if (objects[otyp].oc_unique && !otmp->oartifact)
-        otmp = mk_artifact(otmp, (aligntyp) A_NONE);
+        otmp = mk_artifact(otmp, (aligntyp) A_NONE, 99, FALSE);
     otmp->owt = weight(otmp);
     return otmp;
 }
@@ -2437,9 +2444,8 @@ remove_object(struct obj *otmp)
         panic("remove_object: obj not on floor");
     extract_nexthere(otmp, &svl.level.objects[x][y]);
     extract_nobj(otmp, &fobj);
-    /* update vision iff this was the only boulder at its spot */
-    if (otmp->otyp == BOULDER && !sobj_at(BOULDER, x, y))
-        unblock_point(x, y); /* vision */
+    if (otmp->otyp == BOULDER)
+        recalc_block_point(x, y); /* vision */
     if (otmp->timed)
         obj_timer_checks(otmp, x, y, 0);
 }
@@ -2705,6 +2711,10 @@ dealloc_obj(struct obj *obj)
         gt.thrownobj = 0;
     if (obj == gk.kickedobj)
         gk.kickedobj = 0;
+    if (obj == svc.context.tin.tin) {
+        svc.context.tin.tin = (struct obj *) 0;
+        svc.context.tin.o_id = 0;
+    }
 
     /* if obj came from the most recent splitobj(), it's no longer eligible
        for unsplitobj(); perform inline clear_splitobjs() */
@@ -2983,6 +2993,7 @@ objlist_sanity(struct obj *objlist, int wheretype, const char *mesg)
                 /* note: ball and chain can also be OBJ_FREE, but not across
                    turns so this sanity check shouldn't encounter that */
                 bc_ok = TRUE;
+            FALLTHROUGH;
             /*FALLTHRU*/
             default:
                 if ((obj != uchain && obj != uball) || !bc_ok) {

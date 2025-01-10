@@ -658,6 +658,7 @@ m_throw(
                     hitu = 0;
                     break;
                 }
+                FALLTHROUGH;
                 /*FALLTHRU*/
             case CREAM_PIE:
             case BLINDING_VENOM:
@@ -857,6 +858,7 @@ spitmm(struct monst *mtmp, struct attack *mattk, struct monst *mtarg)
             break;
         default:
             impossible("bad attack type in spitmm");
+            FALLTHROUGH;
             /*FALLTHRU*/
         case AD_ACID:
             otmp = mksobj(ACID_VENOM, TRUE, FALSE);
@@ -1030,7 +1032,7 @@ thrwmu(struct monst *mtmp)
 
         if (canseemon(mtmp)) {
             onm = xname(otmp);
-            pline_xy(mtmp->mx, mtmp->my, "%s %s %s.", Monnam(mtmp),
+            pline_mon(mtmp, "%s %s %s.", Monnam(mtmp),
                   /* "thrusts" or "swings", or "bashes with" if adjacent */
                   mswings_verb(otmp, (rang <= 2) ? TRUE : FALSE),
                   obj_is_pname(otmp) ? the(onm) : an(onm));

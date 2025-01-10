@@ -78,19 +78,22 @@ set_levltyp(coordxy x, coordxy y, schar newtyp)
     if (isok(x, y) && newtyp >= STONE && newtyp < MAX_TYPE) {
         if (CAN_OVERWRITE_TERRAIN(levl[x][y].typ)) {
             schar oldtyp = levl[x][y].typ;
-            boolean was_ice = (levl[x][y].typ == ICE);
+            /* typ==ICE || (typ==DRAWBRIDGE_UP && drawbridgemask==DB_ICE) */
+            boolean was_ice = is_ice(x, y);
 
             levl[x][y].typ = newtyp;
             /* TODO?
              *  if oldtyp used flags or horizontal differently from
-             *  from the way newtyp will use them, clear them.
+             *  the way newtyp will use them, clear them.
              */
 
-            if (IS_LAVA(newtyp))
+            if (IS_LAVA(newtyp)) /* [what about IS_LAVA(oldtyp)=>.lit = 0?] */
                 levl[x][y].lit = 1;
-            
-            if (was_ice && newtyp != ICE)
+            if (was_ice && newtyp != ICE) {
+                /* frozen corpses resume rotting, no more ice to melt away */
+                obj_ice_effects(x, y, TRUE);
                 spot_stop_timers(x, y, MELT_ICE_AWAY);
+            }
             if ((IS_FOUNTAIN(oldtyp) != IS_FOUNTAIN(newtyp))
                 || (IS_SINK(oldtyp) != IS_SINK(newtyp)))
                 count_level_features(); /* level.flags.nfountains,nsinks */
@@ -585,6 +588,7 @@ fixup_special(void)
                 sp = find_level(r->rname.str);
                 lev = sp->dlevel;
             }
+            FALLTHROUGH;
             /*FALLTHRU*/
 
         case LR_UPSTAIR:
@@ -1318,8 +1322,8 @@ mazexy(coord *cc)
         x = rnd(gx.x_maze_max);
         y = rnd(gy.y_maze_max);
         if (levl[x][y].typ == allowedtyp) {
-            cc->x = (coordxy) x;
-            cc->y = (coordxy) y;
+            cc->x = x;
+            cc->y = y;
             return;
         }
     } while (++cpt < 100);
@@ -1327,8 +1331,8 @@ mazexy(coord *cc)
     for (x = 1; x <= gx.x_maze_max; x++)
         for (y = 1; y <= gy.y_maze_max; y++)
             if (levl[x][y].typ == allowedtyp) {
-                cc->x = (coordxy) x;
-                cc->y = (coordxy) y;
+                cc->x = x;
+                cc->y = y;
                 return;
             }
     /* every spot on the area of map allowed for mazes has been rejected */
@@ -2070,6 +2074,7 @@ mv_bubble(struct bubble *b, coordxy dx, coordxy dy, boolean ini)
         break;
     case 3:
         b->dy = -b->dy;
+        FALLTHROUGH;
         /*FALLTHRU*/
     case 2:
         b->dx = -b->dx;

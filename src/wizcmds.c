@@ -1,4 +1,4 @@
-/* NetHack 3.7	wizcmds.c	$NHDT-Date: 1723580901 2024/08/13 20:28:21 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.12 $ */
+/* NetHack 3.7	wizcmds.c	$NHDT-Date: 1736530208 2025/01/10 09:30:08 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.21 $ */
 /*-Copyright (c) Robert Patrick Rankin, 2024. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -20,6 +20,7 @@ staticfn void mon_chain(winid, const char *, struct monst *, boolean, long *,
 staticfn void contained_stats(winid, const char *, long *, long *);
 staticfn void misc_stats(winid, long *, long *);
 staticfn void you_sanity_check(void);
+staticfn void levl_sanity_check(void);
 staticfn void makemap_unmakemon(struct monst *, boolean);
 staticfn int QSORTCALLBACK migrsort_cmp(const genericptr, const genericptr);
 staticfn void list_migrating_mons(d_level *);
@@ -1065,6 +1066,7 @@ wiz_intrinsic(void)
                    so needs more than simple incr_itimeout() but we want
                    the pline() issued with that */
                 make_glib((int) newtimeout);
+                FALLTHROUGH;
                 /*FALLTHRU*/
             default:
  def_feedback:
@@ -1080,6 +1082,10 @@ wiz_intrinsic(void)
                 float_vs_flight();
             else if (p == PROT_FROM_SHAPE_CHANGERS)
                 rescham();
+            if (p == WWALKING || p == LEVITATION || p == FLYING) {
+                if (u.uinwater)
+                    (void) pooleffects(FALSE);
+            }
         }
         if (n >= 1)
             free((genericptr_t) pick_list);
@@ -1432,6 +1438,22 @@ you_sanity_check(void)
     (void) check_invent_gold("invent");
 }
 
+staticfn void
+levl_sanity_check(void)
+{
+    coordxy x, y;
+
+    if (Underwater)
+        return; /* Underwater uses different vision */
+
+    for (y = 0; y < ROWNO; y++) {
+        for (x = 1; x < COLNO; x++) {
+            if ((does_block(x, y, &levl[x][y]) ? 1 : 0) != get_viz_clear(x, y))
+                impossible("levl[%i][%i] vision blocking", x, y);
+        }
+    }
+}
+
 void
 sanity_check(void)
 {
@@ -1452,6 +1474,7 @@ sanity_check(void)
     bc_sanity_check();
     trap_sanity_check();
     engraving_sanity_check();
+    levl_sanity_check();
     program_state.in_sanity_check--;
 }
 
@@ -1806,6 +1829,7 @@ wiz_migrate_mons(void)
     char inbuf[BUFSZ];
     struct permonst *ptr;
     struct monst *mtmp;
+    boolean use_random_mon = TRUE;
 #endif
     d_level tolevel;
 
@@ -1829,17 +1853,25 @@ wiz_migrate_mons(void)
         return ECMD_OK;
 
     mcount = atoi(inbuf);
+    if (mcount < 0) {
+        use_random_mon = FALSE;
+        mcount *= -1;
+    }
     if (mcount < 1)
         mcount = 0;
     else if (mcount > ((COLNO - 1) * ROWNO))
         mcount = (COLNO - 1) * ROWNO;
 
     while (mcount > 0) {
-        ptr = rndmonst();
-        mtmp = makemon(ptr, 0, 0, MM_NOMSG);
+        if (use_random_mon) {
+            ptr = rndmonst();
+            mtmp = makemon(ptr, 0, 0, MM_NOMSG);
+        } else {
+            mtmp = fmon;
+        }
         if (mtmp)
             migrate_to_level(mtmp, ledger_no(&tolevel), MIGR_RANDOM,
-                             (coord *) 0);
+                                 (coord *) 0);
         mcount--;
     }
 #endif /* DEBUG_MIGRATING_MONS */
@@ -1855,7 +1887,7 @@ wiz_custom(void)
     if (wizard) {
         static const char wizcustom[] = "#wizcustom";
         winid win;
-        char buf[BUFSZ], bufa[BUFSZ];  
+        char buf[BUFSZ], bufa[BUFSZ];
         int n;
 #if 0
         int j, glyph;

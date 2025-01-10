@@ -490,11 +490,13 @@ doread(void)
         pline("This %s has no label.", singular(scroll, xname));
         return ECMD_OK;
     } else if (otyp == MAGIC_MARKER) {
+        static const int red_mons[] = {
+            PM_FIRE_ANT, PM_PYROLISK, PM_HELL_HOUND, PM_IMP,
+            PM_LARGE_MIMIC, PM_LEOCROTTA, PM_SCORPION, PM_XAN,
+            PM_GIANT_BAT, PM_WATER_MOCCASIN, PM_FLESH_GOLEM,
+            PM_BARBED_DEVIL, PM_MARILITH, PM_PIRANHA
+        };
         char buf[BUFSZ];
-        const int red_mons[] = { PM_FIRE_ANT, PM_PYROLISK, PM_HELL_HOUND,
-            PM_IMP, PM_LARGE_MIMIC, PM_LEOCROTTA, PM_SCORPION, PM_XAN,
-            PM_GIANT_BAT, PM_WATER_MOCCASIN, PM_FLESH_GOLEM, PM_BARBED_DEVIL,
-            PM_MARILITH, PM_PIRANHA };
         struct permonst *pm = &mons[red_mons[scroll->o_id % SIZE(red_mons)]];
 
         if (Blind) {
@@ -1037,8 +1039,9 @@ maybe_tame(struct monst *mtmp, struct obj *sobj)
         /* for a shopkeeper, tamedog() will call make_happy_shk() but
            not tame the target, so call it even if taming gets resisted */
         if (!resist(mtmp, sobj->oclass, 0, NOTELL) || mtmp->isshk)
-            (void) tamedog(mtmp, (struct obj *) 0, FALSE);
-        if ((!was_peaceful && mtmp->mpeaceful) || (!was_tame && mtmp->mtame))
+            (void) tamedog(mtmp, sobj, FALSE);
+
+        if ((!was_peaceful && mtmp->mpeaceful) || was_tame != mtmp->mtame)
             return 1;
     }
     return 0;
@@ -1273,6 +1276,21 @@ seffect_destroy_armor(struct obj **sobjp)
         return;
     }
     if (!scursed || !otmp || !otmp->cursed) {
+        boolean gets_choice = (otmp && sobj && sobj->blessed
+                               && count_worn_armor() > 1);
+
+        if (gets_choice) {
+            struct obj *atmp;
+
+            if (!objects[sobj->otyp].oc_name_known)
+                pline("This is %s!", an(actualoname(sobj)));
+            gk.known = TRUE;
+            atmp = getobj("destroy", any_worn_armor_ok, GETOBJ_PROMPT);
+            /* check the return value, if user picked non-valid obj */
+            if (any_worn_armor_ok(atmp) == GETOBJ_SUGGEST)
+                otmp = atmp;
+        }
+
         if (!destroy_arm(otmp)) {
             strange_feeling(sobj, "Your skin itches.");
             *sobjp = 0; /* useup() in strange_feeling() */
@@ -2017,8 +2035,11 @@ seffect_magic_mapping(struct obj **sobjp)
 
             for (x = 1; x < COLNO; x++)
                 for (y = 0; y < ROWNO; y++)
-                    if (levl[x][y].typ == SDOOR)
+                    if (levl[x][y].typ == SDOOR) {
                         cvt_sdoor_to_door(&levl[x][y]);
+                        if (Is_rogue_level(&u.uz))
+                            unblock_point(x, y);
+                    }
             /* do_mapping() already reveals secret passages */
         }
         gk.known = TRUE;
@@ -2082,7 +2103,8 @@ seffect_mail(struct obj **sobjp)
 /* scroll effects; return 1 if we use up the scroll and possibly make it
    become discovered, 0 if caller should take care of those side-effects */
 int
-seffects(struct obj *sobj) /* sobj - scroll or fake spellbook for spell */
+seffects(
+    struct obj *sobj) /* sobj - scroll or fake spellbook for spell */
 {
     int otyp = sobj->otyp;
 
@@ -3229,17 +3251,9 @@ create_particular_creation(
         /* if asking for 'hidden', show location of every created monster
            that can't be seen--whether that's due to successfully hiding
            or vision issues (line-of-sight, invisibility, blindness) */
-        if ((d->hidden || d->invisible) && !canspotmon(mtmp)) {
-            int count = couldsee(mx, my) ? 8 : 4;
-            char saveviz = gv.viz_array[my][mx];
+        if ((d->hidden || d->invisible) && !canspotmon(mtmp))
+            flash_mon(mtmp);
 
-            if (!flags.sparkle)
-                count /= 2;
-            gv.viz_array[my][mx] |= (IN_SIGHT | COULD_SEE);
-            flash_glyph_at(mx, my, mon_to_glyph(mtmp, newsym_rn2), count);
-            gv.viz_array[my][mx] = saveviz;
-            newsym(mx, my);
-        }
         madeany = TRUE;
         /* in case we got a doppelganger instead of what was asked
            for, make it start out looking like what was asked for */

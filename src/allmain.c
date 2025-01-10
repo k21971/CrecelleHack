@@ -6,7 +6,6 @@
 /* various code that was replicated in *main.c */
 
 #include "hack.h"
-#include <ctype.h>
 
 #ifndef NO_SIGNAL
 #include <signal.h>
@@ -410,6 +409,7 @@ moveloop_core(void)
         else if (u.uburied)
             under_ground(0);
 
+        see_nearby_monsters();
     } /* actual time passed */
 
     /****************************************/
@@ -720,6 +720,10 @@ init_sound_disp_gamewindows(void)
     display_nhwindow(WIN_MESSAGE, FALSE);
     clear_glyph_buffer();
     display_nhwindow(WIN_MAP, FALSE);
+#ifdef TTY_PERM_INVENT
+    if (iflags.perm_invent_pending)
+        check_perm_invent_again();
+#endif
  }
 
 void
@@ -730,7 +734,7 @@ newgame(void)
     /* make sure welcome messages are given before noticing monsters */
     notice_mon_off();
     disp.botlx = TRUE;
-    svc.context.ident = 1;
+    svc.context.ident = 2;  /* id 1 is reserved for gy.youmonst */
     svc.context.warnlevel = 1;
     svc.context.next_attrib_check = 600L; /* arbitrary first setting */
     svc.context.tribute.enabled = TRUE;   /* turn on 3.6 tributes    */
@@ -1040,6 +1044,7 @@ argcheck(int argc, char *argv[], enum earlyarg e_arg)
                 extended_opt++;
                 return windows_early_options(extended_opt);
             }
+        FALLTHROUGH;
         /*FALLTHRU*/
 #endif
         default:

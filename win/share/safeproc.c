@@ -65,6 +65,11 @@
  * ***********************************************************
  */
 
+void safe_dismiss_nhwindow(winid);
+void safe_putstr(winid, int, const char *);
+void win_safe_init(int);
+void safe_number_pad(int);
+
 struct window_procs safe_procs = {
     WPID(safestartup),
     (0
@@ -118,7 +123,7 @@ struct window_procs safe_procs = {
 #endif
     safe_get_color_string,
 #endif
-    safe_start_screen, safe_end_screen, safe_outrip,
+    safe_outrip,
     safe_preference_update,
     safe_getmsghistory, safe_putmsghistory,
     safe_status_init,
@@ -225,7 +230,7 @@ safe_curs(winid window UNUSED, int x UNUSED, int y UNUSED)
 }
 
 void
-safe_putstr(winid window, int attr, const char *str)
+safe_putstr(winid window UNUSED, int attr UNUSED, const char *str UNUSED)
 {
     return;
 }
@@ -424,25 +429,13 @@ safe_get_ext_cmd(void)
 }
 
 void
-safe_number_pad(int mode)
+safe_number_pad(int mode UNUSED)
 {
     return;
 }
 
 void
 safe_delay_output(void)
-{
-    return;
-}
-
-void
-safe_start_screen(void)
-{
-    return;
-}
-
-void
-safe_end_screen(void)
 {
     return;
 }
@@ -505,13 +498,23 @@ safe_update_inventory(int arg UNUSED)
     return;
 }
 
+#ifdef WIN32CON
+extern win_request_info *tty_ctrl_nhwindow(winid window UNUSED,
+                                          int request UNUSED,
+                                          win_request_info *wri UNUSED);
+#endif
+
 win_request_info *
 safe_ctrl_nhwindow(
     winid window UNUSED,
     int request UNUSED,
     win_request_info *wri UNUSED)
 {
+#ifdef WIN32CON
+    return (*tty_ctrl_nhwindow)(window, request, wri);
+#else
     return (win_request_info *) 0;
+#endif
 }
 
 /**************************************************************

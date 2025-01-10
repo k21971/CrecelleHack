@@ -6,8 +6,6 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-#include <stdio.h>
-
 /*
  * Files expected to exist in the playground directory (possibly inside
  * a dlb container file).
@@ -482,6 +480,9 @@ extern struct nomakedefs_s nomakedefs;
 #ifdef UNIX
 #if !defined(CROSS_TO_WASM) /* no popen in WASM */
 #define PANICTRACE_GDB
+#endif
+#ifdef CROSS_TO_WASM
+#undef COMPRESS
 #endif
 #endif
 

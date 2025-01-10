@@ -1,4 +1,4 @@
-/* NetHack 3.7	pager.c	$NHDT-Date: 1724094301 2024/08/19 19:05:01 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.279 $ */
+/* NetHack 3.7	pager.c	$NHDT-Date: 1732979463 2024/11/30 07:11:03 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.282 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2018. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -51,7 +51,8 @@ staticfn void domenucontrols(void);
 extern void port_help(void);
 #endif
 staticfn char *setopt_cmd(char *) NONNULL NONNULLARG1;
-staticfn boolean add_quoted_engraving(coordxy, coordxy, char *) NONNULLARG3;
+staticfn boolean add_quoted_engraving(coordxy, coordxy, char *, boolean)
+                                                                  NONNULLARG3;
 
 enum checkfileflags {
     chkfilNone     = 0,
@@ -281,7 +282,10 @@ mhidden_description(
 
 /* extracted from lookat(); also used by namefloorobj() */
 boolean
-object_from_map(int glyph, coordxy x, coordxy y, struct obj **obj_p)
+object_from_map(
+    int glyph,
+    coordxy x, coordxy y,
+    struct obj **obj_p)
 {
     boolean fakeobj = FALSE, mimic_obj = FALSE;
     struct monst *mtmp;
@@ -306,8 +310,10 @@ object_from_map(int glyph, coordxy x, coordxy y, struct obj **obj_p)
     if (!otmp || otmp->otyp != glyphotyp) {
         /* this used to exclude STRANGE_OBJECT; now caller deals with it */
         otmp = mksobj(glyphotyp, FALSE, FALSE);
-        if (!otmp)
-            return FALSE;
+        /* even though we pass False for mksobj()'s 'init' arg, corpse-rot,
+           egg-hatch, and figurine-transform timers get initialized */
+        if (otmp->timed)
+            obj_stop_timers(otmp);
         fakeobj = TRUE;
         if (otmp->oclass == COIN_CLASS)
             otmp->quan = 2L; /* to force pluralization */
@@ -791,6 +797,7 @@ lookat(coordxy x, coordxy y, char *buf, char *monbuf)
                 Strcpy(buf, "stone");
                 break;
             }
+            FALLTHROUGH;
             /*FALLTHRU*/
         default:
             Strcpy(buf, defsyms[symidx].explanation);
@@ -1606,7 +1613,7 @@ do_screen_description(
                 *firstmatch = look_buf;
             if (*(*firstmatch)) {
                 Sprintf(temp_buf, " (%s", *firstmatch);
-                (void) add_quoted_engraving(cc.x, cc.y, temp_buf);
+                (void) add_quoted_engraving(cc.x, cc.y, temp_buf, FALSE);
                 Strcat(temp_buf, ")");
                 (void) strncat(out_str, temp_buf,
                                BUFSZ - strlen(out_str) - 1);
@@ -1625,7 +1632,10 @@ do_screen_description(
 
 /* when farlook is reporting on an engraving, include its text */
 staticfn boolean
-add_quoted_engraving(coordxy x, coordxy y, char *buf)
+add_quoted_engraving(
+    coordxy x, coordxy y,
+    char *buf,
+    boolean force) /* True: '/e' or '/E', False: '//' or ';' */
 {
     char temp_buf[BUFSZ];
     struct engr *ep = engr_at(x, y);
@@ -1642,7 +1652,10 @@ add_quoted_engraving(coordxy x, coordxy y, char *buf)
      * or object) that happens to be on top of an engraving, so we won't
      * append the engraving text.
      */
-    if (!ep || (!floorengr && !headstone))
+    if (!ep)
+        return FALSE;
+
+    if (!floorengr && !headstone && !force)
         return FALSE;
 
     if (ep->eread)
@@ -2107,16 +2120,19 @@ look_engrs(boolean nearby)
     winid win;
     struct engr *e;
     char lookbuf[BUFSZ], outbuf[BUFSZ];
-    nhsym sym;
     coordxy x, y, lo_x, lo_y, hi_x, hi_y;
     boolean is_headstone;
+    nhsym sym;
     int glyph, count = 0;
 
     win = create_nhwindow(NHW_TEXT);
     look_region_nearby(&lo_x, &lo_y, &hi_x, &hi_y, nearby);
+    /*assert(lo_x >= 1 && lo_y >= 0 && hi_x < MAXCO && hi_y < MAXLI);*/
     for (y = lo_y; y <= hi_y; y++) {
         for (x = lo_x; x <= hi_x; x++) {
             lookbuf[0] = '\0';
+            if (!levl[x][y].seenv)
+                continue;
             /* this won't find remembered engravings which aren't there
                anymore (in case the hero is unaware that they're gone;
                scuffed away by monster movement or deleted during shop
@@ -2124,14 +2140,9 @@ look_engrs(boolean nearby)
             e = engr_at(x, y);
             if (!e)
                 continue;
-            glyph = glyph_at(x, y);
-            sym = ((levl[x][y].typ == GRAVE || svl.lastseentyp[x][y] == GRAVE)
-                   ? S_grave
-                   : (levl[x][y].typ == CORR) ? S_engrcorr
-                     : S_engroom);
-            is_headstone = (sym == S_grave);
-            Sprintf(lookbuf, "(%s", is_headstone ? "grave" : "engraving");
-            (void) add_quoted_engraving(x, y, lookbuf);
+            is_headstone = IS_GRAVE(svl.lastseentyp[x][y]);
+            Sprintf(lookbuf, " (%s", is_headstone ? "grave" : "engraving");
+            (void) add_quoted_engraving(x, y, lookbuf, TRUE);
             /* the paren is used by farlook and add_quoted_engraving()
                expected to see it; we don't want it here */
             if (is_headstone) {
@@ -2139,21 +2150,21 @@ look_engrs(boolean nearby)
                 (void) strsubst(lookbuf, "(grave whose ", "");
             } else {
                 (void) strsubst(lookbuf, "(engraving with ", "");
-                (void) strsubst(lookbuf, "(engraving that ", "one that ");
+                (void) strsubst(lookbuf, "(engraving ", "engraving ");
             }
 
-            if (glyph_is_cmap(glyph) && !glyph_is_trap(glyph)) {
+            glyph = glyph_at(x, y);
+            sym = glyph_is_cmap(glyph) ? glyph_to_cmap(glyph) : SYM_NOTHING;
+            if (is_cmap_engraving(sym) || sym == S_grave) {
                 /* engraving or grave+headstone shown on the map */
                 ++count;
-            } else if (e->eread || is_headstone) {
+            } else {
                 /* engraving or grave covered by object(s) */
                 Snprintf(eos(lookbuf), sizeof lookbuf - strlen(lookbuf),
                          ", obscured by %s", encglyph(glyph));
                 glyph = is_headstone ? cmap_to_glyph(S_grave)
                                      : engraving_to_glyph(e);
                 ++count;
-            } else {
-                continue;
             }
             if (*lookbuf) { /* (redundant) */
                 char coordbuf[20], cmode;
@@ -2175,7 +2186,7 @@ look_engrs(boolean nearby)
                                   : (cmode == GPCOORDS_MAP) ? "%8s  "
                                       : "%12s  ",
                         coord_desc(x, y, coordbuf, cmode));
-                Sprintf(eos(outbuf), "%s  ", encglyph(glyph));
+                Sprintf(eos(outbuf), "%s ", encglyph(glyph));
                 /* guard against potential overflow */
                 lookbuf[sizeof lookbuf - 1 - strlen(outbuf)] = '\0';
                 Strcat(outbuf, lookbuf);
