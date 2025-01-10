@@ -156,13 +156,16 @@ PROJECTILE("crossbow bolt", NoDes,
 /* missiles that don't use a launcher */
 WEAPON("dart", NoDes,
        1, 1, 0, 1, 60,   1,   2,  3,  2, 0, 0, P,   -P_DART, IRON, HI_METAL,
-                                                        DART),
+                                                        DART),                                                  
 WEAPON("shuriken", "throwing star",
        0, 1, 0, 1, 35,   1,   5,  8,  6, 2, 0, P,   -P_SHURIKEN, IRON, HI_METAL,
                                                         SHURIKEN),
 WEAPON("boomerang", NoDes,
        1, 1, 0, 1, 15,   5,  20,  9,  9, 0, 0, 0,   -P_BOOMERANG, WOOD, HI_WOOD,
                                                         BOOMERANG),
+WEAPON("bolas", NoDes,
+       1, 1, 0, 1,  1,   1,  10,  1,  1, 0, 0, 0,   -P_BOOMERANG, CLOTH, HI_CLOTH,
+                                                        BOLAS),     
 
 /* spears [note: javelin used to have a separate skill from spears,
    because the latter are primarily stabbing weapons rather than

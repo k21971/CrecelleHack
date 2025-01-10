@@ -446,6 +446,10 @@ ohitmon(
             if (resists_ston(mtmp))
                 damage = 0;
         }
+        if (otmp->otyp == BOLAS) {
+            mtmp->mprone = 1;
+            use_skill(P_TRIPPING, 1);
+        }
 
         /* might already be dead (if petrified) */
         if (!harmless && !DEADMONSTER(mtmp)) {
@@ -724,6 +728,10 @@ m_throw(
                     else
                         Your("%s %s.", eyes, vtense(eyes, "sting"));
                 }
+            }
+            if (hitu && singleobj->otyp == BOLAS) {
+                You("tumble to the %s!", surface(u.ux, u.uy));
+                make_prone();
             }
             if (hitu && singleobj->otyp == EGG) {
                 if (!Stoned && !Stone_resistance

@@ -268,6 +268,9 @@ m_initweap(struct monst *mtmp)
         } else if (mm == PM_NINJA) { /* extra quest villains */
             (void) mongets(mtmp, rn2(4) ? SHURIKEN : DART);
             (void) mongets(mtmp, rn2(4) ? SHORT_SWORD : AXE);
+        } else if (mm == PM_MASTER_KAEN) {
+            (void) mongets(mtmp, BOLAS);
+            (void) mongets(mtmp, SHURIKEN);
         } else if (ptr->msound == MS_GUARDIAN) {
             /* quest "guardians" */
             switch (mm) {
