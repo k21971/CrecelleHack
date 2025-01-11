@@ -734,7 +734,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_HELL_HOUND:
 
     case PM_GAS_SPORE: case PM_FLOATING_EYE: case PM_FREEZING_SPHERE:
-    case PM_FLAMING_SPHERE: case PM_SHOCKING_SPHERE:
+    case PM_FLAMING_SPHERE: case PM_SHOCKING_SPHERE: case PM_GRAVIMETRIC_SPHERE:
 
     case PM_KITTEN: case PM_HOUSECAT: case PM_JAGUAR: case PM_LYNX:
     case PM_PANTHER: case PM_LARGE_CAT:  case PM_TIGER:
@@ -841,7 +841,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_WATCH_CAPTAIN:
 
     case PM_MEDUSA: case PM_WIZARD_OF_YENDOR: case PM_CROESUS:
-    case PM_POLTERGEIST: case PM_GHOST: case PM_SHADE: case PM_WATER_DEMON:
+    case PM_ILLUSION: case PM_POLTERGEIST: case PM_GHOST: case PM_SHADE: case PM_WATER_DEMON:
     case PM_AMOROUS_DEMON: case PM_HORNED_DEVIL:
     case PM_ERINYS: case PM_BARBED_DEVIL: case PM_MARILITH: case PM_VROCK:
     case PM_HEZROU: case PM_BONE_DEVIL: case PM_ICE_DEVIL: case PM_NALFESHNEE:
@@ -3172,6 +3172,14 @@ corpse_chance(
         if (cansee(mon->mx, mon->my) && !was_swallowed)
             pline_mon(mon, "%s body crumbles into dust.",
                       s_suffix(Monnam(mon)));
+        return FALSE;
+    }
+
+    if (mdat == &mons[PM_ILLUSION]) {
+        /* Illusions killed while undiscovered yield a message. */
+        if (cansee(mon->mx, mon->my) && mon->mappearance) {
+            pline_mon(mon, "%s wavers and vanishes.", Monnam(mon));
+        }
         return FALSE;
     }
 

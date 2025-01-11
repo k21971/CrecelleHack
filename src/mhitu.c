@@ -1578,6 +1578,12 @@ explmu(struct monst *mtmp, struct attack *mattk, boolean ufound)
         if (!DEADMONSTER(mtmp))
             kill_agr = FALSE; /* lifesaving? */
         break;
+    case AD_DETH:
+        if (ufound && !not_affected) {
+            You("are crushed by waves of gravity!");
+            u.uhp = u.uhp / 2;
+        }
+        break;
     case AD_BLND:
         not_affected = resists_blnd(&gy.youmonst);
         if (ufound && !not_affected) {

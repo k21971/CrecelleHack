@@ -367,6 +367,15 @@
             | M1_NOTAKE,
         M2_HOSTILE | M2_NEUTER, M3_INFRAVISIBLE,
         10, HI_ZAP, SHOCKING_SPHERE),
+    MON(NAM("gravimetric sphere"), S_EYE,
+        LVL(6, 9, 4, 0, 0), (G_NOCORPSE | G_NOGEN),
+        A(ATTK(AT_EXPL, AD_DETH, 4, 6),
+          NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(10, 10, MS_SILENT, MZ_SMALL), 0, 0,
+        M1_FLY | M1_BREATHLESS | M1_NOLIMBS | M1_NOHEAD | M1_MINDLESS
+            | M1_NOTAKE,
+        M2_HOSTILE | M2_NEUTER, 0,
+        10, CLR_BRIGHT_MAGENTA, GRAVIMETRIC_SPHERE),
 #if 0 /* not yet implemented */
     MON(NAM("beholder"), S_EYE,
         LVL(6, 3, 4, 0, -10), (G_GENO | 2),
@@ -2915,6 +2924,13 @@
      *  ghosts and shades don't leave corpses; assigning human weight
      *  to them matters for statues
      */
+    MON(NAM("illusion"), S_GHOST,
+        LVL(1, 12, 10, 0, 0), (G_NOCORPSE | G_NOGEN),
+        A(NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(0, 0, MS_SILENT, MZ_HUMAN), 0, 0,
+        M1_FLY | M1_BREATHLESS | M1_NOTAKE | M1_UNSOLID,
+        M2_NOPOLY | M2_STALK | M2_HOSTILE, M3_INFRAVISION,
+        1, CLR_BLUE, ILLUSION),
     MON(NAM("poltergeist"), S_GHOST,
         LVL(8, 15, 8, 40, -7), (G_NOCORPSE | 1),
         A(ATTK(AT_WEAP, AD_PHYS, 1, 4),

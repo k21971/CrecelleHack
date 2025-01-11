@@ -56,6 +56,7 @@
 - Floors can be coated with various substances, such as potions and grass.
 - Grass can be set afire. Fire is a new type of region which spreads over
   nearby flammable terrain.
+- Lightning is conducted by pools and spilled potions.
 - Known Issues:
   - Areas with multiple coatings are not properly described when using
     (:) to check what is here.
@@ -77,16 +78,29 @@
   Elves: Jaguar
 
 ## Monsters
+### Unique Monsters
+- Dispater uses the trickster monster spell list, making him likely
+  to both disguise himself and summon illusory duplicates.
+- Orcus uses the undead monster spell list identical to the one used
+  by liches.
 ### Mounts
 - The following monster classes are now valid mounts: f, d
 ### New Monster: Poltergeist ( )
 - Does not approach, collects objects like a nypmph. Throws any and
-  all objects it gets its hands on.
+  all objects it gets its hands on. Permanently invisible.
+- Can generate in morgues or via raising the dead.
 ### New Monster: Grotesque (g)
 - Slow, hard to hit, and very high damage. Spawns in groups.
 ### New Monster: Mascaron (g)
 - Stunning gaze. Spawns in groups.
 - Peaceful, but turns hostile if alignment is abused.
+## New Monster: Gravitric Sphere (e)
+- Explosion reduces HP by 1/2.
+- Does not generate randomly.
+## New Monster: Illusion ( )
+- Does not generate randomly, unpolymorphable.
+- Appears as another monster.
+- Only appears when summoned by monsters.
 
 ## Monster AI
 ### Elberething
@@ -102,6 +116,23 @@
 - Incorporated Slash'Em's traitor system, but updated to 3.7.
 - Monsters will slather items with cans of grease if the player is
   polymorphed into a relevant form.
+## Spellcasting
+- Different monsters have different spell lists.
+- Many existing spells take advantage of the floor coating system.
+
+## Monster Spells
+- Grease
+  - Makes the player's hands greasy.
+  - Distributes oil on nearby squares.
+- Sleep
+  - Puts the player to sleep.
+- Raise Dead
+  - Raises dead monsters in player's inventory.
+  - Summons undead.
+- Gravity
+  - Summons gravity spheres.
+- Mirror Image
+  - Creates multiple illusions of the caster.
 
 ## Objects
 ### General

@@ -492,6 +492,7 @@ morguemon(void)
 
     return ((i < 20) ? &mons[PM_GHOST]
                      : (i < 40) ? &mons[PM_WRAITH]
+                                : (i < 45) ? &mons[PM_POLTERGEIST]
                                 : mkclass(S_ZOMBIE, 0));
 }
 
