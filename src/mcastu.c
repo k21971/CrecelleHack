@@ -412,11 +412,12 @@ castmu(
 staticfn int
 m_cure_self(struct monst *mtmp, int dmg)
 {
+    int heal_dice = max(3, 3 + mtmp->m_lev / 8);
     if (mtmp->mhp < mtmp->mhpmax) {
         if (canseemon(mtmp))
             pline_mon(mtmp, "%s looks better.", Monnam(mtmp));
         /* note: player healing does 6d4; this used to do 1d8 */
-        if ((mtmp->mhp += d(3, 6)) > mtmp->mhpmax)
+        if ((mtmp->mhp += d(heal_dice, 6)) > mtmp->mhpmax)
             mtmp->mhp = mtmp->mhpmax;
         dmg = 0;
     }
