@@ -1704,10 +1704,8 @@ potion_splatter(coordxy x, coordxy y, int otyp) {
     for (int i = startx; i <= stopx; i++) {
         for (int j = starty; j <= stopy; j++) {
             if (has_coating(i, j, COAT_POTION)) {
-                if (!rn2(10) && otyp != levl[i][j].pindex) {
-                    explode(i, j, 11, d(1, 10), 0, EXPL_NOXIOUS);
+                if (otyp == levl[i][j].pindex)
                     continue;
-                }
                 fakeobj2.otyp = levl[i][j].pindex;
                 otyp = mixtype(&fakeobj1, &fakeobj2);
                 if (otyp == STRANGE_OBJECT) {
@@ -1718,6 +1716,10 @@ potion_splatter(coordxy x, coordxy y, int otyp) {
                 if (!seenalchemy && cansee(x, y)) {
                     pline("The liquids on the ground begin to mix.");
                     seenalchemy = TRUE;
+                }
+                if (!rn2(10)) {
+                    explode(i, j, 11, d(1, 10), 0, EXPL_NOXIOUS);
+                    continue;
                 }
             }
             add_coating(i, j, COAT_POTION, otyp);
