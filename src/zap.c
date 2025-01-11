@@ -3868,6 +3868,19 @@ bhit(
                 break;
         }
 
+        /* Polymorph floor coatings */
+        if (weapon == ZAPPED_WAND && obj->otyp == WAN_POLYMORPH) {
+            if (has_coating(x, y, COAT_POTION) 
+                && levl[x][y].pindex != POT_WATER) {
+                levl[x][y].pindex = POT_GAIN_ABILITY + rn2(POT_WATER - POT_GAIN_ABILITY);
+                newsym(x, y);
+            }
+            if (has_coating(x, y, COAT_ASHES)) {
+                remove_coating(x, y, COAT_ASHES);
+                add_coating(x, y, COAT_GRASS, 0);
+            }
+        }
+
         /* iron bars will block anything big enough and break some things */
         if (weapon == THROWN_WEAPON || weapon == KICKED_WEAPON) {
             if (obj->lamplit && !Blind)
