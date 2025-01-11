@@ -1391,7 +1391,7 @@ coat_floors(void)
                 && IS_ROOM(levl[x][y].typ) 
                 && !rn2(u.uz.dlevel))
                 add_coating(x, y, COAT_GRASS, 0);
-            if (svl.level.flags.arboreal) add_coating(x, y, COAT_GRASS, 0);
+            if (svl.level.flags.arboreal || Is_astralevel(&u.uz)) add_coating(x, y, COAT_GRASS, 0);
         }
     }
 }
