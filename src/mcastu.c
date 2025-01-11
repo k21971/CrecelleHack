@@ -25,6 +25,7 @@
     MSPEL("curse", 7, CURSE_ITEMS), \
     MSPEL("lightning bolt", 7, LIGHTNING), \
     MSPEL("aggravate monsters", 8, AGGRAVATION), \
+    MSPEL("teleport", 8, TELEPORT), \
     MSPEL("divine wrath", 8, FIRE_PILLAR), \
     MSPEL("summon nasties", 9, SUMMON_MONS), \
     MSPEL("raise dead", 9, RAISE_DEAD), \
@@ -44,6 +45,8 @@ struct mspel mon_all_spells[] = { MSPEL_LIST };
 #undef MSPEL
 #undef MSPEL_LIST
 
+DISABLE_WARNING_FORMAT_NONLITERAL
+
 int mon_mage_spells[MAX_MON_SPELLS] = { MCU_PSI_BOLT, MCU_CURE_SELF, MCU_HASTE_SELF,
                                         MCU_STUN_YOU, MCU_DISAPPEAR, MCU_WEAKEN_YOU,
                                         MCU_DESTRY_ARMR, MCU_CURSE_ITEMS, MCU_AGGRAVATION,
@@ -57,11 +60,12 @@ int mon_cleric_spells[MAX_MON_SPELLS] = { MCU_OPEN_WOUNDS, MCU_CURE_SELF, MCU_CO
 int mon_undead_spells[MAX_MON_SPELLS] = { MCU_HASTE_SELF, MCU_STUN_YOU, MCU_WEAKEN_YOU,
                                           MCU_SLEEP_YOU,
                                           MCU_CURSE_ITEMS, MCU_AGGRAVATION, MCU_RAISE_DEAD,
-                                          MCU_DEATH_TOUCH, MCU_MIRROR_IMAGE, MCU_DISAPPEAR, -1, -1 };
+                                          MCU_DEATH_TOUCH, MCU_MIRROR_IMAGE, MCU_DISAPPEAR,
+                                          MCU_TELEPORT, -1 };
 int mon_trickster_spells[MAX_MON_SPELLS] = { MCU_PSI_BOLT, MCU_HASTE_SELF, MCU_DISAPPEAR,
                                              MCU_AGGRAVATION, MCU_MIRROR_IMAGE, MCU_CONFUSE_YOU,
                                              MCU_GREASE, MCU_DISGUISE, MCU_CURSE_ITEMS, MCU_SUMMON_MONS, 
-                                             -1, -1 };
+                                             MCU_TELEPORT, -1 };
 
 staticfn void cursetxt(struct monst *, boolean);
 staticfn int choose_magic_spell(int);
@@ -71,6 +75,7 @@ staticfn int m_cure_self(struct monst *, int);
 staticfn void cast_monster_spell(struct monst *, int, int);
 staticfn boolean is_undirected_spell(int);
 staticfn boolean spell_would_be_useless(struct monst *, int);
+staticfn int spawn_mirror_image(struct monst *, int, int);
 
 /* feedback when frustrated monster couldn't cast a spell */
 staticfn void
@@ -568,25 +573,18 @@ cast_monster_spell(struct monst *mtmp, int dmg, int spellnum)
     }
     case MCU_MIRROR_IMAGE: {
         int quan = rnd(mtmp->m_lev < 10 ? 2 : 5);
-        struct monst *illusion;
         coord bypos;
         boolean created = FALSE;
         for (int i = 0; i < quan; i++) {
             if (!enexto(&bypos, mtmp->mx, mtmp->my, mtmp->data))
                 break;
-            illusion = makemon(&mons[PM_ILLUSION], bypos.x, bypos.y, MM_NOCOUNTBIRTH | MM_ANGRY);
-            if (illusion) {
-                if (mtmp->mappearance)
-                    illusion->mappearance = mtmp->mappearance;
-                else
-                    illusion->mappearance = mtmp->mnum;
-                newsym(illusion->mx, illusion->my);
-                created = TRUE;
-            }
+            created = spawn_mirror_image(mtmp, bypos.x, bypos.y);
         }
         if (mtmp->iswiz && created) {
             SetVoice(mtmp, 0, 80, 0);
             verbalize("Ah, but which of us is the real one, fool?");
+        } else if (mtmp) {
+            pline("%s image splinters!", s_suffix(Monnam(mtmp)));
         }
         dmg = 0;
         break;
@@ -729,6 +727,25 @@ cast_monster_spell(struct monst *mtmp, int dmg, int spellnum)
 #endif
         add_coating(u.ux, u.uy, COAT_POTION, POT_WATER);
         break;
+    case MCU_TELEPORT: {
+        /* Warp the monster directly next to the player, or teleport them
+           elsewhere if their health is low.*/
+        if (mtmp->mhp * 3 >= mtmp->mhpmax)
+            mnexto(mtmp, RLOC_MSG);
+        else {
+            coordxy sx, sy;
+            coordxy ox = mtmp->mx;
+            coordxy oy = mtmp->my;
+            choose_stairs(&sx, &sy, (mtmp->m_id % 2));
+            mnearto(mtmp, sx, sy, TRUE, RLOC_NOMSG);
+            /* Leave behind an illusory duplicate (maybe) */
+            if (rn2(mtmp->m_lev) < 20) {
+                spawn_mirror_image(mtmp, ox, oy);
+            }
+        }
+        dmg = 0;
+        break;   
+    } 
     case MCU_FIRE_PILLAR:
         pline("A pillar of fire strikes all around you!");
         orig_dmg = dmg = d(8, 6);
@@ -983,6 +1000,7 @@ is_undirected_spell(int spellnum)
     case MCU_CURE_SELF:
     case MCU_MIRROR_IMAGE:
     case MCU_DISGUISE:
+    case MCU_TELEPORT:
         return TRUE;
     default:
         break;
@@ -1010,6 +1028,10 @@ spell_would_be_useless(struct monst *mtmp, int spellnum)
         return TRUE;
     /* haste self when already fast */
     if (mtmp->permspeed == MFAST && spellnum == MCU_HASTE_SELF)
+        return TRUE;
+    /* teleport and already close to the player */
+    if (spellnum == MCU_TELEPORT && distu(mtmp->mx, mtmp->my) <= 4
+        && mtmp->mhp * 3 >= mtmp->mhpmax)
         return TRUE;
     /* invisibility when already invisible */
     if ((mtmp->minvis || mtmp->invis_blkd) && spellnum == MCU_DISAPPEAR)
@@ -1079,6 +1101,24 @@ buzzmu(struct monst *mtmp, struct attack *mattk)
         return M_ATTK_HIT;
     }
     return M_ATTK_MISS;
+}
+
+/* Returns 1 if illusions were seen being created */
+staticfn int
+spawn_mirror_image(struct monst *mtmp, int x, int y) {
+    struct monst *illusion = 
+        makemon(&mons[PM_ILLUSION], 
+        x, y, MM_NOCOUNTBIRTH | MM_ANGRY | MM_NOMSG);
+    if (illusion) {
+        if (mtmp->mappearance)
+            illusion->mappearance = mtmp->mappearance;
+        else
+            illusion->mappearance = mtmp->mnum;
+        newsym(illusion->mx, illusion->my);
+        if (canseemon(mtmp))
+            return 1;
+    }
+    return 0;
 }
 
 /*mcastu.c*/
