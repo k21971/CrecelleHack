@@ -5311,10 +5311,11 @@ zap_over_floor(
         }
         if (has_coating(x, y, COAT_POTION)
             || IS_POOL(levl[x][y].typ)) {
-            if (!rn2(8)) {
+            if (!rn2(6)) {
+                dobuzz(type, 1, x, y, dx, dy, FALSE);
+                rangemod -= 7;
                 if (cansee(x, y)) {
                     pline_The("%s is conducted by the liquid!", flash_str(zaptype(type), FALSE));
-                    dobuzz(type, 1, x, y, dx, dy, FALSE);
                 }
             }
         }
