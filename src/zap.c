@@ -5301,8 +5301,10 @@ zap_over_floor(
         break;
 
     case ZT_LIGHTNING:
-        remove_coating(x, y, COAT_GRASS);
-        add_coating(x, y, COAT_ASHES, 0);
+        if (has_coating(x, y, COAT_GRASS)) {
+            remove_coating(x, y, COAT_GRASS);
+            add_coating(x, y, COAT_ASHES, 0);
+        }
         FALLTHROUGH;
         /*FALLTHRU*/
     case ZT_ACID:
