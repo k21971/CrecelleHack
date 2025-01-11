@@ -5301,10 +5301,24 @@ zap_over_floor(
         break;
 
     case ZT_LIGHTNING:
+    {
+        int k = (int) dirs_ord[rn2(N_DIRS)];
+        int dx = xdir[k];
+        int dy = ydir[k];
         if (has_coating(x, y, COAT_GRASS)) {
             remove_coating(x, y, COAT_GRASS);
             add_coating(x, y, COAT_ASHES, 0);
         }
+        if (has_coating(x, y, COAT_POTION)
+            || IS_POOL(levl[x][y].typ)) {
+            if (!rn2(8)) {
+                if (cansee(x, y)) {
+                    pline_The("%s is conducted by the liquid!", flash_str(zaptype(type), FALSE));
+                    dobuzz(type, 1, x, y, dx, dy, FALSE);
+                }
+            }
+        }
+    }
         FALLTHROUGH;
         /*FALLTHRU*/
     case ZT_ACID:
