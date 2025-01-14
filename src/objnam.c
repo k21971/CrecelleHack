@@ -832,6 +832,10 @@ xname_flags(
                     && (obj->blessed || obj->cursed)) {
                     Strcat(buf, obj->blessed ? "holy " : "unholy ");
                 }
+                if (typ == POT_BLOOD && known && ismnum(obj->corpsenm)) {
+                    Strcat(buf, mons[omndx].pmnames[NEUTRAL]);
+                    Strcat(buf, " ");
+                }
                 Strcat(buf, actualn);
             } else {
                 xcalled(buf, BUFSZ - PREFIX, "", un);
@@ -5152,6 +5156,7 @@ readobjnam(char *bp, struct obj *no_wish)
             d.mntmp = humanwere;
 
         switch (d.typ) {
+        case POT_BLOOD:
         case TIN:
             if (dead_species(d.mntmp, FALSE)) {
                 d.otmp->corpsenm = NON_PM; /* it's empty */

@@ -3168,6 +3168,11 @@ corpse_chance(
     struct permonst *mdat = mon->data;
     int i, tmp;
 
+    /* maybe leave behind some blood */
+    if (rn2(4) && has_blood(mon->data) && !was_swallowed) {
+        add_coating(mon->mx, mon->my, COAT_BLOOD, undead_to_corpse(mon->mnum));
+    }
+
     if (mdat == &mons[PM_VLAD_THE_IMPALER] || mdat->mlet == S_LICH) {
         if (cansee(mon->mx, mon->my) && !was_swallowed)
             pline_mon(mon, "%s body crumbles into dust.",

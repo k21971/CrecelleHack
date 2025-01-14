@@ -888,6 +888,8 @@ extern const char *endgamelevelname(char *, int);
 
 /* ### eat.c ### */
 
+extern void cprefx(int);
+extern void cpostfx(int);
 extern void eatmupdate(void);
 extern boolean is_edible(struct obj *) NONNULLARG1;
 extern void init_uhunger(void);
@@ -2480,7 +2482,7 @@ extern boolean add_coating(coordxy, coordxy, unsigned char, int);
 extern boolean remove_coating(coordxy, coordxy, unsigned char);
 extern boolean slip_on_oil(coordxy, coordxy, struct monst *);
 extern void evaporate_potion_puddles(coordxy, coordxy);
-extern void potion_splatter(coordxy, coordxy, int);
+extern void potion_splatter(coordxy, coordxy, int, int);
 extern void potionhit(struct monst *, struct obj *, int) NONNULLARG12;
 extern void potionbreathe(struct obj *) NONNULLARG1;
 extern int dodip(void);

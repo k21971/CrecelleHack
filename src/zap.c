@@ -3875,9 +3875,10 @@ bhit(
                 levl[x][y].pindex = POT_GAIN_ABILITY + rn2(POT_WATER - POT_GAIN_ABILITY);
                 newsym(x, y);
             }
-            if (has_coating(x, y, COAT_ASHES)) {
-                remove_coating(x, y, COAT_ASHES);
-                add_coating(x, y, COAT_GRASS, 0);
+            if (has_coating(x, y, COAT_BLOOD)) {
+                do {
+                    levl[x][y].pindex = rndmonnum();
+                } while (!has_blood(&mons[levl[x][y].pindex]));
             }
         }
 
@@ -5318,18 +5319,28 @@ zap_over_floor(
         int k = (int) dirs_ord[rn2(N_DIRS)];
         int dx = xdir[k];
         int dy = ydir[k];
+        boolean potion = has_coating(x, y, COAT_POTION);
+        boolean blood = has_coating(x, y, COAT_BLOOD);
         if (has_coating(x, y, COAT_GRASS)) {
             remove_coating(x, y, COAT_GRASS);
             add_coating(x, y, COAT_ASHES, 0);
         }
-        if (has_coating(x, y, COAT_POTION)
-            || IS_POOL(levl[x][y].typ)) {
+        if (potion || blood || IS_POOL(levl[x][y].typ)) {
             if (!rn2(6)) {
-                dobuzz(type, 1, x, y, dx, dy, FALSE);
-                rangemod -= 7;
                 if (cansee(x, y)) {
-                    pline_The("%s is conducted by the liquid!", flash_str(zaptype(type), FALSE));
+                    if (potion)
+                        pline_The("%s liquid conducts the %s!", 
+                                    OBJ_DESCR(objects[levl[x][y].pindex]),
+                                    flash_str(zaptype(type), FALSE));
+                    else if (blood)
+                        pline_The("%s blood conducts the %s!",
+                                    mons[levl[x][y].pindex].pmnames[NEUTRAL],
+                                    flash_str(zaptype(type), FALSE));
+                    else
+                        pline_The("water conducts the %s!", flash_str(zaptype(type), FALSE));
                 }
+                rangemod -= 7;
+                dobuzz(type, 1, x, y, dx, dy, FALSE);
             }
         }
     }

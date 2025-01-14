@@ -2477,7 +2477,7 @@ breakobj(
                 potionbreathe(obj);
             }
         }
-        potion_splatter(x, y, obj->otyp);
+        potion_splatter(x, y, obj->otyp, obj->corpsenm);
         /* monster breathing isn't handled... [yet?] */
         break;
     case EXPENSIVE_CAMERA:

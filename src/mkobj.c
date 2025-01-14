@@ -1180,9 +1180,18 @@ mksobj(int otyp, boolean init, boolean artif)
         mksobj_init(otmp, artif);
 
     /* some things must get done (corpsenm, timers) even if init = 0 */
-    switch ((otmp->oclass == POTION_CLASS && otmp->otyp != POT_OIL)
-            ? POT_WATER
-            : otmp->otyp) {
+    switch ((otmp->oclass == POTION_CLASS && otmp->otyp != POT_OIL
+             && otmp->otyp != POT_BLOOD)
+                ? POT_WATER
+                : otmp->otyp) {
+    
+    case POT_BLOOD:
+        otmp->fromsink = 0;
+        do {
+            otmp->corpsenm = rndmonnum();
+        } while (!has_blood(&mons[otmp->corpsenm]))
+        FALLTHROUGH;
+        /*FALLTHRU*/
     case CORPSE:
         if (otmp->corpsenm == NON_PM) {
             otmp->corpsenm = undead_to_corpse(rndmonnum());
@@ -1220,7 +1229,7 @@ mksobj(int otyp, boolean init, boolean artif)
         FALLTHROUGH;
         /*FALLTHRU*/
     case POT_WATER: /* POTION_CLASS */
-        otmp->fromsink = 0; /* overloads corpsenm, which was set to NON_PM */
+        otmp->fromsink = 0;
         break;
     case LEASH:
         otmp->leashmon = 0; /* overloads corpsenm, which was set to NON_PM */

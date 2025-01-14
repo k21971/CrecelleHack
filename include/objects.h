@@ -1176,6 +1176,8 @@ POTION("oil",                   "murky",  0, 0, 30, 250, CLR_BROWN,
                                                         POT_OIL),
 /* fixed description
  */
+POTION("blood",             "blood red", 0, 0,   0,  50, CLR_RED,
+                                                        POT_BLOOD),
 POTION("water",                 "clear",  0, 0, 80, 100, CLR_CYAN,
                                                         POT_WATER),
 #undef POTION

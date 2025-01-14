@@ -53,20 +53,11 @@
   Expert: +3
 
 ## Floor Coating System
-- Floors can be coated with various substances, such as potions and grass.
+- Floors can be coated with various substances, such as potions, grass,
+  blood, and more.
 - Grass can be set afire. Fire is a new type of region which spreads over
   nearby flammable terrain.
-- Lightning is conducted by pools and spilled potions.
-- Known Issues:
-  - Areas with multiple coatings are not properly described when using
-    (:) to check what is here.
-  - Fire region code makes an assumption that fire will be 1x1 regions.
-    For efficiency purposes we may want to modify this in the future.
-  - Potions should alchemize on the floor when shed by a monster, not
-    only when a potion splatters. Need to pull out a function.
-  - inside_bonfire() code needs serious cleanup!
-  - Special rooms are outlined by a coating due to some type of flag
-    collision.
+- Lightning is conducted by pools, blood, and spilled potions.
 
 # Roles and Races
 ### General
@@ -141,6 +132,9 @@
 ## Objects
 ### General
 - Renamed Scroll of Genocide to Scroll of Erasure.
+### New Object: Potions of Blood
+- Function similarly to potions of blood from dnethack, although
+  the implementation is different.
 ### Potions of Water
 - Potions of water are considered inert and do not polymorph.
 - Potions leave behind empty bottles when drunk. These bottles

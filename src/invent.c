@@ -4643,9 +4643,13 @@ dfeature_at(coordxy x, coordxy y, char *buf)
         if ((lev->coat_info & COAT_POTION) != 0) {
             Sprintf(altbuf, "pool of %s liquid", OBJ_DESCR(objects[lev->pindex]));
             dfeature = altbuf;
-        } else if ((lev->coat_info & COAT_BLOOD) != 0)
-            dfeature = "spatter of blood";
-        else if ((lev->coat_info & COAT_GRASS) != 0)
+        } else if ((lev->coat_info & COAT_BLOOD) != 0) {
+            if (ismnum(levl[x][y].pindex)) {
+                Sprintf(altbuf, "pool of %s blood", mons[levl[x][y].pindex].pmnames[NEUTRAL]);
+                dfeature = altbuf;
+            } else
+                dfeature = "pool of blood";
+        } else if ((lev->coat_info & COAT_GRASS) != 0)
             dfeature = "patch of grass";
         else if ((lev->coat_info & COAT_ASHES) != 0)
             dfeature = "pile of ash";
@@ -4989,7 +4993,8 @@ mergable(
             || (obj->rknown != otmp->rknown && (Blind || Hallucination))))
         return FALSE;
 
-    if (obj->otyp == CORPSE || obj->otyp == EGG || obj->otyp == TIN) {
+    if (obj->otyp == CORPSE || obj->otyp == EGG || obj->otyp == TIN
+        || obj->otyp == POT_BLOOD) {
         if (obj->corpsenm != otmp->corpsenm)
             return FALSE;
     }

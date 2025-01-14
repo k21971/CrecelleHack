@@ -11,6 +11,7 @@ staticfn void ghost_from_bottle(void);
 staticfn int drink_ok(struct obj *);
 staticfn void peffect_restore_ability(struct obj *);
 staticfn void peffect_hallucination(struct obj *);
+staticfn void peffect_blood(struct obj *);
 staticfn void peffect_water(struct obj *);
 staticfn void peffect_booze(struct obj *);
 staticfn void peffect_enlightenment(struct obj *);
@@ -710,6 +711,18 @@ peffect_hallucination(struct obj *otmp)
 }
 
 staticfn void
+peffect_blood(struct obj *otmp) {
+    pline("Yech! This tastes like blood!");
+    if (ismnum(otmp->corpsenm)) {
+        cprefx(otmp->corpsenm);
+        cpostfx(otmp->corpsenm);
+    }
+    u.uhunger += (otmp->odiluted ? 5 : 10);
+    newuhs(FALSE);
+    gp.potion_unkn++;
+}
+
+staticfn void
 peffect_water(struct obj *otmp)
 {
     if (!otmp->blessed && !otmp->cursed) {
@@ -1331,6 +1344,9 @@ peffects(struct obj *otmp)
     case POT_HALLUCINATION:
         peffect_hallucination(otmp);
         break;
+    case POT_BLOOD:
+        peffect_blood(otmp);
+        break;
     case POT_WATER:
         peffect_water(otmp);
         break;
@@ -1627,10 +1643,15 @@ add_coating(coordxy x, coordxy y, unsigned char coatflags, int pindex) {
             levl[x][y].coat_info = 0;
         levl[x][y].coat_info |= coatflags;
         if ((coatflags & COAT_POTION) != 0) {
+            remove_coating(x, y, COAT_BLOOD);
             levl[x][y].pindex = pindex;
             if (pindex < POT_GAIN_ABILITY || pindex > POT_WATER) {
                 impossible("coating floor with invalid object index %d?", pindex);
             }
+        } else if ((coatflags & COAT_BLOOD) != 0) {
+            remove_coating(x, y, COAT_POTION);
+            levl[x][y].pindex = pindex;
+            if (!ismnum(pindex)) impossible("coating floor with invalid blood %d?", pindex);
         } else if (pindex) {
             impossible("non-potion pindex coating?");
         }
@@ -1644,7 +1665,7 @@ remove_coating(coordxy x, coordxy y, unsigned char coatflags) {
     if (!IS_COATABLE(levl[x][y].typ))
         return FALSE;
     levl[x][y].coat_info &= ~coatflags;
-    if ((coatflags & COAT_POTION) != 0)
+    if ((coatflags & COAT_POTION) != 0 || (coatflags & COAT_BLOOD) != 0)
         levl[x][y].pindex = 0;
     return TRUE;
 }
@@ -1686,10 +1707,14 @@ evaporate_potion_puddles(coordxy x, coordxy y) {
         }
         remove_coating(x, y, COAT_POTION);
     }
+    if ((levl[x][y].coat_info & COAT_BLOOD) && !rn2(4)) {
+        create_gas_cloud(x, y, 1, 0);
+        remove_coating(x, y, COAT_BLOOD);
+    }
 }
 
 void
-potion_splatter(coordxy x, coordxy y, int otyp) {
+potion_splatter(coordxy x, coordxy y, int otyp, int corpsenm) {
     int startx = max(x - 1, 0);
     int starty = max(y - 1, 0);
     int stopx = min(x + 1, COLNO);
@@ -1722,7 +1747,11 @@ potion_splatter(coordxy x, coordxy y, int otyp) {
                     continue;
                 }
             }
-            add_coating(i, j, COAT_POTION, otyp);
+            if (otyp == POT_BLOOD) {
+                add_coating(i, j, COAT_BLOOD, corpsenm);
+            } else {
+                add_coating(i, j, COAT_POTION, otyp);
+            }
         }
     }
 }
@@ -2003,7 +2032,7 @@ potionhit(struct monst *mon, struct obj *obj, int how)
     }
 
     /* potions coat the ground */
-    potion_splatter(mon->mx, mon->my, obj->otyp);
+    potion_splatter(mon->mx, mon->my, obj->otyp, obj->corpsenm);
 
     /* Note: potionbreathe() does its own docall() */
     if ((distance == 0 || (distance < 3 && !rn2((1+ACURR(A_DEX))/2)))
@@ -2179,6 +2208,9 @@ potionbreathe(struct obj *obj)
         if (!Blind && !Unaware)
             Your1(vision_clears);
         break;
+    case POT_BLOOD:
+        You("catch a whiff of iron.");
+        break;
     case POT_WATER:
         if (u.umonnum == PM_GREMLIN) {
             (void) split_mon(&gy.youmonst, (struct monst *) 0);
@@ -2257,6 +2289,7 @@ mixtype(struct obj *o1, struct obj *o2)
         case POT_HALLUCINATION:
         case POT_BLINDNESS:
         case POT_CONFUSION:
+        case POT_BLOOD:
             return POT_WATER;
         }
         break;

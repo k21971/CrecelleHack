@@ -602,12 +602,15 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
         Strcat(outbuf, "grassy ");
     if ((levl[x][y].coat_info & COAT_ASHES) != 0)
         Strcat(outbuf, "ash-strewn ");
-    if ((levl[x][y].coat_info & COAT_BLOOD) != 0)
-        Strcat(outbuf, "blood-spattered ");
 
     if ((levl[x][y].coat_info & COAT_POTION) != 0)
         Sprintf(buf, "%s covered in %s liquid", defsyms[symidx].explanation, OBJ_DESCR(objects[levl[x][y].pindex]));
-    else
+    else if ((levl[x][y].coat_info & COAT_BLOOD) != 0) {
+        if (ismnum(levl[x][y].pindex))
+            Sprintf(buf, "%s covered in %s blood", defsyms[symidx].explanation,  mons[levl[x][y].pindex].pmnames[NEUTRAL]);
+        else
+            Sprintf(buf, "%s covered in blood", defsyms[symidx].explanation);
+    } else
         Sprintf(buf, "%s", defsyms[symidx].explanation);
     Strcat(outbuf, buf);
     

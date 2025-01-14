@@ -145,6 +145,7 @@ struct obj {
     Bitfield(how_lost, 2);  /* stolen by mon or thrown, dropped by hero */
 
     Bitfield(named_how, 1);  /* source of name per TODO in resetobjs() */
+    Bitfield(fromsink, 1);   /* a potion from a sink */
 #if 0
     /* not implemented */
     Bitfield(eknown, 1); /* effect known for wands zapped or rings worn when
@@ -157,7 +158,6 @@ struct obj {
 
     int corpsenm;         /* type of corpse is mons[corpsenm] */
 #define leashmon corpsenm /* gets m_id of attached pet */
-#define fromsink corpsenm /* a potion from a sink */
 #define novelidx corpsenm /* 3.6 tribute - the index of the novel title */
 #define migr_species corpsenm /* species to endow for MIGR_TO_SPECIES */
 #define next_boulder corpsenm /* flag for xname() when pushing a pile of
