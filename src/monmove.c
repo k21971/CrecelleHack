@@ -132,10 +132,17 @@ mon_yells(struct monst *mon, const char *shout)
 boolean
 m_can_break_boulder(struct monst *mtmp)
 {
-    return (is_rider(mtmp->data)
-            || (!mtmp->mspec_used
-                && (mtmp->isshk || mtmp->ispriest
-                    || (mtmp->data->msound == MS_LEADER))));
+    return (!mtmp->mpeaceful
+            && (is_rider(mtmp->data)
+                || (MON_WEP(mtmp) && is_pick(MON_WEP(mtmp)))
+                || (!mtmp->mspec_used
+                    && (is_dprince(mtmp->data)
+                        || is_dlord(mtmp->data)
+                        || mtmp->isshk
+                        || mtmp->ispriest
+                        || mtmp->data->msound == MS_LEADER
+                        || mtmp->data->msound == MS_NEMESIS
+                        || mtmp->data == &mons[PM_ORACLE]))));
 }
 
 /* monster mtmp breaks boulder at x,y */
@@ -143,17 +150,35 @@ void
 m_break_boulder(struct monst *mtmp, coordxy x, coordxy y)
 {
     struct obj *otmp;
+    boolean using_pick = (MON_WEP(mtmp) && is_pick(MON_WEP(mtmp)));
 
     if (m_can_break_boulder(mtmp) && ((otmp = sobj_at(BOULDER, x, y)) != 0)) {
         if (!is_rider(mtmp->data)) {
             if (!Deaf && (mdistu(mtmp) < 4*4)) {
                 if (canspotmon(mtmp))
                     set_msg_xy(mtmp->mx, mtmp->my);
-                pline("%s mutters %s.",
-                      Monnam(mtmp),
-                      mtmp->ispriest ? "a prayer" : "an incantation");
+                if (using_pick) {
+                    if (cansee(x, y))
+                        pline("%s swings %s %s.",
+                            Monnam(mtmp), mhis(mtmp),
+                            simpleonames(MON_WEP(mtmp)));
+                    else if (!Deaf)
+                        You_hear("a crumbling sound.");
+                } else {
+                    pline("%s mutters %s.",
+                        Monnam(mtmp),
+                        mtmp->ispriest ? "a prayer" : "an incantation");
+                }
             }
-            mtmp->mspec_used += rn1(20, 10);
+            /* TODO: create a new timer specifically for
+                breaking boulders, as mspec_used affects
+                monster spellcasting */
+            if (!is_rider(mtmp->data)) {
+                if (unique_corpstat(mtmp->data))
+                    mtmp->mspec_used += rn1(4, 2);
+                else
+                    mtmp->mspec_used += rn1(20, 10);
+            }
         }
         if (cansee(x, y)) {
             set_msg_xy(x, y);
@@ -1842,7 +1867,8 @@ m_move(struct monst *mtmp, int after)
         } else {
             mmoved = MMOVE_NOTHING;
         }
-        return postmov(mtmp, ptr, omx, omy, mmoved,
+        if (distu(mtmp->mx, mtmp->my) > 8)
+            return postmov(mtmp, ptr, omx, omy, mmoved,
                        seenflgs, can_tunnel, can_unlock, can_open);
     }
 
