@@ -370,9 +370,36 @@ tactics(struct monst *mtmp)
 {
     unsigned long strat = strategy(mtmp);
     coordxy sx = 0, sy = 0, mx, my;
+    int nx, ny;
 
     mtmp->mstrategy =
         (mtmp->mstrategy & (STRAT_WAITMASK | STRAT_APPEARMSG)) | strat;
+
+    /* if monster is magically scared, don't 'flee' right next
+     * to the player */
+    if (mtmp->mflee) {
+        mtmp->mavenge = 1;
+        for (int j = 0; j < 400; j++) {
+            nx = rnd(COLNO - 1);
+            ny = rn2(ROWNO);
+            if (rloc_pos_ok(nx, ny, mtmp)
+                && distu(nx, ny) > (BOLT_LIM * BOLT_LIM)) {
+                rloc_to(mtmp, nx, ny);
+                if (mtmp->mhp <= mtmp->mhpmax - 8)
+                    mtmp->mhp += rnd(8);
+                return 1;
+            }
+        }
+        /* we couldn't find someplace far enough away from the player
+         * to run to, which should be very rare, but...
+         * and in that case, just fall through so we do something */
+        pline("%s looks around nervously.", Monnam(mtmp));
+    }
+
+    /* once a covetous monster gets close enough, they will start
+       to move normally 95% of the time */
+    if (rn2(20) && distu(mtmp->mx, mtmp->my) <= 8)
+        return m_move(mtmp, 0);
 
     switch (strat) {
     case STRAT_HEAL: /* hide and recover */
