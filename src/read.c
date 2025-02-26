@@ -1641,7 +1641,7 @@ seffect_genocide(struct obj **sobjp)
                              || objects[otyp].oc_name_known);
 
     if (!already_known)
-        You("have found a scroll of genocide!");
+        You("have found a scroll of erasure!");
     gk.known = TRUE;
     if (sblessed)
         do_class_genocide();
