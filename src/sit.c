@@ -303,6 +303,9 @@ dosit(void)
         goto in_water;
     }
 
+    if (gy.youmonst.data == &mons[PM_FIRE_ELEMENTAL])
+        create_bonfire(u.ux, u.uy, 1, rnd(4));
+
     if (OBJ_AT(u.ux, u.uy)
         /* ensure we're not standing on the precipice */
         && !(uteetering_at_seen_pit(trap) || uescaped_shaft(trap))) {
@@ -424,8 +427,25 @@ dosit(void)
         throne_sit_effect();
     } else if (lays_eggs(gy.youmonst.data)) {
         return lay_an_egg();
+    } else if (has_coating(u.ux, u.uy, COAT_GRASS)) {
+        pline("The grass feels nice.");
     } else {
         pline("Having fun sitting on the %s?", surface(u.ux, u.uy));
+    }
+    /* Extra sitting effects */
+    if (has_coating(u.ux, u.uy, COAT_BLOOD)) {
+        You("sit in %s blood. How %s.", 
+            mons[levl[u.ux][u.uy].pindex].pmnames[NEUTRAL],
+            is_vampire(gy.youmonst.data) ? "lovely" : "horrifying");
+        if (!is_vampire(gy.youmonst.data))
+            exercise(A_CHA, FALSE);
+    } else if (has_coating(u.ux, u.uy, COAT_POTION)) {
+        You("sit in %s liquid.", OBJ_DESCR(objects[levl[u.ux][u.uy].pindex]));
+        struct obj fakeobj = cg.zeroobj;
+        fakeobj.cursed = TRUE;
+        fakeobj.otyp = levl[u.ux][u.uy].pindex;
+        potionbreathe(&fakeobj);
+        if (rn2(3)) remove_coating(u.ux, u.uy, COAT_POTION);
     }
     return ECMD_TIME;
 }

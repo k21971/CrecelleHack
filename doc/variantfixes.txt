@@ -54,10 +54,8 @@
 
 ## Floor Coating System
 - Floors can be coated with various substances, such as potions, grass,
-  blood, and more.
-- Grass can be set afire. Fire is a new type of region which spreads over
-  nearby flammable terrain.
-- Lightning is conducted by pools, blood, and spilled potions.
+  blood, and more. All of these coatings can be interacted with in
+  various ways, to various effects. Have fun!
 
 # Roles and Races
 ### General
@@ -180,7 +178,8 @@
   sometimes attempt to trip the player.
 ### taunt: Taunt nearby monsters.
 - Wastes a few turns and wakes up nearby monsters.
-- A custom taunt can be defined in the options file.
+- A custom taunt can be defined in the options file. Custom taunts
+  are prepended by the word "You" when used in game.
 ### twoweapon
 - can be used to attack with both ends of a double-headed
   weapon, such as a quarterstaff, two-bladed sword, or dual axe.

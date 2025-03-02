@@ -2162,6 +2162,7 @@ potionbreathe(struct obj *obj)
                 else
                     u.uhp -= 5;
             }
+            You("feel sick.");
             disp.botl = TRUE;
             exercise(A_CON, FALSE);
         }
