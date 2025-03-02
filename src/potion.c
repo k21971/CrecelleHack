@@ -2239,16 +2239,22 @@ potionbreathe(struct obj *obj)
         break;
     case POT_ACID:
     case POT_POLYMORPH:
+        pline("Your nose burns.");
         exercise(A_CON, FALSE);
+        break;
+    case POT_FRUIT_JUICE:
+    case POT_SEE_INVISIBLE:
+        pline("It smells like %s.", makeplural(fruitname(FALSE)));
+        break;
+    case POT_OIL:
+        pline("It smells like machinery.");
         break;
     /*
     case POT_GAIN_LEVEL:
     case POT_GAIN_ENERGY:
     case POT_LEVITATION:
-    case POT_FRUIT_JUICE:
     case POT_MONSTER_DETECTION:
     case POT_OBJECT_DETECTION:
-    case POT_OIL:
         break;
      */
     }
