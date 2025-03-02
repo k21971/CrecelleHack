@@ -388,8 +388,6 @@ fill_zoo(struct mkroom *sroom)
                                      TRUE, FALSE);
                 if (!rn2(5))
                     make_grave(sx, sy, (char *) 0);
-                if (!rn2(3))
-                    add_coating(sx, sy, COAT_ASHES, 0);
                 break;
             case BEEHIVE:
                 if (!rn2(3))

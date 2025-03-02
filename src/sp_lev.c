@@ -2748,15 +2748,24 @@ fill_special_room(struct mkroom *croom)
                     (void) mkgold((long) rn1(abs(depth(&u.uz)) * 100, 51),
                                   x, y);
             break;
-        case COURT:
         case ZOO:
-        case BEEHIVE:
-        case ANTHOLE:
         case COCKNEST:
         case LEPREHALL:
+            coat_room(croom, COAT_GRASS);
+            fill_zoo(croom);
+            break;
         case MORGUE:
+            coat_room(croom, COAT_ASHES);
+            fill_zoo(croom);
+            break;
+        case COURT:
+        case BEEHIVE:
+        case ANTHOLE:
         case BARRACKS:
             fill_zoo(croom);
+            break;
+        case DELPHI:
+            coat_room(croom, COAT_GRASS);
             break;
         }
     }

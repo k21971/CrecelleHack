@@ -1535,6 +1535,7 @@ extern void free_luathemes(enum lua_theme_group);
 extern void makecorridors(void);
 extern void add_door(coordxy, coordxy, struct mkroom *) NONNULLARG3;
 extern void count_level_features(void);
+extern void coat_room(struct mkroom *, unsigned char coat_type);
 extern void clear_level_structures(void);
 extern void level_finalize_topology(void);
 extern void mklev(void);

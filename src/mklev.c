@@ -1060,6 +1060,9 @@ fill_ordinary_room(
         }
     }
 
+    /* grow some grass */
+    coat_room(croom, COAT_GRASS);
+
  skip_nonrogue:
     if (!rn2(3) && somexyspace(croom, &pos)) {
         (void) mkobj_at(RANDOM_CLASS, pos.x, pos.y, TRUE);
@@ -1071,6 +1074,31 @@ fill_ordinary_room(
             }
             if (somexyspace(croom, &pos)) {
                 (void) mkobj_at(RANDOM_CLASS, pos.x, pos.y, TRUE);
+            }
+        }
+    }
+}
+
+void
+coat_room(struct mkroom *croom, unsigned char coat_type) {
+    boolean grass_chance;
+    int x, y;
+    
+    grass_chance = (svl.level.flags.has_swamp || (rn2(u.uz.dlevel) < 5));
+    for (x = croom->lx; x <= croom->hx; x++) {
+        for (y = croom->ly; y <= croom->hy; y++) {
+            switch(coat_type) {
+            case COAT_GRASS:
+                if (grass_chance ? rn2(4) : !rn2(u.uz.dlevel)) {
+                    add_coating(x, y, COAT_GRASS, 0);
+                }
+                break;
+            case COAT_ASHES:
+                if (rn2(3)) add_coating(x, y, COAT_ASHES, 0);
+                else add_coating(x, y, COAT_BLOOD, PM_HUMAN);
+                break;
+            default:
+                impossible("coat_room: unknown room coating %d?", coat_type);
             }
         }
     }
@@ -1384,14 +1412,8 @@ coat_floors(void)
 {
     for (int x = 0; x < COLNO; x++) {
         for (int y = 0; y < ROWNO; y++) {
-            /* TODO: This is very, VERY quick and dirty. Theoretically, we 
-               should be doing this on a room by room basis and growing
-               patches of grass. */
-            if (!Is_special(&u.uz) && !In_hell(&u.uz) && !In_endgame(&u.uz)
-                && IS_ROOM(levl[x][y].typ) 
-                && !rn2(u.uz.dlevel))
-                add_coating(x, y, COAT_GRASS, 0);
-            if (svl.level.flags.arboreal || Is_astralevel(&u.uz)) add_coating(x, y, COAT_GRASS, 0);
+            if (svl.level.flags.arboreal) add_coating(x, y, COAT_GRASS, 0);
+            else if (Is_firelevel(&u.uz)) add_coating(x, y, COAT_ASHES, 0);
         }
     }
 }
