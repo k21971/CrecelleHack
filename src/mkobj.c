@@ -406,10 +406,37 @@ rndmonnum_adj(int minadj, int maxadj)
     /* Plan B: get any common monster */
     excludeflags = G_UNIQ | G_NOGEN | (Inhell ? G_NOHELL : G_HELL);
     do {
-        i = rn1(SPECIAL_PM - LOW_PM, LOW_PM);
+        i = rn1(PM_STUDENT - LOW_PM, LOW_PM); /* changed to account for possible randm midbosses - antigulp */
         ptr = &mons[i];
     } while ((ptr->geno & excludeflags) != 0);
 
+    return i;
+}
+
+/* select a random midboss, adjusted for level difficulty */
+int
+rndmidboss(void)
+{
+    unsigned short excludeflags = (Inhell ? G_NOHELL : G_HELL);
+    int tryct = 0;
+    int i;
+    struct permonst *ptr;
+
+    while (1) {
+        i = rn1(PM_STUDENT, LOW_PM);
+        ptr = &mons[i];
+        
+        if ((ptr->geno & excludeflags) != 0)
+            continue;
+        if ((svm.mvitals[i].mvflags & G_GONE) != 0)
+            continue;
+        if ((ptr->geno & G_MIDBOSS) == 0)
+            continue;
+        if (!montoostrong(i, monmax_difficulty(level_difficulty() + 4)))
+            break;
+        if (tryct++ > 200)
+            return NON_PM;
+    }
     return i;
 }
 

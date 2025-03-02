@@ -11,6 +11,7 @@
 #define quest_mon_represents_role(mptr, role_pm) \
     (mptr->mlet == S_HUMAN && Role_if(role_pm)   \
      && (mptr->msound == MS_LEADER || mptr->msound == MS_NEMESIS))
+#define MIDBOSS_CHANCE 30
 
 staticfn boolean uncommon(int);
 staticfn int align_shift(struct permonst *);
@@ -72,6 +73,23 @@ wrong_elem_type(struct permonst *ptr)
     return FALSE;
 }
 
+/* get a monster for a squad */
+struct permonst *
+m_get_squadmon(struct permonst *pm) {
+    int mm = monsndx(pm);
+
+    if (mm >= PM_MINION_OF_HUHETOTL && mm <= PM_DARK_ONE) {
+        return mkclass(rn2(2) ? roles[mm - PM_MINION_OF_HUHETOTL].enemy1sym 
+                              : roles[mm - PM_MINION_OF_HUHETOTL].enemy2sym, 0);
+    } else if (mm >= PM_LORD_CARNARVON && mm <= PM_NEFERET_THE_GREEN) {
+        return rn2(2) ? &mons[roles[mm - PM_LORD_CARNARVON].guardnum] 
+                : rn2(3) ? &mons[roles[mm - PM_LORD_CARNARVON].mnum] : mkclass(pm->mlet, 0);
+    } else if (mm == PM_DUDLEY) {
+        return rndmonst();
+    }
+    return mkclass(pm->mlet, 0);
+}
+
 /* make a group just like mtmp */
 staticfn void
 m_initgrp(
@@ -82,6 +100,7 @@ m_initgrp(
     coord mm;
     int cnt = rnd(n);
     struct monst *mon;
+    struct permonst *mdat;
 #if defined(__GNUC__) && (defined(HPUX) || defined(DGUX))
     /* There is an unresolved problem with several people finding that
      * the game hangs eating CPU; if interrupted and restored, the level
@@ -128,7 +147,8 @@ m_initgrp(
          * smaller group.
          */
         if (enexto_gpflags(&mm, mm.x, mm.y, mtmp->data, mmflags)) {
-            mon = makemon(mtmp->data, mm.x, mm.y, (mmflags | MM_NOGRP));
+            mdat = (mtmp->data->geno & G_SQUAD) ? m_get_squadmon(mtmp->data) : mtmp->data;
+            mon = makemon(mdat, mm.x, mm.y, (mmflags | MM_NOGRP));
             if (mon) {
                 mon->mpeaceful = FALSE;
                 mon->mavenge = 0;
@@ -137,6 +157,14 @@ m_initgrp(
                  * monster turned out to be peaceful the first time we
                  * didn't create it at all; we don't want a second check.
                  */
+                /* Dogley... */
+                if (mtmp->data == &mons[PM_DUDLEY]) {
+                    char buf[BUFSZ];
+                    buf[0] = '\0';
+                    Strcpy(buf, m_monnam(mon));
+                    Strcat(buf, "ley");
+                    christen_monst(mon, buf);
+                }
             }
         }
     }
@@ -824,6 +852,13 @@ m_initinv(struct monst *mtmp)
             if (!mpickobj(mtmp, otmp) && !levl[mtmp->mx][mtmp->my].lit)
                 begin_burn(otmp, FALSE);
         }
+        if (ptr == &mons[PM_GWTWOD]) {
+            otmp = mksobj(WAN_DEATH, FALSE, FALSE);
+            otmp->quan = 1;
+            otmp->spe = 0;
+            otmp->recharged = 6;
+            (void) mpickobj(mtmp, otmp);
+        }
         break;
     default:
         break;
@@ -1446,7 +1481,7 @@ makemon(
     }
     set_malign(mtmp); /* having finished peaceful changes */
     if (anymon && !(mmflags & MM_NOGRP)) {
-        if ((ptr->geno & G_SGROUP) && rn2(2)) {
+        if ((ptr->geno & G_SGROUP) && (rn2(2) || (ptr->geno & G_MIDBOSS))) {
             m_initsgrp(mtmp, mtmp->mx, mtmp->my, mmflags);
         } else if (ptr->geno & G_LGROUP) {
             if (rn2(3))
@@ -1608,8 +1643,17 @@ create_critters(
 staticfn boolean
 uncommon(int mndx)
 {
-    if (mons[mndx].geno & (G_NOGEN | G_UNIQ))
+    if (mons[mndx].geno & (G_NOGEN | G_UNIQ)) {
+        if (mons[mndx].geno & (G_MIDBOSS)){
+            if (rn2(MIDBOSS_CHANCE)) {
+                return TRUE;
+            } else {
+                goto not_nogen_or_uniq;
+            }
+        }
         return TRUE;
+    }
+not_nogen_or_uniq:
     if (svm.mvitals[mndx].mvflags & G_GONE)
         return TRUE;
     if (Inhell)
@@ -1677,7 +1721,7 @@ rndmonst_adj(int minadj, int maxadj)
     struct permonst *ptr;
     int mndx;
     int weight, totalweight, selected_mndx, zlevel, minmlev, maxmlev;
-    boolean elemlevel, upper;
+    boolean elemlevel, upper, freq;
 
     if (u.uz.dnum == quest_dnum && rn2(7) && (ptr = qt_montype()) != 0)
         return ptr;
@@ -1719,7 +1763,8 @@ rndmonst_adj(int minadj, int maxadj)
          * earlier are exactly canceled out by having more monsters to
          * potentially steal its spot.
          */
-        weight = (int) (ptr->geno & G_FREQ) + align_shift(ptr);
+        freq = (ptr->geno & G_MIDBOSS) ? 1 : (int) (ptr->geno & G_FREQ);
+        weight = freq + align_shift(ptr);
         weight += temperature_shift(ptr);
         if (weight < 0 || weight > 127) {
             impossible("bad weight in rndmonst for mndx %d", mndx);

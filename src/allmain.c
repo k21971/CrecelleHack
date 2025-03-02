@@ -783,6 +783,8 @@ newgame(void)
         flush_screen(1);
         com_pager(u.uroleplay.pauper ? "pauper_legacy" : "legacy");
     }
+    
+    adj_midbosses();
 
     urealtime.realtime = 0L;
     urealtime.start_timing = getnow();

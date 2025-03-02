@@ -731,7 +731,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_LITTLE_DOG: case PM_DINGO: case PM_DOG: case PM_LARGE_DOG:
     case PM_WOLF: case PM_WEREWOLF: case PM_WINTER_WOLF_CUB:
     case PM_WARG: case PM_WINTER_WOLF: case PM_HELL_HOUND_PUP:
-    case PM_HELL_HOUND:
+    case PM_HELL_HOUND: case PM_CERBERUS:
 
     case PM_GAS_SPORE: case PM_FLOATING_EYE: case PM_FREEZING_SPHERE:
     case PM_FLAMING_SPHERE: case PM_SHOCKING_SPHERE: case PM_GRAVIMETRIC_SPHERE:
@@ -793,7 +793,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_VIOLET_FUNGUS:
 
     case PM_GNOME: case PM_GNOME_LEADER: case PM_GNOMISH_WIZARD:
-    case PM_GNOME_RULER:
+    case PM_GNOME_RULER: case PM_GWTWOD:
     case PM_GIANT: case PM_STONE_GIANT: case PM_HILL_GIANT:
     case PM_FIRE_GIANT: case PM_FROST_GIANT: case PM_ETTIN:
     case PM_STORM_GIANT: case PM_TITAN:
@@ -832,7 +832,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_HUMAN: case PM_HUMAN_WERERAT: case PM_HUMAN_WEREJACKAL:
     case PM_HUMAN_WEREWOLF: case PM_ELF: case PM_WOODLAND_ELF:
     case PM_GREEN_ELF: case PM_GREY_ELF: case PM_ELF_NOBLE:
-    case PM_ELVEN_MONARCH:
+    case PM_ELVEN_MONARCH: case PM_DUDLEY:
     case PM_DOPPELGANGER: case PM_SHOPKEEPER:
     case PM_GUARD: case PM_PRISONER: case PM_ORACLE:
     case PM_ALIGNED_CLERIC: case PM_HIGH_CLERIC:
@@ -5851,6 +5851,35 @@ void
 check_gear_next_turn(struct monst *mon)
 {
     mon->misc_worn_check |= I_SPECIAL;
+}
+
+/* adjust midbosses and midboss-adjacent monsters. */
+void
+adj_midbosses(void)
+{
+    int index = PM_LORD_CARNARVON - 1;
+    struct permonst *pm;
+
+    while (index < PM_APPRENTICE) {
+        index++;
+        if (index == gu.urole.neminum || index == gu.urole.ldrnum) {
+            continue;
+        }
+        pm = &mons[index];
+        pm->mflags2 &= ~M2_PEACEFUL;
+        pm->mflags2 |= M2_HOSTILE;
+        pm->mflags3 &= ~M3_WANTSARTI;
+        pm->mflags3 &= ~M3_WAITFORU;
+        pm->mflags3 &= ~M3_CLOSE;
+        if (index < PM_ATTENDANT) {
+            pm->msound = MS_SILENT;
+            pm->geno &= ~G_NOGEN;
+            pm->geno |= G_SQUAD;
+            pm->geno |= G_LGROUP;
+            pm->geno |= G_MIDBOSS;
+        }
+    }
+
 }
 
 /* make erinyes more dangerous based on your alignment abuse */

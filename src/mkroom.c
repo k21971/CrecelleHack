@@ -20,7 +20,7 @@
 staticfn boolean isbig(struct mkroom *);
 staticfn struct mkroom *pick_room(boolean);
 staticfn void mkshop(void), mkzoo(int), mkswamp(void);
-staticfn void mk_zoo_thronemon(coordxy, coordxy);
+staticfn struct monst *mk_zoo_thronemon(coordxy, coordxy);
 staticfn void mktemple(void);
 staticfn coord *shrine_pos(int);
 staticfn struct permonst *morguemon(void);
@@ -248,14 +248,17 @@ mkzoo(int type)
     }
 }
 
-staticfn void
+staticfn struct monst *
 mk_zoo_thronemon(coordxy x, coordxy y)
 {
     int i = rnd(level_difficulty());
-    int pm = (i > 9) ? PM_OGRE_TYRANT
-        : (i > 5) ? PM_ELVEN_MONARCH
-        : (i > 2) ? PM_DWARF_RULER
-        : PM_GNOME_RULER;
+    int pm = rndmidboss();
+    if (pm == NON_PM) {
+        pm = (i > 9) ? PM_OGRE_TYRANT
+            : (i > 5) ? PM_ELVEN_MONARCH
+            : (i > 2) ? PM_DWARF_RULER
+            : PM_GNOME_RULER;
+    }
     struct monst *mon = makemon(&mons[pm], x, y, NO_MM_FLAGS);
 
     if (mon) {
@@ -265,12 +268,14 @@ mk_zoo_thronemon(coordxy x, coordxy y)
         /* Give him a sceptre to pound in judgment */
         (void) mongets(mon, MACE);
     }
+    return mon;
 }
 
 void
 fill_zoo(struct mkroom *sroom)
 {
     struct monst *mon;
+    struct monst *throne_mon;
     int sx, sy, i;
     int sh, goldlim = 0, type = sroom->rtype;
     coordxy tx = 0, ty = 0;
@@ -295,7 +300,7 @@ fill_zoo(struct mkroom *sroom)
             ty = mm.y;
         } while (occupied(tx, ty) && --i > 0);
  throne_placed:
-        mk_zoo_thronemon(tx, ty);
+        throne_mon = mk_zoo_thronemon(tx, ty);
         break;
     case BEEHIVE:
         tx = sroom->lx + (sroom->hx - sroom->lx + 1) / 2;
@@ -337,7 +342,7 @@ fill_zoo(struct mkroom *sroom)
             if (type == COURT && IS_THRONE(levl[sx][sy].typ))
                 continue;
             mon = makemon((type == COURT)
-                           ? courtmon()
+                           ? courtmon(throne_mon)
                            : (type == BARRACKS)
                               ? squadmon()
                               : (type == MORGUE)
@@ -781,11 +786,13 @@ search_special(schar type)
 }
 
 struct permonst *
-courtmon(void)
+courtmon(struct monst *throne_mon)
 {
     int i = rn2(60) + rn2(3 * level_difficulty());
 
-    if (i > 100)
+    if (throne_mon && ((throne_mon->data->geno & G_UNIQ) != 0) && rn2(2))
+        return m_get_squadmon(throne_mon->data); 
+    else if (i > 100)
         return mkclass(S_DRAGON, 0);
     else if (i > 95)
         return mkclass(S_GIANT, 0);

@@ -194,6 +194,8 @@ enum ms_sounds {
 #define MH_ORC          M2_ORC
 
 /* for mons[].geno (constant during game) */
+#define G_SQUAD         0x4000 /* rather than generating identical mons, generate similar squad */
+#define G_MIDBOSS       0x2000 /* generated as a wandering unique */
 #define G_UNIQ          0x1000 /* generated only once */
 #define G_NOHELL        0x0800 /* not generated in "hell" */
 #define G_HELL          0x0400 /* generated only in "hell" */

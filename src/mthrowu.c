@@ -952,7 +952,7 @@ breamm(struct monst *mtmp, struct attack *mattk, struct monst *mtarg)
                 /* breath runs out sometimes. Also, give monster some
                  * cunning; don't breath if the target fell asleep.
                  */
-                if (!utarget || !rn2(3))
+                if ((!utarget || !rn2(3)) && mtmp->data != &mons[PM_CERBERUS])
                     mtmp->mspec_used = 8 + rn2(18);
                 if (utarget && typ == AD_SLEE && !Sleep_resistance)
                     mtmp->mspec_used += rnd(20);

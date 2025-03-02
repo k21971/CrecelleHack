@@ -2411,7 +2411,7 @@ reverse_loot(void)
                 (void) boxlock(coffers, &boxdummy);
             }
         } else if (levl[x][y].looted != T_LOOTED
-                   && (mon = makemon(courtmon(), x, y, NO_MM_FLAGS)) != 0) {
+                   && (mon = makemon(courtmon((struct monst *) 0), x, y, NO_MM_FLAGS)) != 0) {
             freeinv(goldob);
             add_to_minv(mon, goldob);
             pline("The exchequer accepts your contribution.");

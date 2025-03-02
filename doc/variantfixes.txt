@@ -74,6 +74,8 @@
   to both disguise himself and summon illusory duplicates.
 - Orcus uses the undead monster spell list identical to the one used
   by liches.
+- In the course of dungeon exploration, one may encounter unique monsters.
+  Further details about these monsters are detailed in uniquefixes.txt.
 ### Mounts
 - The following monster classes are now valid mounts: f, d
 ## New Monster: Poltergeist ( )
@@ -92,7 +94,7 @@
 - Does not generate randomly, unpolymorphable.
 - Appears as another monster.
 - Only appears when summoned by monsters.
-## New Monster: Snow  Ant (a)
+## New Monster: Snow Ant (a)
 - Hails from numerous variants.  Provenance unclear, but likely originated
   with Slash'Em?
 

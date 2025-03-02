@@ -693,6 +693,7 @@ restgamestate(NHFILE *nhfp)
     relink_timers(FALSE);
     relink_light_sources(FALSE);
     adj_erinys(u.ualign.abuse);
+    adj_midbosses();
     /* inventory display is now viable */
     iflags.perm_invent = defer_perm_invent;
     return TRUE;
