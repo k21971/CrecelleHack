@@ -1242,9 +1242,11 @@ inside_bonfire(genericptr_t p1, genericptr_t p2)
         if (m_bonfire_ok(mtmp) == M_BONFIRE_OK)
             return FALSE;
         /* Message and complete burning */
-        if (completelyburns(mtmp->data)) { 
-            xkilled(mtmp, XKILL_NOMSG | XKILL_NOCORPSE);
-            if (canseemon(mtmp)) pline("%s burns up!", Monnam(mtmp));
+        if (completelyburns(mtmp->data)) {
+            if (heros_fault(reg))
+                killed(mtmp);
+            else
+                monkilled(mtmp, "bonfire", AD_FIRE);
             return TRUE;
         } else if (canseemon(mtmp)) {
             pline("%s is burning!", Monnam(mtmp));
@@ -1262,8 +1264,13 @@ inside_bonfire(genericptr_t p1, genericptr_t p2)
         ignite_items(mtmp->minvent);
         mtmp->mhp -= rnd(dam);
         if (DEADMONSTER(mtmp)) {
-            mondied(mtmp);
-            return TRUE;
+            if (heros_fault(reg))
+                killed(mtmp);
+            else
+                monkilled(mtmp, "bonfire", AD_FIRE);
+            if (DEADMONSTER(mtmp)) { /* not lifesaved */
+                return TRUE;
+            }
         }
     }
 

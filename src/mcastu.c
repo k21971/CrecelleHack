@@ -942,7 +942,7 @@ cast_monster_spell(struct monst *mtmp, int dmg, int spellnum)
     case MCU_GREASE:
         make_glib((int) (Glib & TIMEOUT) + rn1(4, 5));
         pline("Grease splatters you!");
-        potion_splatter(u.ux, u.uy, POT_OIL, 0);
+        potion_splatter(u.ux, u.uy, POT_OIL, NON_PM);
         dmg = 0;
         break;
     case MCU_DISGUISE:

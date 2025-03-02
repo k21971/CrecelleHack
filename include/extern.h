@@ -2485,6 +2485,7 @@ extern boolean add_coating(coordxy, coordxy, unsigned char, int);
 extern boolean remove_coating(coordxy, coordxy, unsigned char);
 extern boolean slip_on_oil(coordxy, coordxy, struct monst *);
 extern void evaporate_potion_puddles(coordxy, coordxy);
+extern void floor_alchemy(int, int, int, int);
 extern void potion_splatter(coordxy, coordxy, int, int);
 extern void potionhit(struct monst *, struct obj *, int) NONNULLARG12;
 extern void potionbreathe(struct obj *) NONNULLARG1;

@@ -685,9 +685,10 @@ m_postmove_effect(struct monst *mtmp)
         create_bonfire(x, y, 1, rnd(4));
     else if (mtmp->data == &mons[PM_ACID_BLOB] 
             || mtmp->data == &mons[PM_GELATINOUS_CUBE]) {
-        add_coating(x, y, COAT_POTION, POT_ACID);
+        floor_alchemy(x, y, POT_ACID, NON_PM);
     } else if (mtmp->data == &mons[PM_WATER_ELEMENTAL] || 
                 mtmp->data == &mons[PM_SQUONK]) {
+        /* enough water is produced that we just add a coating instead of alchemizing */
         add_coating(x, y, COAT_POTION, POT_WATER);
     }
 }

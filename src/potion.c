@@ -1627,12 +1627,14 @@ impact_arti_light(
     return;
 }
 
+/* check if a section of floor has already been coated */
 boolean
 has_coating(coordxy x, coordxy y, unsigned char coatflags) {
     return (IS_COATABLE(levl[x][y].typ)
             && (levl[x][y].coat_info & coatflags) != 0);
 }
 
+/* add a coating to the floor */
 boolean
 add_coating(coordxy x, coordxy y, unsigned char coatflags, int pindex) {
     if (!IS_COATABLE(levl[x][y].typ))
@@ -1660,6 +1662,7 @@ add_coating(coordxy x, coordxy y, unsigned char coatflags, int pindex) {
     return TRUE;
 }
 
+/* remove a coating from the floor */
 boolean
 remove_coating(coordxy x, coordxy y, unsigned char coatflags) {
     if (!IS_COATABLE(levl[x][y].typ))
@@ -1670,6 +1673,7 @@ remove_coating(coordxy x, coordxy y, unsigned char coatflags) {
     return TRUE;
 }
 
+/* monster slips on a puddle of oil */
 boolean
 slip_on_oil(coordxy x, coordxy y, struct monst *mon) {
     if (has_coating(x, y, COAT_POTION) && levl[x][y].pindex == POT_OIL
@@ -1692,6 +1696,7 @@ slip_on_oil(coordxy x, coordxy y, struct monst *mon) {
     return FALSE;
 }
 
+/* evaporate potion puddles due to heat */
 void
 evaporate_potion_puddles(coordxy x, coordxy y) {
     if (!IS_COATABLE(levl[x][y].typ))
@@ -1713,49 +1718,54 @@ evaporate_potion_puddles(coordxy x, coordxy y) {
     }
 }
 
+/* potion mixes with existing potions upon the ground */
+void
+floor_alchemy(int x, int y, int otyp, int corpsenm) {
+    struct obj fakeobj1, fakeobj2 = cg.zeroobj;
+    struct obj *otmp;
+    fakeobj1.otyp = otyp;
+    fakeobj1.oclass = POTION_CLASS;
+    
+    if (has_coating(x, y, COAT_POTION)) {
+        if (otyp == levl[x][y].pindex)
+            return;
+        if (otyp == POT_WATER || levl[x][y].pindex == POT_WATER) {
+            if (rn2(2)) add_coating(x, y, COAT_POTION, otyp);
+            return;
+        }
+        fakeobj2.otyp = levl[x][y].pindex;
+        otyp = mixtype(&fakeobj1, &fakeobj2);
+        if (otyp == STRANGE_OBJECT) {
+            otmp = mkobj(POTION_CLASS, FALSE);
+            otyp = otmp->otyp;
+            obfree(otmp, (struct obj *) 0);
+        }
+        if (cansee(x, y)) {
+            Norep("The liquids on the ground begin to mix."); /* todo: location pline for accessability? */
+        }
+        if (!rn2(10)) {
+            explode(x, y, 11, d(1, 10), 0, EXPL_NOXIOUS);
+            return;
+        }
+    }
+    if (otyp == POT_BLOOD) {
+        add_coating(x, y, COAT_BLOOD, corpsenm);
+    } else {
+        add_coating(x, y, COAT_POTION, otyp);
+    }
+}
+
+/* potion splashes across floor, potentially mixing with extant potions */
 void
 potion_splatter(coordxy x, coordxy y, int otyp, int corpsenm) {
     int startx = max(x - 1, 0);
     int starty = max(y - 1, 0);
     int stopx = min(x + 1, COLNO);
     int stopy = min(y + 1, ROWNO);
-    struct obj fakeobj1, fakeobj2 = cg.zeroobj;
-    struct obj *otmp;
-    boolean seenalchemy = FALSE;
-
-    fakeobj1.otyp = otyp;
-    fakeobj1.oclass = POTION_CLASS;
 
     for (int i = startx; i <= stopx; i++) {
         for (int j = starty; j <= stopy; j++) {
-            if (has_coating(i, j, COAT_POTION)) {
-                if (otyp == levl[i][j].pindex)
-                    continue;
-                if (otyp == POT_WATER || levl[i][j].pindex == POT_WATER) {
-                    if (rn2(2)) add_coating(i, j, COAT_POTION, otyp);
-                    continue;
-                }
-                fakeobj2.otyp = levl[i][j].pindex;
-                otyp = mixtype(&fakeobj1, &fakeobj2);
-                if (otyp == STRANGE_OBJECT) {
-                    otmp = mkobj(POTION_CLASS, FALSE);
-                    otyp = otmp->otyp;
-                    obfree(otmp, (struct obj *) 0);
-                }
-                if (!seenalchemy && cansee(x, y)) {
-                    pline("The liquids on the ground begin to mix.");
-                    seenalchemy = TRUE;
-                }
-                if (!rn2(10)) {
-                    explode(i, j, 11, d(1, 10), 0, EXPL_NOXIOUS);
-                    continue;
-                }
-            }
-            if (otyp == POT_BLOOD) {
-                add_coating(i, j, COAT_BLOOD, corpsenm);
-            } else {
-                add_coating(i, j, COAT_POTION, otyp);
-            }
+            floor_alchemy(i, j, otyp, corpsenm);
         }
     }
 }
