@@ -628,7 +628,7 @@ priest_talk(struct monst *priest)
             verbalize("Thou shalt regret thine action!");
             if (coaligned)
                 adjalign(-1);
-        } else if (offer < (u.ulevel * 200)) {
+        } else if (offer < (u.ulevel * 50)) {
             if (money_cnt(gi.invent) > (offer * 2L)) {
                 SetVoice(priest, 0, 80, 0);
                 verbalize("Cheapskate.");
@@ -638,6 +638,12 @@ priest_talk(struct monst *priest)
                 /* give player some token */
                 exercise(A_WIS, TRUE);
             }
+        } else if (offer < (u.ulevel * 200)) {
+            struct obj *otmp = getobj("bless", any_obj_ok, GETOBJ_NOFLAGS);
+            otmp->blessed = 1;
+            otmp->cursed = 0;
+            SetVoice(priest, 0, 80, 0);
+            verbalize("I have blessed one of thy possessions.");
         } else if (offer < (u.ulevel * 400)) {
             SetVoice(priest, 0, 80, 0);
             verbalize("Thou art indeed a pious individual.");

@@ -4,6 +4,10 @@
 - Reflection does not reflect rays directly back at
   the one that fired them. Instead, the rays bounce off at a ninety degree
   angle. As a consequence, reflection no longer instantly kills Medusa.
+### Blessing Objects
+- Holy water does not bless objects.
+- Objects can be blessed by paying a priest between 50 and 200 times
+  one's level.
 
 ## Attributes
 ### General
@@ -149,6 +153,7 @@
 - Potions leave behind empty bottles when drunk. These bottles
   can be refilled with water at fountains, sinks, and other
   locations.
+- Potions of holy water deal much more damage to demons.
 ### Door and Chest Keys
 - Keys are now split into door keys and chest keys, both of
   which must be identified.
