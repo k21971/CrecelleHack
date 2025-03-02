@@ -676,7 +676,10 @@ m_postmove_effect(struct monst *mtmp)
     /* Hezrous create clouds of stench. This does not cost a move. */
     if (mtmp->data == &mons[PM_HEZROU]) /* stench */
         create_gas_cloud(x, y, 1, 8);
-    else if (mtmp->data == &mons[PM_STEAM_VORTEX] && !mtmp->mcan)
+    else if (mtmp->data == &mons[PM_SKUNK_APE] && !mtmp->mspec_used) {
+        mtmp->mspec_used = rnd(20);
+        (void) create_gas_cloud(mtmp->mx, mtmp->my, rnd(6), 3);
+    } else if (mtmp->data == &mons[PM_STEAM_VORTEX] && !mtmp->mcan)
         create_gas_cloud(x, y, 1, 0); /* harmless vapor */
     else if (mtmp->data == &mons[PM_FIRE_ELEMENTAL] && !mtmp->mcan)
         create_bonfire(x, y, 1, rnd(4));

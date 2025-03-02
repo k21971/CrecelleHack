@@ -14,7 +14,8 @@
 #define pm_resistance(ptr, typ) (((ptr)->mresists & (typ)) != 0)
 
 #define immune_poisongas(ptr) ((ptr) == &mons[PM_HEZROU]        \
-                               || (ptr) == &mons[PM_VROCK])
+                               || (ptr) == &mons[PM_VROCK] \
+                               || (ptr) == &mons[PM_SKUNK_APE])
 
 #define is_flyer(ptr) (((ptr)->mflags1 & M1_FLY) != 0L)
 #define is_floater(ptr) ((ptr)->mlet == S_EYE || (ptr)->mlet == S_LIGHT)

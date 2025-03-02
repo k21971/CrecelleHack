@@ -85,21 +85,23 @@
   - Can generate in morgues or via raising the dead.
 - Grotesque (g)
   - Slow, hard to hit, and very high damage. Spawns in groups.
-- New Monster: Mascaron (g)
+- Mascaron (g)
   - Stunning gaze. Spawns in groups.
   - Peaceful, but turns hostile if alignment is abused.
-- New Monster: Gravitric Sphere (e)
+- NGravitric Sphere (e)
   - Explosion reduces HP by 1/2.
   - Does not generate randomly.
-- New Monster: Illusion ( )
+- Illusion ( )
   - Does not generate randomly, unpolymorphable.
   - Appears as another monster.
   - Only appears when summoned by monsters.
-- New Monster: Snow Ant (a)
+- Snow Ant (a)
   - Hails from numerous variants.  Provenance unclear, but likely originated
     with Slash'Em?
-- New Monster: Squonk (q)
+- Squonk (q)
   - Leaves a trail of water.
+- Skunk Ape (Y)
+  - Periodically releases clouds of poison gas.
 
 
 ## Monster AI
