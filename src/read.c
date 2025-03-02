@@ -2560,13 +2560,13 @@ do_class_genocide(void)
             pline1(thats_enough_tries);
             return;
         }
-        Strcpy(promptbuf, "What class of monsters do you want to genocide?");
+        Strcpy(promptbuf, "What class of monsters do you want to erase?");
         if (j > 0)
             Snprintf(eos(promptbuf), sizeof promptbuf - strlen(promptbuf),
                      " [enter %s]",
                      iflags.cmdassist
                        ? "the symbol or name representing a class, or '?'"
-                       : "'?' to see previous genocides");
+                       : "'?' to see previous erasings");
         getlin(promptbuf, buf);
         (void) mungspaces(buf);
         /* avoid 'that does not represent any monster' for empty input */
