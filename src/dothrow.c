@@ -2457,6 +2457,7 @@ breakobj(
         break;
     case POT_WATER:      /* really, all potions */
         obj->in_use = 1; /* in case it's fatal */
+        potion_splatter(x, y, obj->otyp, obj->corpsenm);
         if (obj->otyp == POT_OIL && obj->lamplit) {
             explode_oil(obj, x, y);
         } else if (next2u(x, y)) {
@@ -2477,7 +2478,6 @@ breakobj(
                 potionbreathe(obj);
             }
         }
-        potion_splatter(x, y, obj->otyp, obj->corpsenm);
         /* monster breathing isn't handled... [yet?] */
         break;
     case EXPENSIVE_CAMERA:
