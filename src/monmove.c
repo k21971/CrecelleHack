@@ -683,7 +683,8 @@ m_postmove_effect(struct monst *mtmp)
     else if (mtmp->data == &mons[PM_ACID_BLOB] 
             || mtmp->data == &mons[PM_GELATINOUS_CUBE]) {
         add_coating(x, y, COAT_POTION, POT_ACID);
-    } else if (mtmp->data == &mons[PM_WATER_ELEMENTAL]) {
+    } else if (mtmp->data == &mons[PM_WATER_ELEMENTAL] || 
+                mtmp->data == &mons[PM_SQUONK]) {
         add_coating(x, y, COAT_POTION, POT_WATER);
     }
 }

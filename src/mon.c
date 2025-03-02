@@ -756,7 +756,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_MORDOR_ORC: case PM_URUK_HAI: case PM_ORC_SHAMAN:
     case PM_ORC_CAPTAIN:
     case PM_ROCK_PIERCER: case PM_IRON_PIERCER: case PM_GLASS_PIERCER:
-    case PM_ROTHE: case PM_MUMAK: case PM_LEOCROTTA: case PM_WUMPUS:
+    case PM_ROTHE: case PM_SQUONK: case PM_MUMAK: case PM_LEOCROTTA: case PM_WUMPUS:
     case PM_TITANOTHERE: case PM_BALUCHITHERIUM: case PM_MASTODON:
     case PM_SEWER_RAT: case PM_GIANT_RAT: case PM_RABID_RAT:
     case PM_WERERAT:
@@ -5743,6 +5743,10 @@ usmellmon(struct permonst *mdat)
         case PM_ROTHE:
         case PM_MINOTAUR:
             You("notice a bovine smell.");
+            msg_given = TRUE;
+            break;
+        case PM_SQUONK:
+            You("smell tears.");
             msg_given = TRUE;
             break;
         case PM_CAVE_DWELLER:
