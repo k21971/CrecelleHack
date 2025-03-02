@@ -1731,6 +1731,10 @@ potion_splatter(coordxy x, coordxy y, int otyp, int corpsenm) {
             if (has_coating(i, j, COAT_POTION)) {
                 if (otyp == levl[i][j].pindex)
                     continue;
+                if (otyp == POT_WATER || levl[i][j].pindex == POT_WATER) {
+                    if (rn2(2)) add_coating(i, j, COAT_POTION, otyp);
+                    continue;
+                }
                 fakeobj2.otyp = levl[i][j].pindex;
                 otyp = mixtype(&fakeobj1, &fakeobj2);
                 if (otyp == STRANGE_OBJECT) {
