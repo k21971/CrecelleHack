@@ -3478,7 +3478,7 @@ tip_ok(struct obj *obj)
     if (!obj || obj->oclass == COIN_CLASS)
         return GETOBJ_EXCLUDE;
 
-    if (Is_container(obj)) {
+    if (Is_container(obj) || obj->oclass == POTION_CLASS) {
         return GETOBJ_SUGGEST;
     }
 
