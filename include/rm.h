@@ -126,7 +126,7 @@ enum levl_typ_types {
 #define IS_AIR(typ) ((typ) == AIR || (typ) == CLOUD)
 #define IS_SOFT(typ) ((typ) == AIR || (typ) == CLOUD || IS_POOL(typ))
 #define IS_WATERWALL(typ) ((typ) == WATER)
-#define IS_COATABLE(typ) ((typ) == CORR || (typ) == ROOM)
+#define IS_COATABLE(typ) (IS_STWALL(typ) || IS_DOOR(typ) || ((typ) >= ROOM && (typ) <= ALTAR))
 /* for surface checks when it's unknown whether a drawbridge is involved;
    drawbridge_up is the spot in front of a closed drawbridge and not the
    current surface at that spot; caveat: this evaluates its arguments more
@@ -138,9 +138,9 @@ enum levl_typ_types {
 
 /*
  * Surfaces can be covered by things.
- * In coat-related functions, these are treated as an unsigned char,
- * even though they technically occupy 5 bits. I'm sure that won't
- * cause any issues in the future.
+ * Coat-related functions take in an unsigned char, even though
+ * coat_info is defined as flags, which is only 5 bytes in length.
+ * It should be fine, as long as one sticks to passing defined coats.
  */
 #define COAT_NONE   0x00
 #define COAT_GRASS  0x01
@@ -158,13 +158,16 @@ enum levl_typ_types {
  */
 struct rm {
     int glyph;               /* what the hero thinks is there */
-    short pindex;            /* used for indexing into monster or object array */
     schar typ;               /* what is really there  [why is this signed?] */
     uchar seenv;             /* seen vector */
     Bitfield(flags, 5);      /* extra information for typ */
     Bitfield(horizontal, 1); /* wall/door/etc is horiz. (more typ info) */
     Bitfield(lit, 1);        /* speed hack for lit rooms */
     Bitfield(waslit, 1);     /* remember if a location was lit */
+
+    /* HORRIBLE HACK INCOMING DANGER DANGER */
+    Bitfield(pindex, 10);    /* This puts a hard upper limit on monster and potion types of 1024.*/
+    Bitfield(coat_info, 6);  /* Stores the info about the floor's coating. */
 
     Bitfield(roomno, 6); /* room # for special rooms */
     Bitfield(edge, 1);   /* marks boundaries for special rooms*/
@@ -216,7 +219,6 @@ struct rm {
 #define drawbridgemask flags /* what's underneath when the span is open */
 #define looted     flags /* used for throne, tree, fountain, sink, door */
 #define icedpool   flags /* used for ice (in case it melts) */
-#define coat_info flags /* used for room surfaces */
 #define emptygrave flags /* no corpse in grave */
 
 /*

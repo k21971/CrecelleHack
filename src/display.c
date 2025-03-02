@@ -2628,7 +2628,7 @@ map_glyphinfo(
     }
     /* If the floor has extra surface info, we need to track it to swap the color around. */
     if (IS_COATABLE(levl[x][y].typ)
-        && glyph_is_cmap_a(glyph) &&  cansee(x, y)
+        && glyph_is_cmap_coatable(glyph) && cansee(x, y)
         && levl[x][y].coat_info) {
         /* Order matters here. Generally the more important the coating, the higher
             priority it gets. Potions are the highest because they could kill the player. */

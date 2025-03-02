@@ -1525,9 +1525,9 @@ void
 movebubbles(void)
 {
     static const struct rm water_pos = {
-        cmap_b_to_glyph(S_water), WATER, 0, 0, 0, 0, 0, 0, 0, 0, 0
+        cmap_b_to_glyph(S_water), WATER, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     }, air_pos = {
-        cmap_b_to_glyph(S_cloud), AIR, 0, 0, 0, 0, 1, 0, 0, 0, 0
+        cmap_b_to_glyph(S_cloud), AIR, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0
     };
     static boolean up = FALSE;
     struct bubble *b;

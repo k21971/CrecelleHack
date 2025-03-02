@@ -723,6 +723,9 @@ enum glyph_offsets {
 #define glyph_is_cmap(glyph) \
     ((glyph) >= GLYPH_CMAP_STONE_OFF \
      && (glyph) < (GLYPH_CMAP_C_OFF + ((S_goodpos - S_digbeam) + 1)))
+#define glyph_is_cmap_coatable(glyph) \
+    ((glyph) >= GLYPH_CMAP_STONE_OFF \
+     && (glyph) < (((S_brdnladder - S_ndoor) + 1) + GLYPH_CMAP_A_OFF))
 #define glyph_to_swallow(glyph) \
     (glyph_is_swallow(glyph) ? (((glyph) - GLYPH_SWALLOW_OFF) & 0x7) : 0)
 #define glyph_to_explosion(glyph) \

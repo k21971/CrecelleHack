@@ -783,10 +783,6 @@ lookat(coordxy x, coordxy y, char *buf, char *monbuf)
         case S_engrcorr:
             Strcpy(buf, "engraving");
             break;
-        case S_room:
-        case S_litcorr:
-            coat_descr(x, y, symidx, buf);
-            break;
         case S_stone:
             if (!levl[x][y].seenv) {
                 Strcpy(buf, "unexplored");
@@ -803,7 +799,10 @@ lookat(coordxy x, coordxy y, char *buf, char *monbuf)
             FALLTHROUGH;
             /*FALLTHRU*/
         default:
-            Strcpy(buf, defsyms[symidx].explanation);
+            if (glyph_is_cmap_coatable(glyph))
+                coat_descr(x, y, symidx, buf);
+            else
+                Strcpy(buf, defsyms[symidx].explanation);
             break;
         }
     } else { /* not mon, obj, trap, or cmap */
