@@ -2358,6 +2358,7 @@ extern void getlock(void);
 
 /* ### pickup.c ### */
 
+extern void debottle_potion(struct obj *);
 extern int collect_obj_classes(char *, struct obj *, boolean,
                                boolean(*)(struct obj *), int *) NONNULLARG5;
 extern boolean rider_corpse_revival(struct obj *, boolean) NO_NNARGS;

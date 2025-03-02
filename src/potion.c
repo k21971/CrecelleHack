@@ -602,13 +602,13 @@ dodrink(void)
         && !(svm.mvitals[PM_GHOST].mvflags & G_GONE)
         && !rn2(POTION_OCCUPANT_CHANCE(svm.mvitals[PM_GHOST].born))) {
         ghost_from_bottle();
-        useup(otmp);
+        debottle_potion(otmp);
         return ECMD_TIME;
     } else if (objdescr_is(otmp, "smoky")
                && !(svm.mvitals[PM_DJINNI].mvflags & G_GONE)
                && !rn2(POTION_OCCUPANT_CHANCE(svm.mvitals[PM_DJINNI].born))) {
         djinni_from_bottle(otmp);
-        useup(otmp);
+        debottle_potion(otmp);
         return ECMD_TIME;
     }
     return dopotion(otmp);
@@ -636,7 +636,7 @@ dopotion(struct obj *otmp)
         } else
             trycall(otmp);
     }
-    useup(otmp);
+    debottle_potion(otmp);
     return ECMD_TIME;
 }
 
@@ -2661,7 +2661,7 @@ potion_dip(struct obj *obj, struct obj *potion)
               otense(obj, "mix"), (potion->quan > 1L) ? "one of " : "",
               thesimpleoname(potion));
         /* get rid of 'dippee' before potential perm_invent updates */
-        useup(potion); /* now gone */
+        debottle_potion(potion); /* now gone */
         /* Mixing potions is dangerous...
            KMH, balance patch -- acid is particularly unstable */
         if (obj->cursed || obj->otyp == POT_ACID
@@ -2821,7 +2821,7 @@ potion_dip(struct obj *obj, struct obj *potion)
         exercise(A_WIS, wisx);
         if (potion->dknown)
             makeknown(potion->otyp);
-        useup(potion);
+        debottle_potion(potion);
         return ECMD_TIME;
     }
  more_dips:
@@ -2853,7 +2853,7 @@ potion_dip(struct obj *obj, struct obj *potion)
             obj->age += (!potion->odiluted ? 4L : 3L) * potion->age / 2L;
             if (obj->age > 1500L)
                 obj->age = 1500L;
-            useup(potion);
+            debottle_potion(potion);
             exercise(A_WIS, TRUE);
         }
         if (potion->dknown)

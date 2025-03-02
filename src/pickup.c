@@ -69,6 +69,15 @@ static const char
     nearloadpfx[] = "You have much trouble",
     overloadpfx[] = "You have extreme difficulty";
 
+void
+debottle_potion(struct obj *cobj) {
+    struct obj *bobj;
+    useup(cobj);
+    bobj = mksobj(BOTTLE, FALSE, FALSE);
+    hold_another_object(bobj, "Oops!", (const char *) 0,
+                                (const char *) 0);
+}
+
 /* BUG: this lets you look at cockatrice corpses while blind without
    touching them */
 /* much simpler version of the look-here code; used by query_classes() */
@@ -3624,6 +3633,7 @@ dotip(void)
                || (cobj->otyp == OIL_LAMP && cobj->age != 0L)
                || (cobj->otyp == MAGIC_LAMP && cobj->spe != 0)) {
         spillage = "oil";
+        floor_alchemy(u.ux, u.uy, POT_OIL, NON_PM);
         /* todo: reduce potion's remaining burn timer or oil lamp's fuel */
     } else if (cobj->otyp == CAN_OF_GREASE && cobj->spe > 0) {
         /* charged consumed below */
@@ -3651,9 +3661,17 @@ dotip(void)
         return ECMD_TIME;
     }
     /* anything not covered yet */
-    if (cobj->oclass == POTION_CLASS) /* can't pour potions... */
-        pline_The("%s %s securely sealed.", xname(cobj), otense(cobj, "are"));
-    else if (uarmh && cobj == uarmh)
+    if (cobj->oclass == POTION_CLASS && (IS_COATABLE(levl[u.ux][u.uy].typ))) { /* CAN pour potions... :) */
+        You("pour the %s out onto the %s.", xname(cobj), surface(u.ux, u.uy));
+        if (Levitation)
+            potion_splatter(u.ux, u.uy, cobj->otyp, NON_PM);
+        else
+            floor_alchemy(u.ux, u.uy, cobj->otyp, NON_PM);
+        debottle_potion(cobj);
+    } else if (cobj->oclass == POTION_CLASS) {
+        You("waste the %s.", xname(cobj));
+        debottle_potion(cobj);
+    } else if (uarmh && cobj == uarmh)
         return tiphat() ? ECMD_TIME : ECMD_OK;
     else if (cobj->otyp == STATUE)
         pline("Nothing interesting happens.");
