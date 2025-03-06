@@ -10,3 +10,7 @@
 ## Dudley
 - Spawns with random monsters.
 - Squad monsters have special names.
+
+## Rat King
+- As seen in Slash'Em!
+- Like in EvilHack, it has a were attack.

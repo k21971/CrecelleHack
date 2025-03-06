@@ -84,6 +84,8 @@ m_get_squadmon(struct permonst *pm) {
     } else if (mm >= PM_LORD_CARNARVON && mm <= PM_NEFERET_THE_GREEN) {
         return rn2(2) ? &mons[roles[mm - PM_LORD_CARNARVON].guardnum] 
                 : rn2(3) ? &mons[roles[mm - PM_LORD_CARNARVON].mnum] : mkclass(pm->mlet, 0);
+    } else if (mm == PM_RAT_RULER) {
+        return rn2(2) ? &mons[PM_GIANT_RAT] : &mons[PM_RABID_RAT];
     } else if (mm == PM_DUDLEY) {
         return rndmonst();
     }

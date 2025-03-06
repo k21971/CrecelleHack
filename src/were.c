@@ -226,6 +226,7 @@ you_unwere(boolean purify)
 void
 set_ulycn(int which)
 {
+    if (which == PM_RAT_RULER) which = PM_WERERAT;
     u.ulycn = which;
     /* add or remove lycanthrope's innate intrinsics (Drain_resistance) */
     set_uasmon();

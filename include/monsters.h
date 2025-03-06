@@ -979,6 +979,15 @@
         /* In reality, they tunnel instead of cutting lumber.  Oh, well. */
         M2_WANDER | M2_HOSTILE, M3_INFRAVISIBLE,
         4, CLR_BROWN, WOODCHUCK),
+    MON(NAMS("rat king", "rat queen", "rat ruler"), S_RODENT,
+        LVL(12, 15, 7, 0, 0), (G_MIDBOSS | G_UNIQ | G_SQUAD | G_LGROUP),
+        A(ATTK(AT_WEAP, AD_PHYS, 2, 4), ATTK(AT_BITE, AD_WERE, 2, 3),
+          NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(200, 120, MS_SQEEK, MZ_MEDIUM), MR_STONE, 0,
+        M1_ANIMAL | M1_CARNIVORE,
+        M2_NOPOLY | M2_LORD | M2_HOSTILE | M2_STALK | M2_NASTY | M2_STRONG
+            | M2_GREEDY | M2_JEWELS | M2_MALE,
+        M3_INFRAVISIBLE | M3_TRAITOR, 16, CLR_MAGENTA, RAT_RULER),
     /*
      * spiders & scorpions (keep webmaker() in sync if new critters are added)
      */
