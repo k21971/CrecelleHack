@@ -253,6 +253,13 @@ kick_monster(struct monst *mon, coordxy x, coordxy y)
     else if (uarm && objects[uarm->otyp].oc_bulky && ACURR(A_DEX) < rnd(25))
         clumsy = TRUE;
  doit:
+    if (has_coating(u.ux, u.uy, COAT_ASHES) && haseyes(mon->data) 
+        && !rn2(clumsy ? 3 : 2)) {
+        remove_coating(u.ux, u.uy, COAT_ASHES);
+        mon->mblinded = rn1(5, 5);
+        if (canseemon(mon))
+            pline("You kick ashes in the %s of %s.", mbodypart(mon, FACE), mon_nam(mon));
+    }
     You("kick %s.", mon_nam(mon));
     if (!rn2(clumsy ? 3 : 4) && (clumsy || !bigmonst(mon->data))
         && mon->mcansee && !mon->mtrapped && !thick_skinned(mon->data)
