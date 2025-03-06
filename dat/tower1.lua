@@ -30,6 +30,7 @@ des.monster("Vlad the Impaler", 06, 05)
 des.monster("V",niches[1])
 des.monster("V",niches[2])
 des.monster("V",niches[3])
+des.monster("blood golem", 06, 06)
 -- The brides; they weren't named in Bram Stoker's original _Dracula_
 -- and when appearing in umpteen subsequent books and movies there is
 -- no consensus for their names.  According to the Wikipedia entry for

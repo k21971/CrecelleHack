@@ -690,6 +690,9 @@ m_postmove_effect(struct monst *mtmp)
                 mtmp->data == &mons[PM_SQUONK]) {
         /* enough water is produced that we just add a coating instead of alchemizing */
         add_coating(x, y, COAT_POTION, POT_WATER);
+    } else if (mtmp->data == &mons[PM_BLOOD_GOLEM]) {
+        int pm = rndmonnum();
+        add_coating(x, y, COAT_BLOOD, has_blood(&mons[pm]) ? pm : PM_HUMAN);
     }
 }
 

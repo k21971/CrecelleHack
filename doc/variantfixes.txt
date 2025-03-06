@@ -104,6 +104,9 @@
   - Leaves a trail of water.
 - Skunk Ape (Y)
   - Periodically releases clouds of poison gas.
+- Blood Golem (')
+  - Leaves behind a trail of blood.
+  - Explodes into blood when destroyed.
 
 
 ## Monster AI

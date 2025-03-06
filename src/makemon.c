@@ -2189,6 +2189,8 @@ golemhp(int type)
         return 40;
     case PM_CLAY_GOLEM:
         return 70;
+    case PM_BLOOD_GOLEM:
+        return 90;
     case PM_STONE_GOLEM:
         return 100;
     case PM_GLASS_GOLEM:

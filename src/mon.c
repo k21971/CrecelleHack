@@ -657,6 +657,10 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
         obj->owt = weight(obj);
         free_mgivenname(mtmp);
         break;
+    case PM_BLOOD_GOLEM:
+        num = rndmonnum();
+        potion_splatter(x, y, POT_BLOOD, has_blood(&mons[num]) ? num : PM_HUMAN);
+        break;
     case PM_STONE_GOLEM:
         corpstatflags &= ~CORPSTAT_INIT;
         obj = mkcorpstat(STATUE, (struct monst *) 0, mdat, x, y,
