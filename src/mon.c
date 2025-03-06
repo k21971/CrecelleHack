@@ -5775,6 +5775,7 @@ usmellmon(struct permonst *mdat)
         case PM_WERERAT:
         case PM_WEREWOLF:
         case PM_OWLBEAR:
+        case PM_RAT_RULER:
             You("detect an odor reminiscent of an animal's den.");
             msg_given = TRUE;
             break;
