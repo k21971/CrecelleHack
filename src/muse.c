@@ -327,6 +327,9 @@ mquaffmsg(struct monst *mtmp, struct obj *otmp)
 #define MUSE_LIZARD_CORPSE 19
 #define MUSE_WAN_UNDEAD_TURNING 20 /* also an offensive item */
 #define MUSE_ELBERETH 21
+#define MUSE_COAT_ASHES 22
+#define MUSE_POT_BLOOD 23
+#define MUSE_COAT_BLOOD 24
 /*
 #define MUSE_INNATE_TPT 9999
  * We cannot use this.  Since monsters get unlimited teleportation, if they
@@ -353,6 +356,12 @@ m_use_healing(struct monst *mtmp)
     if ((obj = m_carrying(mtmp, POT_HEALING)) != 0) {
         gm.m.defensive = obj;
         gm.m.has_defense = MUSE_POT_HEALING;
+        return TRUE;
+    }
+    if ((obj = m_carrying(mtmp, POT_BLOOD)) != 0
+        && is_vampire(mtmp->data)) {
+        gm.m.defensive = obj;
+        gm.m.has_defense = MUSE_POT_BLOOD;
         return TRUE;
     }
     return FALSE;
@@ -591,6 +600,11 @@ find_defensive(struct monst *mtmp, boolean tryescape)
         if (!ep) {
             gm.m.has_defense = MUSE_ELBERETH;
         }
+    } else if (has_coating(x, y, COAT_ASHES) && !nolimbs(mtmp->data)
+                && !is_floater(mtmp->data) && !Blind) {
+        gm.m.has_defense = MUSE_COAT_ASHES;
+    } else if (has_coating(x, y, COAT_BLOOD) && is_vampire(mtmp->data)) {
+        gm.m.has_defense = MUSE_COAT_BLOOD;
     } else {
         /* Note: trap doors take precedence over teleport traps. */
         coordxy xx, yy, i, locs[10][2];
@@ -737,6 +751,11 @@ find_defensive(struct monst *mtmp, boolean tryescape)
             if (obj->otyp == POT_HEALING) {
                 gm.m.defensive = obj;
                 gm.m.has_defense = MUSE_POT_HEALING;
+            }
+            nomore(MUSE_POT_BLOOD);
+            if (obj->otyp == POT_BLOOD && is_vampire(mtmp->data)) {
+                gm.m.defensive = obj;
+                gm.m.has_defense = MUSE_POT_BLOOD;
             }
         } else { /* Pestilence */
             nomore(MUSE_POT_FULL_HEALING);
@@ -1152,6 +1171,30 @@ use_defensive(struct monst *mtmp)
         }
         return 2;
     } 
+    case MUSE_COAT_ASHES: {
+        pline_mon(mtmp, "%s kicks ashes into your %s!", 
+                    Monnam(mtmp), body_part(FACE));
+        remove_coating(mtmp->mx, mtmp->my, COAT_ASHES);
+        make_blinded(rn1(5, 5), TRUE);
+        break;
+    }
+    case MUSE_COAT_BLOOD: {
+        if (canseemon(mtmp)) {
+            pline_mon(mtmp, "%s absorbs the blood on the floor!", Monnam(mtmp));
+        }
+        if (touch_petrifies(&mons[levl[mtmp->mx][mtmp->my].pindex])) {
+            if (canseemon(mtmp)) pline_mon(mtmp, "%s turns to stone!", Monnam(mtmp));
+            monstone(mtmp);
+        } else {
+            mtmp->mhp += d(6, 4); /* inconsistent number, but 4d4 is too small. */
+            if (mtmp->mhp > mtmp->mhpmax)
+                mtmp->mhp = ++mtmp->mhpmax;
+            if (canseemon(mtmp))
+                pline_mon(mtmp, "%s looks better.", Monnam(mtmp));
+        }
+        remove_coating(mtmp->mx, mtmp->my, COAT_BLOOD);
+        break;
+    }
     case MUSE_TELEPORT_TRAP:
         m_flee(mtmp);
         t = t_at(gt.trapx, gt.trapy);
@@ -1174,6 +1217,7 @@ use_defensive(struct monst *mtmp)
         m_tele(mtmp, vismon, FALSE, 0);
         return 2;
     case MUSE_POT_HEALING:
+    case MUSE_POT_BLOOD:
         mquaffmsg(mtmp, otmp);
         i = d(6 + 2 * bcsign(otmp), 4);
         mtmp->mhp += i;
@@ -1184,8 +1228,12 @@ use_defensive(struct monst *mtmp)
         if (vismon)
             pline_mon(mtmp, "%s looks better.", Monnam(mtmp));
         if (oseen)
-            makeknown(POT_HEALING);
+            makeknown(otmp->otyp);
         m_useup(mtmp, otmp);
+        if (otmp->otyp == POT_BLOOD && touch_petrifies(&mons[otmp->corpsenm])) {
+            if (canseemon(mtmp)) pline_mon(mtmp, "%s turns to stone!", Monnam(mtmp));
+            monstone(mtmp);
+        }
         return 2;
     case MUSE_POT_EXTRA_HEALING:
         mquaffmsg(mtmp, otmp);
@@ -1261,7 +1309,7 @@ rnd_defensive_item(struct monst *mtmp)
     case 2:
         return SCR_CREATE_MONSTER;
     case 3:
-        return POT_HEALING;
+        return is_vampire(mtmp->data) ? POT_BLOOD : POT_HEALING;
     case 4:
         return POT_EXTRA_HEALING;
     case 5:
@@ -2711,6 +2759,8 @@ searches_for_item(struct monst *mon, struct obj *obj)
             || typ == POT_SLEEPING || typ == POT_ACID || typ == POT_CONFUSION)
             return TRUE;
         if (typ == POT_BLINDNESS && !attacktype(mon->data, AT_GAZE))
+            return TRUE;
+        if (typ == POT_BLOOD && is_vampire(mon->data))
             return TRUE;
         break;
     case SCROLL_CLASS:

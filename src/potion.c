@@ -712,7 +712,13 @@ peffect_hallucination(struct obj *otmp)
 
 staticfn void
 peffect_blood(struct obj *otmp) {
-    pline("Yech! This tastes like blood!");
+    if (is_vampire(gy.youmonst.data)) {
+        You_feel("better.");
+        healup(8 + d(4 + 2 * bcsign(otmp), 4), !otmp->cursed ? 1 : 0,
+           !!otmp->blessed, !otmp->cursed);
+    } else {
+        pline("Yech! This tastes like blood!");
+    }
     if (ismnum(otmp->corpsenm)) {
         cprefx(otmp->corpsenm);
         cpostfx(otmp->corpsenm);
