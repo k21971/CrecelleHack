@@ -2202,6 +2202,7 @@ domove_fight_empty(coordxy x, coordxy y)
 {
     static const char unknown_obstacle[] = "an unknown obstacle";
     boolean off_edge = !isok(x, y);
+    boolean grass = FALSE;
     int glyph = !off_edge ? glyph_at(x, y) : GLYPH_UNEXPLORED;
 
     if (off_edge)
@@ -2282,6 +2283,11 @@ domove_fight_empty(coordxy x, coordxy y)
             /* note: 'solid' is misleadingly named and catches pools
                of water and lava as well as rock and walls;
                3.7: furniture too */
+        } else if (!solid && uwep && (is_sword(uwep) || is_axe(uwep)) 
+                    && has_coating(x, y, COAT_GRASS)) {
+            Strcpy(buf, "the grass");
+            grass = TRUE;
+            remove_coating(x, y, COAT_GRASS);
         } else {
             Strcpy(buf, "thin air");
         }
@@ -2289,7 +2295,7 @@ domove_fight_empty(coordxy x, coordxy y)
  futile:
         You("%s%s %s.",
             !(boulder || solid) ? "" : !explo ? "harmlessly " : "futilely ",
-            explo ? "explode at" : "attack", buf);
+            explo ? "explode at" : grass ? "cut" : "attack", buf);
 
         nomul(0);
         if (explo) {

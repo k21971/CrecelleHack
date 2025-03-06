@@ -1676,6 +1676,7 @@ remove_coating(coordxy x, coordxy y, unsigned char coatflags) {
     levl[x][y].coat_info &= ~coatflags;
     if ((coatflags & COAT_POTION) != 0 || (coatflags & COAT_BLOOD) != 0)
         levl[x][y].pindex = 0;
+    newsym(x, y);
     return TRUE;
 }
 
