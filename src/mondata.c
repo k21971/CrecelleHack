@@ -1356,6 +1356,7 @@ on_fire(struct permonst *mptr, struct attack *mattk)
     case PM_EARTH_ELEMENTAL:
     case PM_DUST_VORTEX:
     case PM_ENERGY_VORTEX:
+    case PM_BLACK_HOLE:
         what = "heating up";
         break;
     default:
@@ -1403,6 +1404,7 @@ msummon_environ(struct permonst *mptr, const char **cloud)
         *cloud = "ball"; /* "ball of flame" instead of "cloud of..." */
         what = "flame";
         break;
+    case PM_BLACK_HOLE:
     case PM_ANGEL: /* actually any 'A'-class */
     case PM_YELLOW_LIGHT: /* any 'y'-class */
         *cloud = "flash"; /* "flash of light" instead of "cloud of..." */

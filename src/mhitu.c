@@ -1510,6 +1510,11 @@ gulpmu(struct monst *mtmp, struct attack *mattk)
             drain_en(tmp, FALSE);
         tmp = 0;
         break;
+    case AD_TLPT:
+        expels(mtmp, mtmp->data, FALSE);
+        tele();
+        tmp = 0;
+        break;
     default:
         physical_damage = TRUE;
         tmp = 0;

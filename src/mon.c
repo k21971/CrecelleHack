@@ -772,6 +772,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_PONY: case PM_HORSE: case PM_WARHORSE:
     case PM_FOG_CLOUD: case PM_DUST_VORTEX: case PM_ICE_VORTEX:
     case PM_ENERGY_VORTEX: case PM_STEAM_VORTEX: case PM_FIRE_VORTEX:
+    case PM_BLACK_HOLE:
 
     case PM_BABY_LONG_WORM: case PM_BABY_PURPLE_WORM:
     case PM_PURPLE_WORM:
@@ -1849,7 +1850,8 @@ mpickstuff(struct monst *mtmp)
         /* Nymphs take everything.  Most monsters don't pick up corpses. */
         if (mon_would_take_item(mtmp, otmp)) {
 
-            if (otmp->otyp == CORPSE && mtmp->data->mlet != S_NYMPH
+            if (otmp->otyp == CORPSE && mtmp->data->mlet != S_NYMPH 
+                && mtmp->data != &mons[PM_BLACK_HOLE]
                 /* let a handful of corpse types thru to can_carry() */
                 && !touch_petrifies(&mons[otmp->corpsenm])
                 && otmp->corpsenm != PM_LIZARD
@@ -1875,12 +1877,17 @@ mpickstuff(struct monst *mtmp)
                     pline_mon(mtmp, "%s picks up %s.",
                               Monnam(mtmp), otmpname);
             }
-            obj_extract_self(otmp3);      /* remove from floor */
-            (void) mpickobj(mtmp, otmp3); /* may merge and free otmp3 */
-            /* let them try to equip it on the next turn */
-            check_gear_next_turn(mtmp);
-            newsym(mtmp->mx, mtmp->my);
-            return TRUE; /* pick only one object */
+            if (mtmp->data == &mons[PM_BLACK_HOLE]) {
+                (void) rloco(otmp);
+                return TRUE;
+            } else {
+                obj_extract_self(otmp3);      /* remove from floor */
+                (void) mpickobj(mtmp, otmp3); /* may merge and free otmp3 */
+                /* let them try to equip it on the next turn */
+                check_gear_next_turn(mtmp);
+                newsym(mtmp->mx, mtmp->my);
+                return TRUE; /* pick only one object */
+            }
         }
     }
     return FALSE;

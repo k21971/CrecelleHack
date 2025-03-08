@@ -1162,6 +1162,16 @@
             | M1_MINDLESS | M1_UNSOLID,
         M2_HOSTILE | M2_NEUTER, M3_INFRAVISIBLE,
         10, CLR_YELLOW, FIRE_VORTEX),
+    MON(NAM("black hole"), S_VORTEX,
+        LVL(9, 22, 2, 30, 0), (G_GENO | G_NOCORPSE | 1),
+        A(ATTK(AT_ENGL, AD_DREN, 2, 6), ATTK(AT_ENGL, AD_TLPT, 1, 6), 
+          ATTK(AT_NONE, AD_COLD, 0, 4), NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(0, 0, MS_SILENT, MZ_HUGE),
+        MR_ELEC | MR_SLEEP | MR_DISINT | MR_POISON | MR_STONE, 0,
+        M1_FLY | M1_BREATHLESS | M1_NOEYES | M1_NOLIMBS | M1_NOHEAD
+            | M1_MINDLESS | M1_UNSOLID | M1_TPORT,
+        M2_HOSTILE | M2_NEUTER | M2_COLLECT | M2_MAGIC, 0,
+        9, CLR_BLACK, BLACK_HOLE),
     /*
      * worms
      */

@@ -90,7 +90,7 @@
 - Mascaron (g)
   - Stunning gaze. Spawns in groups.
   - Peaceful, but turns hostile if alignment is abused.
-- NGravitric Sphere (e)
+- Gravitric Sphere (e)
   - Explosion reduces HP by 1/2.
   - Does not generate randomly.
 - Illusion ( )
@@ -107,6 +107,9 @@
 - Blood Golem (')
   - Leaves behind a trail of blood.
   - Explodes into blood when destroyed.
+- Black Hole (v)
+  - Teleports upon engulfing.
+  - Teleports items when picking them up.
 
 
 ## Monster AI
