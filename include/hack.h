@@ -1296,6 +1296,9 @@ typedef uint32_t mmflags_nht;     /* makemon MM_ flags */
 #define MMOVE_DONE    3 /* monster used up all actions */
 #define MMOVE_NOMOVES 4 /* monster has no valid locations to move to */
 
+/* dungeon growth freq */
+#define DUN_GROWTH_FREQ 50
+
 /*** some utility macros ***/
 #define y_n(query) yn_function(query, ynchars, 'n', TRUE)
 #define ynq(query) yn_function(query, ynqchars, 'q', TRUE)

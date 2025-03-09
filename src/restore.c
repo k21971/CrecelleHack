@@ -1241,10 +1241,48 @@ getlev(NHFILE *nhfp, int pid, xint8 lev)
     relink_timers(ghostly);
     relink_light_sources(ghostly);
     reset_oattached_mids(ghostly);
+    
+    /* time is passing... */
+    grow_dungeon(elapsed);
 
     if (ghostly)
         clear_id_mapping();
     program_state.in_getlev = FALSE;
+}
+
+/* advance dungeon state - grow grass, etc. */
+void
+grow_dungeon(long elapsed) {
+    int x, y;
+    coord cc;
+    while (elapsed -= DUN_GROWTH_FREQ > 0) {
+        x = rn2(COLNO);
+        y = rn2(ROWNO);
+        if (!isok(x, y)) {
+            continue;
+        }
+        if (has_coating(x, y, COAT_GRASS) ||
+            IS_TREE(levl[x][y].typ)) {
+            /* grow grass */
+            enexto(&cc, x, y, &mons[PM_GRID_BUG]); /* technically any land-dwelling monster is good */
+            if (IS_TREE(levl[x][y].typ) &&
+                levl[cc.x][cc.y].typ == ROOM) {
+                levl[cc.x][cc.y].typ = TREE;
+                levl[cc.x][cc.y].flags |= TREE_LOOTED;
+                newsym(cc.x, cc.y);
+                if (cansee(cc.x, cc.y)) pline_xy(cc.x, cc.y, "You see a sapling sprout.");
+            }
+            if (has_coating(x, y, COAT_GRASS) 
+                && !has_coating(cc.x, cc.y, COAT_GRASS)
+                && add_coating(cc.x, cc.y, COAT_GRASS, 0)) {
+                if (cansee(cc.x, cc.y)) pline_xy(cc.x, cc.y, "You see some grass grow.");
+            }
+        }
+        if (has_coating(x, y, COAT_POTION)) {
+            remove_coating(x, y, COAT_POTION);
+            if (cansee(x, y)) pline_xy(x, y, "You see some liquid evaporate.");
+        }
+    }
 }
 
 /* "name-role-race-gend-algn" occurs very early in a save file; sometimes we
