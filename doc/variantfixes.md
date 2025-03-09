@@ -1,20 +1,25 @@
 # 1.0
+
 ## System Changes
+
 ### Reflection
 - Reflection does not reflect rays directly back at
   the one that fired them. Instead, the rays bounce off at a ninety degree
   angle. As a consequence, reflection no longer instantly kills Medusa.
+
 ### Blessing Objects
 - Holy water does not bless objects.
 - Objects can be blessed by paying a priest between 50 and 200 times
   one's level.
 
 ## Attributes
+
 ### General
 - Dexterity contributes to AC.
 - Strength is normally the sole contributor to to-hit.
 
 ## Artifacts
+
 ### Type Randomization
 - Many artifacts have semi-randomized object types.
   - The randomized object type must have a similar damage
@@ -23,6 +28,7 @@
   - The brands are always the same type.
 
 ## Armor
+
 ### MC
 - MC: Chance of cancelling a special effect.
   - Every piece of armor adds some amount of magic cancellation.
@@ -33,6 +39,7 @@
 - MC is displayed on the status line as a percentage.
 
 ## Weapons
+
 ### Finesse Weapons
 - Some weapons are "finesse weapons." To-hit bonuses with
   finesse weapons are determined based on strength or
@@ -40,6 +47,7 @@
 - Some weapons have a speed bonus or a speed penalty.
   - Generally, orc weapons are faster, elven weapons deal more damage,
     and dwarvish weapons deal more damage but are slower.
+
 ### To-Hit Changes
 - As in dNetHack, d(1, Luck) is added to your to-hit instead
   of Luck.
@@ -62,15 +70,21 @@
   various ways, to various effects. Have fun!
 
 # Roles and Races
+
 ### General
 - Roles are not restricted by race, with the exception of
   tourists (always human).
+
 ### Knights
 - Knights receive a different mount depending on race.
   Orcs: Warg
   Elves: Jaguar
 
 ## Monsters
+
+### General
+- Dogs and large dogs now have breed names attached to their names.
+
 ### Unique Monsters
 - Dispater uses the trickster monster spell list, making him likely
   to both disguise himself and summon illusory duplicates.
@@ -78,8 +92,10 @@
   by liches.
 - In the course of dungeon exploration, one may encounter unique monsters.
   Further details about these monsters are detailed in uniquefixes.txt.
+
 ### Mounts
 - The following monster classes are now valid mounts: f, d
+
 ### New Monsters
 - Poltergeist ( )
   - Does not approach, collects objects like a nypmph. Throws any and
@@ -113,25 +129,31 @@
 
 
 ## Monster AI
+
+### General
+- Incorporated Slash'Em's traitor system, but updated to 3.7.
+- Monsters will slather items with cans of grease if the player is
+  polymorphed into a relevant form.
+
 ### Elberething
 - Elves and princes can engrave Elbereth to ward off the player.
   - TODO: Forbid ranged attacks while on Elbereth?
   - TODO: Intentionally break Elbereth when player hp is low?
   - TODO: Elbereth vanishment?
+
 ### Pathfinding
 - Some monsters will avoid following the player into chokepoints.
 - Monsters will only flee from the player if they could conceivably
   outrun them.
-### General
-- Incorporated Slash'Em's traitor system, but updated to 3.7.
-- Monsters will slather items with cans of grease if the player is
-  polymorphed into a relevant form.
+
 ## Spellcasting
+
+## Monster Spells
 - Different monsters have different spell lists.
 - Many existing spells take advantage of the floor coating system.
 - Cure self now heals additional hp for high-level monsters.
 
-## Monster Spells
+## New Monster Spells
 - Grease
   - Makes the player's hands greasy.
   - Distributes oil on nearby squares.
@@ -149,26 +171,20 @@
   - If at low hp, warps to stairs as a covetous monster might.
 
 ## Objects
+
 ### General
 - Renamed Scroll of Genocide to Scroll of Erasure.
-### New Object: Potions of Blood
-- Function similarly to potions of blood from dnethack, although
-  the implementation is different.
-### Potions of Water
-- Potions of water are considered inert and do not polymorph.
+- Quarterstaves can be wielded in dual weapon mode.
 - Potions leave behind empty bottles when drunk. These bottles
   can be refilled with water at fountains, sinks, and other
   locations.
+- Potions of water are considered inert and do not polymorph.
 - Potions of holy water deal much more damage to demons.
-### Door and Chest Keys
-- Keys are now split into door keys and chest keys, both of
-  which must be identified.
-- Rogues automatically know the difference between door and chest
-  keys.
-- Unlocking tools now stack and are destroyed after use.
-### Quarterstaves
-- Quarterstaves can be wielded in dual weapon mode.
-### New Weapons
+
+### New Objects
+- Potion of blood
+  - Function similarly to potions of blood from dnethack, although
+    the implementation is different.
 - Shepherd's Crook
   - Similar to a quarterstaff.
   - Can be used for tripping purposes.
@@ -179,7 +195,16 @@
 - Two-Bladed Sword
 - Dual Axe
 
+### Door and Chest Keys
+- Keys are now split into door keys and chest keys, both of
+  which must be identified.
+- Rogues automatically know the difference between door and chest
+  keys.
+- Unlocking tools now stack and are destroyed after use.
+
+
 ## Commands
+
 ### trip: Trip a monster.
 - Tripping traditionally uses one's lower body, but polearms,
   whips, and flails can be used to trip as well.
@@ -187,10 +212,12 @@
   to a different location, AC and to-hit are reduced.
 - Select monsters or monsters wielding tripping weapons will
   sometimes attempt to trip the player.
+
 ### taunt: Taunt nearby monsters.
 - Wastes a few turns and wakes up nearby monsters.
 - A custom taunt can be defined in the options file. Custom taunts
   are prepended by the word "You" when used in game.
+
 ### twoweapon
 - can be used to attack with both ends of a double-headed
   weapon, such as a quarterstaff, two-bladed sword, or dual axe.
