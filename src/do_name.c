@@ -773,6 +773,13 @@ rndghostname(void)
                   : (const char *) svp.plname;
 }
 
+static const char *const dog_breeds[] = {
+    "hound",      "sheepdog",  "doberman",    "husky",
+    "mastiff",    "wolfhound", "bulldog",     "bloodhound",
+    "great dane", "samoyed",   "malamute",    "pit bull",
+    "poodle",     "labrador",   "rottweiler", "basset hound",
+};
+
 /*
  * Monster naming functions:
  * x_monnam is the generic monster-naming function.
@@ -902,7 +909,10 @@ x_monnam(
     }
 
     /* 'pm_name' is the base part of most names */
-    if (do_mappear) {
+    if (mtmp->data == &mons[PM_DOG] || mtmp->data == &mons[PM_LARGE_DOG]) {
+        if (mtmp->data == &mons[PM_LARGE_DOG]) strcat(buf, "large ");
+        pm_name = dog_breeds[mtmp->m_id % SIZE(dog_breeds)];
+    } else if (do_mappear) {
         /*assert(ismnum(mtmp->mappearance));*/
         pm_name = pmname(&mons[mtmp->mappearance], Mgender(mtmp));
     } else {
