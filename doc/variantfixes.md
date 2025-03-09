@@ -1,23 +1,5 @@
 # 1.0
 
-## System Changes
-
-### Reflection
-- Reflection does not reflect rays directly back at
-  the one that fired them. Instead, the rays bounce off at a ninety degree
-  angle. As a consequence, reflection no longer instantly kills Medusa.
-
-### Blessing Objects
-- Holy water does not bless objects.
-- Objects can be blessed by paying a priest between 50 and 200 times
-  one's level.
-
-## Attributes
-
-### General
-- Dexterity contributes to AC.
-- Strength is normally the sole contributor to to-hit.
-
 ## Artifacts
 
 ### Type Randomization
@@ -27,58 +9,33 @@
     Sunsword cannot be a mace.
   - The brands are always the same type.
 
-## Armor
+## Commands
 
-### MC
-- MC: Chance of cancelling a special effect.
-  - Every piece of armor adds some amount of magic cancellation.
-  - Maxes out at 90%.
-  - Each point of enchantment reduces the MC of that piece of equipment by 1%.
+### \#trip: Trip a monster.
+- Tripping traditionally uses one's lower body, but polearms,
+  whips, and flails can be used to trip as well.
+- Being tripped puts one into a downed state. Until one moves
+  to a different location, AC and to-hit are reduced.
+- Select monsters or monsters wielding tripping weapons will
+  sometimes attempt to trip the player.
 
-## GUI
-- MC is displayed on the status line as a percentage.
+### \#taunt: Taunt nearby monsters.
+- Wastes a few turns and wakes up nearby monsters.
+- A custom taunt can be defined in the options file. Custom taunts
+  are prepended by the word "You" when used in game.
 
-## Weapons
-
-### Finesse Weapons
-- Some weapons are "finesse weapons." To-hit bonuses with
-  finesse weapons are determined based on strength or
-  dexterity, whichever is higher.
-- Some weapons have a speed bonus or a speed penalty.
-  - Generally, orc weapons are faster, elven weapons deal more damage,
-    and dwarvish weapons deal more damage but are slower.
-
-### To-Hit Changes
-- As in dNetHack, d(1, Luck) is added to your to-hit instead
-  of Luck.
-- New To-Hit bonuses:
-  Restricted: -2
-  Unskilled: 0
-  Basic: +1
-  Skilled: +2
-  Expert +3
-- New Damage bonuses:
-  Restricted: -2
-  Unskilled: 0
-  Basic: +1
-  Skilled: +2
-  Expert: +3
+### \#twoweapon
+- can be used to attack with both ends of a double-headed
+  weapon, such as a quarterstaff, two-bladed sword, or dual axe.
 
 ## Floor Coating System
 - Floors can be coated with various substances, such as potions, grass,
-  blood, and more. All of these coatings can be interacted with in
-  various ways, to various effects. Have fun!
+  blood, and more.
+- All of these coatings can be interacted with in various ways, to
+  various effects. Have fun!
 
-# Roles and Races
-
-### General
-- Roles are not restricted by race, with the exception of
-  tourists (always human).
-
-### Knights
-- Knights receive a different mount depending on race.
-  Orcs: Warg
-  Elves: Jaguar
+## GUI
+- MC is displayed on the status line as a percentage.
 
 ## Monsters
 
@@ -95,6 +52,28 @@
 
 ### Mounts
 - The following monster classes are now valid mounts: f, d
+
+### Monster Spells
+- Different monsters have different spell lists.
+- Many existing spells take advantage of the floor coating system.
+- Cure self now heals additional hp for high-level monsters.
+
+### New Monster Spells
+- Grease
+  - Makes the player's hands greasy.
+  - Distributes oil on nearby squares.
+- Sleep
+  - Puts the player to sleep.
+- Raise Dead
+  - Raises dead monsters in player's inventory.
+  - Summons undead.
+- Gravity
+  - Summons gravity spheres.
+- Mirror Image
+  - Creates multiple illusions of the caster.
+- Teleport
+  - Teleports the caster next to the player.
+  - If at low hp, warps to stairs as a covetous monster might.
 
 ### New Monsters
 - Poltergeist ( )
@@ -125,8 +104,7 @@
   - Explodes into blood when destroyed.
 - Black Hole (v)
   - Teleports upon engulfing.
-  - Teleports items when picking them up.
-
+  - Teleports items when picking them up
 
 ## Monster AI
 
@@ -146,30 +124,6 @@
 - Monsters will only flee from the player if they could conceivably
   outrun them.
 
-## Spellcasting
-
-## Monster Spells
-- Different monsters have different spell lists.
-- Many existing spells take advantage of the floor coating system.
-- Cure self now heals additional hp for high-level monsters.
-
-## New Monster Spells
-- Grease
-  - Makes the player's hands greasy.
-  - Distributes oil on nearby squares.
-- Sleep
-  - Puts the player to sleep.
-- Raise Dead
-  - Raises dead monsters in player's inventory.
-  - Summons undead.
-- Gravity
-  - Summons gravity spheres.
-- Mirror Image
-  - Creates multiple illusions of the caster.
-- Teleport
-  - Teleports the caster next to the player.
-  - If at low hp, warps to stairs as a covetous monster might.
-
 ## Objects
 
 ### General
@@ -180,6 +134,20 @@
   locations.
 - Potions of water are considered inert and do not polymorph.
 - Potions of holy water deal much more damage to demons.
+
+### Armor
+- MC: Chance of cancelling a special effect.
+  - Every piece of armor adds some amount of magic cancellation.
+  - Maxes out at 90%.
+  - Each point of enchantment reduces the MC of that piece of equipment by 1%.
+
+### Weapons
+- Some weapons are "finesse weapons." To-hit bonuses with
+  finesse weapons are determined based on strength or
+  dexterity, whichever is higher.
+- Some weapons have a speed bonus or a speed penalty.
+  - Generally, orc weapons are faster, elven weapons deal more damage,
+    and dwarvish weapons deal more damage but are slower.
 
 ### New Objects
 - Potion of blood
@@ -202,22 +170,37 @@
   keys.
 - Unlocking tools now stack and are destroyed after use.
 
+## Roles and Races
 
-## Commands
+### General
+- Roles are not restricted by race, with the exception of
+  tourists (always human).
 
-### trip: Trip a monster.
-- Tripping traditionally uses one's lower body, but polearms,
-  whips, and flails can be used to trip as well.
-- Being tripped puts one into a downed state. Until one moves
-  to a different location, AC and to-hit are reduced.
-- Select monsters or monsters wielding tripping weapons will
-  sometimes attempt to trip the player.
+### Knights
+- Knights receive a different mount depending on race.
+  Orcs: Warg
+  Elves: Jaguar
 
-### taunt: Taunt nearby monsters.
-- Wastes a few turns and wakes up nearby monsters.
-- A custom taunt can be defined in the options file. Custom taunts
-  are prepended by the word "You" when used in game.
+## System Changes
 
-### twoweapon
-- can be used to attack with both ends of a double-headed
-  weapon, such as a quarterstaff, two-bladed sword, or dual axe.
+### Attributes
+- Dexterity contributes to AC.
+- Strength is normally the sole contributor to to-hit.
+
+### Blessing Objects
+- Holy water does not bless objects.
+- Objects can be blessed by paying a priest between 50 and 200 times
+  one's level.
+
+### Reflection
+- Reflection does not reflect rays directly back at
+  the one that fired them. Instead, the rays bounce off at a ninety degree
+  angle. As a consequence, reflection no longer instantly kills Medusa.
+
+### To-Hit Changes
+- As in dNetHack, d(1, Luck) is added to your to-hit instead
+  of Luck.
+- New To-Hit bonuses: Restricted: -2 Unskilled: 0 Basic: +1 Skilled: +2
+  Expert +3
+- New Damage bonuses: Restricted: -2 Unskilled: 0 Basic: +1 Skilled: +2
+  Expert: +3
