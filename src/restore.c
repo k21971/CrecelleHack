@@ -1243,7 +1243,7 @@ getlev(NHFILE *nhfp, int pid, xint8 lev)
     reset_oattached_mids(ghostly);
     
     /* time is passing... */
-    grow_dungeon(elapsed);
+    //grow_dungeon(elapsed);
 
     if (ghostly)
         clear_id_mapping();
@@ -1255,10 +1255,11 @@ void
 grow_dungeon(long elapsed) {
     int x, y;
     coord cc;
-    while (elapsed -= DUN_GROWTH_FREQ > 0) {
+    while (elapsed > 0) {
         x = rn2(COLNO);
         y = rn2(ROWNO);
         if (!isok(x, y)) {
+            elapsed -= DUN_GROWTH_FREQ;
             continue;
         }
         if (has_coating(x, y, COAT_GRASS) ||
@@ -1282,6 +1283,7 @@ grow_dungeon(long elapsed) {
             remove_coating(x, y, COAT_POTION);
             if (cansee(x, y)) pline_xy(x, y, "You see some liquid evaporate.");
         }
+        elapsed -= DUN_GROWTH_FREQ;
     }
 }
 
