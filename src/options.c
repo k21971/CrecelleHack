@@ -398,6 +398,20 @@ staticfn int wc_set_window_colors(char *);
 staticfn boolean illegal_menu_cmd_key(uchar);
 staticfn const char *term_for_boolean(int, boolean *);
 
+static const char *const tutorial_yeahs[] = {
+    "Yeah, help me out",
+    "Yeah, I've got time",
+    "Yes, do a tutorial",
+    "Ys, assuage my variant paranoia",
+};
+
+static const char *const tutorial_nos[] = {
+    "Nah, let's rock",
+    "Nah, let's roll",
+    "No, surprise me",
+    "No, just start"
+};
+
 /* ask user if they want a tutorial, except if tutorial boolean option has
    been set in config - either on or off - in which case just obey that
    setting without asking */
@@ -427,18 +441,18 @@ ask_do_tutorial(void)
             any.a_char = 'y';
             add_menu(win, &nul_glyphinfo, &any, any.a_char, 0,
                      ATR_NONE, NO_COLOR,
-                     "Yes, do a tutorial", MENU_ITEMFLAGS_NONE);
+                     ROLL_FROM(tutorial_yeahs), MENU_ITEMFLAGS_NONE);
             any.a_char = 'n';
             add_menu(win, &nul_glyphinfo, &any, any.a_char, 0,
                      ATR_NONE, NO_COLOR,
-                     "No, just start play", MENU_ITEMFLAGS_NONE);
+                     ROLL_FROM(tutorial_nos), MENU_ITEMFLAGS_NONE);
 
             add_menu_str(win, "");
             add_menu_str(win, buf);
             if (pass++) /* we'll get here after <space> or <return> */
                 add_menu_str(win, "(Please choose 'y' or 'n'.)");
 
-            end_menu(win, "Do you want a tutorial?");
+            end_menu(win, "Do you want a quick introduction to this variant?");
 
             n = select_menu(win, PICK_ONE, &sel);
             destroy_nhwindow(win);
@@ -7167,7 +7181,7 @@ initoptions_init(void)
 /*
  *  Process user's run-time configuration file:
  *    get value of NETHACKOPTIONS;
- *    if command line specified -nethackrc=filename, use that;
+ *    if command line specified -crecellehackrc=filename, use that;
  *      if NETHACKOPTIONS is present,
  *        honor it if it has a list of options to set
  *        or ignore it if it specifies a file name;
@@ -7176,7 +7190,7 @@ initoptions_init(void)
  *      no extra options (normal use of NETHACKOPTIONS) will be set;
  *    otherwise (not on command line and either no NETHACKOPTIONS or that
  *        isn't a file name),
- *      pass Null to read_config_file() so that it will read ~/.nethackrc
+ *      pass Null to read_config_file() so that it will read ~/.crecellehackrc
  *        by default,
  *      then process the value of NETHACKOPTIONS as extra options.
  */
@@ -7227,10 +7241,10 @@ initoptions_finish(void)
         go.opt_phase = rc_file_opt;
         config_error_init(TRUE, namesrc, FALSE);
         config_error_add(
-                   "nethackrc file name \"%.40s\"... too long; using default",
+                   "crecellehackrc file name \"%.40s\"... too long; using default",
                          nameval);
         config_error_done();
-        nameval = namesrc = 0; /* revert to default nethackrc */
+        nameval = namesrc = 0; /* revert to default crecellehackrc */
     }
 
     config_error_init(TRUE, nameval, nameval ? CONFIG_ERROR_SECURE : FALSE);
@@ -7246,7 +7260,7 @@ initoptions_finish(void)
 
     if (gc.cmdline_rcfile)
         free((genericptr_t) gc.cmdline_rcfile), gc.cmdline_rcfile = 0;
-    /*[end of nethackrc handling]*/
+    /*[end of crecellehackrc handling]*/
 
     (void) fruitadd(svp.pl_fruit, (struct fruit *) 0);
     /*
