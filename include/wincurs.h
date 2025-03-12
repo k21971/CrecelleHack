@@ -20,9 +20,9 @@ extern WINDOW *activemenu;         /* curses window for menu requesting a
 #define ON 1
 #define NONE -1
 #define KEY_ESC 0x1b
-#define DIALOG_BORDER_COLOR CLR_MAGENTA
+#define DIALOG_BORDER_COLOR CLR_CYAN
 #define ALERT_BORDER_COLOR CLR_RED
-#define SCROLLBAR_COLOR CLR_MAGENTA
+#define SCROLLBAR_COLOR CLR_BRIGHT_CYAN
 #define SCROLLBAR_BACK_COLOR CLR_BLACK
 #define HIGHLIGHT_COLOR CLR_WHITE
 #define MORECOLOR CLR_ORANGE
