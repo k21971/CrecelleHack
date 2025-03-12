@@ -196,6 +196,7 @@ sanity_check_single_mon(
            on furniture, object, or monster shape, but only until the pet
            finishes eating a mimic corpse */
         if (!(is_mimic || mtmp->meating
+              || mtmp->data == &mons[PM_ILLUSION]
               || (mtmp->iswiz && M_AP_TYPE(mtmp) == M_AP_MONSTER)))
             impossible("non-mimic (%s) posing as %s (%s)",
                        mptr->pmnames[NEUTRAL], what, msg);
