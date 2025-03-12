@@ -164,11 +164,8 @@
 - Dual Axe
 
 ### Door and Chest Keys
-- Keys are now split into door keys and chest keys, both of
-  which must be identified.
-- Rogues automatically know the difference between door and chest
-  keys.
 - Unlocking tools now stack and are destroyed after use.
+- Lock picks stack.
 
 ## Roles and Races
 

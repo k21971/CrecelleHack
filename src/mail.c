@@ -476,7 +476,7 @@ readmail(struct obj *otmp UNUSED)
     static const char *const junk_templates[] = {
         "%sReport bugs to <%s>.%s", /*** must be first entry ***/
         "Please disregard previous letter.",
-        "Welcome to NetHack.",
+        "Welcome to CrecelleHack.",
 #ifdef AMIGA
         "Only Amiga makes it possible.",
         "CATS have all the answers.",

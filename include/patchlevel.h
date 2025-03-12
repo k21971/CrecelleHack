@@ -7,8 +7,8 @@
 #define PATCHLEVEL_H
 
 /* NetHack 3.7.x */
-#define VERSION_MAJOR 3
-#define VERSION_MINOR 7
+#define VERSION_MAJOR 1
+#define VERSION_MINOR 0
 /*
  * PATCHLEVEL is updated for each release.
  */
@@ -17,7 +17,7 @@
  * Incrementing EDITLEVEL can be used to force invalidation of old bones
  * and save files.
  */
-#define EDITLEVEL 114
+#define EDITLEVEL 0
 
 /*
  * Development status possibilities.
@@ -35,6 +35,9 @@
 #ifndef DEBUG  /* allow tool chains to define without causing warnings */
 #define DEBUG
 #endif
+
+#define VARIANT_BANNER_A "CrecelleHack, Copyright 2025 by Antigulp"
+#define VARIANT_BANNER_B "         Crecelle (n) - A rattle or ratchet. A child's toy."
 
 #define COPYRIGHT_BANNER_A "NetHack, Copyright 1985-2025"
 #define COPYRIGHT_BANNER_B \

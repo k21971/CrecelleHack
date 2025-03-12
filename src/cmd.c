@@ -1904,7 +1904,7 @@ struct ext_func_tab extcmdlist[] = {
               dovanquished,
               IFBURIED | AUTOCOMPLETE | GENERALCMD | CMD_M_PREFIX, NULL },
     { M('v'), "version",
-              "list compile time options for this version of NetHack",
+              "list compile time options for this version of CrecelleHack",
               doextversion, IFBURIED | AUTOCOMPLETE | GENERALCMD, NULL },
     { 'v',    "versionshort", "show version and date+time program was built",
               doversion, IFBURIED | GENERALCMD, NULL },

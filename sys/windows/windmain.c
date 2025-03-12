@@ -218,14 +218,14 @@ _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);*/
 #endif
 #endif
 
-    gh.hname = "NetHack"; /* used for syntax messages */
+    gh.hname = "CrecelleHack"; /* used for syntax messages */
 
 #if defined(CHDIR) && !defined(NOCWD_ASSUMPTIONS)
     /* Save current directory and make sure it gets restored when
      * the game is exited.
      */
     if (getcwd(orgdir, sizeof orgdir) == (char *) 0)
-        error("NetHack: current directory path too long");
+        error("CrecelleHack: current directory path too long");
 #endif
     initoptions_init(); // This allows OPTIONS in syscf on Windows.
     set_default_prefix_locations(argv[0]);
@@ -280,9 +280,10 @@ _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);*/
 
 #ifdef DLB
     if (!dlb_init()) {
-        pline("%s\n%s\n%s\n%s\n\n", copyright_banner_line(1),
+        pline("%s\n%s\n%s\n%s\n%s\n%s\n\n", copyright_banner_line(1),
               copyright_banner_line(2), copyright_banner_line(3),
-              copyright_banner_line(4));
+              copyright_banner_line(4), copyright_banner_line(5),
+              copyright_banner_line(6));
         pline("NetHack was unable to open the required file \"%s\"", DLBFILE);
         if (file_exists(DLBFILE))
             pline("\nAre you perhaps trying to run NetHack within a zip "
@@ -1017,7 +1018,7 @@ copy_config_content(void)
                 gf.fqn_prefix[DATAPREFIX], CONFIG_TEMPLATE, FALSE);
 
     /* If the required early game file does not exist, copy it */
-    /* NOTE: We never replace .nethackrc or sysconf */
+    /* NOTE: We never replace .crecellehackrc or sysconf */
     copy_file(gf.fqn_prefix[CONFIGPREFIX], CONFIG_FILE,
               gf.fqn_prefix[DATAPREFIX], CONFIG_TEMPLATE, FALSE);
 }

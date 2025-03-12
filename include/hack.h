@@ -1528,8 +1528,8 @@ typedef uint32_t mmflags_nht;     /* makemon MM_ flags */
 
 #define SIG_RET_TYPE void (*)(int)
 
-#define DEVTEAM_EMAIL "devteam@nethack.org"
-#define DEVTEAM_URL "https://www.nethack.org/"
+#define DEVTEAM_EMAIL "Antigulp"
+#define DEVTEAM_URL "https://www.github.com/nullcgt/crecellehack"
 
 #if !defined(CROSSCOMPILE) || defined(CROSSCOMPILE_TARGET)
 #include "nhlua.h"

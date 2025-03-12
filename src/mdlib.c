@@ -363,7 +363,7 @@ version_id_string(char *outbuf, size_t bufsz, const char *build_date)
     Strcpy(&subbuf[1], PORT_SUB_ID);
 #endif
 
-    Snprintf(outbuf, bufsz, "%s NetHack%s Version %s%s - last %s %s.",
+    Snprintf(outbuf, bufsz, "%s CrecelleHack%s Version %s%s - last %s %s.",
              PORT_ID, subbuf, mdlib_version_string(versbuf, "."), statusbuf,
              date_via_env ? "revision" : "build", build_date);
     return outbuf;

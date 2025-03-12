@@ -1412,6 +1412,8 @@ coat_floors(void)
 {
     for (int x = 0; x < COLNO; x++) {
         for (int y = 0; y < ROWNO; y++) {
+            if (!IS_ROOM(levl[x][y].typ))
+                continue;
             if (svl.level.flags.arboreal) add_coating(x, y, COAT_GRASS, 0);
             else if (Is_firelevel(&u.uz)) add_coating(x, y, COAT_ASHES, 0);
         }

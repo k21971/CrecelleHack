@@ -94,7 +94,7 @@ struct flag {
     /* mask bits for 'versinfo'; numeric order does not match display order
        which is "name branch number" */
 #define VI_NUMBER 1 /* x.y.z */
-#define VI_NAME   2 /* game's name (ie, "nethack") */
+#define VI_NAME   2 /* game's name (ie, "crecellehack") */
 #define VI_BRANCH 4 /* development branch (from git, via Makefile -CFLAGS) */
     int pickup_burden; /* maximum burden before prompt */
     int pile_limit;    /* controls feedback when walking over objects */

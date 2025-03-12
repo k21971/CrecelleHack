@@ -56,13 +56,13 @@ Executing NetHack on your machine
     reference the file as follows:
 
         From Windows cmd command prompt:
-        %USERPROFILE%\nethack\.nethackrc
+        %USERPROFILE%\nethack\.crecellehackrc
 
         From Windows powershell:
-        $env:USERPROFILE\nethack\.nethackrc
+        $env:USERPROFILE\nethack\.crecellehackrc
 
         From MSYS2 bash shell:
-        $USERPROFILE/nethack/.nethackrc
+        $USERPROFILE/nethack/.crecellehackrc
 
 
     If you want to see where NetHack expects to find the other files it

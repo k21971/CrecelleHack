@@ -27,23 +27,22 @@ typedef struct nhrgb_type {
 /* Banners used for an optional ASCII splash screen */
 
 #define NETHACK_SPLASH_A \
-" _   _        _    _    _               _    "
+"  ,- _~.                        ,, ,,       _-_-                 ,,   "
 
 #define NETHACK_SPLASH_B \
-"| \\ | |      | |  | |  | |             | |   "
+" (' /|                          || ||         /,        _        ||   "
 
 #define NETHACK_SPLASH_C \
-"|  \\| |  ___ | |_ | |__| |  __ _   ___ | | __"
+"((  ||   ,._-_  _-_   _-_  _-_  || ||  _-_    || __    < \\,  _-_ ||/\\ "
 
 #define NETHACK_SPLASH_D \
-"| . ` | / _ \\| __||  __  | / _` | / __|| |/ /"
+"((  ||    ||   || \\\\ ||   || \\\\ || || || \\\\  ~||-  -   /-|| ||   ||_< "
 
 #define NETHACK_SPLASH_E \
-"| |\\  ||  __/| |_ | |  | || (_| || (__ |   < "
+" ( / |    ||   ||/   ||   ||/   || || ||/     ||===|| (( || ||   || | "
 
 #define NETHACK_SPLASH_F \
-"|_| \\_| \\___| \\__||_|  |_| \\__,_| \\___||_|\\_\\"
-
+"  -____-  \\\\,  \\\\,/  \\\\,/ \\\\,/  \\\\ \\\\ \\\\,/   ( \\_, |   \\/\\\\ \\\\,/ \\\\,\\"
 
 /* win* is size and placement of window to change, x/y/w/h is baseline
    which can decrease depending on alignment of win* in orientation.
@@ -814,7 +813,7 @@ curses_display_splash_window(void)
 
     if (iflags.wc_splash_screen) {
          if (iflags.wc2_guicolor)
-              curses_toggle_color_attr(stdscr, CLR_WHITE, A_NORMAL, ON);
+              curses_toggle_color_attr(stdscr, CLR_CYAN, A_NORMAL, ON);
         mvaddstr(y_start, x_start, NETHACK_SPLASH_A);
         mvaddstr(y_start + 1, x_start, NETHACK_SPLASH_B);
         mvaddstr(y_start + 2, x_start, NETHACK_SPLASH_C);
@@ -824,9 +823,9 @@ curses_display_splash_window(void)
         y_start += 7;
     }
     if (iflags.wc2_guicolor)
-         curses_toggle_color_attr(stdscr, CLR_WHITE, A_NORMAL, OFF);
+         curses_toggle_color_attr(stdscr, CLR_CYAN, A_NORMAL, OFF);
 
-    for (i = 1; i <= 4; ++i) {
+    for (i = 1; i <= 6; ++i) {
          mvaddstr(y_start, x_start, copyright_banner_line(i));
          y_start++;
     }

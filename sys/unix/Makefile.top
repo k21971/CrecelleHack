@@ -22,7 +22,7 @@ NHSROOT=.
 
 #	make NetHack (as opposite to variants or such)
 #PREFIX	 = /usr
-GAME     = nethack
+GAME     = crecellehack
 # GAME     = nethack.exe
 # GAME     = nethack.prg
 #GAMEUID  = games
@@ -299,9 +299,9 @@ dofiles:
 	cp util/recover $(INSTDIR)
 	-if test -n '$(SHELLDIR)'; then rm -f $(SHELLDIR)/$(GAME); fi
 	if test -n '$(SHELLDIR)'; then \
-		sed -e 's;/usr/games/lib/nethackdir;$(HACKDIR);' \
-		-e 's;HACKDIR/nethack;HACKDIR/$(GAME);' \
-		< sys/unix/nethack.sh \
+		sed -e 's;/usr/games/lib/crecellehackdir;$(HACKDIR);' \
+		-e 's;HACKDIR/crecellehack;HACKDIR/$(GAME);' \
+		< sys/unix/crecellehack.sh \
 		> $(SHELLDIR)/$(GAME) ; fi
 # set up their permissions
 	-( cd $(INSTDIR) ; $(CHOWN) $(GAMEUID) $(GAME) recover ; \

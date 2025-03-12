@@ -1067,7 +1067,7 @@ void NetHackQtMainWindow::doQuit(bool)
        the second choice (Quit) is the action for <return> or <space>;
        <escape> leaves the popup waiting for some other response;
        the &<char> settings for Alt+<char> shortcuts don't work on OSX */
-    int act = QMessageBox::information(this, "NetHack", info,
+    int act = QMessageBox::information(this, "CrecelleHack", info,
                                        "&Cancel and return to game",
                                        "&Quit without saving",
                                        0, 1);
@@ -1410,7 +1410,7 @@ void NetHackQtMainWindow::closeEvent(QCloseEvent *e UNUSED)
         /* this used to offer "Save" and "Cancel"
            but cancel (ignoring the close attempt) won't work
            if user has clicked on the window's Close button */
-	int act = QMessageBox::information(this, "NetHack",
+	int act = QMessageBox::information(this, "CrecelleHack",
                               "This will end your NetHack session.",
                               "&Save and exit", "&Quit without saving", 0, 1);
 	switch (act) {

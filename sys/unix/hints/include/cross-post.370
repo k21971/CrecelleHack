@@ -215,12 +215,12 @@ mipsrecover: $(TARGETPFX)recover
 .PHONY: mipspkg
 mipspkg: dodata $(GAMEBIN) $(TARGETPFX)recover
 	mkdir -p $(TARGETPFX)pkg
-	cp $(GAMEBIN) $(TARGETPFX)pkg/nethack
+	cp $(GAMEBIN) $(TARGETPFX)pkg/crecellehack
 	cp $(TARGETPFX)recover $(TARGETPFX)pkg/recover
 	cp ../dat/nhdat $(TARGETPFX)pkg/nhdat
 	cp ../dat/license $(TARGETPFX)pkg/license
 	cp ../dat/symbols $(TARGETPFX)pkg/symbols
-	cp ../sys/share/NetHack.cnf $(TARGETPFX)pkg/.nethackrc
+	cp ../sys/share/NetHack.cnf $(TARGETPFX)pkg/.crecellehackrc
 	cp ../sys/msdos/sysconf $(TARGETPFX)pkg/sysconf
 	cp ../doc/nethack.txt $(TARGETPFX)pkg/nethack.txt
 	-touch $(TARGETPFX)pkg/record

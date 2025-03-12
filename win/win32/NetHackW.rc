@@ -128,7 +128,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_CAPTION | WS_SYSMENU
 CAPTION "About"
 FONT 8, "System"
 BEGIN
-    LTEXT           "NetHack",IDC_ABOUT_VERSION,10,10,170,15,SS_NOPREFIX
+    LTEXT           "CrecelleHack",IDC_ABOUT_VERSION,10,10,170,15,SS_NOPREFIX
     LTEXT           "Copyright",IDC_ABOUT_COPYRIGHT,10,30,210,40
     DEFPUSHBUTTON   "OK",IDOK,195,6,30,11,WS_GROUP
 END
@@ -206,7 +206,7 @@ END
 
 IDD_SPLASH DIALOG 0, 0, 281, 257
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Welcome to NetHack"
+CAPTION "Welcome to CrecelleHack"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,224,236,50,14
@@ -356,7 +356,7 @@ BEGIN
             VALUE "LegalCopyright", "Copyright (C) 1985 - 2021.  By Stichting Mathematisch Centrum and M. Stephenson.  See license for details."
             VALUE "OriginalFilename", "NetHackW.exe"
             VALUE "PrivateBuild", "140606"
-            VALUE "ProductName", "NetHack"
+            VALUE "ProductName", "CrecelleHack"
             VALUE "ProductVersion", "3.7.0"
         END
     END

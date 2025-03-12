@@ -1588,9 +1588,9 @@ X11_init_nhwindows(int *argcp, char **argv)
 
     num_args = 0;
     XtSetArg(args[num_args], XtNallowShellResize, True); num_args++;
-    XtSetArg(args[num_args], XtNtitle, "NetHack"); num_args++;
+    XtSetArg(args[num_args], XtNtitle, "CrecelleHack"); num_args++;
 
-    toplevel = XtAppInitialize(&app_context, "NetHack",     /* application  */
+    toplevel = XtAppInitialize(&app_context, "CrecelleHack",     /* application  */
                                (XrmOptionDescList) 0, 0,    /* options list */
                                argcp, (String *) argv,      /* command line */
                                default_resource_data, /* fallback resources */
@@ -1649,7 +1649,7 @@ X11_init_nhwindows(int *argcp, char **argv)
     release_default_resources();
 
     /* Display the startup banner in the message window. */
-    for (i = 1; i <= 4 + 2; ++i) /* (values beyond 4 yield blank lines) */
+    for (i = 1; i <= 6 + 2; ++i) /* (values beyond 4 yield blank lines) */
         X11_putstr(WIN_MESSAGE, 0, copyright_banner_line(i));
 }
 
@@ -2581,7 +2581,7 @@ init_standard_windows(void)
 
     num_args = 0;
     XtSetArg(args[num_args], XtNallowShellResize, True); num_args++;
-    form = XtCreateManagedWidget("nethack", panedWidgetClass, toplevel, args,
+    form = XtCreateManagedWidget("crecellehack", panedWidgetClass, toplevel, args,
                                  num_args);
 
     XtAddEventHandler(form, KeyPressMask, False, (XtEventHandler) msgkey,

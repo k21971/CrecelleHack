@@ -78,10 +78,10 @@ BEGIN
         BEGIN
             VALUE "FileDescription", "NetHack for Windows - TTY Interface"
             VALUE "FileVersion", "3.7.0"
-            VALUE "InternalName", "NetHack"
+            VALUE "InternalName", "CrecelleHack"
             VALUE "LegalCopyright", "Copyright (C) 1985 - 2021.  By Stichting Mathematisch Centrum and M. Stephenson.  See license for details."
             VALUE "OriginalFilename", "NetHack.exe"
-            VALUE "ProductName", "NetHack"
+            VALUE "ProductName", "CrecelleHack"
             VALUE "ProductVersion", "3.7.0"
         END
     END

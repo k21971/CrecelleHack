@@ -3867,15 +3867,15 @@
           The  default  name  of the configuration file varies on different
      operating systems.
 
-          On UNIX, Linux, and macOS it is ".nethackrc" in the  user's  home
+          On UNIX, Linux, and macOS it is ".crecellehackrc" in the  user's  home
      directory.  The file may not exist, but it is a normal ASCII text file
      and can be created with any text editor.
 
-          On Windows, the  name  is  ".nethackrc"  located  in  the  folder
+          On Windows, the  name  is  ".crecellehackrc"  located  in  the  folder
      "%USERPROFILE%\NetHack\".   The file may not exist, but it is a normal
      ASCII text file can can be created with any text editor.   After  run-
      ning  NetHack  for  the first time, you should find a default template
-     for   the   configuration   file   named   ".nethackrc.template"    in
+     for   the   configuration   file   named   ".crecellehackrc.template"    in
      "%USERPROFILE%\NetHack\".   If  you have not created the configuration
      file, NetHack will create one for you using the default template file.
 

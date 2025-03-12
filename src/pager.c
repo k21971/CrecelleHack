@@ -2707,13 +2707,13 @@ docontact(void)
         putstr(cwin, 0, buf);
         putstr(cwin, 0, "");
     }
-    putstr(cwin, 0, "To contact the NetHack development team directly,");
+    putstr(cwin, 0, "To contact the CrecelleHack development team directly,");
     /*XXX overflow possibilities*/
-    Sprintf(buf, "see the 'Contact' form on our website or email <%s>.",
+    Sprintf(buf, "see the 'Contact' form on our website or ping <%s> on Discord/IRC.",
             DEVTEAM_EMAIL);
     putstr(cwin, 0, buf);
     putstr(cwin, 0, "");
-    putstr(cwin, 0, "For more information on NetHack, or to report a bug,");
+    putstr(cwin, 0, "For more information on CrecelleHack, or to report a bug,");
     Sprintf(buf, "visit our website \"%s\".", DEVTEAM_URL);
     putstr(cwin, 0, buf);
     display_nhwindow(cwin, FALSE);

@@ -90,7 +90,7 @@ status_version(char *buf, size_t bufsz, boolean indent)
             showname = ((vflags & VI_NAME) != 0),
             showbranch = ((vflags & VI_BRANCH) != 0);
 
-    /* game's name {variants should use own name, not "NetHack"} */
+    /* game's name {variants should use own name, not "CrecelleHack"} */
     if (showname) {
 #ifdef VERS_GAME_NAME /* can be set to override default (base of filename) */
         name = VERS_GAME_NAME;
@@ -114,9 +114,9 @@ status_version(char *buf, size_t bufsz, boolean indent)
 #if 0
         /* note: it's possible for branch name to be a prefix of game name
            but that's unlikely enough that we won't bother with it; having
-           branch "nethack-3.7" be a superset of game "nethack" seems like
+           branch "crecellehack-3.7" be a superset of game "crecellehack" seems like
            including both is redundant, but having branch "net" be a subset
-           of game "nethack" doesn't feel that way; optimizing "net" out
+           of game "crecellehack" doesn't feel that way; optimizing "net" out
            seems like it would be a mistake */
         else if (!strncmpi(altname, name, strlen(altname)))
             showbranch = FALSE;
@@ -527,12 +527,21 @@ get_current_feature_ver(void)
 const char *
 copyright_banner_line(int indx)
 {
-#ifdef COPYRIGHT_BANNER_A
+
+#ifdef VARIANT_BANNER_A
     if (indx == 1)
+        return VARIANT_BANNER_A;
+#endif
+#ifdef VARIANT_BANNER_B
+    if (indx == 2)
+        return VARIANT_BANNER_B;
+#endif
+#ifdef COPYRIGHT_BANNER_A
+    if (indx == 4)
         return COPYRIGHT_BANNER_A;
 #endif
 #ifdef COPYRIGHT_BANNER_B
-    if (indx == 2)
+    if (indx == 5)
         return COPYRIGHT_BANNER_B;
 #endif
 
@@ -540,7 +549,7 @@ copyright_banner_line(int indx)
         return nomakedefs.copyright_banner_c;
 
 #ifdef COPYRIGHT_BANNER_D
-    if (indx == 4)
+    if (indx == 6)
         return COPYRIGHT_BANNER_D;
 #endif
     return "";
@@ -551,7 +560,7 @@ void
 dump_version_info(void)
 {
     char buf[BUFSZ];
-    const char *hname = gh.hname ? gh.hname : "nethack";
+    const char *hname = gh.hname ? gh.hname : "crecellehack";
 
     if (strlen(hname) > 33)
         hname = eos(nhStr(hname)) - 33; /* discard const for eos() */

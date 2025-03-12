@@ -2816,7 +2816,7 @@ struct pad {
  * default key handling
  *
  * This is the default NetHack keystroke processing.
- * Use the .nethackrc "altkeyhandling" option to set a
+ * Use the .crecellehackrc "altkeyhandling" option to set a
  * different handling type.
  *
  */
