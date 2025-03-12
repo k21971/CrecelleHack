@@ -1,4 +1,4 @@
-/* NetHack 3.7	pager.c	$NHDT-Date: 1732979463 2024/11/30 07:11:03 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.282 $ */
+/* NetHack 3.7	pager.c	$NHDT-Date: 1737013431 2025/01/15 23:43:51 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.287 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2018. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -227,7 +227,7 @@ mhidden_description(
 
             if (fakeobj && otmp) {
                 otmp->where = OBJ_FREE; /* object_from_map set to OBJ_FLOOR */
-                dealloc_obj(otmp);
+                dealloc_obj(otmp); /* has no contents */
             }
         } else {
             Strcat(outbuf, something);
@@ -290,7 +290,11 @@ object_from_map(
     boolean fakeobj = FALSE, mimic_obj = FALSE;
     struct monst *mtmp;
     struct obj *otmp;
-    int glyphotyp = glyph_to_obj(glyph);
+    int glyphotyp = glyph_is_object(glyph) ? glyph_to_obj(glyph)
+                    /* if not an object, probably a detected chest trap */
+                    : glyph_is_cmap(glyph) /* assume trapped chest|door */
+                      ? (sobj_at(CHEST, x, y) ? CHEST : LARGE_BOX)
+                      : STRANGE_OBJECT;
 
     *obj_p = (struct obj *) 0;
     /* TODO: check inside containers in case glyph came from detection */
@@ -376,7 +380,7 @@ look_at_object(
                      : obj_descr[STRANGE_OBJECT].oc_name);
         if (fakeobj) {
             otmp->where = OBJ_FREE; /* object_from_map set it to OBJ_FLOOR */
-            dealloc_obj(otmp), otmp = 0;
+            dealloc_obj(otmp), otmp = NULL; /* has no contents */
         }
     } else
         Strcpy(buf, something); /* sanity precaution */
@@ -1522,11 +1526,11 @@ do_screen_description(
         x_str = def_warnsyms[i].explanation;
         if (sym == (looked ? gw.warnsyms[i] : def_warnsyms[i].sym)) {
             if (!found) {
-                Sprintf(out_str, "%s%s", prefix, def_warnsyms[i].explanation);
-                *firstmatch = def_warnsyms[i].explanation;
+                Sprintf(out_str, "%s%s", prefix, x_str);
+                *firstmatch = x_str;;
                 found++;
             } else {
-                found += append_str(out_str, def_warnsyms[i].explanation);
+                found += append_str(out_str, x_str);
             }
             /* Kludge: warning trumps boulders on the display.
                Reveal the boulder too or player can get confused */
@@ -1707,7 +1711,6 @@ do_look(int mode, coord *click_cc)
 
     if (!clicklook) {
         if (quick) {
-            from_screen = TRUE; /* yes, we want to use the cursor */
             i = 'y';
         } else {
             menu_item *pick_list = (menu_item *) 0;
@@ -1872,7 +1875,6 @@ do_look(int mode, coord *click_cc)
     do {
         /* Reset some variables. */
         pm = (struct permonst *) 0;
-        found = 0;
         out_str[0] = '\0';
 
         if (from_screen || clicklook) {

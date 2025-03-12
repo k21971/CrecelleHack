@@ -1,4 +1,4 @@
-/* NetHack 3.7	extern.h	$NHDT-Date: 1723580890 2024/08/13 20:28:10 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.1435 $ */
+/* NetHack 3.7	extern.h	$NHDT-Date: 1738638877 2025/02/03 19:14:37 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.1476 $ */
 /* Copyright (c) Steve Creps, 1988.                               */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -128,6 +128,7 @@ extern void reset_trapset(void);
 extern int use_whip(struct obj *) NONNULLPTRS;
 extern boolean could_pole_mon(void);
 extern int use_pole(struct obj *, boolean) NONNULLPTRS;
+extern void maybe_dunk_boulders(coordxy, coordxy);
 extern void fig_transform(union any *, long) NONNULLARG1;
 extern int unfixable_trouble_count(boolean);
 
@@ -249,6 +250,8 @@ extern void savebones(int, time_t, struct obj *);
 extern int getbones(void);
 extern boolean bones_include_name(const char *) NONNULLARG1;
 extern void fix_ghostly_obj(struct obj *) NONNULLARG1;
+extern void newebones(struct monst *) NONNULLARG1;
+extern void free_ebones(struct monst *) NONNULLARG1;
 
 /* ### botl.c ### */
 
@@ -416,7 +419,7 @@ extern int enter_explore_mode(void);
 extern boolean bind_mousebtn(int, const char *);
 extern boolean bind_key(uchar, const char *);
 extern void dokeylist(void);
-extern coordxy xytod(coordxy, coordxy);
+extern int xytod(coordxy, coordxy);
 extern void dtoxy(coord *, int);
 extern int movecmd(char, int);
 extern int dxdy_moveok(void);
@@ -742,7 +745,7 @@ extern int count_worn_armor(void);
 
 extern void newedog(struct monst *) NONNULLARG1;
 extern void free_edog(struct monst *) NONNULLARG1;
-extern void initedog(struct monst *) NONNULLARG1;
+extern void initedog(struct monst *, boolean) NONNULLARG1;
 extern struct monst *make_familiar(struct obj *, coordxy, coordxy, boolean);
 extern struct monst *makedog(void);
 extern void update_mlstmv(void);
@@ -1450,6 +1453,7 @@ extern void mkmonmoney(struct monst *, long) NONNULLARG1;
 extern int bagotricks(struct obj *, boolean, int *);
 extern boolean propagate(int, boolean, boolean);
 extern void summon_furies(int);
+extern void dump_mongen(void);
 
 /* ### mcastu.c ### */
 
@@ -1528,9 +1532,11 @@ extern void gain_guardian_angel(void);
 /* ### mklev.c ### */
 
 extern void sort_rooms(void);
-extern void add_room(int, int, int, int, boolean, schar, boolean);
-extern void add_subroom(struct mkroom *, int, int, int, int, boolean, schar,
-                        boolean) NONNULLARG1;
+extern void add_room(coordxy, coordxy, coordxy, coordxy,
+                     boolean, schar, boolean);
+extern void add_subroom(struct mkroom *,
+                        coordxy, coordxy, coordxy, coordxy,
+                        boolean, schar, boolean) NONNULLARG1;
 extern void free_luathemes(enum lua_theme_group);
 extern void makecorridors(void);
 extern void add_door(coordxy, coordxy, struct mkroom *) NONNULLARG3;
@@ -1557,8 +1563,8 @@ extern void mineralize(int, int, int, int, boolean);
 
 /* ### mkmap.c ### */
 
-extern void flood_fill_rm(int, int, int, boolean, boolean);
-extern void remove_rooms(int, int, int, int);
+extern void flood_fill_rm(coordxy, coordxy, int, boolean, boolean);
+extern void remove_rooms(coordxy, coordxy, coordxy, coordxy);
 extern boolean litstate_rnd(int);
 
 /* ### mkmaze.c ### */
@@ -1768,6 +1774,7 @@ extern struct monst *get_iter_mons(boolean (*)(struct monst *));
 extern struct monst *get_iter_mons_xy(boolean (*)(struct monst *,
                                                   coordxy, coordxy),
                                       coordxy, coordxy);
+extern int healmon(struct monst *, int, int) NONNULLARG1;
 extern void rescham(void);
 extern void restartcham(void);
 extern void restore_cham(struct monst *) NONNULLARG1;
@@ -1809,6 +1816,7 @@ extern boolean attacktype(struct permonst *, int) NONNULLARG1;
 extern boolean noattacks(struct permonst *) NONNULLARG1;
 extern boolean poly_when_stoned(struct permonst *) NONNULLARG1;
 extern boolean defended(struct monst *, int) NONNULLARG1;
+extern boolean Resists_Elem(struct monst *, int) NONNULLARG1;
 extern boolean resists_drli(struct monst *) NONNULLARG1;
 extern boolean resists_magm(struct monst *) NONNULLARG1;
 extern boolean resists_blnd(struct monst *) NONNULLARG1;
@@ -3079,7 +3087,7 @@ extern struct obj *findgold(struct obj *) NO_NNARGS;
 extern void rider_cant_reach(void);
 extern boolean can_saddle(struct permonst *) NONNULLARG1;
 extern int use_saddle(struct obj *) NONNULLARG1;
-extern void put_saddle_on_mon(struct obj *, struct monst *) NONNULLARG12;
+extern void put_saddle_on_mon(struct obj *, struct monst *) NONNULLARG2;
 extern boolean can_ride(struct monst *) NONNULLARG1;
 extern int doride(void);
 extern boolean mount_steed(struct monst *, boolean) NO_NNARGS;
@@ -3502,7 +3510,7 @@ extern int doextversion(void);
 extern boolean comp_times(long);
 #endif
 extern boolean check_version(struct version_info *, const char *, boolean,
-                             unsigned long) NONNULLARG12;
+                             unsigned long) NONNULLARG1;
 extern boolean uptodate(NHFILE *, const char *, unsigned long) NONNULLARG1;
 extern void store_formatindicator(NHFILE *) NONNULLARG1;
 extern void store_version(NHFILE *) NONNULLARG1;

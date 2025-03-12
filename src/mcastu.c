@@ -417,8 +417,7 @@ m_cure_self(struct monst *mtmp, int dmg)
         if (canseemon(mtmp))
             pline_mon(mtmp, "%s looks better.", Monnam(mtmp));
         /* note: player healing does 6d4; this used to do 1d8 */
-        if ((mtmp->mhp += d(heal_dice, 6)) > mtmp->mhpmax)
-            mtmp->mhp = mtmp->mhpmax;
+        healmon(mtmp, d(heal_dice, 6), 0);
         dmg = 0;
     }
     return dmg;

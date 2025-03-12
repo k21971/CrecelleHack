@@ -1680,7 +1680,7 @@ seffect_light(struct obj **sobjp)
                 mon = makemon(&mons[pm], u.ux, u.uy,
                               MM_EDOG | NO_MINVENT | MM_NOMSG);
                 if (mon) {
-                    initedog(mon);
+                    initedog(mon, TRUE);
                     mon->msleeping = 0;
                     mon->mcan = TRUE;
                     if (canspotmon(mon))
@@ -2323,7 +2323,7 @@ drop_boulder_on_monster(coordxy x, coordxy y, boolean confused, boolean byu)
 
 /* overcharging any wand or zapping/engraving cursed wand */
 void
-wand_explode(struct obj* obj, int chg /* recharging */)
+wand_explode(struct obj *obj, int chg /* recharging */)
 {
     const char *expl = !chg ? "suddenly" : "vibrates violently and";
     int dmg, n, k;
@@ -3237,9 +3237,9 @@ create_particular_creation(
             set_malign(mtmp);
         }
         if (d->saddled && can_saddle(mtmp->data) && !which_armor(mtmp, W_SADDLE)) {
-            struct obj *otmp = mksobj(SADDLE, TRUE, FALSE);
-
-            put_saddle_on_mon(otmp, mtmp);
+            /* NULL obj arg means put_saddle_on_mon()
+             * will create the saddle itself */
+            put_saddle_on_mon((struct obj *) 0, mtmp);
         }
         if (d->hidden
            && ((is_hider(mtmp->data) && mtmp->data->mlet != S_MIMIC)

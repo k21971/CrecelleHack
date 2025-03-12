@@ -1,4 +1,4 @@
-/* NetHack 3.7	save.c	$NHDT-Date: 1706079844 2024/01/24 07:04:04 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.214 $ */
+/* NetHack 3.7	save.c	$NHDT-Date: 1737610109 2025/01/22 21:28:29 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.232 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Michael Allison, 2009. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -17,7 +17,7 @@ int dotcnt, dotrow; /* also used in restore */
 #endif
 
 staticfn void savelevchn(NHFILE *);
-staticfn void savelevl(NHFILE *,boolean);
+staticfn void savelevl(NHFILE *, boolean);
 staticfn void savedamage(NHFILE *);
 staticfn void save_bubbles(NHFILE *, xint8);
 staticfn void save_stairs(NHFILE *);
@@ -703,7 +703,7 @@ savedamage(NHFILE *nhfp)
         if (nhfp->structlevel)
             bwrite(nhfp->fd, (genericptr_t) &xl, sizeof xl);
     }
-    while (xl--) {
+    while (damageptr) {
         if (perform_bwrite(nhfp)) {
             if (nhfp->structlevel)
                 bwrite(nhfp->fd, (genericptr_t) damageptr, sizeof *damageptr);
@@ -943,6 +943,13 @@ savemon(NHFILE *nhfp, struct monst *mtmp)
         if (buflen > 0) {
             if (nhfp->structlevel)
                 bwrite(nhfp->fd, (genericptr_t) EDOG(mtmp), buflen);
+        }
+        buflen = EBONES(mtmp) ? (int) sizeof (struct ebones) : 0;
+        if (nhfp->structlevel)
+            bwrite(nhfp->fd, (genericptr_t) &buflen, sizeof (int));
+        if (buflen > 0) {
+            if (nhfp->structlevel)
+                bwrite(nhfp->fd, (genericptr_t) EBONES(mtmp), buflen);
         }
         /* mcorpsenm is inline int rather than pointer to something,
            so doesn't need to be preceded by a length field */

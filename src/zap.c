@@ -1,4 +1,4 @@
-/* NetHack 3.7	zap.c	$NHDT-Date: 1732979463 2024/11/30 07:11:03 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.551 $ */
+/* NetHack 3.7	zap.c	$NHDT-Date: 1741793439 2025/03/12 07:30:39 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.564 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2013. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -434,9 +434,7 @@ bhitm(struct monst *mtmp, struct obj *otmp)
             int delta = mtmp->mhpmax - mtmp->mhp;
 
             wake = FALSE; /* wakeup() makes the target angry */
-            mtmp->mhp += healamt;
-            if (mtmp->mhp > mtmp->mhpmax)
-                mtmp->mhp = mtmp->mhpmax;
+            healmon(mtmp, healamt, 0);
             /* plain healing must be blessed to cure blindness; extra
                healing only needs to not be cursed, so spell always cures
                [potions quaffed by monsters behave slightly differently;
@@ -2080,6 +2078,7 @@ stone_to_flesh_obj(struct obj *obj) /* nonnull */
         res = 0;
         break;
     }
+    nhUse(obj); /* avoid 'assigned value not used' for poly_obj() calls */
 
     if (smell) {
         /* non-meat eaters smell meat, meat eaters smell its flavor;
@@ -2212,10 +2211,14 @@ bhito(struct obj *obj, struct obj *otmp)
             obj->dknown = 1;
             if (Is_container(obj) || obj->otyp == STATUE) {
                 obj->cknown = obj->lknown = 1;
-                /* plural handling here is superfluous because containers
-                   and statues don't stack */
-                if (obj->otrapped)
-                    pline("%s trapped!", Tobjnam(obj, "are"));
+                if (Is_box(obj) && !obj->tknown) {
+                    /* obj->tknown applies to boxes and chests, not bags or
+                       statues; plural handling here and the "empty" case
+                       below are superfluous because containers don't stack */
+                    if (obj->otrapped)
+                        pline("%s trapped!", Tobjnam(obj, "are"));
+                    obj->tknown = 1;
+                }
 
                 if (!obj->cobj) {
                     pline("%s empty.", Tobjnam(obj, "are"));
@@ -3219,7 +3222,7 @@ zap_updown(struct obj *obj) /* wand or spell, nonnull */
                we need to call it before probing for buried objects */
             ltyp = SURFACE_AT(x, y);
             zap_map(x, y, obj);
-            map_zapped = TRUE;
+            /*map_zapped = TRUE; // not needed due to early return*/
             if (ltyp == ICE || IS_FURNITURE(ltyp)) {
                 surf = "it";
                 if (svl.lastseentyp[x][y] != rememberedltyp)
@@ -3890,7 +3893,8 @@ bhit(
                 && hits_bars(pobj, x - ddx, y - ddy, x, y,
                              point_blank ? 0 : !rn2(5), 1)) {
                 /* caveat: obj might now be null... */
-                obj = *pobj;
+                obj = *pobj;  /* not currently needed due to 'break'; keep */
+                nhUse(obj);   /* in case usage gets added after the loop   */
                 gb.bhitpos.x -= ddx;
                 gb.bhitpos.y -= ddy;
                 break;
@@ -4142,7 +4146,7 @@ boomhit(struct obj *obj, coordxy dx, coordxy dy)
     gb.bhitpos.x = u.ux;
     gb.bhitpos.y = u.uy;
     boom = counterclockwise ? S_boomleft : S_boomright;
-    i = (int) xytod(dx, dy);
+    i = xytod(dx, dy);
     tmp_at(DISP_FLASH, cmap_to_glyph(boom));
     for (ct = 0; ct < 10; ct++) {
         i = DIR_CLAMP(i);
@@ -4266,10 +4270,9 @@ zhitm(
     case ZT_DEATH:                              /* death/disintegration */
         if (abs(type) != ZT_BREATH(ZT_DEATH)) { /* death */
             if (mon->data == &mons[PM_DEATH]) {
-                mon->mhpmax += mon->mhpmax / 2;
+                healmon(mon, mon->mhpmax * 3 / 2, mon->mhpmax / 2);
                 if (mon->mhpmax >= MAGIC_COOKIE)
                     mon->mhpmax = MAGIC_COOKIE - 1;
-                mon->mhp = mon->mhpmax;
                 tmp = 0;
                 break;
             }
@@ -5238,7 +5241,7 @@ zap_over_floor(
                         else
                             lev->typ = HWALL;
                         fix_wall_spines(max(0,x-1), max(0,y-1),
-                                        min(COLNO,x+1), min(ROWNO,y+1));
+                                        min(COLNO-1,x+1), min(ROWNO-1,y+1));
                     } else {
                         lev->typ = lava ? ROOM : ICE;
                     }
@@ -5682,12 +5685,16 @@ u_adtyp_resistance_obj(int dmgtyp)
     if (!prop)
         return 0;
 
-    /* Items that give an extrinsic resistance give 99% protection to
-       your items */
-    if ((u.uprops[prop].extrinsic & (W_ARMOR | W_ACCESSORY | W_WEP)) != 0)
+    /* FIXME? these percentages (99 and 90) seem too high... */
+
+    /* items that give an extrinsic resistance when worn or wielded or
+       carried give 99% protection to your items */
+    if ((u.uprops[prop].extrinsic & (W_ARMOR | W_ACCESSORY | W_WEP | W_ART))
+        != 0L)
         return 99;
 
-    /* Dwarvish cloaks give a 90% protection to items against heat and cold */
+    /* worn dwarvish cloaks give 90% protection against heat and cold to
+       carried items */
     if (uarmc && uarmc->otyp == DWARVISH_CLOAK
         && (dmgtyp == AD_COLD || dmgtyp == AD_FIRE))
         return 90;

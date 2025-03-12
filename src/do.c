@@ -1,4 +1,4 @@
-/* NetHack 3.7	do.c	$NHDT-Date: 1704225560 2024/01/02 19:59:20 $  $NHDT-Branch: keni-luabits2 $:$NHDT-Revision: 1.376 $ */
+/* NetHack 3.7	do.c	$NHDT-Date: 1737287889 2025/01/19 03:58:09 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.399 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Derek S. Ray, 2015. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -224,6 +224,7 @@ flooreffects(
                     }
                     if (!DEADMONSTER(mtmp) && !is_whirly(mtmp->data))
                         res = FALSE; /* still alive, boulder still intact */
+                    nhUse(res);
                 }
                 mtmp->mtrapped = 0;
             } else {
@@ -876,7 +877,7 @@ engulfer_digests_food(struct obj *obj)
         } else if (could_grow) {
             (void) grow_up(u.ustuck, (struct monst *) 0);
         } else if (could_heal) {
-            u.ustuck->mhp = u.ustuck->mhpmax;
+            healmon(u.ustuck, u.ustuck->mhpmax, 0);
             /* False: don't realize that sight is cured from inside */
             mcureblindness(u.ustuck, FALSE);
         }

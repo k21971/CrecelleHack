@@ -1838,8 +1838,10 @@ hmon_hitmon(
 
     hmon_hitmon_msg_hit(&hmd, mon, obj);
 
-    if (hmd.dryit) /* dryit implies wet towel, so 'obj' is still intact */
+    if (hmd.dryit) { /* dryit implies wet towel, so 'obj' is still intact */
+        assert(obj != NULL);
         dry_a_towel(obj, -1, TRUE);
+    }
 
     if (hmd.silvermsg)
         hmon_hitmon_msg_silver(&hmd, mon, obj);
@@ -1851,8 +1853,10 @@ hmon_hitmon(
        obj->opoisoned was cleared above and any message referring to
        "poisoned <obj>" has now been given; we want just "<obj>" for
        last message, so reformat while obj is still accessible */
-    if (hmd.unpoisonmsg)
+    if (hmd.unpoisonmsg) {
+        assert(obj != NULL);
         Strcpy(hmd.saved_oname, cxname(obj));
+    }
 
     /* [note: thrown obj might go away during killed()/xkilled() call
        (via 'thrownobj'; if swallowed, it gets added to engulfer's
@@ -3533,6 +3537,7 @@ mhitm_ad_slim(
             mhm->damage = 0;
         }
     }
+    nhUse(pd);
 }
 
 void
@@ -3574,7 +3579,7 @@ mhitm_ad_ench(
                     break;
                 }
             }
-            if (drain_item(obj, FALSE)) {
+            if (obj && drain_item(obj, FALSE)) {
                 pline("%s less effective.", Yobjnam2(obj, "seem"));
             }
         }
@@ -5956,9 +5961,7 @@ passive(
                 You("are suddenly very cold!");
                 mdamageu(mon, tmp);
                 /* monster gets stronger with your heat! */
-                mon->mhp += (tmp + rn2(2)) / 2;
-                if (mon->mhpmax < mon->mhp)
-                    mon->mhpmax = mon->mhp;
+                healmon(mon, (tmp + rn2(2)) / 2, (tmp + 1) / 2);
                 /* at a certain point, the monster will reproduce! */
                 if (mon->mhpmax > (((int) mon->m_lev) + 1) * 8)
                     (void) split_mon(mon, &gy.youmonst);
@@ -6095,26 +6098,22 @@ that_is_a_mimic(
         else if (M_AP_TYPE(mtmp) == M_AP_MONSTER)
             what = a_monnam(mtmp); /* differs from what was sensed */
     } else {
-        int glyph = glyph_at(u.ux + u.dx, u.uy + u.dy);
+        coordxy x = u.ux + u.dx, y = u.uy + u.dy;
+        int glyph = glyph_at(x, y);
 
         if (glyph_is_cmap(glyph)) {
             int sym = glyph_to_cmap(glyph);
 
-#ifdef EXTRA_SANITY_CHECKS
-            if (iflags.sanity_check && (int) mtmp->mappearance != sym)
-                impossible("mimic appearance %u does not match"
-                           " map feature %d (glyph=%d)",
-                           mtmp->mappearance, sym, glyph);
-#endif
-            /* note: defsyms[stairs] yields singular "staircase {up|down}" */
-            Snprintf(fmtbuf, sizeof fmtbuf, "That %s actually is %%s!",
-                     defsyms[sym].explanation);
+            if (M_AP_TYPE(mtmp) == M_AP_FURNITURE
+                || (M_AP_TYPE(mtmp) == M_AP_OBJECT && sym == S_trapped_chest))
+                Snprintf(fmtbuf, sizeof fmtbuf, "That %s actually is %%s!",
+                         defsyms[sym].explanation);
         } else if (glyph_is_object(glyph)) {
             boolean fakeobj;
             const char *otmp_name;
             struct obj *otmp = NULL;
 
-            fakeobj = object_from_map(glyph, mtmp->mx, mtmp->my, &otmp);
+            fakeobj = object_from_map(glyph, x, y, &otmp);
             otmp_name = (otmp && otmp->otyp != STRANGE_OBJECT)
                         ? simpleonames(otmp) : "strange object";
             Snprintf(fmtbuf, sizeof fmtbuf, "%s %s %s %%s!",
@@ -6290,8 +6289,14 @@ flash_hits_mon(
 void
 light_hits_gremlin(struct monst *mon, int dmg)
 {
-    pline_mon(mon, "%s %s!", Monnam(mon),
-          (dmg > mon->mhp / 2) ? "wails in agony" : "cries out in pain");
+    if (!Deaf && mdistu(mon) <= 90) {
+        /* cry of pain can be heard somewhat farther than the waking radius */
+        pline_mon(mon, "%s %s!", Monnam(mon),
+                  (dmg > mon->mhp / 2) ? "wails in agony"
+                                       : "cries out in pain");
+    } else if (canseemon(mon)) {
+        pline_mon(mon, "%s recoils from the light!", Monnam(mon));
+    }
     mon->mhp -= dmg;
     wake_nearto(mon->mx, mon->my, 30);
     if (DEADMONSTER(mon)) {

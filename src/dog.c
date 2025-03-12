@@ -1,4 +1,4 @@
-/* NetHack 3.7	dog.c	$NHDT-Date: 1725227804 2024/09/01 21:56:44 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.164 $ */
+/* NetHack 3.7	dog.c	$NHDT-Date: 1737287993 2025/01/19 03:59:53 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.178 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2011. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -27,6 +27,7 @@ newedog(struct monst *mtmp)
     if (!EDOG(mtmp)) {
         EDOG(mtmp) = (struct edog *) alloc(sizeof(struct edog));
         (void) memset((genericptr_t) EDOG(mtmp), 0, sizeof(struct edog));
+        EDOG(mtmp)->parentmid = mtmp->m_id;
     }
 }
 
@@ -41,25 +42,39 @@ free_edog(struct monst *mtmp)
 }
 
 void
-initedog(struct monst *mtmp)
+initedog(struct monst *mtmp, boolean everything)
 {
-    mtmp->mtame = is_domestic(mtmp->data) ? 10 : 5;
+    schar minimumtame = is_domestic(mtmp->data) ? 10 : 5;
+
+    mtmp->mtame = max(minimumtame, mtmp->mtame);
     mtmp->mpeaceful = 1;
     mtmp->mavenge = 0;
     set_malign(mtmp); /* recalc alignment now that it's tamed */
-    mtmp->mleashed = 0;
-    mtmp->meating = 0;
-    EDOG(mtmp)->droptime = 0;
-    EDOG(mtmp)->dropdist = 10000;
-    EDOG(mtmp)->apport = ACURR(A_CHA);
-    EDOG(mtmp)->whistletime = 0;
-    EDOG(mtmp)->hungrytime = 1000 + svm.moves;
-    EDOG(mtmp)->ogoal.x = -1; /* force error if used before set */
-    EDOG(mtmp)->ogoal.y = -1;
-    EDOG(mtmp)->abuse = 0;
-    EDOG(mtmp)->revivals = 0;
-    EDOG(mtmp)->mhpmax_penalty = 0;
-    EDOG(mtmp)->killed_by_u = 0;
+    if (everything) {
+        mtmp->mleashed = 0;
+        mtmp->meating = 0;
+        EDOG(mtmp)->droptime = 0;
+        EDOG(mtmp)->dropdist = 10000;
+        EDOG(mtmp)->apport = ACURR(A_CHA);
+        EDOG(mtmp)->whistletime = 0;
+        EDOG(mtmp)->hungrytime = 1000 + svm.moves;
+        EDOG(mtmp)->ogoal.x = -1; /* force error if used before set */
+        EDOG(mtmp)->ogoal.y = -1;
+        EDOG(mtmp)->abuse = 0;
+        EDOG(mtmp)->revivals = 0;
+        EDOG(mtmp)->mhpmax_penalty = 0;
+        EDOG(mtmp)->killed_by_u = 0;
+    }
+    /* livelog first pet, but only if you didn't start with one (the starting
+     * pet will be initialized before in_moveloop is true) */
+    if (!u.uconduct.pets && program_state.in_moveloop) {
+        /* "obtained" a pet rather than "tamed" it because it might have come
+         * from a figurine or some other method in which it was created tame
+         * using an() is safe unless it somehow becomes possible to tame a
+         * unique monster */
+        livelog_printf(LL_CONDUCT, "obtained %s first pet (%s)",
+                       uhis(), an(mon_pmname(mtmp)));
+    }
     u.uconduct.pets++;
 }
 
@@ -122,6 +137,7 @@ make_familiar(struct obj *otmp, coordxy x, coordxy y, boolean quietly)
     struct permonst *pm;
     struct monst *mtmp = 0;
     int chance, trycnt = 100;
+    boolean reallytame = TRUE;
 
     do {
         mmflags_nht mmflags;
@@ -163,17 +179,14 @@ make_familiar(struct obj *otmp, coordxy x, coordxy y, boolean quietly)
     if (is_pool(mtmp->mx, mtmp->my) && minliquid(mtmp))
         return (struct monst *) 0;
 
-    initedog(mtmp);
-    mtmp->msleeping = 0;
     if (otmp) { /* figurine; resulting monster might not become a pet */
         chance = rn2(10); /* 0==tame, 1==peaceful, 2==hostile */
         if (chance > 2)
             chance = otmp->blessed ? 0 : !otmp->cursed ? 1 : 2;
         /* 0,1,2:  b=80%,10,10; nc=10%,80,10; c=10%,10,80 */
         if (chance > 0) {
-            mtmp->mtame = 0;   /* not tame after all */
-            u.uconduct.pets--; /* doesn't count as creating a pet */
-            if (chance == 2) { /* hostile (cursed figurine) */
+            reallytame = FALSE; /* not tame after all */
+            if (chance == 2) {  /* hostile (cursed figurine) */
                 if (!quietly)
                     You("get a bad feeling about this.");
                 mtmp->mpeaceful = 0;
@@ -184,6 +197,9 @@ make_familiar(struct obj *otmp, coordxy x, coordxy y, boolean quietly)
         if (has_oname(otmp))
             mtmp = christen_monst(mtmp, ONAME(otmp));
     }
+    if (reallytame)
+        initedog(mtmp, TRUE);
+    mtmp->msleeping = 0;
     set_malign(mtmp); /* more alignment changes */
     newsym(mtmp->mx, mtmp->my);
 
@@ -200,7 +216,6 @@ struct monst *
 makedog(void)
 {
     struct monst *mtmp;
-    struct obj *otmp;
     const char *petname;
     int pettype;
 
@@ -226,7 +241,12 @@ makedog(void)
             petname = "Sirius"; /* Orion's dog */
     }
 
-    mtmp = makemon(&mons[pettype], u.ux, u.uy, MM_EDOG);
+    /* specifying NO_MINVENT prevents makemon() from having a 1% chance
+       of creating a pony with an already worn saddle; dogs and cats
+       aren't affected because they don't have any initial inventory
+       [if anybody adds stranger pets that are expected to have such,
+       they'll need to modify this] */
+    mtmp = makemon(&mons[pettype], u.ux, u.uy, MM_EDOG | NO_MINVENT);
 
     if (!mtmp)
         return ((struct monst *) 0); /* pets were genocided [how?] */
@@ -234,13 +254,11 @@ makedog(void)
     if (!svc.context.startingpet_mid) {
         svc.context.startingpet_mid = mtmp->m_id;
         if (!u.uroleplay.pauper) {
-            /* initial horses already wear saddle (unless hero is a pauper) */
-            if (can_saddle(&mons[gu.urole.petnum])
-                && (otmp = mksobj(SADDLE, TRUE, FALSE)) != 0) {
-                /* pseudo initial inventory; saddle is not actually in hero's
-                 * invent so assume that update_inventory() isn't needed */
-                fully_identify_obj(otmp);
-                put_saddle_on_mon(otmp, mtmp);
+            /* initial horses start wearing a saddle (pauper hero excluded) */
+            if (can_saddle(&mons[gu.urole.petnum])) {
+                /* NULL obj arg means put_saddle_on_mon()
+                 * will carry out the saddle creation */
+                put_saddle_on_mon((struct obj *) 0, mtmp);
             }
         }
     } else {
@@ -250,7 +268,7 @@ makedog(void)
     if (!gp.petname_used++ && *petname)
         mtmp = christen_monst(mtmp, petname);
 
-    initedog(mtmp);
+    initedog(mtmp, TRUE);
     return  mtmp;
 }
 
@@ -529,6 +547,7 @@ mon_arrive(struct monst *mtmp, int when)
                    && (stway = stairway_find_dir(!builds_up(&u.uz))) != 0) {
             /* debugfuzzer returns from or enters another branch */
             xlocale = stway->sx, ylocale = stway->sy;
+            break;
         } else if (!(u.uevent.qexpelled
                      && (Is_qstart(&u.uz0) || Is_qstart(&u.uz)))) {
             impossible("mon_arrive: no corresponding portal?");
@@ -684,10 +703,7 @@ mon_catchup_elapsed_time(
     /* recover lost hit points */
     if (!regenerates(mtmp->data))
         imv /= 20;
-    if (mtmp->mhp + imv >= mtmp->mhpmax)
-        mtmp->mhp = mtmp->mhpmax;
-    else
-        mtmp->mhp += imv;
+    healmon(mtmp, imv, 0);
 
     set_mon_lastmove(mtmp);
 }
@@ -1221,8 +1237,12 @@ tamedog(
         return FALSE;
 
     /* add the pet extension */
-    newedog(mtmp);
-    initedog(mtmp);
+    if (!has_edog(mtmp)) {
+        newedog(mtmp);
+        initedog(mtmp, TRUE);
+    } else {
+        initedog(mtmp, FALSE);
+    }
 
     if (obj) { /* thrown food */
         /* defer eating until the edog extension has been set up */

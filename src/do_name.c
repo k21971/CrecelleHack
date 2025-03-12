@@ -1,4 +1,4 @@
-/* NetHack 3.7	do_name.c	$NHDT-Date: 1720895738 2024/07/13 18:35:38 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.320 $ */
+/* NetHack 3.7	do_name.c	$NHDT-Date: 1737013431 2025/01/15 23:43:51 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.326 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Pasi Kallinen, 2018. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -273,7 +273,7 @@ do_mgivenname(void)
             verbalize("I'm %s, not %s.", shkname(mtmp), buf);
         }
     } else if (mtmp->ispriest || mtmp->isminion || mtmp->isshk
-               || mtmp->data == &mons[PM_GHOST]) {
+               || mtmp->data == &mons[PM_GHOST] || has_ebones(mtmp)) {
         if (!alreadynamed(mtmp, monnambuf, buf))
             pline("%s will not accept the name %s.", upstart(monnambuf), buf);
     } else {
@@ -750,7 +750,7 @@ namefloorobj(void)
     }
     if (fakeobj) {
         obj->where = OBJ_FREE; /* object_from_map() sets it to OBJ_FLOOR */
-        dealloc_obj(obj);
+        dealloc_obj(obj); /* has no contents */
     }
 }
 
@@ -966,6 +966,10 @@ x_monnam(
     } else if (do_name && has_mgivenname(mtmp)) {
         char *name = MGIVENNAME(mtmp);
 
+#if 0
+      /* hardfought */
+      if (has_ebones(mtmp)) {
+#endif
         if (mdat == &mons[PM_GHOST]) {
             Sprintf(eos(buf), "%s ghost", s_suffix(name));
             name_at_start = TRUE;
@@ -988,6 +992,9 @@ x_monnam(
             Strcat(buf, name);
             name_at_start = TRUE;
         }
+#if 0 /* hardfought */
+      }
+#endif
     } else if (is_mplayer(mdat) && !In_endgame(&u.uz)) {
         char pbuf[BUFSZ];
 

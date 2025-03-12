@@ -608,6 +608,7 @@ fall_through(
     const char *dont_fall = 0;
     int newlevel;
     struct trap *t = (struct trap *) 0;
+    boolean controlled_flight = FALSE;
 
     /* we'll fall even while levitating in Sokoban; otherwise, if we
        won't fall and won't be told that we aren't falling, give up now */
@@ -653,12 +654,15 @@ fall_through(
         return;
     }
     if ((Flying || is_clinger(gy.youmonst.data))
-        && (ftflags & TOOKPLUNGE) && td && t)
+        && (ftflags & TOOKPLUNGE) && td && t) {
+        if (Flying)
+            controlled_flight = TRUE;
         You("%s down %s!",
             Flying ? "swoop" : "deliberately drop",
             (t->ttyp == TRAPDOOR)
                 ? "through the trap door"
                 : "into the gaping hole");
+    }
 
     if (*u.ushops)
         shopdig(1);
@@ -678,7 +682,9 @@ fall_through(
         }
         dist = depth(&dtmp) - depth(&u.uz);
         if (dist > 1)
-            You("fall down a %s%sshaft!", dist > 3 ? "very " : "",
+            You("%s down a %s%sshaft!",
+                controlled_flight ? "fly" : "fall",
+                dist > 3 ? "very " : "",
                 dist > 2 ? "deep " : "");
     }
     if (!td)
@@ -2028,8 +2034,6 @@ trapeffect_hole(
                 if (in_sight) {
                     pline_mon(mtmp,
                              "%s seems to be yanked down!", Monnam(mtmp));
-                    /* suppress message in mlevel_tele_trap() */
-                    in_sight = FALSE;
                     seetrap(trap);
                 }
             } else
@@ -3135,6 +3139,8 @@ blow_up_landmine(struct trap *trap)
         }
     }
     fill_pit(x, y);
+    maybe_dunk_boulders(x, y);
+    recalc_block_point(x, y);
     spot_checks(x, y, old_typ);
 }
 
@@ -6003,7 +6009,7 @@ openholdingtrap(
     boolean *noticed) /* set to true iff hero notices the effect;
                        * otherwise left with its previous value intact */
 {
-    struct trap *t;
+    struct trap *t, tdummy;
     char buf[BUFSZ], whichbuf[20];
     const char *trapdescr = 0, *which = 0;
     boolean ishero = (mon == &gy.youmonst);
@@ -6016,7 +6022,15 @@ openholdingtrap(
     t = t_at(ishero ? u.ux : mon->mx, ishero ? u.uy : mon->my);
 
     if (ishero && u.utrap) { /* all u.utraptype values are holding traps */
+        /* there might not be any trap at hero's spot for tt_buriedball;
+           conversely, there might be an unrelated trap at that spot */
+        if (!t) {
+            t = &tdummy;
+            (void) memset(t, 0, sizeof *t), t->ntrap = NULL;
+            /* fallback 't' is now nonNull, t->tseen and t->madeby_u are 0 */
+        }
         which = the_your[(!t || !t->tseen || !t->madeby_u) ? 0 : 1];
+
         switch (u.utraptype) {
         case TT_LAVA:
             trapdescr = "molten lava";
@@ -6032,7 +6046,9 @@ openholdingtrap(
         case TT_BEARTRAP:
         case TT_PIT:
         case TT_WEB:
-            trapdescr = 0; /* use defsyms[].explanation */
+            trapdescr = defsyms[(u.utraptype == TT_WEB) ? S_web
+                                : (u.utraptype == TT_PIT) ? S_pit
+                                  : S_bear_trap].explanation;
             break;
         default:
             /* lint suppression in case 't' is unexpectedly Null
@@ -6044,10 +6060,9 @@ openholdingtrap(
         /* if no trap here or it's not a holding trap, we're done */
         if (!t || (t->ttyp != BEAR_TRAP && t->ttyp != WEB))
             return FALSE;
-    }
-
-    if (!trapdescr)
         trapdescr = trapname(t->ttyp, FALSE);
+    }
+    assert(t != NULL);
     if (!which)
         which = t->tseen ? the_your[t->madeby_u]
                          : strchr(vowels, *trapdescr) ? "an" : "a";
@@ -6436,7 +6451,8 @@ conjoined_pits(
     struct trap *trap1,
     boolean u_entering_trap2)
 {
-    coordxy dx, dy, diridx, adjidx;
+    coordxy dx, dy;
+    int diridx, adjidx;
 
     if (!trap1 || !trap2)
         return FALSE;

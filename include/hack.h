@@ -29,13 +29,11 @@
 #include "mkroom.h"
 #include "obj.h"
 #include "quest.h"
-#include "rect.h"
 #include "region.h"
 #include "rm.h"
 #include "selvar.h"
 #include "sndprocs.h"
 #include "spell.h"
-#include "sym.h"
 #include "sys.h"
 #include "timeout.h"
 #include "winprocs.h"
@@ -441,6 +439,7 @@ enum earlyarg {
     , ARG_DUMPENUMS
 #endif
     , ARG_DUMPGLYPHIDS
+    , ARG_DUMPMONGEN
 #ifdef WIN32
     , ARG_WINDOWS
 #endif
@@ -767,6 +766,7 @@ struct role_filter {
     boolean roles[NUM_ROLES + 1];
     short mask;
 };
+#define NUM_RACES (5)
 
 enum saveformats {
     invalid = 0,

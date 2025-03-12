@@ -485,6 +485,9 @@ early_options(int argc, char *argv[])
         }
 #endif
 #endif
+        if (argcheck(argc, argv, ARG_DUMPMONGEN) == 2) {
+            nethack_exit(EXIT_SUCCESS);
+        }
         if (argcheck(argc, argv, ARG_DEBUG) == 1) {
             argc--;
             argv++;

@@ -69,7 +69,7 @@ RESTORE_WARNING_FORMAT_NONLITERAL
 
 /* used when wiz_makemap() gets rid of monsters for the old incarnation of
    a level before creating a new incarnation of it */
-void
+staticfn void
 makemap_unmakemon(struct monst *mtmp, boolean migratory)
 {
     int ndx = monsndx(mtmp->data);
@@ -1246,6 +1246,8 @@ size_monst(struct monst *mtmp, boolean incl_wsegs)
             sz += (int) sizeof (struct emin);
         if (EDOG(mtmp))
             sz += (int) sizeof (struct edog);
+        if (EBONES(mtmp))
+            sz += (int) sizeof (struct ebones);
         /* mextra->mcorpsenm doesn't point to more memory */
     }
     return sz;

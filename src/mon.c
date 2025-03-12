@@ -1371,9 +1371,7 @@ m_consume_obj(struct monst *mtmp, struct obj *otmp)
 
     /* non-pet: Heal up to the object's weight in hp */
     if (!ispet && mtmp->mhp < mtmp->mhpmax) {
-        mtmp->mhp += objects[otmp->otyp].oc_weight;
-        if (mtmp->mhp > mtmp->mhpmax)
-            mtmp->mhp = mtmp->mhpmax;
+        healmon(mtmp, objects[otmp->otyp].oc_weight, 0);
     }
     if (Has_contents(otmp))
         meatbox(mtmp, otmp);
@@ -1418,7 +1416,7 @@ m_consume_obj(struct monst *mtmp, struct obj *otmp)
             }
         }
         if (heal)
-            mtmp->mhp = mtmp->mhpmax;
+            healmon(mtmp, mtmp->mhpmax, 0);
         if ((eyes || heal) && !mtmp->mcansee)
             mcureblindness(mtmp, canseemon(mtmp));
         if (ispet && deadmimic)
@@ -1508,7 +1506,7 @@ meatmetal(struct monst *mtmp)
 
 /* monster eats a pile of objects */
 int
-meatobj(struct monst* mtmp) /* for gelatinous cubes */
+meatobj(struct monst *mtmp) /* for gelatinous cubes */
 {
     struct obj *otmp, *otmp2;
     struct permonst *ptr, *original_ptr = mtmp->data;
@@ -2642,6 +2640,12 @@ copy_mextra(struct monst *mtmp2, struct monst *mtmp1)
         assert(has_edog(mtmp2));
         *EDOG(mtmp2) = *EDOG(mtmp1);
     }
+    if (EBONES(mtmp1)) {
+        if (!EBONES(mtmp2))
+            newebones(mtmp2);
+        assert(has_ebones(mtmp2));
+        *EBONES(mtmp2) = *EBONES(mtmp1);
+    }
     if (has_mcorpsenm(mtmp1))
         MCORPSENM(mtmp2) = MCORPSENM(mtmp1);
 }
@@ -2664,6 +2668,8 @@ dealloc_mextra(struct monst *m)
             free((genericptr_t) x->emin), x->emin = 0;
         if (x->edog)
             free((genericptr_t) x->edog), x->edog = 0;
+        if (x->ebones)
+            free((genericptr_t) x->ebones), x->ebones = 0;
         x->mcorpsenm = NON_PM; /* no allocation to release */
 
         free((genericptr_t) x);
@@ -3065,8 +3071,6 @@ logdeadmon(struct monst *mtmp, int mndx)
         }
     }
 }
-
-#undef livelog_mon_nam
 
 /* monster 'mtmp' has died; maybe life-save, otherwise unshapeshift and
    update vanquished stats and update map */
@@ -3732,10 +3736,24 @@ xkilled(
 
     /* malign was already adjusted for u.ualign.type and randomization */
     adjalign(mtmp->malign);
+
+#if 0  /* HARDFOUGHT-only at present */
+#ifdef LIVELOG
+    if (has_ebones(mtmp)) {
+        livelog_printf(LL_UMONST, "destroyed %s, %s former %s",
+                       livelog_mon_nam(mtmp),
+                       (mtmp->data == &mons[PM_GHOST]) ? "the" : "and",
+                       rank_of(EBONES(mtmp)->deathlevel,
+                               EBONES(mtmp)->mnum,
+                               EBONES(mtmp)->female));
+    }
+#endif  /* LIVELOG */
+#endif
     return;
 }
 
 #undef LEVEL_SPECIFIC_NOCORPSE
+#undef livelog_mon_nam
 
 /* changes the monster into a stone monster of the same type
    this should only be called when poly_when_stoned() is true */
@@ -4567,6 +4585,44 @@ get_iter_mons_xy(
             break;
     }
     return mtmp;
+}
+
+
+/* Heal the given monster by amt hitpoints, unless it is somehow prevented
+   from healing. "overheal" is the maximum amount by which the max HP will
+   increase to allow for the healing (the resulting HP caps at max HP +
+   overheal, and the max HP stays the some unless it needs to increase to
+   accommodate the new HP). Overhealing the player is not currently
+   implemented by this method.
+
+   This function should only be used for situations which are conceptually
+   heals, rather than other situations where a monster's HP is set, so that
+   "prevent healing" effects work correctly. In particular, it should not
+   be used for cases where a monster's HP is restored upon revival, or when
+   a monster is created. It also shouldn't be used for lifesaving, which
+   overrides "cannot heal" effects.
+
+   amt and overheal must not be negative (0 is allowed, and a very common
+   amount for overheal). Returns the number of hitpoints healed. */
+int
+healmon(struct monst *mtmp, int amt, int overheal)
+{
+    if (mtmp == &gy.youmonst) {
+        int oldhp = Upolyd ? u.mh : u.uhp;
+        healup(amt, 0, 0, 0);
+        return (Upolyd ? u.mh : u.uhp) - oldhp;
+    } else {
+        int oldhp = mtmp->mhp;
+        if (mtmp->mhp + amt > mtmp->mhpmax + overheal) {
+            mtmp->mhpmax += overheal;
+            mtmp->mhp = mtmp->mhpmax;
+        } else {
+            mtmp->mhp += amt;
+            if (mtmp->mhp > mtmp->mhpmax)
+                mtmp->mhpmax = mtmp->mhp;
+        }
+        return mtmp->mhp - oldhp;
+    }
 }
 
 
@@ -5643,10 +5699,7 @@ golemeffects(struct monst *mon, int damtype, int dam)
             mon_adjust_speed(mon, -1, (struct obj *) 0);
     }
     if (heal) {
-        if (mon->mhp < mon->mhpmax) {
-            mon->mhp += heal;
-            if (mon->mhp > mon->mhpmax)
-                mon->mhp = mon->mhpmax;
+        if (healmon(mon, heal, 0)) {
             if (cansee(mon->mx, mon->my))
                 pline_mon(mon, "%s seems healthier.", Monnam(mon));
         }

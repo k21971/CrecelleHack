@@ -1,4 +1,4 @@
-/* NetHack 3.7	potion.c	$NHDT-Date: 1726356849 2024/09/14 23:34:09 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.270 $ */
+/* NetHack 3.7	potion.c	$NHDT-Date: 1737605675 2025/01/22 20:14:35 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.274 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2013. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -1906,7 +1906,7 @@ potionhit(struct monst *mon, struct obj *obj, int how)
  do_healing:
             angermon = FALSE;
             if (mon->mhp < mon->mhpmax) {
-                mon->mhp = mon->mhpmax;
+                healmon(mon, mon->mhpmax, 0);
                 if (canseemon(mon))
                     pline("%s looks sound and hale again.", Monnam(mon));
             }
@@ -1993,9 +1993,7 @@ potionhit(struct monst *mon, struct obj *obj, int how)
                     angermon = FALSE;
                     if (canseemon(mon))
                         pline("%s looks healthier.", Monnam(mon));
-                    mon->mhp += d(8, 6);
-                    if (mon->mhp > mon->mhpmax)
-                        mon->mhp = mon->mhpmax;
+                    healmon(mon, d(8, 6), 0);
                     if (is_were(mon->data) && is_human(mon->data)
                         && !Protection_from_shape_changers)
                         new_were(mon); /* transform into beast */
@@ -2418,6 +2416,7 @@ hold_potion(
     obj_extract_self(potobj);
     /* re-insert into inventory, possibly merging with compatible stack */
     potobj = hold_another_object(potobj, drop_fmt, drop_arg, hold_msg);
+    nhUse(potobj);
     flags.pickup_burden = save_pickup_burden;
     update_inventory();
     return;
