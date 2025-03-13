@@ -91,6 +91,36 @@ were_beastie(int pm)
     return NON_PM;
 }
 
+int were_disguises[] = {
+    PM_HUMAN, PM_PRISONER, PM_GUARD, PM_SHOPKEEPER,
+};
+
+/* YANI from riker: A werecreature transforming out of line of sight should
+    not be identified as such. This function disguises werecreatures if they
+    transform while out of sight. */
+void
+disguise_were(struct monst *mon)
+{
+    switch (mon->mnum) {
+        case PM_WEREWOLF:
+            mon->mappearance = PM_WOLF;
+            break;
+        case PM_WEREJACKAL:
+            mon->mappearance = PM_JACKAL;
+            break;
+        case PM_WERERAT:
+            mon->mappearance = rn2(2) ? PM_GIANT_RAT : PM_RABID_RAT;
+            break;
+        case PM_HUMAN_WEREJACKAL:
+        case PM_HUMAN_WERERAT:
+        case PM_HUMAN_WEREWOLF:
+            mon->mappearance = were_disguises[mon->m_id % SIZE(were_disguises)];;
+            break;
+    }
+    mon->m_ap_type = M_AP_MONSTER;
+    newsym(mon->mx, mon->my);
+}
+
 void
 new_were(struct monst *mon)
 {
@@ -116,6 +146,12 @@ new_were(struct monst *mon)
                                   : pmname(&mons[pm], Mgender(mon)) + 4);
 
     set_mon_data(mon, &mons[pm]);
+    if (!canseemon(mon)) {
+        disguise_were(mon);
+    } else if (mon->m_ap_type) {
+        mon->mappearance = 0;
+        mon->m_ap_type = 0;
+    }
     if (helpless(mon)) {
         /* transformation wakens and/or revitalizes */
         mon->msleeping = 0;

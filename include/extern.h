@@ -3680,6 +3680,7 @@ extern void setmnotwielded(struct monst *, struct obj *) NONNULLARG1;
 extern void were_change(struct monst *) NONNULLARG1;
 extern int counter_were(int);
 extern int were_beastie(int);
+extern void disguise_were(struct monst *) NONNULLARG1;
 extern void new_were(struct monst *) NONNULLARG1;
 extern int were_summon(struct permonst *, boolean, int *, char *) NONNULLARG13;
 extern void you_were(void);

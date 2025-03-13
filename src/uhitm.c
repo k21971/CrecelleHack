@@ -259,6 +259,9 @@ attack_checks(
             return FALSE;
         }
         stumble_onto_mimic(mtmp);
+        /* Werecreatures should not cost the player a turn... */
+        if (is_were(mtmp->data) || mtmp->data == &mons[PM_ILLUSION])
+            return FALSE;
         return TRUE;
     }
 

@@ -197,6 +197,7 @@ sanity_check_single_mon(
            finishes eating a mimic corpse */
         if (!(is_mimic || mtmp->meating
               || mtmp->data == &mons[PM_ILLUSION]
+              || is_were(mtmp->data)
               || (mtmp->iswiz && M_AP_TYPE(mtmp) == M_AP_MONSTER)))
             impossible("non-mimic (%s) posing as %s (%s)",
                        mptr->pmnames[NEUTRAL], what, msg);
