@@ -1053,7 +1053,7 @@
     /*
      * unicorns and horses
      */
-    MON(NAM("pony"), S_UNICORN,
+    MON(NAMS("colt", "filly", "yearling"), S_UNICORN,
         LVL(3, 16, 6, 0, 0), (G_GENO | 2),
         A(ATTK(AT_KICK, AD_PHYS, 1, 6), ATTK(AT_BITE, AD_PHYS, 1, 2),
           NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
@@ -1085,7 +1085,7 @@
         M1_NOHANDS | M1_HERBIVORE, M2_WANDER | M2_STRONG | M2_JEWELS,
         M3_INFRAVISIBLE,
         6, CLR_BLACK, BLACK_UNICORN),
-    MON(NAM("horse"), S_UNICORN,
+    MON(NAMS("stallion", "mare", "horse"), S_UNICORN,
         LVL(5, 20, 5, 0, 0), (G_GENO | 2),
         A(ATTK(AT_KICK, AD_PHYS, 1, 8), ATTK(AT_BITE, AD_PHYS, 1, 3),
           NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),

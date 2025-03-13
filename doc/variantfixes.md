@@ -43,6 +43,7 @@
 - Dogs and large dogs now have breed names attached to their names.
 - YANI from Riker on the YANI Archive: Werecreatures that transform
   out of sight are disguised as standard creatures of their type.
+- Horses and ponies have altered names.
 
 ### Unique Monsters
 - Dispater uses the trickster monster spell list, making him likely
