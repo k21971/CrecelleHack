@@ -326,7 +326,7 @@ add_region(NhRegion *reg)
                 }
             }
             if (reg->visible) {
-                if (is_inside && is_gasregion(reg))
+                if (is_inside)
                     block_point(i, j);
                 if (cansee(i, j))
                     newsym(i, j);
