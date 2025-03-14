@@ -502,6 +502,11 @@ spread_bonfire(NhRegion *reg) {
                 add_coating(x, y, COAT_ASHES, 0);
                 create_bonfire(x, y, rnd(10), d(2, 4));
             }
+            if (has_coating(x, y, COAT_FUNGUS) && !rn2(4)) {
+                remove_coating(x, y, COAT_FUNGUS);
+                add_coating(x, y, COAT_ASHES, 0);
+                create_bonfire(x, y, rnd(4), d(4, 4));
+            }
             if (has_coating(x, y, COAT_POTION)
                         && levl[x][y].pindex == POT_OIL) {
                 remove_coating(x, y, COAT_POTION);

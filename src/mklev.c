@@ -1067,6 +1067,8 @@ fill_ordinary_room(
 
     /* grow some grass */
     coat_room(croom, COAT_GRASS);
+    if (svl.level.flags.has_swamp || u.uz.dlevel >= 5)
+        coat_room(croom, COAT_FUNGUS);
 
  skip_nonrogue:
     if (!rn2(3) && somexyspace(croom, &pos)) {
@@ -1086,24 +1088,27 @@ fill_ordinary_room(
 
 void
 coat_room(struct mkroom *croom, unsigned char coat_type) {
-    boolean grass_chance;
     int x, y;
+    int mod = ((coat_type & COAT_FUNGUS) != 0) ? 1 : 0;
+    int lx = croom->lx - mod;
+    int ly = croom->ly - mod;
+    int hx = croom->hx + mod;
+    int hy = croom->hy + mod;
+    boolean grass_chance = (svl.level.flags.has_swamp || (rn2(u.uz.dlevel) < 5));
     
-    grass_chance = (svl.level.flags.has_swamp || (rn2(u.uz.dlevel) < 5));
-    for (x = croom->lx; x <= croom->hx; x++) {
-        for (y = croom->ly; y <= croom->hy; y++) {
-            switch(coat_type) {
-            case COAT_GRASS:
+    for (x = lx; x <= hx; x++) {
+        for (y = ly; y <= hy; y++) {
+            if ((coat_type & COAT_GRASS) != 0) {
                 if (grass_chance ? rn2(4) : !rn2(u.uz.dlevel)) {
                     add_coating(x, y, COAT_GRASS, 0);
                 }
-                break;
-            case COAT_ASHES:
+            }
+            if ((coat_type & COAT_ASHES) != 0) {
                 if (rn2(3)) add_coating(x, y, COAT_ASHES, 0);
                 else add_coating(x, y, COAT_BLOOD, PM_HUMAN);
-                break;
-            default:
-                impossible("coat_room: unknown room coating %d?", coat_type);
+            }
+            if ((coat_type & COAT_FUNGUS) != 0) {
+                if (!rn2(max(2, abs(13 - u.uz.dlevel)))) add_coating(x, y, COAT_FUNGUS, 0);
             }
         }
     }

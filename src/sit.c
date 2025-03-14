@@ -432,6 +432,8 @@ dosit(void)
         return lay_an_egg();
     } else if (has_coating(u.ux, u.uy, COAT_GRASS)) {
         pline("The grass feels nice.");
+    } else if (has_coating(u.ux, u.uy, COAT_FUNGUS)) {
+        pline("The fungus is soft.");
     } else {
         pline("Having fun sitting on the %s?", surface(u.ux, u.uy));
     }

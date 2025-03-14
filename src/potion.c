@@ -1650,6 +1650,10 @@ add_coating(coordxy x, coordxy y, unsigned char coatflags, int pindex) {
         if (gi.in_mklev)
             levl[x][y].coat_info = 0;
         levl[x][y].coat_info |= coatflags;
+        if ((coatflags & COAT_FUNGUS) != 0) {
+            levl[x][y].lit = 1;
+            newsym(x, y);
+        }
         if ((coatflags & COAT_POTION) != 0) {
             remove_coating(x, y, COAT_BLOOD);
             levl[x][y].pindex = pindex;
@@ -1673,6 +1677,10 @@ boolean
 remove_coating(coordxy x, coordxy y, unsigned char coatflags) {
     if (!IS_COATABLE(levl[x][y].typ))
         return FALSE;
+    if ((coatflags & COAT_FUNGUS) != 0) {
+        levl[x][y].lit = 0;
+        newsym(x, y);
+    }
     levl[x][y].coat_info &= ~coatflags;
     if ((coatflags & COAT_POTION) != 0 || (coatflags & COAT_BLOOD) != 0)
         levl[x][y].pindex = 0;

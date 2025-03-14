@@ -606,6 +606,8 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
         Strcat(outbuf, "grassy ");
     if ((levl[x][y].coat_info & COAT_ASHES) != 0)
         Strcat(outbuf, "ash-strewn ");
+    if ((levl[x][y].coat_info & COAT_FUNGUS) != 0)
+        Strcat(outbuf, "fungus-encrusted ");
 
     if ((levl[x][y].coat_info & COAT_POTION) != 0)
         Sprintf(buf, "%s covered in %s liquid", defsyms[symidx].explanation, OBJ_DESCR(objects[levl[x][y].pindex]));
@@ -803,7 +805,7 @@ lookat(coordxy x, coordxy y, char *buf, char *monbuf)
             FALLTHROUGH;
             /*FALLTHRU*/
         default:
-            if (glyph_is_cmap_coatable(glyph))
+            if (glyph_is_cmap_coatable(glyph) && cansee(x, y))
                 coat_descr(x, y, symidx, buf);
             else
                 Strcpy(buf, defsyms[symidx].explanation);

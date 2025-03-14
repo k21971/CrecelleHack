@@ -142,11 +142,12 @@ enum levl_typ_types {
  * coat_info is defined as flags, which is only 5 bytes in length.
  * It should be fine, as long as one sticks to passing defined coats.
  */
-#define COAT_NONE   0x00
-#define COAT_GRASS  0x01
-#define COAT_ASHES  0x02
-#define COAT_POTION 0x04
-#define COAT_BLOOD  0x08
+#define COAT_NONE   0x00 /* no coating */
+#define COAT_GRASS  0x01 /* grass */
+#define COAT_ASHES  0x02 /* ashes */
+#define COAT_POTION 0x04 /* various types of potions */
+#define COAT_BLOOD  0x08 /* various types of blood */
+#define COAT_FUNGUS 0x10 /* luminescent fungus */
 
 /*
  * The structure describing a coordinate position.

@@ -5197,6 +5197,10 @@ zap_over_floor(
                 remove_coating(x, y, COAT_GRASS);
                 add_coating(x, y, COAT_ASHES, 0);
                 create_bonfire(x, y, rnd(10), d(2, 4));
+            } else if (has_coating(x, y, COAT_FUNGUS)) {
+                remove_coating(x, y, COAT_FUNGUS);
+                add_coating(x, y, COAT_ASHES, 0);
+                create_bonfire(x, y, rnd(4), d(4, 4));
             } 
             if (has_coating(x, y, COAT_POTION)
                         && levl[x][y].pindex == POT_OIL) {
@@ -5324,7 +5328,7 @@ zap_over_floor(
         int dy = ydir[k];
         boolean potion = has_coating(x, y, COAT_POTION);
         boolean blood = has_coating(x, y, COAT_BLOOD);
-        if (has_coating(x, y, COAT_GRASS)) {
+        if (has_coating(x, y, COAT_GRASS) || has_coating(x, y, COAT_FUNGUS)) {
             remove_coating(x, y, COAT_GRASS);
             add_coating(x, y, COAT_ASHES, 0);
         }
