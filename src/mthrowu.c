@@ -658,7 +658,8 @@ m_throw(
 
             switch (singleobj->otyp) {
             case EGG:
-                if (!touch_petrifies(&mons[singleobj->corpsenm])) {
+                if (!touch_petrifies(&mons[singleobj->corpsenm])
+                    && mon->data != &mons[PM_POLTERGEIST]) {
                     impossible("monster throwing egg type %d",
                                singleobj->corpsenm);
                     hitu = 0;

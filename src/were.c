@@ -146,11 +146,10 @@ new_were(struct monst *mon)
                                   : pmname(&mons[pm], Mgender(mon)) + 4);
 
     set_mon_data(mon, &mons[pm]);
-    if (!canseemon(mon)) {
+    if (!canseemon(mon) && !Protection_from_shape_changers) {
         disguise_were(mon);
     } else if (mon->m_ap_type) {
-        mon->mappearance = 0;
-        mon->m_ap_type = 0;
+        seemimic(mon);
     }
     if (helpless(mon)) {
         /* transformation wakens and/or revitalizes */

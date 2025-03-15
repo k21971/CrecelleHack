@@ -1286,6 +1286,7 @@ grow_dungeon(long elapsed) {
             levl[cc.x][cc.y].typ = TREE;
             levl[cc.x][cc.y].flags |= TREE_LOOTED;
             newsym(cc.x, cc.y);
+            block_point(cc.x, cc.y);
             if (cansee(cc.x, cc.y)) pline_xy(cc.x, cc.y, "You see a sapling sprout.");
         }
         if (has_coating(x, y, COAT_GRASS) 

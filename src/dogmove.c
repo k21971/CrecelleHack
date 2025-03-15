@@ -962,11 +962,13 @@ pet_ranged_attk(struct monst *mtmp, boolean forced)
 boolean
 betrayed(struct monst *mtmp)
 {
-    boolean has_edog = !mtmp->isminion;
-    struct edog *edog = EDOG(mtmp);
+    struct edog *edog;
+    boolean has_edog = has_edog(mtmp) && !(mtmp->isminion);
     int udist = distu(mtmp->mx, mtmp->my);
 
-    if (udist < 4 && has_edog && !rn2(3)
+    if (has_edog) edog = EDOG(mtmp);
+
+    if (has_edog && udist < 4 && !rn2(3)
 		    && is_traitor(mtmp->data)
 		    && !mindless(mtmp->data)
 		    && mtmp->mhp >= u.uhp	/* Pet is buff enough */

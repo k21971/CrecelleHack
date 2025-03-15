@@ -941,16 +941,20 @@ gulpmm(
         place_monster(mdef, dx, dy);
         newsym(dx, dy);
     } else {                           /* both alive, put them back */
-        if (cansee(dx, dy)) {
-            pline("%s is %s!", Monnam(mdef),
-                  digests(magr->data) ? "regurgitated"
-                    : enfolds(magr->data) ? "released"
-                      : "expelled");
-        }
+        if (MON_AT(dx, dy)) { /* handle monsters that tele on engulfing like black hole */
+            if (cansee(dx, dy)) {
+                pline("%s is %s!", Monnam(mdef),
+                    digests(magr->data) ? "regurgitated"
+                        : enfolds(magr->data) ? "released"
+                        : "expelled");
+            }
 
-        remove_monster(dx,dy);
-        place_monster(magr, ax, ay);
-        place_monster(mdef, dx, dy);
+            remove_monster(dx,dy);
+            place_monster(magr, ax, ay);
+            place_monster(mdef, dx, dy);
+        } else {
+            place_monster(magr, ax, ay);
+        }
         newsym(ax, ay);
         newsym(dx, dy);
     }
