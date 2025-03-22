@@ -45,6 +45,7 @@
 - YANI from Riker on the YANI Archive: Werecreatures that transform
   out of sight are disguised as standard creatures of their type.
 - Horses and ponies have altered names.
+- Tigers are orange.
 
 ### Unique Monsters
 - Dispater uses the trickster monster spell list, making him likely
@@ -109,6 +110,8 @@
 - Black Hole (v)
   - Teleports upon engulfing.
   - Teleports items when picking them up
+- Smilodon (f)
+  - Originally from SLASH'EM (sabre-toothed cat).
 
 ## Monster AI
 
