@@ -792,6 +792,13 @@ m_initinv(struct monst *mtmp)
             }
         }
         break;
+    case S_GOLEM:
+        for (cnt = 4; cnt; cnt--) {
+            otmp = mksobj(rn2(2) ? SCR_TELEPORTATION : SCR_CREATE_MONSTER,
+                            FALSE, FALSE);
+            (void) mpickobj(mtmp, otmp);
+        }
+        break;
     case S_WRAITH:
         if (ptr == &mons[PM_NAZGUL]) {
             otmp = mksobj(RIN_INVISIBILITY, FALSE, FALSE);
@@ -2312,6 +2319,8 @@ golemhp(int type)
         return 50;
     case PM_FLESH_GOLEM:
         return 40;
+    case PM_SCROLEM:
+        return 65;
     case PM_CLAY_GOLEM:
         return 70;
     case PM_BLOOD_GOLEM:

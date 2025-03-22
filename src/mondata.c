@@ -1290,6 +1290,7 @@ static const short grownups[][2] = {
     { PM_KEYSTONE_KOP, PM_KOP_SERGEANT },
     { PM_KOP_SERGEANT, PM_KOP_LIEUTENANT },
     { PM_KOP_LIEUTENANT, PM_KOP_KAPTAIN },
+    { PM_PAPER_GOLEM, PM_SCROLEM },
     { NON_PM, NON_PM }
 };
 

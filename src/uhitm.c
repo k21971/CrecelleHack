@@ -2502,6 +2502,7 @@ mhitm_ad_fire(
             else
                 You("smell burning%s.",
                     (pd == &mons[PM_PAPER_GOLEM]) ? " paper"
+                      : (pd == &mons[PM_SCROLEM]) ? " books"
                       : (pd == &mons[PM_STRAW_GOLEM]) ? " straw" : "");
             xkilled(mdef, XKILL_NOMSG | XKILL_NOCORPSE);
             mhm->damage = 0;

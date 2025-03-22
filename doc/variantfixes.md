@@ -107,6 +107,8 @@
 - Blood Golem (')
   - Leaves behind a trail of blood.
   - Explodes into blood when destroyed.
+- Scrolem (')
+  - Unique type of golem associated with scrolls.
 - Black Hole (v)
   - Teleports upon engulfing.
   - Teleports items when picking them up

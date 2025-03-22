@@ -1756,6 +1756,7 @@ trapeffect_fire_trap(
                 alt = mtmp->mhpmax;
                 break;
             case PM_STRAW_GOLEM:
+            case PM_SCROLEM:
                 alt = mtmp->mhpmax / 2;
                 break;
             case PM_WOOD_GOLEM:
@@ -4168,6 +4169,7 @@ dofiretrap(
             alt = u.mhmax;
             break;
         case PM_STRAW_GOLEM:
+        case PM_SCROLEM:
             alt = u.mhmax / 2;
             break;
         case PM_WOOD_GOLEM:

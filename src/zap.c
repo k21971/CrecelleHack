@@ -1594,7 +1594,7 @@ create_polymon(struct obj *obj, int okind)
         material = "glassy ";
         break;
     case PAPER:
-        pm_index = PM_PAPER_GOLEM;
+        pm_index = rn2(2) ? PM_PAPER_GOLEM : PM_SCROLEM;
         material = "paper ";
         break;
     default:

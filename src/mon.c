@@ -702,6 +702,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
         free_mgivenname(mtmp);
         break;
     case PM_PAPER_GOLEM:
+    case PM_SCROLEM:
         num = rnd(4);
         while (num--)
             obj = mksobj_at(SCR_BLANK_PAPER, x, y, TRUE, FALSE);

@@ -229,7 +229,8 @@
 
 /* no corpse (ie, blank scrolls) if killed by fire; special case instakill  */
 #define completelyburns(ptr) \
-    ((ptr) == &mons[PM_PAPER_GOLEM] || (ptr) == &mons[PM_STRAW_GOLEM])
+    ((ptr) == &mons[PM_PAPER_GOLEM] || (ptr) == &mons[PM_STRAW_GOLEM] \
+     || (ptr) == &mons[PM_SCROLEM])
 #define completelyrots(ptr) \
     ((ptr) == &mons[PM_WOOD_GOLEM] || (ptr) == &mons[PM_LEATHER_GOLEM])
 #define completelyrusts(ptr) ((ptr) == &mons[PM_IRON_GOLEM])
