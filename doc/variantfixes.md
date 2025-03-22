@@ -29,6 +29,7 @@
   weapon, such as a quarterstaff, two-bladed sword, or dual axe.
 
 ## Floor Coating System
+- Room floors can be dirt or stone. 
 - Floors can be coated with various substances, such as potions, grass,
   blood, and more.
 - All of these coatings can be interacted with in various ways, to

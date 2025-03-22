@@ -364,6 +364,8 @@ dig(void)
 
     svc.context.digging.effort +=
         10 + rn2(5) + abon(uwep) + uwep->spe - greatest_erosion(uwep) + u.udaminc;
+    if (levl[dpx][dpy].typ == ROOM && levl[dpx][dpy].submask == SM_DIRT)
+        svc.context.digging.effort += 10;
     if (Race_if(PM_DWARF))
         svc.context.digging.effort *= 2;
     if (svc.context.digging.down) {
@@ -1082,7 +1084,9 @@ dig_up_grave(coord *cc)
     }
     levl[dig_x][dig_y].typ = ROOM;
     levl[dig_x][dig_y].emptygrave = 0; /* clear 'flags' */
+    levl[dig_x][dig_y].submask = SM_DIRT; /* immediately set flags to dirt */
     levl[dig_x][dig_y].disturbed = 0; /* clear 'horizontal' */
+    remove_coating(dig_x, dig_y, COAT_ALL);
     del_engr_at(dig_x, dig_y);
     newsym(dig_x, dig_y);
     return;

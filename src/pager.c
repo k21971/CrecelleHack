@@ -18,6 +18,7 @@ staticfn void look_at_object(char *, coordxy, coordxy, int) NONNULLARG1;
 staticfn void look_at_monster(char *, char *, struct monst *,
                                                coordxy, coordxy) NONNULLARG13;
 /* lookat() can return Null */
+staticfn const char *floor_descr(coordxy, coordxy, short);
 staticfn char *coat_descr(coordxy, coordxy, short, char *outbuf) NONNULLARG4;
 staticfn struct permonst *lookat(coordxy, coordxy, char *, char *) NONNULLPTRS;
 staticfn boolean checkfile(char *, struct permonst *, unsigned,
@@ -594,11 +595,26 @@ waterbody_name(coordxy x, coordxy y)
     return "water"; /* don't hallucinate this as some other liquid */
 }
 
+/* describe the floor itself */
+staticfn const char *
+floor_descr(coordxy x, coordxy y, short symidx) {
+    if (levl[x][y].typ == ROOM) {
+        if (levl[x][y].submask == SM_DIRT) {
+            return "dirt";
+        } else {
+            return defsyms[symidx].explanation;
+        }
+    } else {
+        return defsyms[symidx].explanation;
+    }
+}
+
+/* describe the coating on a floor */
 staticfn char *
 coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
     char buf[BUFSZ];
     if (!levl[x][y].coat_info) {
-        Strcpy(outbuf, defsyms[symidx].explanation);
+        Strcpy(outbuf, floor_descr(x, y, symidx));
         return outbuf;
     }
 
@@ -610,14 +626,14 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
         Strcat(outbuf, "fungus-encrusted ");
 
     if ((levl[x][y].coat_info & COAT_POTION) != 0)
-        Sprintf(buf, "%s covered in %s liquid", defsyms[symidx].explanation, OBJ_DESCR(objects[levl[x][y].pindex]));
+        Sprintf(buf, "%s covered in %s liquid", floor_descr(x, y, symidx), OBJ_DESCR(objects[levl[x][y].pindex]));
     else if ((levl[x][y].coat_info & COAT_BLOOD) != 0) {
         if (ismnum(levl[x][y].pindex))
-            Sprintf(buf, "%s covered in %s blood", defsyms[symidx].explanation,  mons[levl[x][y].pindex].pmnames[NEUTRAL]);
+            Sprintf(buf, "%s covered in %s blood", floor_descr(x, y, symidx),  mons[levl[x][y].pindex].pmnames[NEUTRAL]);
         else
-            Sprintf(buf, "%s covered in blood", defsyms[symidx].explanation);
+            Sprintf(buf, "%s covered in blood", floor_descr(x, y, symidx));
     } else
-        Sprintf(buf, "%s", defsyms[symidx].explanation);
+        Sprintf(buf, "%s", floor_descr(x, y, symidx));
     Strcat(outbuf, buf);
     
     return outbuf;

@@ -148,6 +148,7 @@ enum levl_typ_types {
 #define COAT_POTION 0x04 /* various types of potions */
 #define COAT_BLOOD  0x08 /* various types of blood */
 #define COAT_FUNGUS 0x10 /* luminescent fungus */
+#define COAT_ALL 0xff
 
 /*
  * The structure describing a coordinate position.
@@ -193,6 +194,7 @@ struct rm {
  * pool    |ICED_MOAT    | ICED_POOL   |            |            |            |
  * grave   |             |             |            |            | emptygrave |
  * altar   |AM_SANCTUM   | AM_SHRINE   | AM_MASK    | AM_MASK    | AM_MASK    |
+ * room    |             |             |            |            | SM_DIRT    |
  *         |             |             |            |            |            |
  *         +-------------+-------------+------------+------------+------------+
  *
@@ -221,6 +223,12 @@ struct rm {
 #define looted     flags /* used for throne, tree, fountain, sink, door */
 #define icedpool   flags /* used for ice (in case it melts) */
 #define emptygrave flags /* no corpse in grave */
+#define submask    flags /* floor substance */
+
+/* We could track these as separate terrain types, but they are so similar
+   that they are more easily tracked as flags. */
+#define SM_STONE 0x00
+#define SM_DIRT  0x01
 
 /*
  * The 5 possible states of doors.

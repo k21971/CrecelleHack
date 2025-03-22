@@ -1751,6 +1751,8 @@ surface(coordxy x, coordxy y)
         return "wall"; /* 'surface' during Passes_walls */
     else if (IS_DOOR(levtyp))
         return "doorway"; /* even for closed door */
+    else if (levtyp == ROOM && levl[x][y].submask == SM_DIRT)
+        return"dirt";
     else if (IS_ROOM(levtyp) && !Is_earthlevel(&u.uz))
         return "floor";
     else

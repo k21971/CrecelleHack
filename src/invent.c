@@ -4720,7 +4720,7 @@ look_here(
             Strcat(fbuf, ":");
             (void) display_minventory(mtmp, MINV_ALL | PICK_NONE, fbuf);
         } else {
-            You("%s no objects here.", verb);
+            You("%s no objects here on the %s.", verb, surface(u.ux, u.uy));
         }
         return (!!Blind ? ECMD_TIME : ECMD_OK);
     }
@@ -4809,7 +4809,7 @@ look_here(
             pline1(fbuf);
         read_engr_at(u.ux, u.uy); /* Eric Backus */
         if (!skip_objects && (Blind || !dfeature))
-            You("%s no objects here.", verb);
+            You("%s no objects here on the %s.", verb, surface(u.ux, u.uy));
         return (!!Blind ? ECMD_TIME : ECMD_OK);
     }
     /* we know there is something here */

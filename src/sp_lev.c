@@ -2760,11 +2760,8 @@ fill_special_room(struct mkroom *croom)
         case ZOO:
         case COCKNEST:
         case LEPREHALL:
-            coat_room(croom, COAT_GRASS);
-            fill_zoo(croom);
-            break;
         case MORGUE:
-            coat_room(croom, COAT_ASHES);
+            coat_room(croom, COAT_GRASS);
             fill_zoo(croom);
             break;
         case COURT:

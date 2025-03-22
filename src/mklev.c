@@ -1187,13 +1187,17 @@ coat_room(struct mkroom *croom, unsigned char coat_type) {
             if ((coat_type & COAT_GRASS) != 0) {
                 if (grass_chance ? rn2(4) : !rn2(u.uz.dlevel)) {
                     add_coating(x, y, COAT_GRASS, 0);
+                    if (levl[x][y].typ == ROOM) {
+                        levl[x][y].submask = SM_DIRT;
+                    }
+                }
+                if (levl[x][y].typ == ROOM &&
+                    (!rn2(u.uz.dlevel) || croom->rtype == MORGUE)) {
+                    levl[x][y].submask = SM_DIRT;
                 }
             }
-            if ((coat_type & COAT_ASHES) != 0) {
-                if (rn2(3)) add_coating(x, y, COAT_ASHES, 0);
-                else add_coating(x, y, COAT_BLOOD, PM_HUMAN);
-            }
             if ((coat_type & COAT_FUNGUS) != 0) {
+                /* TODO: FIXME */
                 if (!rn2(max(2, abs(13 - u.uz.dlevel)))) add_coating(x, y, COAT_FUNGUS, 0);
             }
         }
