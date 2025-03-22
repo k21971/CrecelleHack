@@ -1196,6 +1196,15 @@
             | M1_MINDLESS | M1_UNSOLID | M1_TPORT,
         M2_HOSTILE | M2_NEUTER | M2_COLLECT | M2_MAGIC, 0,
         9, CLR_BLACK, BLACK_HOLE),
+    MON(NAM("crimson death"), S_VORTEX,
+        LVL(12, 15, 1, 35, 0), (G_GENO | G_NOCORPSE | 2),
+        A(ATTK(AT_TENT, AD_DRLI, 2, 4), ATTK(AT_TENT, AD_DRLI, 2, 4),
+          NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(WT_ETHEREAL, 0, MS_SILENT, MZ_HUGE),
+        MR_SLEEP | MR_POISON | MR_STONE, 0,
+        M1_FLY | M1_BREATHLESS | M1_NOLIMBS | M1_NOHEAD | M1_UNSOLID,
+        M2_UNDEAD | M2_STALK | M2_HOSTILE, 
+        M3_INFRAVISION | M3_TRAITOR, 14, CLR_RED, CRIMSON_DEATH),
     /*
      * worms
      */

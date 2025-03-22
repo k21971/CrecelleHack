@@ -59,7 +59,10 @@ hitmsg(struct monst *mtmp, struct attack *mattk)
             verb = "touches you";
             break;
         case AT_TENT:
-            verb = "tentacles suck your brain";
+            if (mattk->adtyp == AD_DRLI)
+                verb = "tentacles suck your blood";
+            else
+                verb = "tentacles suck your brain";
             Monst_name = s_suffix(Monst_name);
             break;
         case AT_EXPL:

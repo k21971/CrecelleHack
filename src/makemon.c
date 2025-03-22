@@ -1370,8 +1370,10 @@ makemon(
     case S_GHOST:
     case S_LIGHT:
     case S_ELEMENTAL:
+    case S_VORTEX:
         if (mndx == PM_STALKER || mndx == PM_BLACK_LIGHT
-            || mndx == PM_POLTERGEIST) {
+            || mndx == PM_POLTERGEIST
+            || mndx == PM_CRIMSON_DEATH) {
             mtmp->perminvis = TRUE;
             mtmp->minvis = TRUE;
         }

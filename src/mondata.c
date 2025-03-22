@@ -1419,6 +1419,7 @@ on_fire(struct permonst *mptr, struct attack *mattk)
     case PM_WATER_ELEMENTAL:
     case PM_FOG_CLOUD:
     case PM_STEAM_VORTEX:
+    case PM_CRIMSON_DEATH:
         what = "boiling";
         break;
     case PM_ICE_VORTEX:
@@ -1460,6 +1461,9 @@ msummon_environ(struct permonst *mptr, const char **cloud)
     case PM_ICE_VORTEX:
     case PM_FREEZING_SPHERE:
         what = "vapor";
+        break;
+    case PM_CRIMSON_DEATH:
+        what = "blood";
         break;
     case PM_STEAM_VORTEX:
         what = "steam";

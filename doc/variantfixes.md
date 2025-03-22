@@ -120,9 +120,12 @@
 - Boulderer (m)
   - Pretend to be boulders, spawn in groups.
   - Very low birth limit.
-- Caterwaul
+- Caterwaul (f)
   - Originally from SLASH'EM.
   - Some changes, including ability to caterwail.
+- Crimson Death (v)
+  - Vampiric mist.
+  - Invisible until sucked blood.
 
 ## Monster AI
 

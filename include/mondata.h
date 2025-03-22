@@ -217,7 +217,7 @@
 #define is_mind_flayer(ptr) \
     ((ptr) == &mons[PM_MIND_FLAYER] || (ptr) == &mons[PM_MASTER_MIND_FLAYER])
 
-#define is_vampire(ptr) ((ptr)->mlet == S_VAMPIRE)
+#define is_vampire(ptr) ((ptr)->mlet == S_VAMPIRE || (ptr) == &mons[PM_CRIMSON_DEATH])
 
 #define hates_light(ptr) ((ptr) == &mons[PM_GREMLIN])
 

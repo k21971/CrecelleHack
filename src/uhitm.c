@@ -2440,6 +2440,10 @@ mhitm_ad_drli(
         hitmsg(magr, mattk);
         if (!rn2(3) && !Drain_resistance
             && !mhitm_mgc_atk_negated(magr, mdef, TRUE)){
+            if (magr->data == &mons[PM_CRIMSON_DEATH]) {
+                magr->perminvis = magr->minvis = FALSE;
+                newsym(magr->mx, magr->my);
+            }
             losexp("life drainage");
 
             /* unlike hitting with Stormbringer, wounded attacker doesn't
@@ -2457,6 +2461,10 @@ mhitm_ad_drli(
                 mhm->damage = d(2, 6);
             if (gv.vis && canspotmon(mdef))
                 pline_mon(mdef, "%s becomes weaker!", Monnam(mdef));
+            if (magr->data == &mons[PM_CRIMSON_DEATH]) {
+                magr->perminvis = magr->minvis = FALSE;
+                newsym(magr->mx, magr->my);
+            }
             if (mdef->mhpmax - mhm->damage > (int) mdef->m_lev) {
                 mdef->mhpmax -= mhm->damage;
             } else {
