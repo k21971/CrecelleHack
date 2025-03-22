@@ -1684,6 +1684,14 @@
     /*
      * Fungi
      */
+    MON(NAM("lightcrust"), S_FUNGUS,
+        LVL(0, 0, 10, 0, 0), (G_NOCORPSE | G_NOHELL | 3),
+        A(NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(20, 200, MS_SILENT, MZ_SMALL), 0, 0,
+        M1_BREATHLESS | M1_NOEYES | M1_NOLIMBS | M1_NOHEAD | M1_MINDLESS
+            | M1_NOTAKE,
+        M2_HOSTILE | M2_NEUTER, 0,
+        1, CLR_CYAN, LIGHTCRUST),
     MON(NAM("lichen"), S_FUNGUS,
         LVL(0, 1, 9, 0, 0), (G_GENO | 4),
         A(ATTK(AT_TUCH, AD_STCK, 0, 0),

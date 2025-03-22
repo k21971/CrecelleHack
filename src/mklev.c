@@ -234,6 +234,7 @@ do_room_or_subroom(struct mkroom *croom,
 {
     coordxy x, y;
     struct rm *lev;
+    coord pos;
 
     /* locations might bump level edges in wall-less rooms */
     /* add/subtract 1 to allow for edge locations */
@@ -247,10 +248,12 @@ do_room_or_subroom(struct mkroom *croom,
         hiy = ROWNO - 2;
 
     if (lit) {
-        for (x = lowx - 1; x <= hix + 1; x++) {
-            lev = &levl[x][max(lowy - 1, 0)];
-            for (y = lowy - 1; y <= hiy + 1; y++)
-                lev++->lit = 1;
+        if (croom->rtype > THEMEROOM && croom->rtype != SWAMP) {
+            for (x = lowx - 1; x <= hix + 1; x++) {
+                lev = &levl[x][max(lowy - 1, 0)];
+                for (y = lowy - 1; y <= hiy + 1; y++)
+                    lev++->lit = 1;
+            }
         }
         croom->rlit = 1;
     } else
@@ -974,6 +977,10 @@ fill_ordinary_room(
         if (tmonst && tmonst->data == &mons[PM_GIANT_SPIDER]
             && !occupied(pos.x, pos.y))
             (void) maketrap(pos.x, pos.y, WEB);
+    }
+    if (croom->rlit) {
+        somexyspace(croom, &pos);
+        makemon(&mons[PM_LIGHTCRUST], pos.x, pos.y, MM_NOCOUNTBIRTH);
     }
     /* put traps and mimics inside */
     x = 8 - (level_difficulty() / 6);

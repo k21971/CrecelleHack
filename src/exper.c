@@ -136,10 +136,12 @@ experience(struct monst *mtmp, int nk)
 
 #ifdef MAIL_STRUCTURES
     /* Mail daemons put up no fight. */
-    if (mtmp->data == &mons[PM_MAIL_DAEMON]
-        || mtmp->data == &mons[PM_ILLUSION])
+    if (mtmp->data == &mons[PM_MAIL_DAEMON])
         tmp = 1;
 #endif
+    if (mtmp->data == &mons[PM_ILLUSION]
+        || mtmp->data == &mons[PM_LIGHTCRUST])
+        tmp = 0;
 
     if (mtmp->mrevived || mtmp->mcloned) {
         /*

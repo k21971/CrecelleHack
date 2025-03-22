@@ -112,6 +112,9 @@
   - Teleports items when picking them up
 - Smilodon (f)
   - Originally from SLASH'EM (sabre-toothed cat).
+- Lightcrust (F)
+  - Sheds light in a large radius.
+  - Generates throughout the dungeon.
 
 ## Monster AI
 

@@ -3216,6 +3216,11 @@ corpse_chance(
         return FALSE;
     }
 
+    if (mdat == &mons[PM_LIGHTCRUST]) {
+        add_coating(mon->mx, mon->my, COAT_FUNGUS, 0);
+        return FALSE;
+    }
+
     /* Gas spores always explode upon death */
     for (i = 0; i < NATTK; i++) {
         if (mdat->mattk[i].aatyp == AT_BOOM) {
