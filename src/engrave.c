@@ -1327,7 +1327,8 @@ engrave(void)
          * engrave "Elbereth" all at once.
          * However, you can engrave "Elb", then "ere", then "th", by taking
          * advantage of the rounding down. */
-        if (svc.context.engraving.actionct % 2 == 1) { /* 1st,3rd,... action */
+        if (svc.context.engraving.actionct %
+            ((levl[u.ux][u.uy].typ == ROOM && levl[u.ux][u.uy].submask == SM_DIRT) ? 6 : 2) == 1) { /* 1st,3rd,... action */
             /* deduct a point on 1st, 3rd, 5th, ... turns, unless this is the
              * last character being engraved (a rather convoluted way to round
              * down), but always deduct a point on the 1st turn to prevent
