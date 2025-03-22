@@ -942,6 +942,7 @@ fill_ordinary_room(
     struct monst *tmonst; /* always put a web with a spider */
     coordxy x, y;
     boolean skip_chests = FALSE;
+    short coatings;
 
     if (croom->rtype != OROOM && croom->rtype != THEMEROOM)
         return;
@@ -1152,9 +1153,10 @@ fill_ordinary_room(
     }
 
     /* grow some grass */
-    coat_room(croom, COAT_GRASS);
-    if (svl.level.flags.has_swamp || u.uz.dlevel >= 5)
-        coat_room(croom, COAT_FUNGUS);
+    coatings = COAT_GRASS;
+    if (svl.level.flags.has_swamp || (u.uz.dlevel >= 5 && !rn2(u.uz.dlevel)))
+        coatings |= COAT_FUNGUS;
+    coat_room(croom, coatings);
 
  skip_nonrogue:
     if (!rn2(3) && somexyspace(croom, &pos)) {
@@ -1175,16 +1177,16 @@ fill_ordinary_room(
 void
 coat_room(struct mkroom *croom, unsigned char coat_type) {
     int x, y;
-    int mod = ((coat_type & COAT_FUNGUS) != 0) ? 1 : 0;
-    int lx = croom->lx - mod;
-    int ly = croom->ly - mod;
-    int hx = croom->hx + mod;
-    int hy = croom->hy + mod;
     boolean grass_chance = (svl.level.flags.has_swamp || (rn2(u.uz.dlevel) < 5));
+    int lx = croom->lx;
+    int ly = croom->ly;
+    int hx = croom->hx;
+    int hy = croom->hy;
     
-    for (x = lx; x <= hx; x++) {
-        for (y = ly; y <= hy; y++) {
-            if ((coat_type & COAT_GRASS) != 0) {
+    for (x = lx - 1; x <= hx + 1; x++) {
+        for (y = ly - 1; y <= hy + 1; y++) {
+            if ((coat_type & COAT_GRASS) != 0 &&
+                x >= lx && x <= hx && y >= ly && y <= hy) {
                 if (grass_chance ? rn2(4) : !rn2(u.uz.dlevel)) {
                     add_coating(x, y, COAT_GRASS, 0);
                     if (levl[x][y].typ == ROOM) {
@@ -1197,7 +1199,6 @@ coat_room(struct mkroom *croom, unsigned char coat_type) {
                 }
             }
             if ((coat_type & COAT_FUNGUS) != 0) {
-                /* TODO: FIXME */
                 if (!rn2(max(2, abs(13 - u.uz.dlevel)))) add_coating(x, y, COAT_FUNGUS, 0);
             }
         }
