@@ -3163,6 +3163,9 @@ cancel_monst(struct monst *mdef, struct obj *obj, boolean youattack,
                 else /* note: "dark" rather than "heavy" is intentional... */
                     You_feel("%s headed.", Hallucination ? "dark" : "light");
                 u.mh = 0; /* fatal; death handled by rehumanize() */
+            } else if (u.umonnum == PM_SCROLEM) {
+                You_feel("rather blank.");
+                (void) polymon(PM_PAPER_GOLEM);
             }
             if (Unchanging && u.mh > 0)
                 Your("amulet grows hot for a moment, then cools.");
@@ -3184,6 +3187,17 @@ cancel_monst(struct monst *mdef, struct obj *obj, boolean youattack,
                     killed(mdef);
                 else
                     monkilled(mdef, "", AD_SPEL);
+            }
+        } else if (mdef->data == &mons[PM_SCROLEM]) {
+            if (canseemon(mdef))
+                pline_mon(mdef, 
+                          "The magical scrolls making up the %s turn blank.", 
+                          mon_nam(mdef));
+            newcham(mdef, &mons[PM_PAPER_GOLEM], 
+                    NC_VIA_WAND_OR_SPELL);
+            for (struct obj *otmp = mdef->minvent; otmp; otmp = otmp->nobj) {
+                if (otmp->oclass == SCROLL_CLASS)
+                    cancel_item(otmp);
             }
         }
     }
