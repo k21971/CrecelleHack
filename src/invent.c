@@ -2091,7 +2091,8 @@ silly_thing(const char *word,
             s1 = "T", s2 = "take", s3 = " off";
     } else if ((ocls == RING_CLASS || otyp == MEAT_RING)
                || ocls == AMULET_CLASS
-               || (otyp == BLINDFOLD || otyp == TOWEL || otyp == LENSES)) {
+               || (otyp == BLINDFOLD || otyp == TOWEL || otyp == LENSES
+                   || otyp == SUNGLASSES)) {
         if (!strcmp(word, "wear"))
             s1 = "P", s2 = "put", s3 = " on";
         else if (!strcmp(word, "take off"))
@@ -3340,8 +3341,8 @@ itemactions(struct obj *otmp)
         else if (otmp->otyp == TOWEL || otmp->otyp == BLINDFOLD)
             ia_addmenu(win, IA_WEAR_OBJ, 'P',
                        "Use this to blindfold yourself");
-        else if (otmp->otyp == LENSES)
-            ia_addmenu(win, IA_WEAR_OBJ, 'P', "Put these lenses on");
+        else if (otmp->otyp == LENSES || otmp->otyp == SUNGLASSES)
+            ia_addmenu(win, IA_WEAR_OBJ, 'P', "Put these glasses on");
     }
 
     /* q: drink item */

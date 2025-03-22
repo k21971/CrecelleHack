@@ -2599,6 +2599,7 @@ breakmsg(struct obj *obj, boolean in_view)
         FALLTHROUGH;
         /*FALLTHRU*/
     case LENSES:
+    case SUNGLASSES:
     case MIRROR:
     case CRYSTAL_BALL:
     case EXPENSIVE_CAMERA:

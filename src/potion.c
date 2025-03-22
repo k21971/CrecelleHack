@@ -801,6 +801,8 @@ peffect_booze(struct obj *otmp)
     exercise(A_WIS, FALSE);
     if (otmp->cursed) {
         You("pass out.");
+        if (ublindf && ublindf->otyp == SUNGLASSES)
+            pline("Good thing you're wearing dark glasses.");
         gm.multi = -rnd(15);
         gn.nomovemsg = "You awake with a headache.";
     }

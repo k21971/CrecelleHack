@@ -263,6 +263,8 @@ resists_blnd(struct monst *mon)
     /* Sunsword */
     if (resists_blnd_by_arti(mon))
         return TRUE;
+    if (is_you && ublindf && ublindf->otyp == SUNGLASSES)
+        return TRUE;
     /* catchall */
     if (is_you && Blnd_resist) {
         impossible("'Blnd_resist' but not resists_blnd()?");

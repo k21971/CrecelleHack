@@ -691,7 +691,7 @@ xname_flags(
     case TOOL_CLASS:
         /* note: lenses or towel prefix would overwrite poisoned weapon
            prefix if both were simultaneously possible, but they aren't */
-        if (typ == LENSES)
+        if (typ == LENSES || typ == SUNGLASSES)
             Strcpy(buf, "pair of ");
         else if (is_wet_towel(obj))
             Strcpy(buf, (obj->spe < 3) ? "moist " : "wet ");
@@ -2680,7 +2680,8 @@ static const struct sing_plur one_off[] = {
 static const char *const as_is[] = {
     /* makesingular() leaves these plural due to how they're used */
     "boots",   "shoes",     "gloves",    "lenses",   "scales",
-    "eyes",    "gauntlets", "iron bars",
+    "eyes",    "gauntlets", "iron bars", "sunglasses",
+    "dark glasses",
     /* both singular and plural are spelled the same */
     "bison",   "deer",      "elk",       "fish",      "fowl",
     "tuna",    "yaki",      "-hai",      "krill",     "manes",

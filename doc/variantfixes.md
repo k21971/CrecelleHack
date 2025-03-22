@@ -171,6 +171,8 @@
 - Potion of blood
   - Function similarly to potions of blood from dnethack, although
     the implementation is different.
+- Sunglasses
+  - Provide protection against flash-based blindness.
 - Shepherd's Crook
   - Similar to a quarterstaff.
   - Can be used for tripping purposes.

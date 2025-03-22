@@ -426,7 +426,7 @@ struct obj {
         "a pair of lenses named the Eyes of the Overworld" is not */    \
      || ((o)->oartifact == ART_EYES_OF_THE_OVERWORLD                    \
          && !undiscovered_artifact(ART_EYES_OF_THE_OVERWORLD)))
-#define pair_of(o) ((o)->otyp == LENSES || is_gloves(o) || is_boots(o))
+#define pair_of(o) ((o)->otyp == LENSES || (o)->otyp == SUNGLASSES || is_gloves(o) || is_boots(o))
 
 #define unpolyable(o) ((o)->otyp == WAN_POLYMORPH \
                        || (o)->otyp == SPE_POLYMORPH \
