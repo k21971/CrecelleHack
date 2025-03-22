@@ -1089,7 +1089,7 @@ done(int how)
         (void) adjattrib(A_CON, -1, TRUE);
         savelife(how);
         if (how == GENOCIDED) {
-            pline("Unfortunately you are still genocided...");
+            pline("Unfortunately you are still erased...");
         } else {
             char killbuf[BUFSZ];
             formatkiller(killbuf, BUFSZ, how, FALSE);
