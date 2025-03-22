@@ -767,6 +767,10 @@ dochug(struct monst *mtmp)
     if (mdat == &mons[PM_ERINYS] && !mtmp->mpeaceful && m_canseeu(mtmp))
         aggravate();
 
+    /* Illusions may disappear in order to prevent flooding the level */
+    if (!rn2(14))
+        mongone(mtmp);
+
     /* Shriekers and Medusa have irregular abilities which must be
        checked every turn. These abilities do not cost a turn when
        used. */
