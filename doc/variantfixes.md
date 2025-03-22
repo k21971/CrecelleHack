@@ -126,6 +126,8 @@
 - Crimson Death (v)
   - Vampiric mist.
   - Invisible until sucked blood.
+- Frostwurm (w)
+  - Cold-associated worm.
 
 ## Monster AI
 
