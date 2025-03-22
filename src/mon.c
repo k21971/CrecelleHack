@@ -5900,6 +5900,7 @@ usmellmon(struct permonst *mdat)
             switch (mdat->mlet) {
             case S_FELINE:
                 pline("%s smells like a catbox.", Something);
+                msg_given = TRUE;
                 break;
             case S_DOG:
                 You("notice a dog smell.");
