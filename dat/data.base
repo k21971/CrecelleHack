@@ -1961,6 +1961,7 @@ fruit
 fruitname
 	They say this is edible.  Some adventurers have strange tastes.
 *fung*
+lightcrust
 	Fungi, division of simple plants that lack chlorophyll, true
 	stems, roots, and leaves.  Unlike algae, fungi cannot
 	photosynthesize, and live as parasites or saprophytes.  The
@@ -1984,6 +1985,7 @@ fruitname
 		[ The Concise Columbia Encyclopedia ]
 *gargoyle
 grotesque
+mascaron
 	And so it came to pass that while Man ruled on Earth, the
 	gargoyles waited, lurking, hidden from the light.  Reborn
 	every 600 years in Man's reckoning of time, the gargoyles
@@ -2084,6 +2086,7 @@ geryon
 	      translated by H.F. Cary ]
 *ghost
 valley of *dea*
+poltergeist
 	And now the souls of the dead who had gone below came swarming
 	up from Erebus -- fresh brides, unmarried youths, old men
 	with life's long suffering behind them, tender young girls
@@ -2707,6 +2710,12 @@ idefix
 	strong views on the environment (he howls whenever he sees an
 	uprooted tree).
 		[ Wikipedia, the free encyclopedia ]
+illusion
+	ROMEO:  I dreamt a dream tonight.
+	MERCUTIO:  And so did I.
+	ROMEO:  Well, what was yours?
+	MERCUTIO:  That dreamers often lie.
+		[ Romeo and Juliet, by William Shakespeare ]
 # takes "imp or minor demon" when specifying 'i'
 imp
 imp or minor demon
@@ -5093,6 +5102,10 @@ sling
 	a stone, and smote the Philistine, and slew him; but there
 	was no sword in the hand of David.
 		[ 1 Samuel 17:48-50 ]
+smilodon
+sabre-toothed cat
+	It's enough to make a cat laugh.
+		[]
 *snake
 serpent
 water moccasin
@@ -5818,6 +5831,7 @@ vlad*
 	failed to doff their hats had them nailed to their head.
 *vortex
 vortices
+black hole
 	Swirling clouds of pure elemental energies, the vortices are
 	thought to be related to the larger elementals.  They are
 	noted for being able to envelop unwary travellers.  The
