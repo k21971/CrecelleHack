@@ -740,6 +740,15 @@
             | M1_CARNIVORE,
         M2_HOSTILE | M2_STRONG, 0,
         11, HI_LORD, GIANT_MIMIC),
+    MON(NAM("boulderer"), S_MIMIC,
+        LVL(15, 8, -3, 40, 4), (G_GENO | G_LGROUP | 1),
+        A(ATTK(AT_CLAW, AD_PHYS, 5, 6), ATTK(AT_CLAW, AD_PHYS, 5, 6),
+          NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(1000, 800, MS_BOAST, MZ_LARGE), MR_ACID, 0,
+        M1_CLING | M1_BREATHLESS | M1_HIDE | M1_HUMANOID 
+          | M1_NOHEAD | M1_THICK_HIDE,
+        M2_STRONG, 0,
+        18, CLR_GRAY, BOULDERER),
     /*
      * nymphs
      */

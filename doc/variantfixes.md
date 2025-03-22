@@ -117,6 +117,9 @@
 - Lightcrust (F)
   - Sheds light in a large radius.
   - Generates throughout the dungeon.
+- Boulderer (m)
+  - Pretend to be boulders, spawn in groups.
+  - Very low birth limit.
 
 ## Monster AI
 

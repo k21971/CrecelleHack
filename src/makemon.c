@@ -1494,7 +1494,7 @@ makemon(
                               : eminp->renegade;
     }
     set_malign(mtmp); /* having finished peaceful changes */
-    if (anymon && !(mmflags & MM_NOGRP)) {
+    if (!(mmflags & MM_NOGRP)) {
         if ((ptr->geno & G_SGROUP) && (rn2(2) || (ptr->geno & G_MIDBOSS))) {
             m_initsgrp(mtmp, mtmp->mx, mtmp->my, mmflags);
         } else if (ptr->geno & G_LGROUP) {
@@ -1612,7 +1612,8 @@ mbirth_limit(int mndx)
      */
 
     /* assert(MAXMONNO < 255); */
-    return (mndx == PM_NAZGUL ? 9 : mndx == PM_ERINYS ? 3 : MAXMONNO);
+    return (mndx == PM_NAZGUL ? 9 : mndx == PM_ERINYS ? 3 
+            : mndx == PM_BOULDERER ? 12 : MAXMONNO);
 }
 
 /* used for wand/scroll/spell of create monster */
@@ -2490,7 +2491,10 @@ set_mimic_sym(struct monst *mtmp)
     else
         rt = 0; /* roomno < 0 case for GCC_WARN */
 
-    if (OBJ_AT(mx, my)) {
+    if (mtmp->data == &mons[PM_BOULDERER]) {
+        ap_type = M_AP_OBJECT;
+        appear = BOULDER;
+    } else if (OBJ_AT(mx, my)) {
         ap_type = M_AP_OBJECT;
         appear = svl.level.objects[mx][my]->otyp;
     } else if (IS_DOOR(typ) || IS_WALL(typ) || typ == SDOOR || typ == SCORR) {

@@ -1179,6 +1179,10 @@ cpostfx(int pm)
     case PM_BAT:
         make_stunned((HStun & TIMEOUT) + 30L, FALSE);
         break;
+    case PM_BOULDERER:
+        tmp += 60;
+        FALLTHROUGH;
+        /*FALLTHRU*/
     case PM_GIANT_MIMIC:
         tmp += 10;
         FALLTHROUGH;

@@ -760,6 +760,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_OCHRE_JELLY: case PM_KOBOLD: case PM_LARGE_KOBOLD:
     case PM_KOBOLD_LEADER: case PM_KOBOLD_SHAMAN: case PM_LEPRECHAUN:
     case PM_SMALL_MIMIC: case PM_LARGE_MIMIC: case PM_GIANT_MIMIC:
+    case PM_BOULDERER:
     case PM_WOOD_NYMPH: case PM_WATER_NYMPH: case PM_MOUNTAIN_NYMPH:
     case PM_GOBLIN: case PM_HOBGOBLIN: case PM_ORC: case PM_HILL_ORC:
     case PM_MORDOR_ORC: case PM_URUK_HAI: case PM_ORC_SHAMAN:
@@ -1392,7 +1393,8 @@ m_consume_obj(struct monst *mtmp, struct obj *otmp)
 
         deadmimic = (otmp->otyp == CORPSE && (corpsenm == PM_SMALL_MIMIC
                                               || corpsenm == PM_LARGE_MIMIC
-                                              || corpsenm == PM_GIANT_MIMIC));
+                                              || corpsenm == PM_GIANT_MIMIC
+                                              || corpsenm == PM_BOULDERER));
         slimer = (otmp->otyp == GLOB_OF_GREEN_SLIME);
         poly = polyfood(otmp);
         grow = mlevelgain(otmp);
