@@ -1494,7 +1494,7 @@ makemon(
                               : eminp->renegade;
     }
     set_malign(mtmp); /* having finished peaceful changes */
-    if (!(mmflags & MM_NOGRP)) {
+    if (anymon && !(mmflags & MM_NOGRP)) {
         if ((ptr->geno & G_SGROUP) && (rn2(2) || (ptr->geno & G_MIDBOSS))) {
             m_initsgrp(mtmp, mtmp->mx, mtmp->my, mmflags);
         } else if (ptr->geno & G_LGROUP) {
