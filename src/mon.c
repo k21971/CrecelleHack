@@ -745,7 +745,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_FLAMING_SPHERE: case PM_SHOCKING_SPHERE: case PM_GRAVIMETRIC_SPHERE:
 
     case PM_KITTEN: case PM_HOUSECAT: case PM_JAGUAR: case PM_LYNX:
-    case PM_PANTHER: case PM_LARGE_CAT:  case PM_TIGER:
+    case PM_PANTHER: case PM_LARGE_CAT:  case PM_TIGER: case PM_SMILODON:
 
     case PM_DISPLACER_BEAST: case PM_GREMLIN:
     case PM_GARGOYLE: case PM_WINGED_GARGOYLE:
@@ -797,7 +797,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_STALKER: case PM_AIR_ELEMENTAL: case PM_FIRE_ELEMENTAL:
     case PM_EARTH_ELEMENTAL: case PM_WATER_ELEMENTAL:
 
-    case PM_LICHEN: case PM_BROWN_MOLD: case PM_YELLOW_MOLD:
+    case PM_LIGHTCRUST: case PM_LICHEN: case PM_BROWN_MOLD: case PM_YELLOW_MOLD:
     case PM_GREEN_MOLD: case PM_RED_MOLD: case PM_SHRIEKER:
     case PM_VIOLET_FUNGUS:
 
