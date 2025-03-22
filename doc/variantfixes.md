@@ -120,6 +120,9 @@
 - Boulderer (m)
   - Pretend to be boulders, spawn in groups.
   - Very low birth limit.
+- Caterwaul
+  - Originally from SLASH'EM.
+  - Some changes, including ability to caterwail.
 
 ## Monster AI
 

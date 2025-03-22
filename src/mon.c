@@ -747,6 +747,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
 
     case PM_KITTEN: case PM_HOUSECAT: case PM_JAGUAR: case PM_LYNX:
     case PM_PANTHER: case PM_LARGE_CAT:  case PM_TIGER: case PM_SMILODON:
+    case PM_CATERWAUL:
 
     case PM_DISPLACER_BEAST: case PM_GREMLIN:
     case PM_GARGOYLE: case PM_WINGED_GARGOYLE:
@@ -4139,6 +4140,13 @@ m_respond(struct monst *mtmp)
                 break;
             }
     }
+    if (mtmp->data == &mons[PM_CATERWAUL]) {
+        if (!Deaf) {
+            pline("%s caterwails.", Monnam(mtmp));
+            stop_occupation();
+        }
+        wake_nearto(mtmp->mx, mtmp->my, 25);
+    }
     if (mtmp->data == &mons[PM_MASCARON] && u.ualign.abuse > 5) {
         if (mtmp->mtame) betrayed(mtmp);
         else if (mtmp->mpeaceful) mtmp->mpeaceful = 0;
@@ -5872,6 +5880,10 @@ usmellmon(struct permonst *mdat)
             You("smell mushrooms.");
             msg_given = TRUE;
             break;
+        case PM_SCROLEM:
+            You("smell wet ink.");
+            msg_given = TRUE;
+            break;
         /* These are here to avoid triggering the
            nonspecific treatment through the default case below*/
         case PM_WHITE_UNICORN:
@@ -5886,6 +5898,9 @@ usmellmon(struct permonst *mdat)
 
         if (nonspecific)
             switch (mdat->mlet) {
+            case S_FELINE:
+                pline("%s smells like a catbox.", Something);
+                break;
             case S_DOG:
                 You("notice a dog smell.");
                 msg_given = TRUE;
