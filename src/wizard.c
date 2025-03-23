@@ -497,6 +497,8 @@ aggravate(void)
             continue;
         mtmp->mstrategy &= ~(STRAT_WAITFORU | STRAT_APPEARMSG);
         mtmp->msleeping = 0;
+        mtmp->mux = u.ux; /* Signal location - k */
+        mtmp->muy = u.uy; /* Signal location - k */
         if (!mtmp->mcanmove && !rn2(5)) {
             mtmp->mfrozen = 0;
             mtmp->mcanmove = 1;

@@ -13,7 +13,6 @@ staticfn void m_calcdistress(struct monst *);
 staticfn boolean monlineu(struct monst *, int, int);
 staticfn boolean mon_avoids_chokepoint(struct monst *);
 staticfn long mm_2way_aggression(struct monst *, struct monst *);
-staticfn long mm_aggression(struct monst *, struct monst *);
 staticfn long mm_displacement(struct monst *, struct monst *);
 staticfn void mon_leaving_level(struct monst *);
 staticfn void m_detach(struct monst *, struct permonst *, boolean);
@@ -2062,13 +2061,14 @@ mon_avoids_chokepoint(struct monst *mon) {
        unless a player is specifically in a corridor, simply
        to cut down on the amount of iteration. */
     if (mon->mpeaceful || !is_ambusher(mon->data)
+        || passes_walls(mon->data)
         || levl[mon->mx][mon->my].typ == CORR
         || levl[mon->mx][mon->my].typ == SCORR
         || svl.level.flags.is_maze_lev
         || (levl[u.ux][u.uy].typ != CORR && levl[u.ux][u.uy].typ != SCORR))
         return 0;
     /* If the player is badly hurt, it's time to go in. */
-    if (u.uhp < u.uhpmax / 2)
+    if (u.uhp * 2 <= u.uhpmax)
         return 0;
     /* Loop over player's surroundings. */
     for (int dx = -1; dx <= 1; dx++) {
@@ -2437,7 +2437,7 @@ mm_2way_aggression(struct monst *magr, struct monst *mdef)
    in the absence of Conflict.  There is no provision for targeting
    other monsters; just hand to hand fighting when they happen to be
    next to each other. */
-staticfn long
+long
 mm_aggression(
     struct monst *magr, /* monster that is currently deciding where to move */
     struct monst *mdef) /* another monster which is next to it */
@@ -4151,6 +4151,9 @@ m_respond(struct monst *mtmp)
         if (mtmp->mtame) betrayed(mtmp);
         else if (mtmp->mpeaceful) mtmp->mpeaceful = 0;
     }
+    if (does_callouts(mtmp->data)) {
+        mcallout(mtmp);
+    }
 }
 
 /* how quest guardians respond when you attack the quest leader */
@@ -4424,6 +4427,11 @@ wake_nearto_core(coordxy x, coordxy y, int distance, boolean petcall)
                     EDOG(mtmp)->whistletime = svm.moves;
                 /* Fix up a pet who is stuck "fleeing" its master */
                 mon_track_clear(mtmp);
+            }
+            /* monsters decide to check out the noise */
+            if (!mtmp->mpeaceful && mtmp->mux != x && mtmp->muy != y) {
+                mtmp->mux = x;
+                mtmp->muy = y;
             }
         }
     }

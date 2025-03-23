@@ -1735,6 +1735,7 @@ extern int can_carry(struct monst *, struct obj *) NONNULLARG12;
 extern long mon_allowflags(struct monst *) NONNULLARG1;
 extern boolean m_in_air(struct monst *) NONNULLARG1;
 extern int mfndpos(struct monst *, coord *, long *, long) NONNULLPTRS;
+extern long mm_aggression(struct monst *, struct monst *);
 extern boolean monnear(struct monst *, coordxy, coordxy) NONNULLARG1;
 extern void dmonsfree(void);
 extern void elemental_clog(struct monst *) NONNULLARG1;
@@ -2980,6 +2981,7 @@ extern char *base_soundname_to_filename(char *, char *, size_t, int32_t) NONNULL
 extern void set_voice(struct monst *, int32_t, int32_t, int32_t) NO_NNARGS;
 extern void sound_speak(const char *) NO_NNARGS;
 extern int dotaunt(void);
+extern void mcallout(struct monst *) NO_NNARGS;
 extern enum soundlib_ids soundlib_id_from_opt(char *);
 
 /* ### sp_lev.c ### */
@@ -3022,6 +3024,7 @@ extern void update_croom(void);
 extern const char *get_trapname_bytype(int);
 extern void l_register_des(lua_State *) NONNULLARG1;
 #endif /* !CROSSCOMPILE || CROSSCOMPILE_TARGET */
+extern const char *get_mkroom_name(int) NONNULL;
 
 /* ### spell.c ### */
 

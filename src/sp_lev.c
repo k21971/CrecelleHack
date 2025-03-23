@@ -120,7 +120,6 @@ staticfn int get_table_buc(lua_State *);
 staticfn int get_table_objclass(lua_State *);
 staticfn int find_objtype(lua_State *, const char *);
 staticfn int get_table_objtype(lua_State *);
-staticfn const char *get_mkroom_name(int) NONNULL;
 staticfn int get_table_roomtype_opt(lua_State *, const char *, int);
 staticfn int get_table_traptype_opt(lua_State *, const char *, int);
 staticfn int get_traptype_byname(const char *);
@@ -3980,7 +3979,7 @@ static const struct {
     { 0, 0 }
 };
 
-staticfn const char *
+const char *
 get_mkroom_name(int rtype)
 {
     int i;

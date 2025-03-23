@@ -780,6 +780,10 @@ dochug(struct monst *mtmp)
         m_respond(mtmp);
     if (mdat == &mons[PM_MEDUSA] && couldsee(mtmp->mx, mtmp->my))
         m_respond(mtmp);
+    if (does_callouts(mdat) && !mtmp->mpeaceful && couldsee(mtmp->mx, mtmp->my)
+        && !rn2(10) 
+        && !um_dist(mtmp->mx, mtmp->my, 5))
+        m_respond(mtmp);
     if (DEADMONSTER(mtmp))
         return 1; /* m_respond gaze can kill medusa */
 
@@ -1889,12 +1893,22 @@ m_move(struct monst *mtmp, int after)
     ggx = mtmp->mux;
     ggy = mtmp->muy;
     appr = mtmp->mflee ? -1 : 1;
-    if (mtmp->mconf || engulfing_u(mtmp)) {
+    if (mtmp->mconf || engulfing_u(mtmp) || !(ggx || ggy)) {
         appr = 0;
     } else {
+        #if 0
         boolean should_see = (couldsee(omx, omy)
                               && (levl[ggx][ggy].lit || !levl[omx][omy].lit)
                               && (dist2(omx, omy, ggx, ggy) <= 36));
+        #endif
+        boolean should_see = (distmin(omx, omy, ggx, ggy) <= 1);
+        if(mtmp->mcansee) {
+			if (couldsee(omx, omy)) {
+				if (infravision(mtmp->data) || (gv.viz_array[ggy][ggx] & TEMP_LIT)) {
+					should_see = TRUE;
+				}
+			}
+		}
 
         if (!mtmp->mcansee
             || (should_see && Invis && !perceives(ptr) && rn2(11))

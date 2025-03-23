@@ -146,6 +146,8 @@
 - Some monsters will avoid following the player into chokepoints.
 - Monsters will only flee from the player if they could conceivably
   outrun them.
+- Monsters do not track the player across the entire level, as in
+  vanilla.
 
 ## Objects
 

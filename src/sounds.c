@@ -14,6 +14,7 @@ staticfn int dochat(void);
 staticfn struct monst *responsive_mon_at(int, int);
 staticfn int mon_in_room(struct monst *, int);
 staticfn boolean oracle_sound(struct monst *);
+staticfn char *mverbal_description(coordxy, coordxy, char *);
 
 /* this easily could be a macro, but it might overtax dumb compilers */
 staticfn int
@@ -2251,6 +2252,99 @@ dotaunt(void)
     gn.nomovemsg = "";
     wake_nearby(FALSE);
     return ECMD_TIME;
+}
+
+static const char *generic_callouts[] = {
+    "Over here!", "Take 'em down!", "I need backup!",
+    "Get 'em!",   "Over there!", "After 'em!",
+    "This way!"
+};
+
+static const char *near_callouts[] = {
+    "On the ", "Near the ", "By the "
+};
+
+staticfn char *
+mverbal_description(coordxy x, coordxy y, char *buf)
+{
+    int ltyp = levl[x][y].typ;
+    stairway *stway = stairway_at(x, y);
+    const char *fbuf;
+    if (stway) {
+        if (stway->isladder)
+            fbuf = rn2(2) ? "ladder" : "stepladder";
+        else
+            fbuf = rn2(2) ? "stairs" : "steps";
+    } else if (IS_FOUNTAIN(ltyp)) {
+        fbuf = "fountain";
+    } else if (IS_THRONE(ltyp)) {
+        fbuf = rn2(2) ? "throne" : "chair";
+    } else if (IS_SINK(ltyp)) {
+        fbuf = "sink";
+    } else if (IS_GRAVE(ltyp)) {
+        fbuf = rn2(2) ? "grave" : "headstone";
+    } else if (IS_ALTAR(ltyp)) {
+        fbuf = rn2(2) ? "altar" : "shrine";
+    } else if (ltyp == DRAWBRIDGE_DOWN) {
+        fbuf = "drawbridge";
+    } else {
+        fbuf = "furniture";
+    }
+    Sprintf(buf, "%s%s!", ROLL_FROM(near_callouts), fbuf);
+    return buf;
+}
+
+void
+mcallout(struct monst *mtmp)
+{
+    char fbuf[BUFSZ];
+    int ltyp = levl[u.ux][u.uy].typ;
+    int rtyp = 0;
+    aligntyp malignment = mon_aligntyp(mtmp);
+    struct monst *mon;
+    /* Set up room type */
+    if (levl[u.ux][u.uy].roomno - ROOMOFFSET > 0)
+        rtyp = svr.rooms[levl[u.ux][u.uy].roomno - ROOMOFFSET].rtype;
+    /* Make some kind of sound */
+    if (!Deaf) {
+        if (is_animal(mtmp->data) || mindless(mtmp->data)) {
+            pline_mon(mtmp, "%s %s!", Monnam(mtmp), makeplural(growl_sound(mtmp)));
+        } else {
+            if (gm.multi_reason) {
+                Sprintf(fbuf, "Now, while %s's %s!", uhe(), gm.multi_reason);
+            } else if (IS_ROOM(ltyp) && ltyp != ROOM && ltyp < AIR) {
+                mverbal_description(u.ux, u.uy, fbuf);
+                pline_mon(mtmp, "%s yells, \"%s\"", Monnam(mtmp), fbuf);
+                return;
+            } else if (IS_STWALL(ltyp)) {
+                if (Hallucination) verbalize("My God, %s's in the frakkin' ship!", uhe());
+                else verbalize("%s... %s's in the walls!", 
+                            is_elf(mtmp->data) ? "By Elbereth" : "My God", uhe());
+                return;
+            } else if (ltyp == CORR && !rn2(4)) {
+                Sprintf(fbuf, "In the corridors!");
+            } else if (is_orc(mtmp->data) && !rn2(10)) {
+                Sprintf(fbuf, "Look' like meat's back on the menu, %s!",
+                        mtmp->female ? "girls" : "boys");
+            } else if (rtyp > THEMEROOM && !rn2(5)) {
+                Sprintf(fbuf, "In the %s!", get_mkroom_name(rtyp));
+            } else {
+                Sprintf(fbuf, "%s", ROLL_FROM(generic_callouts));
+            }
+            pline_mon(mtmp, "%s yells, \"%s\"", Monnam(mtmp), fbuf);
+        }
+    }
+    /* Signal the location of the player to allied monsters */
+    for (mon = fmon; mon; mon = mon->nmon) {
+        if (DEADMONSTER(mon) || mon == mtmp || mon->mpeaceful
+            || mm_aggression(mtmp, mon))
+            continue;
+        if (malignment != mon_aligntyp(mon))
+            continue;
+        mon->mux = mtmp->mux;
+        mon->muy = mtmp->muy;
+    }
+    wake_nearto(mtmp->mx, mtmp->my, 25);
 }
 
 /*sounds.c*/

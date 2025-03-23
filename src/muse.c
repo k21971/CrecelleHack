@@ -2057,6 +2057,8 @@ use_offensive(struct monst *mtmp)
             pline_mon(mtmp, "%s hurls %s!",
                       Monnam(mtmp), singular(otmp, doname));
         }
+        if (otmp->oclass == POTION_CLASS && !Deaf && is_mercenary(mtmp->data))
+            verbalize("Fire in the hole!");
         m_throw(mtmp, mtmp->mx, mtmp->my, sgn(mtmp->mux - mtmp->mx),
                 sgn(mtmp->muy - mtmp->my),
                 distmin(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy), otmp);
