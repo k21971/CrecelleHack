@@ -204,6 +204,8 @@ static struct trobj Money[] = { { GOLD_PIECE, 0, COIN_CLASS, 1, 0 },
 static struct trobj Veggies[] = { { APPLE, UNDEF_SPE, FOOD_CLASS, 10, 0 },
                                     { CARROT, UNDEF_SPE, FOOD_CLASS, 10, 0 },
                                     { 0, 0, 0, 0, 0 } };
+static struct trobj Sunglasses[] = { { SUNGLASSES, 0, TOOL_CLASS, 1, 0 },
+                                    { 0, 0, 0, 0, 0 } };
 
 /* race-based substitutions for initial inventory;
    the weaker cloak for elven rangers is intentional--they shoot better */
@@ -773,6 +775,8 @@ u_init_role(void)
             ini_inv(Towel);
         else if (!rn2(20))
             ini_inv(Magicmarker);
+        else if (!rn2(20))
+            ini_inv(Sunglasses);
         skill_init(Skill_T);
         break;
     case PM_VALKYRIE:
