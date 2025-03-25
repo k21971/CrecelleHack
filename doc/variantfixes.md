@@ -138,12 +138,6 @@
 - Monsters will slather items with cans of grease if the player is
   polymorphed into a relevant form.
 
-### Elberething
-- Elves and princes can engrave Elbereth to ward off the player.
-  - TODO: Forbid ranged attacks while on Elbereth?
-  - TODO: Intentionally break Elbereth when player hp is low?
-  - TODO: Elbereth vanishment?
-
 ### Pathfinding
 - Some monsters will avoid following the player into chokepoints.
 - Monsters will only flee from the player if they could conceivably

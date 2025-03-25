@@ -1888,7 +1888,6 @@ extern void m_everyturn_effect(struct monst *) NONNULLARG1;
 extern void m_postmove_effect(struct monst *) NONNULLARG1;
 extern int dochugw(struct monst *, boolean) NONNULLARG1;
 extern boolean onscary(coordxy, coordxy, struct monst *) NONNULLARG3;
-extern boolean m_onscary(struct monst *);
 extern struct monst *find_pmmonst(int);
 extern int bee_eat_jelly(struct monst *, struct obj *) NONNULLARG12;
 extern void monflee(struct monst *, int, boolean, boolean) NONNULLARG1;
