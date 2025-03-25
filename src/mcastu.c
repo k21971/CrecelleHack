@@ -33,7 +33,7 @@
     MSPEL("raise dead", 9, RAISE_DEAD), \
     MSPEL("gravity wave", 9, GRAVITY), \
     MSPEL("geyser", 9, GEYSER), \
-    MSPEL("similacrum", 10, CLONE_WIZ), \
+    MSPEL("simalacrum", 10, CLONE_WIZ), \
     MSPEL("a forbidden spell", 11, DEATH_TOUCH), 
 #define MSPEL(nam, lev, id) MCU_##id
 enum mcastu_spells { MSPEL_LIST };

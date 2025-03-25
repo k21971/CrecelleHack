@@ -66,7 +66,7 @@
 
 ### New Monsters
 - Poltergeist ( )
-  - Does not approach, collects objects like a nypmph. Throws any and
+  - Does not approach, collects objects like a nymph. Throws any and
     all objects it gets its hands on. Permanently invisible.
   - Can generate in morgues or via raising the dead.
 - Grotesque (g)
