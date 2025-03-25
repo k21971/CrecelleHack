@@ -14,6 +14,12 @@ Amulet of Yendor for your god.
   blocks.
 - Implement ideas that seem impossible to implement in NetHack.
 
+## Documentation
+
+- [Changelog](doc/variantfixes.md)
+- [Known Issues](doc/variantknownissues.md)
+- [Unique Monster Spoiler](doc/variantuniques.md)
+
 ## FAQ
 
 ### What license is this under?

@@ -1,4 +1,6 @@
 # Uniques
+Warning! This file contains spoilers!
+
 ## Cerberus
 - Spawns with a pack of dogs.
 - Can breathe fire every turn.

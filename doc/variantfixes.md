@@ -79,6 +79,8 @@
 - Teleport
   - Teleports the caster next to the player.
   - If at low hp, warps to stairs as a covetous monster might.
+- Disguise Self
+  - Change appearance to that of a different monster.
 
 ### New Monsters
 - Poltergeist ( )
