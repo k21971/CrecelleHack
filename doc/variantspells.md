@@ -1,0 +1,20 @@
+# New Monster Spells
+- Grease
+  - Makes the player's hands greasy.
+  - Distributes oil on nearby squares.
+- Sleep
+  - Puts the player to sleep.
+- Raise Dead
+  - Raises dead monsters in player's inventory.
+  - Summons undead.
+- Gravity
+  - Summons gravity spheres.
+- Mirror Image
+  - Creates multiple illusions of the caster.
+- Teleport
+  - Teleports the caster next to the player.
+  - If at low hp, warps to stairs as a covetous monster might.
+- Disguise Self
+  - Change appearance to that of a different monster.
+- Vulnerability
+  - Temporarily quashes an intrinsic resistance.

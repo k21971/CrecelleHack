@@ -18,6 +18,7 @@
     MSPEL("sleepel", 3, SLEEP_YOU), \
     MSPEL("hold", 3, PARALYZE), \
     MSPEL("invisibility", 4, DISAPPEAR), \
+    MSPEL("vulnerability", 4, VULNERABILITY), \
     MSPEL("blind", 4, BLIND_YOU), \
     MSPEL("strength of newt", 5, WEAKEN_YOU), \
     MSPEL("summon vermin", 5, INSECTS), \
@@ -58,10 +59,10 @@ int mon_cleric_spells[MAX_MON_SPELLS] = { MCU_OPEN_WOUNDS, MCU_CURE_SELF, MCU_CO
                                           MCU_GEYSER, -1, -1 };
 
 int mon_undead_spells[MAX_MON_SPELLS] = { MCU_HASTE_SELF, MCU_STUN_YOU, MCU_WEAKEN_YOU,
-                                          MCU_SLEEP_YOU,
+                                          MCU_SLEEP_YOU, MCU_VULNERABILITY,
                                           MCU_CURSE_ITEMS, MCU_AGGRAVATION, MCU_RAISE_DEAD,
                                           MCU_DEATH_TOUCH, MCU_MIRROR_IMAGE, MCU_DISAPPEAR,
-                                          MCU_TELEPORT, -1 };
+                                          MCU_TELEPORT };
 int mon_trickster_spells[MAX_MON_SPELLS] = { MCU_PSI_BOLT, MCU_HASTE_SELF, MCU_DISAPPEAR,
                                              MCU_AGGRAVATION, MCU_MIRROR_IMAGE, MCU_CONFUSE_YOU,
                                              MCU_GREASE, MCU_DISGUISE, MCU_CURSE_ITEMS, MCU_SUMMON_MONS, 
@@ -583,7 +584,7 @@ cast_monster_spell(struct monst *mtmp, int dmg, int spellnum)
         if (mtmp->iswiz && created) {
             SetVoice(mtmp, 0, 80, 0);
             verbalize("Ah, but which of us is the real one, fool?");
-        } else if (mtmp) {
+        } else if (mtmp && canseemon(mtmp)) {
             pline("%s image splinters!", s_suffix(Monnam(mtmp)));
         }
         dmg = 0;
@@ -651,7 +652,38 @@ cast_monster_spell(struct monst *mtmp, int dmg, int spellnum)
         } else
             impossible("no reason for monster to cast disappear spell?");
         break;
-    case MCU_SLEEP_YOU:
+    case MCU_VULNERABILITY: { /* make player vulnerable to something */
+        int vul = (mtmp->data->mlet == S_LICH) ? COLD_VUL : rn1(6, FIRE_VUL);
+        You("feel more vulnerable!");
+        switch (vul) {
+        case COLD_VUL:
+            incr_itimeout(&HCold_vulnerability, (long) dmg);
+            monstunseesu(M_SEEN_COLD);
+            break;
+        case FIRE_VUL:
+            incr_itimeout(&HFire_vulnerability, (long) dmg);
+            monstunseesu(M_SEEN_FIRE);
+            break;
+        case SLEEP_VUL:
+            incr_itimeout(&HSleep_vulnerability, (long) dmg);
+            monstunseesu(M_SEEN_SLEEP);
+            break;
+        case DISINT_VUL:
+            incr_itimeout(&HDisint_vulnerability, (long) dmg);
+            monstunseesu(M_SEEN_DISINT);
+            break;
+        case SHOCK_VUL:
+            incr_itimeout(&HShock_vulnerability, (long) dmg);
+            monstunseesu(M_SEEN_ELEC);
+            break;
+        case POISON_VUL:
+            incr_itimeout(&HPoison_vulnerability, (long) dmg);
+            monstunseesu(M_SEEN_POISON);
+            break;
+        }
+        dmg = 0;
+        break;
+    } case MCU_SLEEP_YOU:
         if (!Free_action && !Sleep_resistance) {
             You_feel("feel exhausted.");
             fall_asleep(-d(5, 5), TRUE);

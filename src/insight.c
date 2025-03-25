@@ -1514,17 +1514,27 @@ attributes_enlightenment(
         you_are("magic-protected", from_what(ANTIMAGIC));
     if (Fire_resistance)
         you_are("fire resistant", from_what(FIRE_RES));
+    if (Fire_vulnerability)
+        you_are("vulnerable to fire", from_what(FIRE_VUL));
     item_resistance_message(AD_FIRE, " protected from fire", final);
     if (Cold_resistance)
         you_are("cold resistant", from_what(COLD_RES));
+    if (Cold_vulnerability)
+        you_are("vulnerable to cold", from_what(FIRE_VUL));
     item_resistance_message(AD_COLD, " protected from cold", final);
     if (Sleep_resistance)
         you_are("sleep resistant", from_what(SLEEP_RES));
+    if (Sleep_vulnerability)
+        you_are("vulnerable to sleep", from_what(SLEEP_VUL));
     if (Disint_resistance)
         you_are("disintegration resistant", from_what(DISINT_RES));
+    if (Disint_vulnerability)
+        you_are("vulnerable to disintegration", from_what(DISINT_VUL));
     item_resistance_message(AD_DISN, " protected from disintegration", final);
     if (Shock_resistance)
         you_are("shock resistant", from_what(SHOCK_RES));
+    if (HShock_vulnerability)
+        you_are("vulnerable to shock", from_what(SHOCK_VUL));
     item_resistance_message(AD_ELEC, " protected from electric shocks",
                             final);
     if (Poison_resistance)
