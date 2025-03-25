@@ -18,6 +18,7 @@
     MSPEL("sleepel", 3, SLEEP_YOU), \
     MSPEL("hold", 3, PARALYZE), \
     MSPEL("invisibility", 4, DISAPPEAR), \
+    MSPEL("levitation", 4, LEVITATE_YOU), \
     MSPEL("vulnerability", 4, VULNERABILITY), \
     MSPEL("blind", 4, BLIND_YOU), \
     MSPEL("strength of newt", 5, WEAKEN_YOU), \
@@ -64,9 +65,10 @@ int mon_undead_spells[MAX_MON_SPELLS] = { MCU_HASTE_SELF, MCU_STUN_YOU, MCU_WEAK
                                           MCU_DEATH_TOUCH, MCU_MIRROR_IMAGE, MCU_DISAPPEAR,
                                           MCU_TELEPORT };
 int mon_trickster_spells[MAX_MON_SPELLS] = { MCU_PSI_BOLT, MCU_HASTE_SELF, MCU_DISAPPEAR,
+                                             MCU_LEVITATE_YOU,
                                              MCU_AGGRAVATION, MCU_MIRROR_IMAGE, MCU_CONFUSE_YOU,
                                              MCU_GREASE, MCU_DISGUISE, MCU_CURSE_ITEMS, MCU_SUMMON_MONS, 
-                                             MCU_TELEPORT, -1 };
+                                             MCU_TELEPORT };
 
 staticfn void cursetxt(struct monst *, boolean);
 staticfn int choose_magic_spell(int);
@@ -950,7 +952,15 @@ cast_monster_spell(struct monst *mtmp, int dmg, int spellnum)
         gn.nomovemsg = 0;
         dmg = 0;
         break;
-    case MCU_CONFUSE_YOU:
+    case MCU_LEVITATE_YOU: {
+        struct obj *pseudo = mksobj(SPE_LEVITATION, FALSE, FALSE);
+        pseudo->cursed = 1;
+        pseudo->quan = 20L;
+        (void) peffects(pseudo);
+        obfree(pseudo, (struct obj *) 0);
+        dmg = 0;
+        break;
+    } case MCU_CONFUSE_YOU:
         if (Antimagic) {
             shieldeff(u.ux, u.uy);
             monstseesu(M_SEEN_MAGR);
@@ -1064,6 +1074,8 @@ spell_would_be_useless(struct monst *mtmp, int spellnum)
     /* teleport and already close to the player */
     if (spellnum == MCU_TELEPORT && distu(mtmp->mx, mtmp->my) <= 4
         && mtmp->mhp * 3 >= mtmp->mhpmax)
+        return TRUE;
+    if (spellnum == MCU_LEVITATE_YOU && (Levitation || Flying || Punished))
         return TRUE;
     /* invisibility when already invisible */
     if ((mtmp->minvis || mtmp->invis_blkd) && spellnum == MCU_DISAPPEAR)

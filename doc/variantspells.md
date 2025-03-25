@@ -18,3 +18,5 @@
   - Change appearance to that of a different monster.
 - Vulnerability
   - Temporarily quashes an intrinsic resistance.
+- Levitation
+  - Levitates the player.
