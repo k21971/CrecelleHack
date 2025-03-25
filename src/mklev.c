@@ -234,7 +234,6 @@ do_room_or_subroom(struct mkroom *croom,
 {
     coordxy x, y;
     struct rm *lev;
-    coord pos;
 
     /* locations might bump level edges in wall-less rooms */
     /* add/subtract 1 to allow for edge locations */
