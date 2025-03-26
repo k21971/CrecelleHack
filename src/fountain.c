@@ -734,6 +734,7 @@ dipsink(struct obj *obj)
     } else if (obj->otyp == BOTTLE) {
         You("fill %s with tap water.", yobjnam(obj, (const char *) 0));
         poly_obj(obj, POT_WATER);
+        update_inventory();
         return;
     } else if (obj->oclass != POTION_CLASS) {
         You("hold %s under the tap.", the(xname(obj)));
