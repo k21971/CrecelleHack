@@ -987,13 +987,17 @@ cast_monster_spell(struct monst *mtmp, int dmg, int spellnum)
         dmg = 0;
         break;
     case MCU_DISGUISE:
-        if (canseemon(mtmp))
-            pline("%s %s.", Monnam(mtmp), 
-                Role_if(PM_ROGUE) ? "magically disguises itself" : "transforms");
-        mtmp->m_ap_type = M_AP_MONSTER;
-        mtmp->mappearance = rndmonnum();
-        newsym(mtmp->mx, mtmp->my);
-        dmg = 0;
+        if (Protection_from_shape_changers) {
+            pline("Nothing happens.");
+        } else {
+            if (canseemon(mtmp))
+                pline("%s %s.", Monnam(mtmp), 
+                    Role_if(PM_ROGUE) ? "magically disguises itself" : "transforms");
+            mtmp->m_ap_type = M_AP_MONSTER;
+            mtmp->mappearance = rndmonnum();
+            newsym(mtmp->mx, mtmp->my);
+            dmg = 0;
+        }
         break;
     case MCU_CURE_SELF:
         dmg = m_cure_self(mtmp, dmg);
