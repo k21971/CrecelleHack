@@ -793,9 +793,11 @@ m_initinv(struct monst *mtmp)
         }
         break;
     case S_GOLEM:
-        for (cnt = 4; cnt; cnt--) {
+        if (ptr == &mons[PM_SCROLEM]) {
             otmp = mksobj(rn2(2) ? SCR_TELEPORTATION : SCR_CREATE_MONSTER,
                             FALSE, FALSE);
+            otmp->quan = (long) rn1(2, 2);
+            otmp->owt = weight(otmp);
             (void) mpickobj(mtmp, otmp);
         }
         break;
