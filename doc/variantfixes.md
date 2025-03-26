@@ -210,3 +210,4 @@
 
 ### Misc
 - Ported Hardfought's HTML Dumps and other tweaks.
+- Ported xNetHack's inv_weight patch. Thanks to aosdict.
