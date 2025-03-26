@@ -2634,6 +2634,8 @@ map_glyphinfo(
             priority it gets. Potions are the highest because they could kill the player. */
         if ((levl[x][y].coat_info & COAT_POTION) != 0)
             glyphinfo->gm.sym.color = objects[levl[x][y].pindex].oc_color;
+        else if ((levl[x][y].coat_info & COAT_SHARDS) != 0)
+            glyphinfo->gm.sym.color = CLR_BRIGHT_CYAN;
         else if ((levl[x][y].coat_info & COAT_FUNGUS) != 0)
             glyphinfo->gm.sym.color = CLR_CYAN;
         else if ((levl[x][y].coat_info & COAT_BLOOD) != 0)

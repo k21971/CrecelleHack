@@ -148,6 +148,7 @@ enum levl_typ_types {
 #define COAT_POTION 0x04 /* various types of potions */
 #define COAT_BLOOD  0x08 /* various types of blood */
 #define COAT_FUNGUS 0x10 /* luminescent fungus */
+#define COAT_SHARDS 0x20 /* shards of glass */
 #define COAT_ALL 0xff
 
 /*

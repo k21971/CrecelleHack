@@ -3243,7 +3243,7 @@ spoteffects(boolean pick)
     if (pooleffects(TRUE))
         goto spotdone;
 
-    slip_on_oil(u.ux, u.uy, &gy.youmonst);
+    coateffects(u.ux, u.uy, &gy.youmonst);
     check_special_room(FALSE);
     if (IS_SINK(levl[u.ux][u.uy].typ) && Levitation)
         dosinkfall();

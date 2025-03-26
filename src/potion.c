@@ -1692,11 +1692,17 @@ remove_coating(coordxy x, coordxy y, unsigned char coatflags) {
 
 /* monster slips on a puddle of oil */
 boolean
-slip_on_oil(coordxy x, coordxy y, struct monst *mon) {
-    if (has_coating(x, y, COAT_POTION) && levl[x][y].pindex == POT_OIL
-        && !is_flyer(mon->data) && !is_floater(mon->data)
-        && !amorphous(mon->data) && !noncorporeal(mon->data)) {
-        if (mon == &gy.youmonst && !Levitation && !Flying) {
+coateffects(coordxy x, coordxy y, struct monst *mon) {
+    boolean isyou = (mon == &gy.youmonst);
+    boolean ret = FALSE;
+    if (is_flyer(mon->data) || is_floater(mon->data)
+        || amorphous(mon->data) || noncorporeal(mon->data))
+        return FALSE;
+    if (isyou && (Levitation || Flying))
+        return FALSE;
+    /* Now the actual coat effects */
+    if (has_coating(x, y, COAT_POTION) && levl[x][y].pindex == POT_OIL) {
+        if (isyou) {
             You("slip on a patch of oil!");
             nomul(-2);
             gm.multi_reason = "slipping on oil";
@@ -1708,9 +1714,37 @@ slip_on_oil(coordxy x, coordxy y, struct monst *mon) {
             mon->mfrozen = 2;
             mon->mcanmove = 0;
         }
-        return TRUE;
+        ret = TRUE;
     }
-    return FALSE;
+    if (has_coating(x, y, COAT_SHARDS)) {
+        if (isyou) {
+            if (uarmf) {
+                pline("Shards of glass crunch under your %s.", xname(uarmf));
+            } else if (thick_skinned(mon->data)) {
+                pline("Shards of glass crunch under you.");
+            } else {
+                if (u.uhp > 1) u.uhp--;
+                pline("Your %s are cut by shards of glass!", makeplural(body_part(FOOT)));
+                add_coating(x, y, COAT_BLOOD, gy.youmonst.mnum);
+                disp.botl = TRUE;
+            }
+        } else {
+            if (!which_armor(mon, W_ARMF) && !thick_skinned(mon->data)) {
+                if (canseemon(mon))
+                    pline("%s steps on some broken glass.", Monnam(mon));
+                if (mon->mtame)
+                    yelp(mon);
+                else
+                    growl(mon);
+                if (mon->mhp > 1) mon->mhp--;
+                add_coating(x, y, COAT_BLOOD, mon->mnum);
+            } else if (!Deaf) {
+                You_hear("a soft tinkling.");
+            }
+        }
+        remove_coating(x, y, COAT_SHARDS);
+    }
+    return ret;
 }
 
 /* evaporate potion puddles due to heat */

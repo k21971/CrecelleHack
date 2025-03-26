@@ -2494,7 +2494,7 @@ extern void impact_arti_light(struct obj *, boolean, boolean) NONNULLARG1;
 extern boolean has_coating(coordxy, coordxy, unsigned char);
 extern boolean add_coating(coordxy, coordxy, unsigned char, int);
 extern boolean remove_coating(coordxy, coordxy, unsigned char);
-extern boolean slip_on_oil(coordxy, coordxy, struct monst *);
+extern boolean coateffects(coordxy, coordxy, struct monst *);
 extern void evaporate_potion_puddles(coordxy, coordxy);
 extern void floor_alchemy(int, int, int, int);
 extern void potion_splatter(coordxy, coordxy, int, int);

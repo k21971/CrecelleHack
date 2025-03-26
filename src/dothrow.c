@@ -2513,6 +2513,9 @@ breakobj(
         break;
     }
 
+    if (objects[obj->otyp].oc_material == GLASS) {
+        add_coating(x, y, COAT_SHARDS, 0);
+    }
     if (hero_caused) {
         if (from_invent || obj->unpaid) {
             if (*u.ushops || obj->unpaid)

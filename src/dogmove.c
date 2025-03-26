@@ -1341,7 +1341,7 @@ dog_move(
                   what);
         }
         mon_track_add(mtmp, omx, omy);
-        if (slip_on_oil(nix, niy, mtmp))
+        if (coateffects(nix, niy, mtmp))
             return MMOVE_MOVED;
         /* We have to know if the pet's going to do a combined eat and
          * move before moving it, but it can't eat until after being

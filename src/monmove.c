@@ -2099,7 +2099,7 @@ m_move(struct monst *mtmp, int after)
 
         maybe_unhide_at(mtmp->mx, mtmp->my);
 
-        slip_on_oil(mtmp->mx, mtmp->my, mtmp);
+        coateffects(mtmp->mx, mtmp->my, mtmp);
 
         /* Reset prone */
         if (mtmp->mprone) {

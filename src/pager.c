@@ -618,10 +618,12 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
         return outbuf;
     }
 
+    if ((levl[x][y].coat_info & COAT_SHARDS) != 0)
+        Strcat(outbuf, "glass-strewn ");
     if ((levl[x][y].coat_info & COAT_GRASS) != 0)
         Strcat(outbuf, "grassy ");
     if ((levl[x][y].coat_info & COAT_ASHES) != 0)
-        Strcat(outbuf, "ash-strewn ");
+        Strcat(outbuf, "ashy ");
     if ((levl[x][y].coat_info & COAT_FUNGUS) != 0)
         Strcat(outbuf, "fungus-encrusted ");
 
