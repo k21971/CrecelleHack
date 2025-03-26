@@ -219,11 +219,11 @@ static int optfn_##a(int, int, boolean, char *, char *);
                 No, Yes, No, No, NoAlias,
                 "name of your starting pet if it is a kitten")
 #ifdef INSURANCE
-    NHOPTB(checkpoint, Advanced, 0, opt_out, set_in_game,
+    NHOPTB(checkpoint, Advanced, 0, opt_out, set_in_sysconf,
            On, Yes, No, No, NoAlias, &flags.ins_chkpt, Term_False,
            "save game state after each level change")
 #else
-    NHOPTB(checkpoint, Advanced, 0, opt_out, set_in_config,
+    NHOPTB(checkpoint, Advanced, 0, opt_out, set_in_sysconf,
            Off, No, No, No, NoAlias, (boolean *) 0, Term_False,
            (char *)0)
 #endif

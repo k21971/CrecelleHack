@@ -685,6 +685,14 @@ typedef unsigned char uchar;
    whole thing, then type a new end for the text. */
 /* #define EDIT_GETLIN */
 
+/* Extra server enhancements for
+   dgamelaunch-based server play */
+/* #define DGAMELAUNCH */
+#ifdef DGAMELAUNCH
+#define EXTRAINFO_FN    "/dgldir/extrainfo-nh370/%n.extrainfo"
+#define MAILCKFREQ 5    /* SIMPLE_MAIL is in unixconf.h */
+#define WHEREIS_FILE    "whereis/%n.whereis" /* Write out player's current location to player.whereis */
+
 #ifndef NO_CHRONICLE
 /* CHRONICLE - enable #chronicle command, a log of major game events.
    The logged messages will also appear in DUMPLOG. */
@@ -696,8 +704,10 @@ typedef unsigned char uchar;
 #else
 #undef LIVELOG
 #endif /* NO_CHRONICLE */
+#endif /* DGAMELAUNCH */
 
 /* #define DUMPLOG */  /* End-of-game dump logs */
+/* #define DUMPHTML */ /* End-of-game HTML dumps */
 
 #define USE_ISAAC64 /* Use cross-platform, bundled RNG */
 
@@ -734,6 +744,8 @@ typedef unsigned char uchar;
 #endif /* LIVELOGFILE */
 #endif /* LIVELOG */
 
+#if defined(DUMPLOG) || defined(DUMPHTML)
+
 #ifdef DUMPLOG
 #define DUMPLOG_CORE
 #ifndef DUMPLOG_FILE
@@ -757,5 +769,17 @@ typedef unsigned char uchar;
 #define DUMPLOG_MSG_COUNT   50
 #endif /* DUMPLOG_MSG_COUNT */
 #endif
+
+#ifdef DUMPHTML
+#ifndef DUMPHTML_FILE
+#define DUMPHTML_FILE        "/tmp/nethack.%n.%d.html"
+/* Placeholders as above
+ * DUMPHTML_FILE is not used if SYSCF is defiined
+ */
+
+#endif
+
+#endif /* DUMPHTML */
+#endif /* DUMPLOG || DUMPHTML */
 
 #endif /* CONFIG_H */

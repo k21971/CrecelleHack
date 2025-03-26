@@ -31,6 +31,10 @@ staticfn void dump_enums(void);
 #define USED_FOR_CRASHREPORT UNUSED
 #endif
 
+#ifdef EXTRAINFO_FN
+static long prev_dgl_extrainfo = 0;
+#endif
+
 /*ARGSUSED*/
 void
 early_init(int argc USED_FOR_CRASHREPORT, char *argv[] USED_FOR_CRASHREPORT)
@@ -98,6 +102,10 @@ moveloop_preamble(boolean resuming)
 
     u.uz0.dlevel = u.uz.dlevel;
     svc.context.move = 0;
+
+#ifdef WHEREIS_FILE
+    touch_whereis();
+#endif
 
     program_state.in_moveloop = 1;
     /* for perm_invent preset at startup, display persistent inventory after
@@ -260,6 +268,13 @@ moveloop_core(void)
 
                 if (u.ublesscnt)
                     u.ublesscnt--;
+
+#ifdef EXTRAINFO_FN
+                if ((prev_dgl_extrainfo == 0) || (prev_dgl_extrainfo < (svm.moves + 250))) {
+                    prev_dgl_extrainfo = svm.moves;
+                    mk_dgl_extrainfo();
+                }
+#endif
 
                 /* One possible result of prayer is healing.  Whether or
                  * not you get healed depends on your current hit points.

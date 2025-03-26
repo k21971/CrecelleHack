@@ -27,6 +27,7 @@ sys_early_init(void)
 
     sysopt.support = (char *) 0;
     sysopt.recover = (char *) 0;
+    sysopt.livelog = 0;
 #ifdef SYSCF
     sysopt.wizards = (char *) 0;
 #else
@@ -53,6 +54,10 @@ sys_early_init(void)
 
 #ifdef DUMPLOG
     sysopt.dumplogfile = (char *) 0;
+    sysopt.dumplogurl = (char *) 0;
+#endif
+#ifdef DUMPHTML
+    sysopt.dumphtmlfile = (char *) 0;
 #endif
     sysopt.shellers = (char *) 0;
     sysopt.explorers = (char *) 0;
@@ -134,6 +139,10 @@ sysopt_release(void)
 #ifdef DUMPLOG
     if (sysopt.dumplogfile)
         free((genericptr_t) sysopt.dumplogfile), sysopt.dumplogfile=(char *) 0;
+#endif
+#ifdef DUMPHTML
+    if (sysopt.dumphtmlfile)
+        free((genericptr_t)sysopt.dumphtmlfile), sysopt.dumphtmlfile=(char *)0;
 #endif
     if (sysopt.genericusers)
         free((genericptr_t) sysopt.genericusers),

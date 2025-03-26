@@ -60,6 +60,17 @@ USE_NOSTATICFN = 1
 # you're reading this in Makefile augmented by hints, that may not be true).
 #
 
+ifeq "$(GIT)" "1"
+ifndef GITSUBMODULES
+GITSUBMODULES=1
+endif
+endif
+ifeq "$(git)" "1"
+ifndef GITSUBMODULES
+GITSUBMODULES=1
+endif
+endif
+
 #-INCLUDE multiw-2.370
 
 # compiler.370 contains compiler detection and adjustments common
@@ -93,6 +104,16 @@ endif
 ifeq "$(USE_UBSAN)" "1"
 CFLAGS+=-fsanitize=undefined
 LFLAGS+=-fsanitize=undefined
+endif
+
+ifdef WANT_WIN_TTY
+USE_CURSESLIB=1
+endif
+
+ifdef WANT_WIN_CURSES
+ifneq "$(USE_CURSESLIB)" "1"
+USE_CURSESLIB=1
+endif
 endif
 
 ifeq "$(USE_CURSESLIB)" "1"
@@ -133,23 +154,28 @@ endif      #USE_CURSESLIB
 # NetHack sources control
 NHCFLAGS+=-DDLB
 NHCFLAGS+=-DHACKDIR=\"$(HACKDIR)\"
+NHCFLAGS+=-DVAR_PLAYGROUND=\"$(HACKDIR)/var\"
 NHCFLAGS+=-DDEFAULT_WINDOW_SYS=\"$(WANT_DEFAULT)\"
 NHCFLAGS+=-DSYSCF -DSYSCF_FILE=\"$(HACKDIR)/sysconf\" -DSECURE
 NHCFLAGS+=-DTIMED_DELAY
-NHCFLAGS+=-DDUMPLOG
-NHCFLAGS+=-DDUMPHTML
 NHCFLAGS+=-DCONFIG_ERROR_SECURE=FALSE
+NHCFLAGS+=-DPANICLOG_FMT2
+NHCFLAGS+=-DFCMASK=0644
 #NHCFLAGS+=-DGREPPATH=\"/usr/bin/grep\"
 NHCFLAGS+=-DCOMPRESS=\"/bin/gzip\" -DCOMPRESS_EXTENSION=\".gz\"
 #NHCFLAGS+=-DNOMAIL
 #NHCFLAGS+=-DEXTRA_SANITY_CHECKS
-#NHCFLAGS+=-DEDIT_GETLIN
-#NHCFLAGS+=-DSCORE_ON_BOTL
+NHCFLAGS+=-DEDIT_GETLIN
+NHCFLAGS+=-DSCORE_ON_BOTL
 #NHCFLAGS+=-DMSGHANDLER
-#NHCFLAGS+=-DTTY_TILES_ESCCODES
+NHCFLAGS+=-DTTY_TILES_ESCCODES
 #NHCFLAGS+=-DTTY_SOUND_ESCCODES
 #NHCFLAGS+=-DNO_CHRONICLE
+NHCFLAGS+=-DDGAMELAUNCH
 #NHCFLAGS+=-DLIVELOG
+NHCFLAGS+=-DDUMPLOG
+NHCFLAGS+=-DDUMPHTML
+NHCFLAGS+=-DUSE_GENERAL_ALTAR_COLORS
 #NHCFLAGS+=-DCHANGE_COLOR
 NHCFLAGS+=-DSELF_RECOVER
 ifdef WANT_WIN_CURSES
@@ -331,27 +357,17 @@ SYSCONFENSURE = (if ! test -f $(INSTDIR)/sysconf ; then \
 	 $(CHGRP) $(GAMEGRP) $(INSTDIR)/sysconf && \
 	 chmod $(VARFILEPERM) $(INSTDIR)/sysconf; fi );
 
-ifdef WANT_SOURCE_INSTALL
-PREFIX=$(abspath $(NHSROOT))
-#SHELLDIR=
-HACKDIR=$(PREFIX)/playground
-GAMEPERM = 0700
-VARFILEPERM = 0600
-VARDIRPERM = 0700
-CFLAGS+=-DSYSCF -DSYSCF_FILE=\"$(HACKDIR)/sysconf\" -DSECURE
-MOREALL=$(MAKE) install
-else #!WANT_SOURCE_INSTALL
-#PREFIX=/usr
-PREFIX=$(wildcard ~)/nh/install
-HACKDIR=$(PREFIX)/games/lib/crecellehackdir
-SHELLDIR = $(PREFIX)/games
-VARDIRPERM = 0755
-VARFILEPERM = 0600
-GAMEPERM = 0755
-endif #?WANT_SOURCE_INSTALL
+# Typical install path for normal user (non-root)
+#PREFIX=$(wildcard ~)
+#HACKDIR=$(PREFIX)/games/$(GAME)dir
 
+# Default install path (assumes running at root)
+PREFIX=/usr
+HACKDIR=$(PREFIX)/games/lib/370-hdf_$(GAME)dir
+
+SHELLDIR = $(PREFIX)/games
 INSTDIR=$(HACKDIR)
-VARDIR = $(HACKDIR)
+VARDIR = $(HACKDIR)/var
 
 ifneq "$(CCISCLANG)" ""
 # gdb may not be installed if clang is chosen compiler so the game
@@ -390,13 +406,17 @@ DLLIB = -ldl
 LFLAGS+=-rdynamic
 
 # if TTY_TILES_ESCCODES
-#WINSRC += tile.c
-#WINOBJ += tile.o
+WINSRC += tile.c
+WINOBJ += tile.o
 # endif
 
 CHOWN=true
 CHGRP=true
 
+VARDIRPERM = 0755
+VARFILEPERM = 0600
+GAMEPERM = 0755
+#
 # manpages directory
 MANDIR=/usr/share/man/man6
 #

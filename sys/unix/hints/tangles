@@ -9,8 +9,8 @@
 # for Ubuntu dapper.
 
 
-#PREFIX=/usr
-PREFIX=$(wildcard ~)/nh/install
+PREFIX=/usr
+#PREFIX=$(wildcard ~)/nh/install
 HACKDIR=$(PREFIX)/games/lib/$(GAME)dir
 SHELLDIR = $(PREFIX)/games
 INSTDIR=$(HACKDIR)
@@ -23,18 +23,20 @@ POSTINSTALL=cp -n sys/unix/sysconf $(INSTDIR)/sysconf; $(CHOWN) $(GAMEUID) $(INS
 CFLAGS=-g -O -I../include -DNOTPARMDECL
 CFLAGS+=-DDLB
 CFLAGS+=-DCOMPRESS=\"/bin/gzip\" -DCOMPRESS_EXTENSION=\".gz\"
+CFLAGS+=-Wno-format-overflow
 CFLAGS+=-DSYSCF -DSYSCF_FILE=\"$(HACKDIR)/sysconf\" -DSECURE
 CFLAGS+=-DTIMED_DELAY
 CFLAGS+=-DHACKDIR=\"$(HACKDIR)\"
+CFLAGS+=-DVAR_PLAYGROUND=\"$(VARDIR)\"
 CFLAGS+=-DDUMPLOG
 CFLAGS+=-DDUMPHTML
 CFLAGS+=-DCONFIG_ERROR_SECURE=FALSE
 CFLAGS+=-DCURSES_GRAPHICS
-#CFLAGS+=-DEXTRA_SANITY_CHECKS
-#CFLAGS+=-DEDIT_GETLIN
-#CFLAGS+=-DSCORE_ON_BOTL
-#CFLAGS+=-DMSGHANDLER
-#CFLAGS+=-DTTY_TILES_ESCCODES
+CFLAGS+=-DPANICLOG_FMT2
+CFLAGS+=-DTTY_TILES_ESCCODES
+CFLAGS+=-DLIVELOG_ENABLE
+CFLAGS+=-DSCORE_ON_BOTL
+
 
 # when building liblua.a, avoid warning that use of tmpnam() should be
 # replaced by mkstemp(); the lua code doesn't use nethack's config.h so
@@ -50,14 +52,19 @@ WINOBJ = $(WINTTYOBJ) $(WINCURSESOBJ)
 WINLIB = $(WINTTYLIB) $(WINCURSESLIB)
 
 # if TTY_TILES_ESCCODES
-#WINSRC += tile.c
-#WINOBJ += tile.o
+WINSRC += tile.c
+WINOBJ += tile.o
 
 WINTTYLIB=-lncurses -ltinfo
 
-CHOWN=true
-CHGRP=true
+GAMEUID  = games
+GAMEGRP  = bin
 
+GAMEPERM = 04755
+VARFILEPERM = 0644
 VARDIRPERM = 0755
-VARFILEPERM = 0600
-GAMEPERM = 0755
+
+
+CHOWN = /usr/bin/chown
+CHGRP = /usr/bin/chgrp
+

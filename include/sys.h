@@ -18,7 +18,12 @@ struct sysopt_s {
     char *msghandler;
 #ifdef DUMPLOG
     char *dumplogfile; /* where the dump file is saved */
+    char *dumplogurl;  /* url path for the above */
 #endif
+#ifdef DUMPHTML
+    char *dumphtmlfile; /* where the html dump is saved */
+#endif
+
     int env_dbgfl;    /*  1: debugfiles comes from getenv("DEBUGFILES")
                        *     so sysconf's DEBUGFILES shouldn't override it;
                        *  0: getenv() hasn't been attempted yet;

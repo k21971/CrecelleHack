@@ -30,7 +30,7 @@ static long final_fpos; /* [note: do not move this to the 'g' struct] */
 #define dealloc_ttentry(ttent) free((genericptr_t) (ttent))
 #ifndef NAMSZ
 /* Changing NAMSZ can break your existing record/logfile */
-#define NAMSZ 10
+#define NAMSZ PL_NSIZ
 #endif
 #define DTHSZ 100
 #define ROLESZ 3
@@ -433,6 +433,8 @@ encodeconduct(void)
         e |= 1L << 10;
     if (!num_genocides())
         e |= 1L << 11;
+    if (!u.uconduct.elbereth)
+        e |= 1L << 12;
     /* one bit isn't really adequate for sokoban conduct:
        reporting "obeyed sokoban rules" is misleading if sokoban wasn't
        completed or at least attempted; however, suppressing that when
@@ -441,9 +443,9 @@ encodeconduct(void)
        be disambiguated in xlogfile post-processors by testing the
        entered-sokoban bit in the 'achieve' field */
     if (!u.uconduct.sokocheat && sokoban_in_play())
-        e |= 1L << 12;
-    if (!u.uconduct.pets)
         e |= 1L << 13;
+    if (!u.uconduct.pets)
+        e |= 1L << 14;
 
     return e;
 }
@@ -593,6 +595,7 @@ encode_extended_conducts(char *buf)
     add_achieveX(buf, "wishless",     !u.uconduct.wishes);
     add_achieveX(buf, "artiwishless", !u.uconduct.wisharti);
     add_achieveX(buf, "genocideless", !num_genocides());
+    add_achieveX(buf, "elberethless", !u.uconduct.elbereth);
     if (sokoban_in_play())
         add_achieveX(buf, "sokoban",  !u.uconduct.sokocheat);
     add_achieveX(buf, "blind",        u.uroleplay.blind);
@@ -952,7 +955,7 @@ outentry(int rank, struct toptenentry *t1, boolean so)
     else
         Strcat(linebuf, "   ");
 
-    Sprintf(eos(linebuf), " %10ld  %.10s", t1->points ? t1->points : u.urexp,
+    Sprintf(eos(linebuf), " %10ld  %.16s", t1->points ? t1->points : u.urexp,
             t1->name);
     Sprintf(eos(linebuf), "-%s", t1->plrole);
     if (t1->plrace[0] != '?')

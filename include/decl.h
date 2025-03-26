@@ -333,6 +333,9 @@ struct instance_globals_d {
        but that would require all xname() and doname() calls to be modified */
     int distantname;
 
+#ifdef DUMPHTML
+    boolean dumping_list;
+#endif
     /* pickup.c */
     boolean decor_fumble_override;
     boolean decor_levitate_override;

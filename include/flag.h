@@ -385,6 +385,8 @@ struct instance_flags {
     boolean wizmgender;      /* test gender info from core in window port */
     boolean customcolors;    /* support customcolors defined in glyphmap */
     boolean customsymbols;   /* support customsymbols defined in glyphmap */
+    boolean msg_is_alert;    /* suggest windowport should grab player's attention
+                              * and request <TAB> acknowlegement */
     /*
      * Window capability support.
      */

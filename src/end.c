@@ -28,8 +28,10 @@ staticfn boolean fuzzer_savelife(int);
 ATTRNORETURN staticfn void really_done(int) NORETURN;
 staticfn void savelife(int);
 staticfn boolean should_query_disclose_option(int, char *);
-#ifdef DUMPLOG
+#if defined(DUMPLOG) || defined(DUMPHTML)
 staticfn void dump_plines(void);
+extern void dump_start_screendump(void); /* defined in windows.c */
+extern void dump_end_screendump(void);
 #endif
 staticfn void dump_everything(int, time_t);
 staticfn void fixup_death(int);
@@ -204,12 +206,7 @@ done_in_by(struct monst *mtmp, int how)
         svk.killer.format = KILLED_BY;
     }
     /* _the_ <invisible> <distorted> ghost of Dudley */
-#if 0
-    /* hardfought */
     if (has_ebones(mtmp)) {
-#else
-    if (mptr == &mons[PM_GHOST] && has_mgivenname(mtmp)) {
-#endif
         Strcat(buf, "the ");
         svk.killer.format = KILLED_BY;
     }
@@ -254,14 +251,6 @@ done_in_by(struct monst *mtmp, int how)
                                : "%s imitating %s",
                 realnm, shape);
         mptr = mtmp->data; /* reset for mimicker case */
-#if 0  /* hardfought */
-    } else if (has_ebones(mtmp)) {
-        Strcpy(buf, m_monnam(mtmp));
-#endif
-    } else if (mptr == &mons[PM_GHOST]) {
-        Strcat(buf, "ghost");
-        if (has_mgivenname(mtmp))
-            Sprintf(eos(buf), " of %s", MGIVENNAME(mtmp));
     } else if (mtmp->isshk) {
         const char *shknm = shkname(mtmp),
                    *honorific = shkname_is_pname(mtmp) ? ""
@@ -514,7 +503,7 @@ should_query_disclose_option(int category, char *defquery)
     return TRUE;
 }
 
-#ifdef DUMPLOG
+#if defined(DUMPLOG) || defined(DUMPHTML)
 staticfn void
 dump_plines(void)
 {
@@ -522,7 +511,7 @@ dump_plines(void)
     char buf[BUFSZ], **strp;
 
     Strcpy(buf, " "); /* one space for indentation */
-    putstr(0, 0, "Latest messages:");
+    putstr(0, ATR_HEADING, "Latest messages:");
     for (i = 0, j = (int) gs.saved_pline_index; i < DUMPLOG_MSG_COUNT;
          ++i, j = (j + 1) % DUMPLOG_MSG_COUNT) {
         strp = &gs.saved_plines[j];
@@ -543,7 +532,7 @@ dump_everything(
     int how,     /* ASCENDED, ESCAPED, QUIT, etc */
     time_t when) /* date+time at end of game */
 {
-#ifdef DUMPLOG
+#if defined(DUMPLOG) || defined(DUMPHTML)
     char pbuf[BUFSZ], datetimebuf[24]; /* [24]: room for 64-bit bogus value */
 
     dump_redirect(TRUE);
@@ -556,8 +545,8 @@ dump_everything(
        it's conceivable that the game started with a different
        build date+time or even with an older nethack version,
        but we only have access to the one it finished under */
-    putstr(0, 0, getversionstring(pbuf, sizeof pbuf));
-    putstr(0, 0, "");
+    putstr(0, ATR_SUBHEAD, getversionstring(pbuf, sizeof pbuf));
+    putstr(NHW_DUMPTXT, 0, "");
 
     /* game start and end date+time to disambiguate version date+time */
     Strcpy(datetimebuf, yyyymmddhhmmss(ubirthday));
@@ -568,8 +557,8 @@ dump_everything(
     Sprintf(eos(pbuf), ", ended %4.4s-%2.2s-%2.2s %2.2s:%2.2s:%2.2s.",
             &datetimebuf[0], &datetimebuf[4], &datetimebuf[6],
             &datetimebuf[8], &datetimebuf[10], &datetimebuf[12]);
-    putstr(0, 0, pbuf);
-    putstr(0, 0, "");
+    putstr(0, ATR_SUBHEAD, pbuf);
+    putstr(NHW_DUMPTXT, 0, "");
 
     /* character name and basic role info */
     Sprintf(pbuf, "%s, %s %s %s %s",
@@ -577,35 +566,42 @@ dump_everything(
             genders[flags.female].adj, gu.urace.adj,
             (flags.female && gu.urole.name.f) ? gu.urole.name.f
                                              : gu.urole.name.m);
-    putstr(0, 0, pbuf);
-    putstr(0, 0, "");
+    putstr(0, ATR_SUBHEAD, pbuf);
+    putstr(NHW_DUMPTXT, 0, "");
+    dump_start_screendump();
 
     /* info about current game state */
     dump_map();
-    putstr(0, 0, do_statusline1());
-    putstr(0, 0, do_statusline2());
-    putstr(0, 0, "");
+    /* NHW_MAP -> ASCII dump only */
+    putstr(NHW_DUMPTXT, 0, do_statusline1());
+    putstr(NHW_DUMPTXT, 0, do_statusline2());
+    /* the next two lines are for the HTML status */
+    status_initialize(TRUE);
+    bot();
+
+    dump_end_screendump();
+    putstr(NHW_DUMPTXT, 0, "");
 
     dump_plines();
     putstr(0, 0, "");
-    putstr(0, 0, "Inventory:");
+    putstr(0, ATR_HEADING, "Inventory:");
     (void) display_inventory((char *) 0, TRUE);
     container_contents(gi.invent, TRUE, TRUE, FALSE);
     enlightenment((BASICENLIGHTENMENT | MAGICENLIGHTENMENT),
                   (how >= PANICKED) ? ENL_GAMEOVERALIVE : ENL_GAMEOVERDEAD);
-    putstr(0, 0, "");
+    putstr(NHW_DUMPTXT, 0, "");
 
     /* overview of the game up to this point */
     show_gamelog((how >= PANICKED) ? ENL_GAMEOVERALIVE : ENL_GAMEOVERDEAD);
     putstr(0, 0, "");
     list_vanquished('d', FALSE); /* 'd' => 'y' */
-    putstr(0, 0, "");
+    putstr(NHW_DUMPTXT, 0, "");
     list_genocided('d', FALSE); /* 'd' => 'y' */
-    putstr(0, 0, "");
+    putstr(NHW_DUMPTXT, 0, "");
     show_conduct((how >= PANICKED) ? 1 : 2);
-    putstr(0, 0, "");
+    putstr(NHW_DUMPTXT, 0, "");
     show_overview((how >= PANICKED) ? 1 : 2, how);
-    putstr(0, 0, "");
+    putstr(NHW_DUMPTXT, 0, "");
     dump_redirect(FALSE);
 #else
     nhUse(how);
@@ -1390,13 +1386,13 @@ really_done(int how)
     } else
         done_stopprint = 1; /* just avoid any more output */
 
-#ifdef DUMPLOG
+#if defined(DUMPLOG) || defined(DUMPHTML)
     /* 'how' reasons beyond genocide shouldn't show tombstone;
        for normal end of game, genocide doesn't either */
     if (how <= GENOCIDED) {
         dump_redirect(TRUE);
         if (iflags.in_dumplog)
-            genl_outrip(0, how, endtime);
+            outrip(0, how, endtime);
         dump_redirect(FALSE);
     }
 #endif
@@ -1416,7 +1412,17 @@ really_done(int how)
                     ? gu.urole.name.f
                     : gu.urole.name.m)
                 : (const char *) (flags.female ? "Demigoddess" : "Demigod"));
-    dump_forward_putstr(endwin, 0, pbuf, done_stopprint);
+
+#if defined(DUMPLOG) || defined(DUMPHTML)
+    dump_redirect(TRUE);
+    if (iflags.in_dumplog)
+        /* dump attributes don't work unless dump_redirect is on */
+        putstr(endwin, ATR_SUBHEAD, pbuf);
+    dump_redirect(FALSE);
+#endif
+
+    if (!done_stopprint)
+        putstr(endwin, 0, pbuf);
     dump_forward_putstr(endwin, 0, "", done_stopprint);
 
     if (how == ESCAPED || how == ASCENDED) {
@@ -1475,7 +1481,7 @@ really_done(int how)
 
         if (!done_stopprint)
             artifact_score(gi.invent, FALSE, endwin); /* list artifacts */
-#ifdef DUMPLOG
+#if defined(DUMPLOG) || defined(DUMPHTML)
         dump_redirect(TRUE);
         if (iflags.in_dumplog)
             artifact_score(gi.invent, FALSE, 0);
@@ -1580,6 +1586,7 @@ really_done(int how)
         raw_print("");
         raw_print("");
     }
+    livelog_dump_url(LL_DUMP_ALL | (how == ASCENDED ? LL_DUMP_ASC : 0));
     nh_terminate(EXIT_SUCCESS);
 }
 
@@ -1619,7 +1626,7 @@ container_contents(
                 cat = SchroedingersBox(box);
 
                 Sprintf(buf, "Contents of %s:", the(xname(box)));
-                putstr(tmpwin, 0, buf);
+                putstr(tmpwin, ATR_SUBHEAD, buf);
                 if (!dumping)
                     putstr(tmpwin, 0, "");
                 buf[0] = buf[1] = ' '; /* two leading spaces */

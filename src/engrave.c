@@ -416,10 +416,12 @@ make_engr_at(
         /* engraving "Elbereth":  if done when making a level, it creates
            an old-style Elbereth that deters monsters when any objects are
            present; otherwise (done by the player), exercises wisdom */
-        if (gi.in_mklev)
+        if (gi.in_mklev) {
             ep->guardobjects = 1;
-        else
+        } else {
             exercise(A_WIS, TRUE);
+            u.uconduct.elbereth++;
+        }
     }
     ep->engr_time = e_time;
     ep->engr_type = (xint8) ((e_type > 0) ? e_type : rnd(N_ENGRAVE - 1));

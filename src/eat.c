@@ -2999,7 +2999,6 @@ doeat(void)
                     livelog_printf(LL_CONDUCT,
                                "tasted meat for the first time, by eating %s",
                                    an(food_xname(otmp, FALSE)));
-
                 violated_vegetarian();
             }
             break;

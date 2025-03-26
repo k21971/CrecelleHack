@@ -3738,7 +3738,6 @@ xkilled(
         }
         if (!unique_corpstat(mdat)) {
             boolean mname = has_mgivenname(mtmp);
-
             livelog_printf(LL_KILLEDPET, "murdered %s%s%s faithful %s",
                            mname ? MGIVENNAME(mtmp) : "",
                            mname ? ", " : "",
@@ -3750,8 +3749,6 @@ xkilled(
     /* malign was already adjusted for u.ualign.type and randomization */
     adjalign(mtmp->malign);
 
-#if 0  /* HARDFOUGHT-only at present */
-#ifdef LIVELOG
     if (has_ebones(mtmp)) {
         livelog_printf(LL_UMONST, "destroyed %s, %s former %s",
                        livelog_mon_nam(mtmp),
@@ -3760,8 +3757,6 @@ xkilled(
                                EBONES(mtmp)->mnum,
                                EBONES(mtmp)->female));
     }
-#endif  /* LIVELOG */
-#endif
     return;
 }
 

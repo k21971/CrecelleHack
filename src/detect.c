@@ -2269,7 +2269,7 @@ reveal_terrain_getglyph(
 
 #undef glyph_is_gascloud
 
-#ifdef DUMPLOG
+#if defined(DUMPLOG) || defined(DUMPHTML)
 void
 dump_map(void)
 {
@@ -2289,7 +2289,6 @@ dump_map(void)
      * (our caller has already printed a separator).  If there is
      * more than one blank map row at the bottom, keep just one.
      * Any blank rows within the middle of the map are kept.
-     * Note: putstr() with winid==0 is for dumplog.
      */
     skippedrows = 0;
     toprow = TRUE;
@@ -2304,6 +2303,11 @@ dump_map(void)
                                             default_glyph, subset);
             map_glyphinfo(x, y, glyph, 0, &glyphinfo);
             ch = glyphinfo.ttychar;
+#ifdef DUMPHTML
+            /* HTML map prints in a defined rectangle, so
+               just render every glyph - no skipping. */
+            html_print_glyph(NHW_DUMPHTML, x, y, &glyphinfo, NULL);
+#endif
             buf[x - 1] = ch;
             if (ch != ' ') {
                 blankrow = FALSE;
@@ -2317,17 +2321,17 @@ dump_map(void)
                 toprow = FALSE;
             }
             for (x = 0; x < skippedrows; x++)
-                putstr(0, 0, "");
-            putstr(0, 0, buf); /* map row #y */
+                putstr(NHW_DUMPTXT, 0, "");
+            putstr(NHW_DUMPTXT, 0, buf); /* map row #y */
             skippedrows = 0;
         } else {
             ++skippedrows;
         }
     }
     if (skippedrows)
-        putstr(0, 0, "");
+        putstr(NHW_DUMPTXT, 0, "");
 }
-#endif /* DUMPLOG */
+#endif /* DUMPLOG || DUMPHTML */
 
 /* idea from crawl; show known portion of map without any monsters,
    objects, or traps occluding the view of the underlying terrain;

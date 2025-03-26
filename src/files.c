@@ -12,6 +12,13 @@
 #include "wintty.h" /* more() */
 #endif
 
+#ifdef WHEREIS_FILE
+#include <ctype.h> /* whereis-file tolower() */
+#ifdef UNIX
+#include <sys/stat.h> /* whereis-file chmod() */
+#endif
+#endif
+
 #if (!defined(MAC) && !defined(O_WRONLY) && !defined(AZTEC_C)) \
     || defined(USE_FCNTL)
 #include <fcntl.h>
@@ -66,6 +73,10 @@ const
 static char fqn_filename_buffer[FQN_NUMBUF][FQN_MAX_FILENAME];
 #endif
 
+#ifdef WHEREIS_FILE
+char whereis_file[255] = WHEREIS_FILE;
+#endif
+
 #if !defined(SAVE_EXTENSION)
 #ifdef MICRO
 #define SAVE_EXTENSION ".sav"
@@ -77,6 +88,11 @@ static char fqn_filename_buffer[FQN_NUMBUF][FQN_MAX_FILENAME];
 
 #if defined(WIN32)
 #include <share.h>
+#endif
+
+#ifdef WHEREIS_FILE
+static void set_whereisfile(void);
+static void write_whereis(boolean);
 #endif
 
 #ifdef AMIGA
@@ -175,6 +191,8 @@ staticfn boolean cnf_line_MSGHANDLER(char *);
 staticfn boolean cnf_line_EXPLORERS(char *);
 staticfn boolean cnf_line_DEBUGFILES(char *);
 staticfn boolean cnf_line_DUMPLOGFILE(char *);
+staticfn boolean cnf_line_DUMPLOGURL(char *);
+staticfn boolean cnf_line_DUMPHTMLFILE(char *);
 staticfn boolean cnf_line_GENERICUSERS(char *);
 staticfn boolean cnf_line_BONES_POOLS(char *);
 staticfn boolean cnf_line_SUPPORT(char *);
@@ -710,6 +728,10 @@ clearlocks(void)
     /* can't access maxledgerno() before dungeons are created -dlc */
     for (x = (svn.n_dgns ? maxledgerno() : 0); x >= 0; x--)
         delete_levelfile(x); /* not all levels need be present */
+
+#ifdef WHEREIS_FILE
+    delete_whereis();
+#endif
 }
 
 #if defined(SELECTSAVED)
@@ -734,6 +756,116 @@ nhclose(int fd)
     }
     return retval;
 }
+
+#ifdef WHEREIS_FILE
+/* Set the filename for the whereis file */
+void
+set_whereisfile(void)
+{
+    char *p = (char *) strstr(whereis_file, "%n");
+    if (p) {
+        int new_whereis_len = strlen(whereis_file) + strlen(svp.plname) - 2; /* %n */
+        char *new_whereis_fn = (char *) alloc((unsigned)(new_whereis_len + 1));
+        char *q = new_whereis_fn;
+        strncpy(q, whereis_file, p - whereis_file);
+        q += p - whereis_file;
+        strncpy(q, svp.plname, strlen(svp.plname) + 1);
+        regularize(q);
+        q[strlen(svp.plname)] = '\0';
+        q += strlen(q);
+        p += 2;   /* skip "%n" */
+        strncpy(q, p, strlen(p));
+        new_whereis_fn[new_whereis_len] = '\0';
+        Sprintf(whereis_file, "%s", new_whereis_fn);
+        free(new_whereis_fn); /* clean up the pointer */
+    }
+}
+
+/* Write out information about current game to plname.whereis */
+void
+write_whereis(boolean playing) /* < True if game is running */
+{
+    FILE* fp;
+    char whereis_work[511];
+    if (!program_state.something_worth_saving)
+        return;
+    if (strstr(whereis_file, "%n"))
+        set_whereisfile();
+
+    /* construct the whereis string */
+    Sprintf(whereis_work, "player=%s:depth=%d:dnum=%d:dname=%s:",
+            svp.plname,
+            depth(&u.uz),
+            u.uz.dnum,
+            svd.dungeons[u.uz.dnum].dname);
+    Sprintf(eos(whereis_work), "hp=%d:maxhp=%d:turns=%ld:score=%ld:",
+            u.uhp,
+            u.uhpmax,
+            svm.moves,
+#ifdef SCORE_ON_BOTL
+            botl_score()
+#else
+            0L
+#endif
+            );
+    Sprintf(eos(whereis_work), "role=%s:race=%s:gender=%s:align=%s:",
+            gu.urole.filecode,
+            gu.urace.filecode,
+            genders[flags.female].filecode,
+            aligns[1 - u.ualign.type].filecode);
+    Sprintf(eos(whereis_work), "conduct=0x%lx:amulet=%d:ascended=%d:",
+#ifdef RECORD_CONDUCT
+            encodeconduct(),
+#else
+            0L,
+#endif
+            u.uhave.amulet ? 1 : 0,
+            u.uevent.ascended ? 2 : *svk.killer.name ? 1 : 0);
+    Sprintf(eos(whereis_work), "playing=%d\n",
+            playing);
+
+    fp = fopen_datafile(whereis_file, "w", LEVELPREFIX);
+    if (fp) {
+#ifdef UNIX
+        mode_t whereismode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
+        chmod(fqname(whereis_file, LEVELPREFIX, 2), whereismode);
+#endif
+        fwrite(whereis_work, strlen(whereis_work), 1, fp);
+        fclose(fp);
+    } else {
+        pline("Can't open %s for output.", whereis_file);
+        pline("No whereis file created.");
+    }
+}
+
+/** Signal handler to update whereis information. */
+void
+signal_whereis(int sig_unused UNUSED)
+{
+    touch_whereis();
+}
+
+void
+touch_whereis(void)
+{
+    write_whereis(TRUE);
+}
+
+void
+delete_whereis(void)
+{
+    if (program_state.something_worth_saving) {
+        /* if we have valid data to write, just write it but specify that the
+         * game isn't active ("playing=0") */
+        write_whereis(FALSE);
+    } else {
+        /* if data may be unavailable for writing, actually unlink the file */
+        if (strstr(whereis_file, "%n"))
+            set_whereisfile();
+        (void) unlink(whereis_file);
+    }
+}
+#endif /* WHEREIS_FILE */
 
 /* ----------  END LEVEL FILE HANDLING ----------- */
 
@@ -2819,6 +2951,28 @@ cnf_line_DUMPLOGFILE(char *bufp)
 }
 
 staticfn boolean
+cnf_line_DUMPLOGURL(char *bufp)
+{
+#ifdef DUMPLOG
+    if (sysopt.dumplogurl)
+        free((genericptr_t) sysopt.dumplogurl);
+    sysopt.dumplogurl = dupstr(bufp);
+#endif /*DUMPLOG*/
+    return TRUE;
+}
+
+staticfn boolean
+cnf_line_DUMPHTMLFILE(char *bufp)
+{
+#ifdef DUMPHTML
+    if (sysopt.dumphtmlfile)
+        free((genericptr_t) sysopt.dumphtmlfile);
+    sysopt.dumphtmlfile = dupstr(bufp);
+#endif /*DUMPHTML*/
+    return TRUE;
+}
+
+staticfn boolean
 cnf_line_GENERICUSERS(char *bufp)
 {
     if (sysopt.genericusers)
@@ -3303,6 +3457,8 @@ static const struct match_config_line_stmt {
     CNFL_S(EXPLORERS, 7),
     CNFL_S(DEBUGFILES, 5),
     CNFL_S(DUMPLOGFILE, 7),
+    CNFL_S(DUMPLOGURL, 10),
+    CNFL_S(DUMPHTMLFILE, 12),
     CNFL_S(GENERICUSERS, 12),
     CNFL_S(BONES_POOLS, 10),
     CNFL_S(SUPPORT, 7),
@@ -5082,6 +5238,9 @@ livelog_add(long ll_type, const char *str)
     int gindx, aindx;
 
     if (!(ll_type & sysopt.livelog))
+        return;
+
+    if (discover) /* don't livelog in explore mode */
         return;
 
     if (lock_file(LIVELOGFILE, SCOREPREFIX, 10)) {

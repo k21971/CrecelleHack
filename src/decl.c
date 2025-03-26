@@ -331,6 +331,9 @@ static const struct instance_globals_d g_init_d = {
     FALSE, /* disintegested */
     /* objname.c */
     0, /* distantname */
+#ifdef DUMPHTML
+    FALSE, /* dumping_list */
+#endif
     /* pickup.c */
     FALSE, /* decor_fumble_override */
     FALSE, /* decor_levitate_override */

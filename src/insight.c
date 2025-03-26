@@ -14,6 +14,7 @@
 
 #include "hack.h"
 
+staticfn void enlght_out_attr(int, const char *);
 staticfn void enlght_out(const char *);
 staticfn void enlght_line(const char *, const char *, const char *,
                         const char *);
@@ -114,12 +115,18 @@ static struct ll_achieve_msg achieve_msg [] = {
     enl_msg(You_, have, (const char *) "", (something), "")
 
 staticfn void
-enlght_out(const char *buf)
+enlght_out_attr(int attr, const char *buf)
 {
     if (ge.en_via_menu) {
         add_menu_str(ge.en_win, buf);
     } else
-        putstr(ge.en_win, 0, buf);
+        putstr(ge.en_win, attr, buf);
+}
+
+staticfn void
+enlght_out(const char *buf)
+{
+    enlght_out_attr(ATR_NONE, buf);
 }
 
 staticfn void
@@ -378,7 +385,7 @@ enlightenment(
                 : gu.urole.name.m);
 
     /* title */
-    enlght_out(buf); /* "Conan the Archeologist's attributes:" */
+    enlght_out_attr(ATR_HEADING, buf); /* "Conan the Archeologist's attributes:" */
     /* background and characteristics; ^X or end-of-game disclosure */
     if (mode & BASICENLIGHTENMENT) {
         /* role, race, alignment, deities, dungeon level, time, experience */
@@ -400,7 +407,7 @@ enlightenment(
     }
 
     enlght_out(""); /* separator */
-    enlght_out("Miscellaneous:");
+    enlght_out_attr(ATR_SUBHEAD, "Miscellaneous:");
     /* reminder to player and/or information for dumplog */
     if ((mode & BASICENLIGHTENMENT) != 0 && (wizard || discover || final)) {
         if (wizard || discover) {
@@ -456,7 +463,7 @@ background_enlightenment(int unused_mode UNUSED, int final)
     rank_titl = rank_of(u.ulevel, Role_switch, innategend);
 
     enlght_out(""); /* separator after title */
-    enlght_out("Background:");
+    enlght_out_attr(ATR_SUBHEAD, "Background:");
 
     /* if polymorphed, report current shape before underlying role;
        will be repeated as first status: "you are transformed" and also
@@ -710,7 +717,7 @@ basics_enlightenment(int mode UNUSED, int final)
         pwmax = u.uenmax, hpmax = (Upolyd ? u.mhmax : u.uhpmax);
 
     enlght_out(""); /* separator after background */
-    enlght_out("Basics:");
+    enlght_out_attr(ATR_SUBHEAD, "Basics:");
 
     if (hp < 0)
         hp = 0;
@@ -807,7 +814,7 @@ characteristics_enlightenment(int mode, int final)
 
     enlght_out("");
     Sprintf(buf, "%sCharacteristics:", !final ? "" : "Final ");
-    enlght_out(buf);
+    enlght_out_attr(ATR_SUBHEAD, buf);
 
     /* bottom line order */
     one_characteristic(mode, final, A_STR); /* strength */
@@ -936,7 +943,7 @@ status_enlightenment(int mode, int final)
      *     should be discernible to the hero hence to the player)
     \*/
     enlght_out(""); /* separator after title or characteristics */
-    enlght_out(final ? "Final Status:" : "Status:");
+    enlght_out_attr(ATR_SUBHEAD, final ? "Final Status:" : "Status:");
 
     Strcpy(youtoo, You_);
     /* not a traditional status but inherently obvious to player; more
@@ -1487,7 +1494,7 @@ attributes_enlightenment(
      *  Attributes
     \*/
     enlght_out("");
-    enlght_out(final ? "Final Attributes:" : "Attributes:");
+    enlght_out_attr(ATR_SUBHEAD, final ? "Final Attributes:" : "Attributes:");
 
     if (u.uevent.uhand_of_elbereth) {
         static const char *const hofe_titles[3] = { "the Hand of Elbereth",
@@ -2115,7 +2122,7 @@ show_conduct(int final)
 
     /* Create the conduct window */
     ge.en_win = create_nhwindow(NHW_MENU);
-    putstr(ge.en_win, 0, "Voluntary challenges:");
+    putstr(ge.en_win, ATR_HEADING, "Voluntary challenges:");
 
     if (u.uroleplay.blind)
         you_have_been("blind from birth");
@@ -2155,9 +2162,17 @@ show_conduct(int final)
 
     if (!u.uconduct.literate) {
         you_have_been("illiterate");
-    } else if (wizard) {
+    } else {
         Sprintf(buf, "read items or engraved %ld time%s", u.uconduct.literate,
                 plur(u.uconduct.literate));
+        you_have_X(buf);
+    }
+
+    if (u.uconduct.elbereth == 0) {
+        you_have_never("engraved Elbereth");
+    } else {
+        Sprintf(buf, "engraved Elbereth %ld time%s", u.uconduct.elbereth,
+                plur(u.uconduct.elbereth));
         you_have_X(buf);
     }
 
@@ -2287,7 +2302,7 @@ show_achievements(
         awin = create_nhwindow(NHW_MENU);
     }
     Sprintf(title, "Achievement%s:", plur(acnt));
-    putstr(awin, 0, title);
+    putstr(awin, ATR_HEADING, title);
 
     /* display achievements in the order in which they were recorded;
        lone exception is to defer the Amulet if we just ascended;
@@ -2587,16 +2602,16 @@ show_gamelog(int final)
     char buf[BUFSZ];
     int eventcnt = 0;
 
-    win = create_nhwindow(NHW_TEXT);
+    win = create_nhwindow(NHW_MENU);
     Sprintf(buf, "%s events:", final ? "Major" : "Logged");
-    putstr(win, 0, buf);
+    putstr(win, ATR_HEADING, buf);
     for (llmsg = gg.gamelog; llmsg; llmsg = llmsg->next) {
         if (final && !majorevent(llmsg))
             continue;
         if (!final && !wizard && spoilerevent(llmsg))
             continue;
         if (!eventcnt++)
-            putstr(win, 0, " Turn");
+            putstr(win, ATR_SUBHEAD, " Turn");
         Sprintf(buf, "%5ld: %s", llmsg->turn, llmsg->text);
         putstr(win, 0, buf);
     }
@@ -2881,7 +2896,7 @@ list_vanquished(char defquery, boolean ask)
                             && ntypes > 1);
 
             klwin = create_nhwindow(NHW_MENU);
-            putstr(klwin, 0, "Vanquished creatures:");
+            putstr(klwin, ATR_HEADING, "Vanquished creatures:");
             if (!dumping)
                 putstr(klwin, 0, "");
 
@@ -2955,7 +2970,7 @@ list_vanquished(char defquery, boolean ask)
                 if (!dumping)
                     putstr(klwin, 0, "");
                 Sprintf(buf, "%ld creatures vanquished.", total_killed);
-                putstr(klwin, 0, buf);
+                putstr(klwin, ATR_PREFORM, buf);
             }
             display_nhwindow(klwin, TRUE);
             destroy_nhwindow(klwin);
@@ -2972,7 +2987,7 @@ list_vanquished(char defquery, boolean ask)
     } else if (!program_state.gameover) {
         /* #vanquished rather than final disclosure, so pline() is ok */
         pline("No creatures have been vanquished.");
-#ifdef DUMPLOG
+#if defined(DUMPLOG) || defined(DUMPHTML)
     } else if (dumping) {
         putstr(0, 0, "No creatures were vanquished."); /* not pline() */
 #endif
@@ -3102,7 +3117,7 @@ list_genocided(char defquery, boolean ask)
             Sprintf(buf, "%s%s species:",
                     (ngenocided) ? "Genocided" : "Extinct",
                     (nextinct && ngenocided) ? " or extinct" : "");
-            putstr(klwin, 0, buf);
+            putstr(klwin, ATR_SUBHEAD, buf);
             if (!dumping)
                 putstr(klwin, 0, "");
 
@@ -3136,11 +3151,11 @@ list_genocided(char defquery, boolean ask)
                 putstr(klwin, 0, "");
             if (ngenocided > 0) {
                 Sprintf(buf, "%d species genocided.", ngenocided);
-                putstr(klwin, 0, buf);
+                putstr(klwin, ATR_PREFORM, buf);
             }
             if (nextinct > 0) {
                 Sprintf(buf, "%d species extinct.", nextinct);
-                putstr(klwin, 0, buf);
+                putstr(klwin, ATR_PREFORM, buf);
             }
 
             display_nhwindow(klwin, TRUE);
@@ -3152,7 +3167,7 @@ list_genocided(char defquery, boolean ask)
         /* #genocided rather than final disclosure, so pline() is ok and
            extinction has been ignored */
         pline("No creatures have been genocided%s.", genoing ? " yet" : "");
-#ifdef DUMPLOG
+#if defined (DUMPLOG) || defined (DUMPHTML)
     } else if (dumping) { /* 'gameover' is True if we make it here */
         putstr(0, 0, "No species were genocided or became extinct.");
 #endif

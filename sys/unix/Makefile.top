@@ -91,6 +91,9 @@ LUA_VERSION = 5.4.6
 # end of configuration
 #
 
+# The CSS file is required for HTML end-of-game dump logs.
+CSS = NHdump.css
+
 DATHELP = help hh cmdhelp keyhelp history opthelp optmenu usagehlp wizhelp
 
 SPEC_LEVS = asmodeus.lua baalz.lua bigrm-*.lua castle.lua fakewiz?.lua \
@@ -100,7 +103,7 @@ SPEC_LEVS = asmodeus.lua baalz.lua bigrm-*.lua castle.lua fakewiz?.lua \
 	astral.lua air.lua earth.lua fire.lua water.lua hellfill.lua tut-?.lua
 QUEST_LEVS = ???-goal.lua ???-fil?.lua ???-loca.lua ???-strt.lua
 
-DATNODLB = $(VARDATND) license symbols
+DATNODLB = $(VARDATND) license symbols $(CSS)
 DATDLB = $(DATHELP) dungeon.lua tribute $(SPEC_LEVS) $(QUEST_LEVS) $(VARDATD)
 DAT = $(DATNODLB) $(DATDLB)
 
@@ -449,9 +452,12 @@ install: rootcheck $(PRECHECK) $(GAME) recover $(VARDAT) spec_levs sys/unix/sysc
 		mkdir -p $(SHELLDIR); fi
 	rm -rf $(INSTDIR) $(VARDIR)
 	-mkdir -p $(INSTDIR) $(VARDIR) $(VARDIR)/save
+	-mkdir -p $(INSTDIR) $(VARDIR) $(VARDIR)/whereis
 	if test -d ./-p; then rmdir ./-p; fi
 	-$(CHOWN) $(GAMEUID) $(INSTDIR) $(VARDIR) $(VARDIR)/save
+	-$(CHOWN) $(GAMEUID) $(INSTDIR) $(VARDIR) $(VARDIR)/whereis
 	$(CHGRP) $(GAMEGRP) $(INSTDIR) $(VARDIR) $(VARDIR)/save
+	$(CHGRP) $(GAMEGRP) $(INSTDIR) $(VARDIR) $(VARDIR)/whereis
 # order counts here:
 	chmod $(DIRPERM) $(INSTDIR)
 	chmod $(VARDIRPERM) $(VARDIR) $(VARDIR)/save

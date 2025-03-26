@@ -119,7 +119,12 @@ typedef struct glyphinfo {
 #define NHW_MAP 3
 #define NHW_MENU 4
 #define NHW_TEXT 5
-#define NHW_PERMINVENT 6
+#if defined(DUMPLOG) || defined(DUMPHTML)
+/* There's no windump.h, so these go here for now */
+#define NHW_DUMPTXT 6
+#define NHW_DUMPHTML 7
+#endif
+#define NHW_PERMINVENT 8
 #define NHW_LAST_TYPE NHW_PERMINVENT
 
 /* attribute types for putstr; the same as the ANSI value, for convenience */
@@ -134,6 +139,14 @@ typedef struct glyphinfo {
    can be masked with one regular display attribute */
 #define ATR_URGENT    16
 #define ATR_NOHISTORY 32
+
+/* Style attributes for HTML dumplogs. Currently masked if not
+   dumping because other window ports don't define how they are
+   handled.  This masking could be generalised with a WC#_ flag
+   to allow other windowports to support them. */
+#define ATR_HEADING   (iflags.in_dumplog ?  64 : 0) /* rendered as <h2> in HTML dump */
+#define ATR_SUBHEAD   (iflags.in_dumplog ? 128 : 0) /* rendered as <h3> in HTML dump */
+#define ATR_PREFORM   (iflags.in_dumplog ? 256 : 0) /* preformatted - for preserving indentation */
 
 /* nh_poskey() modifier types */
 #define CLICK_1 1

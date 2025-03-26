@@ -389,6 +389,15 @@ drinkfountain(void)
     dryup(u.ux, u.uy, TRUE);
 }
 
+/* Monty Python and the Holy Grail ;) */
+static const char *const excalmsgs[] = {
+    "had Excalibur thrown at them by some watery tart",
+    "received Excalibur from a strange woman laying about in a pond",
+    "signified by divine providence, was chosen to carry Excalibur",
+    "has been given Excalibur, and now enjoys supreme executive power",
+    "endured an absurd aquatic ceremony, and now wields Excalibur"
+};
+
 /* dip an object into a fountain when standing on its location */
 void
 dipfountain(struct obj *obj)
@@ -435,8 +444,7 @@ dipfountain(struct obj *obj)
             obj->oeroded = obj->oeroded2 = 0;
             obj->oerodeproof = TRUE;
             exercise(A_WIS, TRUE);
-            livelog_printf(LL_ARTIFACT, "was given %s by the %s",
-                           artiname(ART_EXCALIBUR), lady);
+            livelog_printf(LL_ARTIFACT, "%s", excalmsgs[rn2(SIZE(excalmsgs))]);
         }
         update_inventory();
         set_levltyp(u.ux, u.uy, ROOM); /* updates level.flags.nfountains */

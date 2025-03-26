@@ -496,7 +496,7 @@ extern void warnreveal(void);
 extern int dosearch0(int);
 extern int dosearch(void);
 extern void premap_detect(void);
-#ifdef DUMPLOG
+#if defined(DUMPLOG) || defined(DUMPHTML)
 extern void dump_map(void);
 #endif
 extern void reveal_terrain(unsigned);
@@ -1080,12 +1080,20 @@ extern void assure_syscf_file(void);
 extern void assure_syscf_file(void);
 #endif
 extern int nhclose(int);
+#ifdef WHEREIS_FILE
+extern void touch_whereis(void);
+extern void delete_whereis(void);
+extern void signal_whereis(int);
+#endif
 #ifdef DEBUG
 extern boolean debugcore(const char *, boolean);
 #endif
 extern void reveal_paths(int);
 extern boolean read_tribute(const char *, const char *, int, char *, int,
                             unsigned);
+#ifdef EXTRAINFO_FN
+extern void mk_dgl_extrainfo(void);
+#endif
 extern boolean Death_quote(char *, int) NONNULLARG1;
 extern void livelog_add(long ll_type, const char *) NONNULLARG2;
 ATTRNORETURN extern void do_deferred_showpaths(int) NORETURN;
@@ -2410,7 +2418,7 @@ extern boolean u_safe_from_fatal_corpse(struct obj *obj, int) NONNULLARG1;
 
 /* ### pline.c ### */
 
-#ifdef DUMPLOG_CORE
+#if defined(DUMPLOG) || defined(DUMPHTML) || defined(DUMPLOG_CORE)
 extern void dumplogmsg(const char *);
 extern void dumplogfreemessages(void);
 #endif
@@ -3210,6 +3218,9 @@ extern void timer_sanity_check(void);
 
 /* ### topten.c ### */
 
+#ifdef RECORD_CONDUCT
+extern long encodeconduct(void);
+#endif
 extern void formatkiller(char *, unsigned, int, boolean) NONNULLARG1;
 extern int observable_depth(d_level *) NONNULLARG1;
 extern void topten(int, time_t);
@@ -3742,8 +3753,15 @@ extern void genl_status_enablefield(int, const char *, const char *,
                                     boolean) NONNULLPTRS;
 extern void genl_status_update(int, genericptr_t, int, int, int,
                                unsigned long *) NONNULLARG2;
+#ifdef DUMPHTML
+extern void dump_start_screendump(void);
+extern void dump_end_screendump(void);
+extern void html_print_glyph(winid, coordxy, coordxy, const glyph_info *,
+                             const glyph_info *);
+#endif
 #ifdef DUMPLOG
 extern char *dump_fmtstr(const char *, char *, boolean) NONNULLPTRS;
+extern void livelog_dump_url(unsigned int);
 #endif
 extern void dump_open_log(time_t);
 extern void dump_close_log(void);
