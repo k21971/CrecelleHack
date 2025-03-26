@@ -306,6 +306,10 @@ obj_shuffle_range(
         *lo_p = svb.bases[ocls];
         *hi_p = svb.bases[ocls + 1] - 1;
         break;
+    case TOOL_CLASS:
+        if (otyp >= SACK && otyp <= BAG_OF_TRICKS)
+            *lo_p = SACK, *hi_p = BAG_OF_TRICKS;
+        break;
     }
 
     /* artifact checking might ask about item which isn't part of any range
@@ -326,7 +330,7 @@ shuffle_all(void)
     };
     /* sub-class type ranges (one item from each group) */
     static short shuffle_types[] = {
-        HELMET, LEATHER_GLOVES, CLOAK_OF_PROTECTION, SPEED_BOOTS,
+        HELMET, LEATHER_GLOVES, CLOAK_OF_PROTECTION, SPEED_BOOTS, SACK
     };
     int first, last, idx;
 
