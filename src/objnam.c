@@ -1687,7 +1687,7 @@ doname_base(
 
     /* show weight for items (debug tourist info);
        "aum" is stolen from Crawl's "Arbitrary Unit of Measure" */
-    if (wizard && iflags.wizweight) {
+    if (iflags.invweight) {
         /* wizard mode user has asked to see object weights */
         if (with_price && bp_eos[-1] == ')')
             ConcatF1(bp, 1, ", %u aum)", obj->owt);
@@ -2306,17 +2306,17 @@ paydoname(struct obj *obj)
     static const char and_contents[] = " and its contents";
     char *p;
     unsigned save_cknown = obj->cknown;
-    boolean save_wizweight = iflags.wizweight;
+    boolean save_invweight = iflags.invweight;
 
     if (Has_contents(obj))
         obj->cknown = 0;
     /* avoid showing item weights to unclutter billing's pay-menu a bit */
-    iflags.wizweight = FALSE;
+    iflags.invweight = FALSE;
     /* suppress invent-style price; caller will add billing-style price */
     iflags.suppress_price++;
     p = doname_base(obj, 0U);
     iflags.suppress_price--;
-    iflags.wizweight = save_wizweight;
+    iflags.invweight = save_invweight;
 
     if (Has_contents(obj)) {
         /* buy_container() sets no_charge for a container that has just

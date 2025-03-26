@@ -5269,7 +5269,7 @@ optfn_boolean(
         case opt_fixinv:
         case opt_sortpack:
         case opt_implicit_uncursed:
-        case opt_wizweight:
+        case opt_invweight:
             if (!flags.invlet_constant)
                 reassign();
             update_inventory();

@@ -381,7 +381,7 @@ struct instance_flags {
 #endif
     boolean cmdassist;       /* provide detailed assistance for some comnds */
     boolean fireassist;      /* autowield launcher when using fire-command */
-    boolean wizweight;       /* display weight of everything in wizard mode */
+    boolean invweight;       /* display weight of everything */
     boolean wizmgender;      /* test gender info from core in window port */
     boolean customcolors;    /* support customcolors defined in glyphmap */
     boolean customsymbols;   /* support customsymbols defined in glyphmap */
