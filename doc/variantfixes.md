@@ -207,3 +207,6 @@
   Expert +3
 - New Damage bonuses: Restricted: -2 Unskilled: 0 Basic: +1 Skilled: +2
   Expert: +3
+
+### Misc
+- Ported Hardfought's HTML Dumps and other tweaks.
