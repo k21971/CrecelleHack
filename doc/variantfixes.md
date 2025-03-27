@@ -190,11 +190,6 @@
 - Dexterity contributes to AC.
 - Strength is normally the sole contributor to to-hit.
 
-### Blessing Objects
-- Holy water does not bless objects.
-- Objects can be blessed by paying a priest between 50 and 200 times
-  one's level.
-
 ### Reflection
 - Reflection does not reflect rays directly back at
   the one that fired them. Instead, the rays bounce off at a ninety degree

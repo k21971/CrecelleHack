@@ -1544,7 +1544,7 @@ H2Opotion_dip(
     if (!potion || potion->otyp != POT_WATER)
         return FALSE;
 
-    if (potion->blessed && FALSE) {
+    if (potion->blessed) {
         if (targobj->cursed) {
             func = uncurse;
             glowcolor = NH_AMBER;
@@ -2066,7 +2066,7 @@ potionhit(struct monst *mon, struct obj *obj, int how)
                           is_silent(mon->data) ? "writhes" : "shrieks");
                     if (!is_silent(mon->data))
                         wake_nearto(tx, ty, mon->data->mlevel * 10);
-                    mon->mhp -= d(8, 6);
+                    mon->mhp -= d(2, 6);
                     /* should only be by you */
                     if (DEADMONSTER(mon))
                         killed(mon);
