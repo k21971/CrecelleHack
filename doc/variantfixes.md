@@ -115,6 +115,8 @@
 - Hellcat (f)
   - From SLASH'EM, but stats have been altered.
   - Like Dnethack, is visible in darkness but invisible in light.
+- Mail worm (w)
+  - Fills your inventory with spam mail.
 
 ## Monster AI
 

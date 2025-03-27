@@ -2064,6 +2064,15 @@ seffect_magic_mapping(struct obj **sobjp)
     }
 }
 
+static const char *worm_msgs[] = {
+    "Kindly check the attached love letter from me.",
+    "VIRUS ALERT!!",
+    "Important! Read Carefully!!",
+    "A VERY HAPPY CHRISTMAS AND BEST WISHES FOR THE NEXT YEAR",
+    "Between millions of adventurers around the dungeon i found you. Don't forget to remember this day every time MY FRIEND!",
+    "I forward this monster to you for review. Please open and view it.",
+};
+
 #ifdef MAIL_STRUCTURES
 staticfn void
 seffect_mail(struct obj **sobjp)
@@ -2073,6 +2082,11 @@ seffect_mail(struct obj **sobjp)
 
     gk.known = TRUE;
     switch (sobj->spe) {
+    case 3:
+        pline("The message on this scroll strikes you as very important!");
+        pline("It reads: \"%s\"", ROLL_FROM(worm_msgs));
+        makemon(&mons[PM_MAIL_WORM], u.ux, u.uy, MM_NOCOUNTBIRTH);
+        break;
     case 2:
         /* "stamped scroll" created via magic marker--without a stamp */
         pline("This scroll is marked \"%s\".",

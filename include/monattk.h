@@ -83,6 +83,7 @@
 #define AD_ENCH 41  /* remove enchantment (disenchanter) */
 #define AD_CORR 42  /* corrode armor (black pudding) */
 #define AD_POLY 43  /* polymorph the target (genetic engineer) */
+#define AD_WORM 44  /* infects you with a virus (mail worm) */
 
 #define AD_CLRC 240 /* random clerical spell */
 #define AD_SPEL 241 /* random magic spell */

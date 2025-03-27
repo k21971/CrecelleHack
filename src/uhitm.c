@@ -3673,6 +3673,31 @@ mhitm_ad_conf(
 }
 
 void
+mhitm_ad_worm(
+    struct monst *magr, struct attack *mattk,
+    struct monst *mdef, struct mhitm_data *mhm)
+{
+    struct obj *otmp;
+    if (mdef == &gy.youmonst) {
+        hitmsg(magr, mattk);
+        #ifdef MAIL_STRUCTURES
+        otmp = mksobj(SCR_MAIL, FALSE, FALSE);
+        otmp->spe = 3;
+        otmp = hold_another_object(otmp, "Oh no!", (const char *) 0,
+                                  (const char *) 0);
+        #else
+        mhitm_ad_phys(magr, mattk, mdef, mhm);
+        #endif
+        if (mhm->done)
+            return;
+    } else {
+        mhitm_ad_phys(magr, mattk, mdef, mhm);
+        if (mhm->done)
+            return;
+    }
+}
+
+void
 mhitm_ad_poly(
     struct monst *magr, struct attack *mattk,
     struct monst *mdef, struct mhitm_data *mhm)
@@ -4739,6 +4764,7 @@ mhitm_adtyping(
     case AD_SLOW: mhitm_ad_slow(magr, mattk, mdef, mhm); break;
     case AD_CONF: mhitm_ad_conf(magr, mattk, mdef, mhm); break;
     case AD_POLY: mhitm_ad_poly(magr, mattk, mdef, mhm); break;
+    case AD_WORM: mhitm_ad_worm(magr, mattk, mdef, mhm); break;
     case AD_DISE: mhitm_ad_dise(magr, mattk, mdef, mhm); break;
     case AD_SAMU: mhitm_ad_samu(magr, mattk, mdef, mhm); break;
     case AD_DETH: mhitm_ad_deth(magr, mattk, mdef, mhm); break;
