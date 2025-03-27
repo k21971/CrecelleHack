@@ -748,7 +748,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
 
     case PM_KITTEN: case PM_HOUSECAT: case PM_JAGUAR: case PM_LYNX:
     case PM_PANTHER: case PM_LARGE_CAT:  case PM_TIGER: case PM_SMILODON:
-    case PM_CATERWAUL:
+    case PM_CATERWAUL: case PM_HELLCAT:
 
     case PM_DISPLACER_BEAST: case PM_GREMLIN:
     case PM_GARGOYLE: case PM_WINGED_GARGOYLE:

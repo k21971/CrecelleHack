@@ -649,6 +649,15 @@ m_everyturn_effect(struct monst *mtmp)
         if (!closed_door(x, y) && !visible_region_at(x, y))
             create_gas_cloud(x, y, 1, 0); /* harmless vapor */
     }
+    if (mtmp->data == &mons[PM_HELLCAT] && !is_u) {
+        if (levl[x][y].lit) {
+            mtmp->minvis = 1;
+            mtmp->perminvis = 1;
+        } else {
+            mtmp->minvis = 0;
+            mtmp->perminvis = 0;
+        }
+    }
 }
 
 /* do whatever effects monster has after moving.

@@ -112,6 +112,9 @@
   - Invisible until sucked blood.
 - Frostwurm (w)
   - Cold-associated worm.
+- Hellcat (f)
+  - From SLASH'EM, but stats have been altered.
+  - Like Dnethack, is visible in darkness but invisible in light.
 
 ## Monster AI
 

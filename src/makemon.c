@@ -1373,9 +1373,11 @@ makemon(
     case S_LIGHT:
     case S_ELEMENTAL:
     case S_VORTEX:
+    case S_FELINE:
         if (mndx == PM_STALKER || mndx == PM_BLACK_LIGHT
             || mndx == PM_POLTERGEIST
-            || mndx == PM_CRIMSON_DEATH) {
+            || mndx == PM_CRIMSON_DEATH
+            || mndx == PM_HELLCAT) {
             mtmp->perminvis = TRUE;
             mtmp->minvis = TRUE;
         }
