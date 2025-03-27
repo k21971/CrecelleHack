@@ -271,6 +271,8 @@ dosit(void)
     static const char sit_message[] = "sit on the %s.";
     struct trap *trap = t_at(u.ux, u.uy);
     int typ = levl[u.ux][u.uy].typ;
+    char buf[BUFSZ];
+    struct permonst *blood_data;
 
     if (u.usteed) {
         You("are already sitting on %s.", mon_nam(u.usteed));
@@ -439,11 +441,17 @@ dosit(void)
     }
     /* Extra sitting effects */
     if (has_coating(u.ux, u.uy, COAT_BLOOD)) {
+        blood_data = &mons[levl[u.ux][u.uy].pindex];
         You("sit in %s blood. How %s.", 
             mons[levl[u.ux][u.uy].pindex].pmnames[NEUTRAL],
             is_vampire(gy.youmonst.data) ? "lovely" : "horrifying");
         if (!is_vampire(gy.youmonst.data))
             exercise(A_CHA, FALSE);
+        if (touch_petrifies(blood_data)) {
+            Sprintf(buf, "bathing in %s blood", pmname(blood_data, MALE));
+            instapetrify(buf);
+        }
+        
     } else if (has_coating(u.ux, u.uy, COAT_POTION)) {
         You("sit in %s liquid.", OBJ_DESCR(objects[levl[u.ux][u.uy].pindex]));
         struct obj fakeobj = cg.zeroobj;

@@ -5220,6 +5220,10 @@ zap_over_floor(
                         && levl[x][y].pindex == POT_OIL) {
                 remove_coating(x, y, COAT_POTION);
                 create_bonfire(x, y, rn1(10, 10), d(4, 4));
+            } else if (has_coating(x, y, COAT_POTION)
+                        && levl[x][y].pindex == POT_HAZARDOUS_WASTE) {
+                remove_coating(x, y, COAT_POTION);
+                explode(x, y, 11, d(4, 6), 0, EXPL_NOXIOUS);
             }
             evaporate_potion_puddles(x, y);
         }
@@ -5389,6 +5393,11 @@ zap_over_floor(
                         *shopdamage = TRUE;
                 }
             }
+        }
+        if (has_coating(x, y, COAT_POTION)
+                    && levl[x][y].pindex == POT_HAZARDOUS_WASTE) {
+            remove_coating(x, y, COAT_POTION);
+            explode(x, y, 11, d(4, 6), 0, EXPL_NOXIOUS);
         }
         break; /* ZT_ACID */
 

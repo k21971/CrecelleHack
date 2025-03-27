@@ -662,6 +662,8 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
         break;
     case PM_BLOOD_GOLEM:
         num = rndmonnum();
+        if (touch_petrifies(&mons[num]))
+            num = PM_ELF;
         potion_splatter(x, y, POT_BLOOD, has_blood(&mons[num]) ? num : PM_HUMAN);
         break;
     case PM_STONE_GOLEM:
@@ -3192,7 +3194,7 @@ corpse_chance(
     int i, tmp;
 
     /* maybe leave behind some blood */
-    if (rn2(4) && has_blood(mon->data) && !was_swallowed) {
+    if (rn2(4) && has_blood(mon->data) && !touch_petrifies(mon->data) && !was_swallowed) {
         add_coating(mon->mx, mon->my, COAT_BLOOD, undead_to_corpse(mon->mnum));
     }
 

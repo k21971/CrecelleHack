@@ -683,6 +683,8 @@ m_postmove_effect(struct monst *mtmp)
         add_coating(x, y, COAT_POTION, POT_WATER);
     } else if (mtmp->data == &mons[PM_BLOOD_GOLEM]) {
         int pm = rndmonnum();
+        if (touch_petrifies(&mons[pm]))
+            pm = PM_ELF;
         add_coating(x, y, COAT_BLOOD, has_blood(&mons[pm]) ? pm : PM_HUMAN);
     }
 }

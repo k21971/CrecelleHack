@@ -35,6 +35,7 @@ staticfn void peffect_gain_energy(struct obj *);
 staticfn void peffect_oil(struct obj *);
 staticfn void peffect_acid(struct obj *);
 staticfn void peffect_polymorph(struct obj *);
+staticfn void peffect_waste(struct obj *);
 staticfn boolean H2Opotion_dip(struct obj *, struct obj *, boolean,
                              const char *);
 staticfn short mixtype(struct obj *, struct obj *);
@@ -1341,6 +1342,20 @@ peffect_polymorph(struct obj *otmp)
     }
 }
 
+staticfn void
+peffect_waste(struct obj *otmp)
+{
+    if (Poison_resistance && Acid_resistance) {
+        pline(Hallucination ? "This gives you superpowers!" : "That tasted vile!");
+    } else {
+        int dmg;
+        dmg = d(otmp->cursed ? 1 : 2, otmp->blessed ? 8 : 4);
+        pline("You're drinking toxic waste!");
+        losehp(Maybe_Half_Phys(dmg), "potion of volatile chemicals", KILLED_BY_AN);
+        exercise(A_CHA, FALSE);
+    }
+}
+
 int
 peffects(struct obj *otmp)
 {
@@ -1431,6 +1446,9 @@ peffects(struct obj *otmp)
         break;
     case POT_POLYMORPH:
         peffect_polymorph(otmp);
+        break;
+    case POT_HAZARDOUS_WASTE:
+        peffect_waste(otmp);
         break;
     default:
         impossible("What a funny potion! (%u)", otmp->otyp);
@@ -1695,6 +1713,7 @@ boolean
 coateffects(coordxy x, coordxy y, struct monst *mon) {
     boolean isyou = (mon == &gy.youmonst);
     boolean ret = FALSE;
+    char buf[BUFSZ];
     if (is_flyer(mon->data) || is_floater(mon->data)
         || amorphous(mon->data) || noncorporeal(mon->data))
         return FALSE;
@@ -1743,6 +1762,16 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
             }
         }
         remove_coating(x, y, COAT_SHARDS);
+    }
+    if (has_coating(x, y, COAT_BLOOD) && touch_petrifies(&mons[levl[x][y].pindex])) {
+        if (isyou && !uarmf && !Stone_resistance) {
+            pline("You touch %s blood with your %s.",
+                pmname(&mons[levl[x][y].pindex], MALE), body_part(FOOT));
+            Sprintf(buf, "stepping in %s blood", pmname(&mons[levl[x][y].pindex], MALE));
+            instapetrify(buf);
+        } else if (!which_armor(mon, W_ARMF) && !resists_ston(mon)) {
+            minstapetrify(mon, FALSE);
+        }
     }
     return ret;
 }
@@ -1829,6 +1858,7 @@ potionhit(struct monst *mon, struct obj *obj, int how)
     boolean isyou = (mon == &gy.youmonst);
     int distance, tx, ty;
     struct obj *saddle = (struct obj *) 0;
+    struct permonst *blood_data;
     boolean hit_saddle = FALSE, your_fault = (how <= POTHIT_HERO_THROW);
 
     if (isyou) {
@@ -1903,6 +1933,15 @@ potionhit(struct monst *mon, struct obj *obj, int how)
                 losehp(Maybe_Half_Phys(dmg), "potion of acid", KILLED_BY_AN);
             }
             break;
+        case POT_BLOOD: {
+            char buf[BUFSZ];
+            blood_data = &mons[obj->corpsenm < LOW_PM ? PM_HUMAN : obj->corpsenm];
+            if (touch_petrifies(blood_data) && !Stone_resistance) {
+                Sprintf(buf, "being doussed in %s blood", pmname(blood_data, MALE));
+                instapetrify(buf);
+            }
+            break;
+        }
         }
     } else if (hit_saddle && saddle) {
         char *mnam, buf[BUFSZ], saddle_glows[BUFSZ];
@@ -2076,12 +2115,18 @@ potionhit(struct monst *mon, struct obj *obj, int how)
         case POT_POLYMORPH:
             (void) bhitm(mon, obj);
             break;
+        case POT_BLOOD:
+            blood_data = &mons[obj->corpsenm < LOW_PM ? PM_HUMAN : obj->corpsenm];
+            if (touch_petrifies(blood_data) && !resists_ston(mon))
+                minstapetrify(mon, your_fault);
+            break;
         /*
         case POT_GAIN_LEVEL:
         case POT_LEVITATION:
         case POT_FRUIT_JUICE:
         case POT_MONSTER_DETECTION:
         case POT_OBJECT_DETECTION:
+        case POT_HAZARDOUS_WASTE:
             break;
         */
         }
@@ -2274,6 +2319,9 @@ potionbreathe(struct obj *obj)
         break;
     case POT_BLOOD:
         You("catch a whiff of iron.");
+        break;
+    case POT_HAZARDOUS_WASTE:
+        pline("It smells like gas.");
         break;
     case POT_WATER:
         if (u.umonnum == PM_GREMLIN) {
@@ -2721,7 +2769,7 @@ potion_dip(struct obj *obj, struct obj *potion)
         debottle_potion(potion); /* now gone */
         /* Mixing potions is dangerous...
            KMH, balance patch -- acid is particularly unstable */
-        if (obj->cursed || obj->otyp == POT_ACID
+        if (obj->cursed || obj->otyp == POT_ACID || obj->otyp == POT_HAZARDOUS_WASTE
             || (obj->otyp == POT_OIL && obj->lamplit) || !rn2(10)) {
             /* it would be better to use up the whole stack in advance
                of the message, but we can't because we need to keep it
