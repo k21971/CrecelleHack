@@ -1122,32 +1122,6 @@ create_force_field(coordxy x, coordxy y, int radius, long ttl)
  *                                                              *
  *--------------------------------------------------------------*/
 
-boolean
-expire_bonfire(genericptr_t p1, genericptr_t p2 UNUSED)
-{
-    NhRegion *reg;
-    int damage;
-
-    reg = (NhRegion *) p1;
-    damage = reg->arg.a_int;
-
-    /* If it was a thick cloud, it dissipates a little first */
-    if (damage >= 5) {
-        damage /= 2; /* It dissipates, let's do less damage */
-        reg->arg = cg.zeroany;
-        reg->arg.a_int = damage;
-        reg->ttl = 2L; /* Here's the trick : reset ttl */
-        return FALSE;  /* THEN return FALSE, means "still there" */
-    }
-    if (u_at(reg->bounding_box.lx, reg->bounding_box.ly)) {
-        if (!u.uswallow)
-            gg.bonfire_diss_within = TRUE;
-    } else if (cansee(reg->bounding_box.lx, reg->bounding_box.ly)) {
-        gg.bonfire_diss_seen++;
-    }
-    return TRUE;
-}
-
 /*
  * Here is an example of an expire function that may prolong
  * region life after some mods...
@@ -1195,91 +1169,6 @@ expire_gas_cloud(genericptr_t p1, genericptr_t p2 UNUSED)
     }
 
     return TRUE; /* OK, it's gone, you can free it! */
-}
-
-/* returns True if p2 is killed by region p1, False otherwise */
-boolean
-inside_bonfire(genericptr_t p1, genericptr_t p2)
-{
-    NhRegion *reg = (NhRegion *) p1;
-    struct monst *mtmp = (struct monst *) p2;
-    struct monst *umon = mtmp ? mtmp : &gy.youmonst;
-    int dam = reg->arg.a_int;
-
-    if (reg->ttl < 20 && umon && umon->data == &mons[PM_FIRE_ELEMENTAL])
-        reg->ttl += 5;
-
-    if (dam < 1) {
-        impossible("bonfire with 0 damage?");
-        return FALSE;
-    }
-
-    if (!mtmp) {
-        if (m_bonfire_ok(&gy.youmonst) == M_BONFIRE_OK) {
-            if (Fire_resistance) monstseesu(M_SEEN_FIRE); /* Kludge */
-            return FALSE;
-        }
-        pline("You're burning up!");
-        if (completelyburns(gy.youmonst.data)) { /* paper or straw golem */
-            You("go up in flames!");
-            monstunseesu(M_SEEN_FIRE);
-            rehumanize();
-            return FALSE;
-        } else if (Fire_resistance) {
-            monstseesu(M_SEEN_FIRE);
-            dam = 1;
-        } else {
-            monstunseesu(M_SEEN_FIRE);
-        }
-        if (rn2(6)) {
-            dam += destroy_items(&gy.youmonst, AD_FIRE, dam);
-            ignite_items(gi.invent);
-        }
-        burn_away_slime();
-        u.uhp -= dam;
-        if (u.uhp < 1) {
-            Sprintf(svk.killer.name, "was consumed in an inferno");
-            svk.killer.format = NO_KILLER_PREFIX;
-            done(DIED);
-        }
-    } else {
-        mtmp = (struct monst *) p2;
-        if (m_bonfire_ok(mtmp) == M_BONFIRE_OK)
-            return FALSE;
-        /* Message and complete burning */
-        if (completelyburns(mtmp->data)) {
-            if (heros_fault(reg))
-                killed(mtmp);
-            else
-                monkilled(mtmp, "bonfire", AD_FIRE);
-            return TRUE;
-        } else if (canseemon(mtmp)) {
-            pline("%s is burning!", Monnam(mtmp));
-        }
-        /* Fire res and golem effects */
-        if (resists_fire(mtmp) || defended(mtmp, AD_FIRE)) {
-            if (canseemon(mtmp))
-                pline_The("%s resists the heat!", Monnam(mtmp));
-            golemeffects(mtmp, AD_FIRE, dam);
-            shieldeff(mtmp->mx, mtmp->my);
-            dam = 1;
-        }
-        /* Damage */
-        dam += destroy_items(mtmp, AD_FIRE, dam);
-        ignite_items(mtmp->minvent);
-        mtmp->mhp -= rnd(dam);
-        if (DEADMONSTER(mtmp)) {
-            if (heros_fault(reg))
-                killed(mtmp);
-            else
-                monkilled(mtmp, "bonfire", AD_FIRE);
-            if (DEADMONSTER(mtmp)) { /* not lifesaved */
-                return TRUE;
-            }
-        }
-    }
-
-    return FALSE;
 }
 
 /* returns True if p2 is killed by region p1, False otherwise */
@@ -1398,36 +1287,6 @@ make_gas_cloud(
             damage ? "noxious gas" : "steam");
         iflags.last_msg = PLNMSG_ENVELOPED_IN_GAS;
     }
-}
-
-/* Creates a bonfire on a single square. While we could generalize
-   the create gas cloud function, fire is only ever started on
-   singular squares. The spreading happens later on. */
-NhRegion *
-create_bonfire(coordxy x, coordxy y, int lifetime, int damage)
-{
-    NhRegion *flames = create_region((NhRect *) 0, 0);
-    NhRect tmprect;
-    tmprect.lx = tmprect.hx = x;
-    tmprect.ly = tmprect.hy = y;
-    add_rect_to_reg(flames, &tmprect);
-    flames->ttl = lifetime;
-
-    if (!gi.in_mklev && !svc.context.mon_moving)
-        set_heros_fault(flames); /* assume player has created it */
-    flames->inside_f = INSIDE_BONFIRE;
-    flames->expire_f = EXPIRE_BONFIRE;
-    flames->arg = cg.zeroany;
-    flames->arg.a_int = damage;
-    flames->visible = TRUE;
-    flames->glyph = cmap_to_glyph(S_bonfire);
-    add_region(flames);
-
-    if (!gi.in_mklev && inside_region(flames, u.ux, u.uy)) {
-        You("are enveloped in roaring flames!");
-        iflags.last_msg = PLNMSG_ENVELOPED_IN_FLAMES;
-    }
-    return flames;
 }
 
 /* Create a gas cloud which starts at (x,y) and grows outward from it via
@@ -1648,6 +1507,153 @@ region_safety(void)
 boolean
 is_gasregion(NhRegion *reg) {
     return (reg->inside_f == INSIDE_GAS_CLOUD);
+}
+
+/*--------------------------------------------------------------*
+ *                                                              *
+ *                       Bonfire related code                   *
+ *                                                              *
+ *--------------------------------------------------------------*/
+
+boolean
+expire_bonfire(genericptr_t p1, genericptr_t p2 UNUSED)
+{
+    NhRegion *reg;
+    int damage;
+
+    reg = (NhRegion *) p1;
+    damage = reg->arg.a_int;
+
+    /* If it was a thick cloud, it dissipates a little first */
+    if (damage >= 5) {
+        damage /= 2; /* It dissipates, let's do less damage */
+        reg->arg = cg.zeroany;
+        reg->arg.a_int = damage;
+        reg->ttl = 2L; /* Here's the trick : reset ttl */
+        return FALSE;  /* THEN return FALSE, means "still there" */
+    }
+    if (u_at(reg->bounding_box.lx, reg->bounding_box.ly)) {
+        if (!u.uswallow)
+            gg.bonfire_diss_within = TRUE;
+    } else if (cansee(reg->bounding_box.lx, reg->bounding_box.ly)) {
+        gg.bonfire_diss_seen++;
+    }
+    return TRUE;
+}
+
+/* returns True if p2 is killed by region p1, False otherwise */
+boolean
+inside_bonfire(genericptr_t p1, genericptr_t p2)
+{
+    NhRegion *reg = (NhRegion *) p1;
+    struct monst *mtmp = (struct monst *) p2;
+    struct monst *umon = mtmp ? mtmp : &gy.youmonst;
+    int dam = reg->arg.a_int;
+
+    if (reg->ttl < 20 && umon && umon->data == &mons[PM_FIRE_ELEMENTAL])
+        reg->ttl += 5;
+
+    if (dam < 1) {
+        impossible("bonfire with 0 damage?");
+        return FALSE;
+    }
+
+    if (!mtmp) {
+        if (m_bonfire_ok(&gy.youmonst) == M_BONFIRE_OK) {
+            if (Fire_resistance) monstseesu(M_SEEN_FIRE); /* Kludge */
+            return FALSE;
+        }
+        pline("You're burning up!");
+        if (completelyburns(gy.youmonst.data)) { /* paper or straw golem */
+            You("go up in flames!");
+            monstunseesu(M_SEEN_FIRE);
+            rehumanize();
+            return FALSE;
+        } else if (Fire_resistance) {
+            monstseesu(M_SEEN_FIRE);
+            dam = 1;
+        } else {
+            monstunseesu(M_SEEN_FIRE);
+        }
+        if (rn2(6)) {
+            dam += destroy_items(&gy.youmonst, AD_FIRE, dam);
+            ignite_items(gi.invent);
+        }
+        burn_away_slime();
+        u.uhp -= dam;
+        if (u.uhp < 1) {
+            Sprintf(svk.killer.name, "was consumed in an inferno");
+            svk.killer.format = NO_KILLER_PREFIX;
+            done(DIED);
+        }
+    } else {
+        mtmp = (struct monst *) p2;
+        if (m_bonfire_ok(mtmp) == M_BONFIRE_OK)
+            return FALSE;
+        /* Message and complete burning */
+        if (completelyburns(mtmp->data)) {
+            if (heros_fault(reg))
+                killed(mtmp);
+            else
+                monkilled(mtmp, "bonfire", AD_FIRE);
+            return TRUE;
+        } else if (canseemon(mtmp)) {
+            pline("%s is burning!", Monnam(mtmp));
+        }
+        /* Fire res and golem effects */
+        if (resists_fire(mtmp) || defended(mtmp, AD_FIRE)) {
+            if (canseemon(mtmp))
+                pline_The("%s resists the heat!", Monnam(mtmp));
+            golemeffects(mtmp, AD_FIRE, dam);
+            shieldeff(mtmp->mx, mtmp->my);
+            dam = 1;
+        }
+        /* Damage */
+        dam += destroy_items(mtmp, AD_FIRE, dam);
+        ignite_items(mtmp->minvent);
+        mtmp->mhp -= rnd(dam);
+        if (DEADMONSTER(mtmp)) {
+            if (heros_fault(reg))
+                killed(mtmp);
+            else
+                monkilled(mtmp, "bonfire", AD_FIRE);
+            if (DEADMONSTER(mtmp)) { /* not lifesaved */
+                return TRUE;
+            }
+        }
+    }
+
+    return FALSE;
+}
+
+/* Creates a bonfire on a single square. While we could generalize
+   the create gas cloud function, fire is only ever started on
+   singular squares. The spreading happens later on. */
+NhRegion *
+create_bonfire(coordxy x, coordxy y, int lifetime, int damage)
+{
+    NhRegion *flames = create_region((NhRect *) 0, 0);
+    NhRect tmprect;
+    tmprect.lx = tmprect.hx = x;
+    tmprect.ly = tmprect.hy = y;
+    add_rect_to_reg(flames, &tmprect);
+    flames->ttl = lifetime;
+
+    if (!gi.in_mklev && !svc.context.mon_moving)
+        set_heros_fault(flames); /* assume player has created it */
+    flames->inside_f = INSIDE_BONFIRE;
+    flames->expire_f = EXPIRE_BONFIRE;
+    flames->arg = cg.zeroany;
+    flames->arg.a_int = damage;
+    flames->visible = TRUE;
+    flames->glyph = cmap_to_glyph(S_bonfire);
+    add_region(flames);
+
+    if (!gi.in_mklev && inside_region(flames, u.ux, u.uy)) {
+        You("are enveloped in roaring flames!");
+        iflags.last_msg = PLNMSG_ENVELOPED_IN_FLAMES;
+    }
+    return flames;
 }
 
 /*region.c*/
