@@ -186,11 +186,7 @@ PANICTRACE_LIBC=2
 # default values.  Unlike all the SYSCF values above, individual users
 # can override the overridden options set here by choosing their own
 # option settings via NETHACKOPTIONS in their environment or via
-<<<<<<< HEAD
 # ~/.crecellehackrc run-time configuration file.
-#OPTIONS=!autopickup,fruit:tomato,symset:DECgraphics
-=======
-# ~/.nethackrc run-time configuration file.
 
 # Basic options
 OPTIONS=disclose:yi ya yv yg yc yo
@@ -203,6 +199,5 @@ OPTIONS=menu_objsyms,perm_invent,hitpointbar,quick_farsight
 # Various MSGTYPE examples
 MSGTYPE=hide "Unknown command *"
 MSGTYPE=alert "The (couatl|.*eel|kraken) swings itself around you!"
->>>>>>> hardfought
 
 #eof

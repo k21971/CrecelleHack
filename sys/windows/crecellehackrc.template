@@ -84,6 +84,7 @@ OPTIONS=glyph:S_throne/U+0409
 OPTIONS=glyph:S_bars/U+2980
 OPTIONS=glyph:S_magic_portal/U+238A
 OPTIONS=glyph:S_poisoncloud/U+00A7
+OPTIONS=glyph:S_potioncloud/U+00A7
 OPTIONS=glyph:S_cloud/U+00A7
 OPTIONS=glyph:S_stone/U+0023
 OPTIONS=roguesymset:Plain
