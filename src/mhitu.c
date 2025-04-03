@@ -530,7 +530,8 @@ mattacku(struct monst *mtmp)
         if (!canspotmon(mtmp))
             map_invisible(mtmp->mx, mtmp->my);
         u.uundetected = 0;
-        if (is_hider(gy.youmonst.data) && u.umonnum != PM_TRAPPER) {
+        if (is_hider(gy.youmonst.data) && u.umonnum != PM_TRAPPER
+            && u.umonnum != PM_SPANNER) {
             /* ceiling hider */
             coord cc; /* maybe we need a unexto() function? */
             struct obj *obj;
@@ -603,6 +604,7 @@ mattacku(struct monst *mtmp)
                 struct obj *obj = svl.level.objects[u.ux][u.uy];
 
                 if (obj || u.umonnum == PM_TRAPPER
+                    || u.umonnum == PM_SPANNER
                     || (gy.youmonst.data->mlet == S_EEL
                         && is_pool(u.ux, u.uy))) {
                     int save_spe = 0; /* suppress warning */
@@ -615,7 +617,8 @@ mattacku(struct monst *mtmp)
                     /* note that m_monnam() overrides hallucination, which is
                        what we want when message is from mtmp's perspective */
                     if (gy.youmonst.data->mlet == S_EEL
-                        || u.umonnum == PM_TRAPPER)
+                        || u.umonnum == PM_TRAPPER
+                        || u.umonnum == PM_SPANNER)
                         pline(
                              "Wait, %s!  There's a hidden %s named %s there!",
                               m_monnam(mtmp),

@@ -1083,6 +1083,15 @@
             | M1_CARNIVORE,
         M2_HOSTILE | M2_STALK | M2_STRONG, 0,
         14, CLR_GREEN, TRAPPER),
+    MON(NAM("spanner"), S_TRAPPER,
+        LVL(14, 3, 0, 0, 0), (G_GENO | 3),
+        A(ATTK(AT_BITE, AD_PHYS, 3, 8), ATTK(AT_TUCH, AD_WRAP, 0, 0),
+          NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(800, 350, MS_HUMANOID, MZ_HUGE), 0, 0,
+      M1_HIDE | M1_SWIM | M1_CONCEAL | M1_NOEYES
+        | M1_NOLIMBS | M1_NOHEAD | M1_CARNIVORE,
+      M2_STALK | M2_STRONG, 0,
+      17, CLR_BROWN, SPANNER),
     /*
      * unicorns and horses
      */

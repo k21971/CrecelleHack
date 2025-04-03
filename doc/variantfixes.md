@@ -117,6 +117,8 @@
   - Like Dnethack, is visible in darkness but invisible in light.
 - Mail worm (w)
   - Fills your inventory with spam mail.
+- Spanner (t)
+  - A monster that hides near water and that can drown you.
 
 ## Monster AI
 

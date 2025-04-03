@@ -279,7 +279,7 @@ dosit(void)
         return ECMD_OK;
     }
     if (u.uundetected && is_hider(gy.youmonst.data)
-        && u.umonnum != PM_TRAPPER) /* trapper can stay hidden on floor */
+        && u.umonnum != PM_TRAPPER && u.umonnum != PM_SPANNER) /* trapper can stay hidden on floor */
         u.uundetected = 0; /* no longer on the ceiling */
 
     if (!can_reach_floor(FALSE)) {
