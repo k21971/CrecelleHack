@@ -37,6 +37,7 @@
 
 ## GUI
 - MC is displayed on the status line as a percentage.
+- Display level names on status line.
 
 ## Monsters
 

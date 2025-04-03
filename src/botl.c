@@ -460,6 +460,12 @@ describe_level(
         addbranch = FALSE;
     } else if (In_quest(&u.uz)) {
         Sprintf(buf, "Home %d", dunlev(&u.uz));
+    } else if (In_sokoban(&u.uz)) {
+        Sprintf(buf, "Sokoban %d", dunlev(&u.uz));
+    } else if (In_tower(&u.uz)) {
+        Sprintf(buf, "Tower %d", dunlev(&u.uz));
+    } else if (In_mines(&u.uz)) {
+        Sprintf(buf, "Mines %d", dunlev(&u.uz));
     } else if (In_endgame(&u.uz)) {
         /* [3.6.2: this used to be "Astral Plane" or generic "End Game"] */
         (void) endgamelevelname(buf, depth(&u.uz));
