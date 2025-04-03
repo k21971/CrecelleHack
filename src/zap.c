@@ -5157,7 +5157,7 @@ zap_over_floor(
             /* don't create steam clouds on Plane of Water; air bubble
                movement and gas regions don't understand each other */
             if (!on_water_level) {
-                create_gas_cloud(x, y, rnd(5), 0); /* 1..5, no damg */
+                create_gas_cloud(x, y, rnd(5), 0, 0); /* 1..5, no damg */
                 if (iflags.last_msg == PLNMSG_ENVELOPED_IN_GAS)
                     msggiven = TRUE;
             }
@@ -5201,7 +5201,7 @@ zap_over_floor(
                 }
             }
         } else if (IS_FOUNTAIN(lev->typ)) {
-            create_gas_cloud(x, y, rnd(3), 0); /* 1..3, no damage */
+            create_gas_cloud(x, y, rnd(3), 0, 0); /* 1..3, no damage */
             if (see_it)
                 pline("Steam billows from the fountain.");
             rangemod -= 1;
@@ -5332,7 +5332,7 @@ zap_over_floor(
            caller is placing a series of 1x1 clouds along the zap's path;
            <x,y> for wall locations might be included--reject those */
         if (ZAP_POS(lev->typ))
-            (void) create_gas_cloud(x, y, 1, 8);
+            (void) create_gas_cloud(x, y, 1, 0, 8);
         break;
     case ZT_DEATH:
         /* Kill any grass on a surface. */
@@ -5946,7 +5946,7 @@ maybe_destroy_item(
             if (osym == POTION_CLASS && dmgtyp != AD_COLD
                 && (!breathless(gy.youmonst.data)
                     || haseyes(gy.youmonst.data))) {
-                potionbreathe(obj);
+                potionbreathe(obj); /* Should we maybe create a cloud of gas? */
             }
             if (obj->owornmask) { /* m_useup handles these for monster */
                 if (obj->owornmask & W_RING) /* ring being worn */

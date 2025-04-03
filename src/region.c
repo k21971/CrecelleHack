@@ -39,8 +39,9 @@ NhRegion *create_force_field(coordxy,coordxy,int,long);
 #endif
 
 staticfn void reset_region_mids(NhRegion *);
+staticfn boolean poisongas_damage(NhRegion *, int, struct monst *);
 staticfn boolean is_hero_inside_gas_cloud(short);
-staticfn void make_gas_cloud(NhRegion *, int, boolean) NONNULLARG1;
+staticfn void make_gas_cloud(NhRegion *, int, int, boolean) NONNULLARG1;
 
 static const callback_proc callbacks[] = {
 #define INSIDE_GAS_CLOUD 0
@@ -52,6 +53,9 @@ static const callback_proc callbacks[] = {
 #define EXPIRE_BONFIRE 3
     expire_bonfire
 };
+
+#define REGION_DAMAGE(reg) reg->arg.damage
+#define REGION_OTYP(reg) reg->arg.otyp
 
 /* Should be inlined. */
 boolean
@@ -126,7 +130,8 @@ create_region(NhRect *rects, int nrect)
     reg->n_monst = 0;
     reg->max_monst = 0;
     reg->monsters = (unsigned *) 0;
-    reg->arg = cg.zeroany;
+    REGION_DAMAGE(reg) = 0;
+    REGION_OTYP(reg) = 0;
     return reg;
 }
 
@@ -696,7 +701,7 @@ remove_mon_from_regions(struct monst *mon)
 int
 reg_damg(NhRegion *reg)
 {
-    int damg = (!reg->visible || reg->ttl == -2L) ? 0 : reg->arg.a_int;
+    int damg = (!reg->visible || reg->ttl == -2L) ? 0 : REGION_DAMAGE(reg);
 
     return damg;
 }
@@ -721,7 +726,7 @@ visible_region_summary(winid win)
 {
     NhRegion *reg;
     char buf[BUFSZ], typbuf[QBUFSZ];
-    int i, damg, hdr_done = 0;
+    int i, damg, otyp, hdr_done = 0;
     const char *fldsep = iflags.menu_tab_sep ? "\t" : "  ";
 
     for (i = 0; i < svn.n_regions; i++) {
@@ -743,9 +748,13 @@ visible_region_summary(winid win)
            which are due to timeout on the next turn have ttl==0;
            adding 1 is intended to make the display be less confusing */
         Sprintf(buf, "%5ld", reg->ttl + 1L);
-        damg = reg->arg.a_int;
+        damg = REGION_DAMAGE(reg);
+        otyp = REGION_OTYP(reg);
         if (reg->inside_f == INSIDE_GAS_CLOUD) {
-            if (damg)
+            if (otyp)
+                Sprintf(typbuf, "potion vapors (otyp %d, damg %d)", 
+                        otyp, damg);
+            else if (damg)
                 Sprintf(typbuf, "poison gas (%d)", damg);
             else
                 Strcpy(typbuf, "vapor");
@@ -853,7 +862,7 @@ save_regions(NHFILE *nhfp)
         if (nhfp->structlevel) {
             bwrite(nhfp->fd, (genericptr_t) &r->visible, sizeof (boolean));
             bwrite(nhfp->fd, (genericptr_t) &r->glyph, sizeof (int));
-            bwrite(nhfp->fd, (genericptr_t) &r->arg, sizeof (anything));
+            bwrite(nhfp->fd, (genericptr_t) &r->arg, sizeof (struct region_arg));
         }
     }
 
@@ -963,7 +972,7 @@ rest_regions(NHFILE *nhfp)
         if (nhfp->structlevel) {
             mread(nhfp->fd, (genericptr_t) &r->visible, sizeof (boolean));
             mread(nhfp->fd, (genericptr_t) &r->glyph, sizeof (int));
-            mread(nhfp->fd, (genericptr_t) &r->arg, sizeof (anything));
+            mread(nhfp->fd, (genericptr_t) &r->arg, sizeof (struct region_arg));
         }
     }
     /* remove expired regions, do not trigger the expire_f callback (yet!);
@@ -1135,13 +1144,12 @@ expire_gas_cloud(genericptr_t p1, genericptr_t p2 UNUSED)
     coordxy x, y;
 
     reg = (NhRegion *) p1;
-    damage = reg->arg.a_int;
+    damage = REGION_DAMAGE(reg);
 
     /* If it was a thick cloud, it dissipates a little first */
     if (damage >= 5) {
         damage /= 2; /* It dissipates, let's do less damage */
-        reg->arg = cg.zeroany;
-        reg->arg.a_int = damage;
+        REGION_DAMAGE(reg) = damage;
         reg->ttl = 2L; /* Here's the trick : reset ttl */
         return FALSE;  /* THEN return FALSE, means "still there" */
     }
@@ -1171,27 +1179,10 @@ expire_gas_cloud(genericptr_t p1, genericptr_t p2 UNUSED)
     return TRUE; /* OK, it's gone, you can free it! */
 }
 
-/* returns True if p2 is killed by region p1, False otherwise */
-boolean
-inside_gas_cloud(genericptr_t p1, genericptr_t p2)
-{
-    NhRegion *reg = (NhRegion *) p1;
-    struct monst *mtmp = (struct monst *) p2;
-    struct monst *umon = mtmp ? mtmp : &gy.youmonst;
-    int dam = reg->arg.a_int;
-
-    /*
-     * Gas clouds can't be targeted at water locations, but they can
-     * start next to water and spread over it.
-     */
-
-    /* fog clouds maintain gas clouds, even poisonous ones */
-    if (reg->ttl < 20 && umon && umon->data == &mons[PM_FOG_CLOUD])
-        reg->ttl += 5;
-
-    if (dam < 1)
-        return FALSE; /* if no damage then there's nothing to do here... */
-
+/* Vanilla keeps this in inside_gas_cloud, but we'll pull it out for the
+   sake of keeping things readable. */
+staticfn boolean 
+poisongas_damage(NhRegion *reg, int dam, struct monst *mtmp) {
     if (!mtmp) { /* hero is indicated by Null rather than by &youmonst */
         if (m_poisongas_ok(&gy.youmonst) == M_POISONGAS_OK)
             return FALSE;
@@ -1217,7 +1208,8 @@ inside_gas_cloud(genericptr_t p1, genericptr_t p2)
             return FALSE;
         }
     } else { /* A monster is inside the cloud */
-        mtmp = (struct monst *) p2;
+        /* For the life of me I can't figure out what this line was supposed to do. */
+        /*mtmp = (struct monst *) p2; */
 
         if (m_poisongas_ok(mtmp) != M_POISONGAS_OK) {
             if (!is_silent(mtmp->data)) {
@@ -1249,6 +1241,41 @@ inside_gas_cloud(genericptr_t p1, genericptr_t p2)
     return FALSE; /* Monster is still alive */
 }
 
+/* returns True if p2 is killed by region p1, False otherwise */
+boolean
+inside_gas_cloud(genericptr_t p1, genericptr_t p2)
+{
+    NhRegion *reg = (NhRegion *) p1;
+    struct monst *mtmp = (struct monst *) p2;
+    struct monst *umon = mtmp ? mtmp : &gy.youmonst;
+    int dam = REGION_DAMAGE(reg);
+    int otyp = REGION_OTYP(reg);
+
+    /*
+     * Gas clouds can't be targeted at water locations, but they can
+     * start next to water and spread over it.
+     */
+
+    /* fog clouds maintain gas clouds, even poisonous ones */
+    if (reg->ttl < 20 && umon && umon->data == &mons[PM_FOG_CLOUD])
+        reg->ttl += 5;
+
+    if (dam < 1)
+        return FALSE; /* if no damage then there's nothing to do here... */
+
+    if (otyp) {
+        struct obj fakeobj = cg.zeroobj;
+        fakeobj.otyp = otyp;
+        if (!mtmp && (!breathless(gy.youmonst.data) || haseyes(gy.youmonst.data))) {
+            potionbreathe(&fakeobj);
+        } else if (mtmp && (!breathless(mtmp->data) || haseyes(mtmp->data))) {
+            return potionhit_effects(mtmp, &fakeobj, heros_fault(reg));
+        }
+        return FALSE;
+    } else 
+        return poisongas_damage(reg, dam, mtmp);
+}
+
 staticfn boolean
 is_hero_inside_gas_cloud(short rtype)
 {
@@ -1266,27 +1293,54 @@ is_hero_inside_gas_cloud(short rtype)
 staticfn void
 make_gas_cloud(
     NhRegion *cloud,
+    int otyp,
     int damage,
     boolean inside_cloud)
 {
+    char description[BUFSZ];
     if (!gi.in_mklev && !svc.context.mon_moving)
         set_heros_fault(cloud); /* assume player has created it */
     cloud->inside_f = INSIDE_GAS_CLOUD;
     cloud->expire_f = EXPIRE_GAS_CLOUD;
-    cloud->arg = cg.zeroany;
-    cloud->arg.a_int = damage;
+    REGION_DAMAGE(cloud) = damage;
+    REGION_OTYP(cloud) = otyp;
     cloud->visible = TRUE;
-    cloud->glyph = cmap_to_glyph(damage ? S_poisoncloud : S_cloud);
+    /* Set up the cloud glyph */
+    if (otyp) {
+        cloud->glyph = cmap_to_glyph(S_potioncloud) + otyp - POT_GAIN_ABILITY;
+    } else {
+        cloud->glyph = cmap_to_glyph(damage ? S_poisoncloud : S_cloud);
+    }
     add_region(cloud);
+    reg_descr(cloud, description);
 
     if (!gi.in_mklev && !inside_cloud && is_hero_inside_gas_cloud(INSIDE_GAS_CLOUD)) {
         You("are enveloped in a cloud of %s!",
             /* FIXME: "steam" is wrong if this cloud is just the trail of
                a fog cloud's movement; changing to "vapor" would handle
                that but seems a step backward when it really is steam */
-            damage ? "noxious gas" : "steam");
+            description);
         iflags.last_msg = PLNMSG_ENVELOPED_IN_GAS;
     }
+}
+
+char *
+reg_descr(NhRegion *reg, char *description) {
+    if (!is_gasregion(reg)) {
+        Sprintf(description, "%s", "bonfire");
+    } else if (REGION_OTYP(reg)) {
+         /* Technically many types of vapor could be noticed even if the
+           player cannot see them, but that's too complicated to worry about. */
+        if (Blind)
+            Sprintf(description, "strange vapor");
+        else
+            Sprintf(description, "%s vapors", OBJ_DESCR(objects[REGION_OTYP(reg)]));
+    } else if (REGION_DAMAGE(reg)) {
+        Sprintf(description, "%s", "poison gas");
+    } else {
+        Sprintf(description, "%s", "vapor");
+    }
+    return description;
 }
 
 /* Create a gas cloud which starts at (x,y) and grows outward from it via
@@ -1298,6 +1352,7 @@ NhRegion *
 create_gas_cloud(
     coordxy x, coordxy y,
     int cloudsize,
+    int otyp,
     int damage)
 {
     NhRegion *cloud;
@@ -1389,7 +1444,7 @@ create_gas_cloud(
     /* If cloud was constrained in small space, give it more time to live. */
     cloud->ttl = (cloud->ttl * cloudsize) / newidx;
 
-    make_gas_cloud(cloud, damage, inside_cloud);
+    make_gas_cloud(cloud, otyp, damage, inside_cloud);
     return cloud;
 }
 
@@ -1416,7 +1471,7 @@ create_gas_cloud_selection(
                 add_rect_to_reg(cloud, &tmprect);
             }
 
-    make_gas_cloud(cloud, damage, inside_cloud);
+    make_gas_cloud(cloud, damage, 0, inside_cloud);
     return cloud;
 }
 
@@ -1522,13 +1577,13 @@ expire_bonfire(genericptr_t p1, genericptr_t p2 UNUSED)
     int damage;
 
     reg = (NhRegion *) p1;
-    damage = reg->arg.a_int;
+    damage = REGION_DAMAGE(reg);
 
-    /* If it was a thick cloud, it dissipates a little first */
+    /* If it was a thick bonfire, it dissipates a little first */
     if (damage >= 5) {
         damage /= 2; /* It dissipates, let's do less damage */
-        reg->arg = cg.zeroany;
-        reg->arg.a_int = damage;
+        REGION_OTYP(reg) = 0;
+        REGION_DAMAGE(reg) = damage;
         reg->ttl = 2L; /* Here's the trick : reset ttl */
         return FALSE;  /* THEN return FALSE, means "still there" */
     }
@@ -1548,7 +1603,7 @@ inside_bonfire(genericptr_t p1, genericptr_t p2)
     NhRegion *reg = (NhRegion *) p1;
     struct monst *mtmp = (struct monst *) p2;
     struct monst *umon = mtmp ? mtmp : &gy.youmonst;
-    int dam = reg->arg.a_int;
+    int dam = REGION_DAMAGE(reg);
 
     if (reg->ttl < 20 && umon && umon->data == &mons[PM_FIRE_ELEMENTAL])
         reg->ttl += 5;
@@ -1643,8 +1698,7 @@ create_bonfire(coordxy x, coordxy y, int lifetime, int damage)
         set_heros_fault(flames); /* assume player has created it */
     flames->inside_f = INSIDE_BONFIRE;
     flames->expire_f = EXPIRE_BONFIRE;
-    flames->arg = cg.zeroany;
-    flames->arg.a_int = damage;
+    REGION_DAMAGE(flames) = damage;
     flames->visible = TRUE;
     flames->glyph = cmap_to_glyph(S_bonfire);
     add_region(flames);

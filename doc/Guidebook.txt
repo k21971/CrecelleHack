@@ -6482,6 +6482,7 @@
         ^  S_polymorph_trap       (polymorph trap)
         }  S_pool                 (water)
         !  S_potion               (potion)
+        #  S_potioncloud          (potion cloud)
         P  S_pudding              (pudding or ooze)
         q  S_quadruped            (quadruped)
         Q  S_quantmech            (quantum mechanic)

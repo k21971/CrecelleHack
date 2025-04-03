@@ -2147,7 +2147,8 @@ premap_detect(void)
 /* used to see under visible gas/cloud regions; caller must declare cmaptmp */
 #define glyph_is_gascloud(glyph) \
     (glyph_is_cmap(glyph) && ((cmaptmp = glyph_to_cmap(glyph)) == S_cloud \
-                              || cmaptmp == S_poisoncloud))
+                              || cmaptmp == S_poisoncloud \
+                              || cmaptmp == S_potioncloud))
 
 staticfn int
 reveal_terrain_getglyph(

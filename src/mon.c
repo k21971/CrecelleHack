@@ -2186,6 +2186,7 @@ mfndpos(
     NhRegion *gas_reg;
     NhRegion *bonf_reg;
     int gas_glyph = cmap_to_glyph(S_poisoncloud);
+    int vapor_glyph = cmap_to_glyph(S_potioncloud);
     int bonfire_glyph = cmap_to_glyph(S_bonfire);
 
     x = mon->mx;
@@ -2205,7 +2206,7 @@ mfndpos(
     poisongas_ok = (m_poisongas_ok(mon) == M_POISONGAS_OK);
     bonfire_ok = (m_bonfire_ok(mon) == M_BONFIRE_OK);
     in_poisongas = ((gas_reg = visible_region_at(x,y)) != 0
-                    && gas_reg->glyph == gas_glyph);
+                    && (gas_reg->glyph == gas_glyph || gas_reg->glyph == vapor_glyph));
     in_bonfire = ((bonf_reg = visible_region_at(x,y)) != 0
                     && bonf_reg->glyph == bonfire_glyph);
 
@@ -2276,7 +2277,7 @@ mfndpos(
             /* avoid poison gas? */
             if (!poisongas_ok && !in_poisongas
                 && (gas_reg = visible_region_at(nx,ny)) != 0
-                && gas_reg->glyph == gas_glyph)
+                && (gas_reg->glyph == gas_glyph || gas_reg->glyph == vapor_glyph ))
                 continue;
             /* avoid bonfire? */
             if (!bonfire_ok && !in_bonfire
@@ -3109,7 +3110,7 @@ mondead(struct monst *mtmp)
         You("have a sad feeling for a moment, then it passes.");
 
     if (mtmp->data == &mons[PM_STEAM_VORTEX])
-        create_gas_cloud(mtmp->mx, mtmp->my, rn2(10) + 5, 0); /* harmless */
+        create_gas_cloud(mtmp->mx, mtmp->my, rn2(10) + 5, 0, 0); /* harmless */
 
     /* dead vault guard is actually kept at coordinate <0,0> until
        his temporary corridor to/from the vault has been removed;

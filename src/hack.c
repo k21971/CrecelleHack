@@ -2522,7 +2522,8 @@ avoid_trap_andor_region(coordxy x, coordxy y)
         if (is_gasregion(newreg))
             Snprintf(qbuf, sizeof qbuf, "%s into that %s cloud?",
                     u_locomotion("step"),
-                    (reg_damg(newreg) > 0) ? "poison gas" : "vapor");
+                    newreg->arg.otyp ? OBJ_DESCR(objects[newreg->arg.otyp])
+                    : (reg_damg(newreg) > 0) ? "poison gas" : "vapor");
         else
             Snprintf(qbuf, sizeof qbuf, "%s into those raging flames?",
                     u_locomotion("step"));

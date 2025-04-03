@@ -419,7 +419,7 @@ nemesis_stinks(coordxy mx, coordxy my)
      * a cloud even if hero has just killed nemesis.
      */
     svc.context.mon_moving = TRUE;
-    create_gas_cloud(mx, my, 5, 8);
+    create_gas_cloud(mx, my, 5, 0, 8);
     svc.context.mon_moving = save_mon_moving;
 }
 

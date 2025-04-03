@@ -1932,6 +1932,8 @@ show_glyph(coordxy x, coordxy y, int glyph)
             text = "dark explosion";
         } else if ((offset = (glyph - GLYPH_SWALLOW_OFF)) >= 0) {
             text = "swallow";
+        } else if ((offset = (glyph - GLYPH_POTIONCLOUD_OFF)) >= 0) {
+            text = "potion vapors";
         } else if ((offset = (glyph - GLYPH_CMAP_C_OFF)) >= 0) {
             text = "cmap C";
         } else if ((offset = (glyph - GLYPH_ZAP_OFF)) >= 0) {
@@ -2699,6 +2701,7 @@ int wallcolors[sokoban_walls + 1] = {
     color = iflags.use_color ? explodecolors[n] : NO_COLOR
 #define wall_color(n) color = iflags.use_color ? wallcolors[n] : NO_COLOR
 #define altar_color(n) color = iflags.use_color ? altarcolors[n] : NO_COLOR
+#define potioncloud_color(n) color = iflags.use_color ? objects[n + POT_GAIN_ABILITY].oc_color : NO_COLOR
 
 staticfn int cmap_to_roguecolor(int);
 
@@ -2875,6 +2878,12 @@ reset_glyphmap(enum glyphmap_change_triggers trigger)
                 color = NO_COLOR;
             else
                 mon_color(offset >> 3);
+        } else if ((offset = (glyph - GLYPH_POTIONCLOUD_OFF)) >= 0) {
+            gmap->sym.symidx = S_potioncloud + SYM_OFF_P;
+            if (has_rogue_color)
+                color = cmap_to_roguecolor(S_potioncloud);
+            else
+                potioncloud_color(offset);
         } else if ((offset = (glyph - GLYPH_CMAP_C_OFF)) >= 0) {
             gmap->sym.symidx = S_digbeam + offset + SYM_OFF_P;
             if (has_rogue_color)

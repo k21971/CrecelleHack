@@ -337,6 +337,7 @@ tilename(int set, const int file_entry, int gend UNUSED)
             }
             tilenum++;
         }
+        /* TODO: POTIONCLOUD */
 
         /* Altars */
         cmap = S_altar;
@@ -613,6 +614,7 @@ init_tilemap(void)
     Fprintf(tilemap_file, "GLYPH_CMAP_B_OFF = %d\n", GLYPH_CMAP_B_OFF);
     Fprintf(tilemap_file, "GLYPH_ZAP_OFF = %d\n", GLYPH_ZAP_OFF);
     Fprintf(tilemap_file, "GLYPH_CMAP_C_OFF = %d\n", GLYPH_CMAP_C_OFF);
+    Fprintf(tilemap_file, "GLYPH_POTIONCLOUD_OFF = %d\n", GLYPH_POTIONCLOUD_OFF);
     Fprintf(tilemap_file, "GLYPH_SWALLOW_OFF = %d\n", GLYPH_SWALLOW_OFF);
     Fprintf(tilemap_file, "GLYPH_EXPLODE_OFF = %d\n", GLYPH_EXPLODE_OFF);
     Fprintf(tilemap_file, "GLYPH_EXPLODE_DARK_OFF = %d\n",
@@ -910,6 +912,7 @@ init_tilemap(void)
         tilenum++;
         file_entry++;
     }
+    /* TODO: POTIONCLOUD */
 
     /* Altars */
     cmap = S_altar;

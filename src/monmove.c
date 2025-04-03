@@ -509,7 +509,7 @@ monflee(
 
         if (mtmp->data == &mons[PM_VROCK] && !mtmp->mspec_used) {
             mtmp->mspec_used = 75 + rn2(25);
-            (void) create_gas_cloud(mtmp->mx, mtmp->my, 5, 8);
+            (void) create_gas_cloud(mtmp->mx, mtmp->my, 5, 0, 8);
         }
 
         mtmp->mflee = 1;
@@ -647,7 +647,7 @@ m_everyturn_effect(struct monst *mtmp)
            present, or when flowing under closed doors so that visibility
            changes aren't mixed with messages about doing such */
         if (!closed_door(x, y) && !visible_region_at(x, y))
-            create_gas_cloud(x, y, 1, 0); /* harmless vapor */
+            create_gas_cloud(x, y, 1, 0, 0); /* harmless vapor */
     }
     if (mtmp->data == &mons[PM_HELLCAT] && !is_u) {
         if (levl[x][y].lit) {
@@ -675,12 +675,12 @@ m_postmove_effect(struct monst *mtmp)
 
     /* Hezrous create clouds of stench. This does not cost a move. */
     if (mtmp->data == &mons[PM_HEZROU]) /* stench */
-        create_gas_cloud(x, y, 1, 8);
+        create_gas_cloud(x, y, 1, 0, 8);
     else if (mtmp->data == &mons[PM_SKUNK_APE] && !mtmp->mspec_used) {
         mtmp->mspec_used = rnd(20);
-        (void) create_gas_cloud(mtmp->mx, mtmp->my, rnd(6), 3);
+        (void) create_gas_cloud(mtmp->mx, mtmp->my, rnd(6), 0, 3);
     } else if (mtmp->data == &mons[PM_STEAM_VORTEX] && !mtmp->mcan)
-        create_gas_cloud(x, y, 1, 0); /* harmless vapor */
+        create_gas_cloud(x, y, 1, 0, 0); /* harmless vapor */
     else if (mtmp->data == &mons[PM_FIRE_ELEMENTAL] && !mtmp->mcan)
         create_bonfire(x, y, 1, rnd(4));
     else if (mtmp->data == &mons[PM_ACID_BLOB] 

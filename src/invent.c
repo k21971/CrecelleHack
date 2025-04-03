@@ -4744,7 +4744,8 @@ look_here(
         regbuf[0] = '\0';
         if ((reg = visible_region_at(u.ux, u.uy)) != 0)
             Sprintf(regbuf, "a %s cloud",
-                    reg_damg(reg) ? "poison gas" : "vapor");
+                    reg->arg.otyp ? OBJ_DESCR(objects[reg->arg.otyp])
+                    : reg_damg(reg) ? "poison gas" : "vapor");
         if ((trap = t_at(u.ux, u.uy)) != 0 && !trap->tseen)
             trap = (struct trap *) NULL;
 

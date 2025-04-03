@@ -272,10 +272,12 @@ mhidden_description(
            additional vision bit for "hero's side of edge of gas cloud"?] */
         if (distu(x, y) <= r * (r + 1) || force_region) {
             int rglyph = reg->glyph;
+            int otyp = reg->arg.otyp;
             boolean poison_gas = (glyph_is_cmap(rglyph)
                                   && glyph_to_cmap(rglyph) == S_poisoncloud);
 
-            Snprintf(eos(outbuf), BUFSZ - buflen, ", in a cloud of %s",
+            Snprintf(eos(outbuf), BUFSZ - buflen, ", in a %s cloud",
+                     otyp ? OBJ_DESCR(objects[otyp]) :
                      poison_gas ? "poison gas" : "vapor");
         }
     }
@@ -784,7 +786,14 @@ lookat(coordxy x, coordxy y, char *buf, char *monbuf)
                         : align_str(algn),
                     (amsk & AM_SANCTUM) ? "high " : "");
             break;
-        case S_ndoor:
+        case S_potioncloud: {
+            NhRegion *reg = visible_region_at(x, y);
+            if (!reg) {
+                impossible("Seen potion cloud at <%d,%d> should be invisible?", x, y);
+            }
+            Sprintf(buf, "%s vapors", OBJ_DESCR(objects[reg->arg.otyp]));
+            break;
+        } case S_ndoor:
             if (is_drawbridge_wall(x, y) >= 0)
                 Strcpy(buf, "open drawbridge portcullis");
             else if ((levl[x][y].doormask & ~D_TRAPPED) == D_BROKEN)

@@ -6328,7 +6328,7 @@ chest_trap(
                 poisoned("gas cloud", A_STR, "cloud of poison gas", 15,
                          FALSE);
             else
-                create_gas_cloud(obj->ox, obj->oy, 1, 8);
+                create_gas_cloud(obj->ox, obj->oy, 1, 0, 8);
             exercise(A_CON, FALSE);
             break;
         case 16:
@@ -6379,6 +6379,7 @@ chest_trap(
         case 2:
         case 1:
         case 0:
+            /* TODO: Update with new cloud code */
             pline("A cloud of %s gas billows from %s.",
                   Blind ? ROLL_FROM(blindgas) : rndcolor(),
                   the(xname(obj)));

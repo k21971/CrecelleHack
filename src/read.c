@@ -3023,7 +3023,7 @@ do_stinking_cloud(struct obj *sobj, boolean mention_stinking)
         return;
     }
     (void) create_gas_cloud(cc.x, cc.y, 15 + 10 * bcsign(sobj),
-                            8 + 4 * bcsign(sobj));
+                            0, 8 + 4 * bcsign(sobj));
 }
 
 /* some creatures have special data structures that only make sense in their

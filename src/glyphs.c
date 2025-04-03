@@ -219,6 +219,8 @@ glyph_to_cmap(int glyph)
         return (glyph - GLYPH_CMAP_B_OFF) + S_grave;
     else if (glyph_is_cmap_c(glyph))
         return (glyph - GLYPH_CMAP_C_OFF) + S_digbeam;
+    else if (glyph_is_cmap_potioncloud(glyph))
+        return S_potioncloud;
     else if (glyph_is_cmap_zap(glyph))
         return ((glyph - GLYPH_ZAP_OFF) % 4) + S_vbeam;
     else if (glyph_is_swallow(glyph))
@@ -1016,6 +1018,17 @@ parse_id(
                             buf2 = buf[2];
                         } else {
                             buf3 = "altar other";
+                            skip_base = TRUE;
+                        }
+                    } else if (glyph_is_cmap_potioncloud(glyph)) {
+                        j = (glyph - GLYPH_POTIONCLOUD_OFF);
+                        cmap = S_potioncloud;
+                        if (j > POT_GAIN_ABILITY && j <= POT_WATER) {
+                            Snprintf(buf[2], sizeof buf[2], "%s#",
+                                    OBJ_DESCR(objects[j]));
+                            buf2 = buf[2];
+                        } else {
+                            buf3 = "unknown potion vapors?";
                             skip_base = TRUE;
                         }
                     } else if (glyph_is_cmap_b(glyph)) {
