@@ -504,7 +504,7 @@
         SIZ(10, 10, MS_SILENT, MZ_SMALL), MR_STONE, MR_STONE,
         M1_FLY | M1_AMPHIBIOUS | M1_NOLIMBS | M1_NOHEAD | M1_NOTAKE,
         M2_MINION | M2_PEACEFUL, 0,
-        3, CLR_BLUE, MASCARON),
+        3, CLR_YELLOW, MASCARON),
     /* gargoyle and winged gargoyle are inspired by a cheesy made-for-TV
        horror movie (starring Cornel Wilde and Jennifer Salt, 1972) */
     MON(NAM("gargoyle"), S_GREMLIN,
