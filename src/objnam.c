@@ -1690,9 +1690,13 @@ doname_base(
     if (iflags.invweight) {
         /* wizard mode user has asked to see object weights */
         if (with_price && bp_eos[-1] == ')')
-            ConcatF1(bp, 1, ", %u aum)", obj->owt);
+            ConcatF1(bp, 1, 
+                     wizard ? ", %u aum)" : ", {%u})",
+                     obj->owt);
         else
-            ConcatF1(bp, 0, " (%u aum)", obj->owt);
+            ConcatF1(bp, 0,
+                     wizard ? " (%u aum)" : " {%u}", 
+                     obj->owt);
 
         /* ConcatF1(bp) updates bp_eos and bpspaceleft but we're done
            with them now; add a fake use so compiler won't complain
