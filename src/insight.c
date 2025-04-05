@@ -2611,13 +2611,8 @@ show_gamelog(int final)
         if (!final && !wizard && spoilerevent(llmsg))
             continue;
         if (!eventcnt++)
-<<<<<<< HEAD
-            putstr(win, ATR_SUBHEAD, " Turn");
-        Sprintf(buf, "%5ld: %s", llmsg->turn, llmsg->text);
-=======
             putstr(win, ATR_SUBHEAD, " Turn");
         Snprintf(buf, sizeof buf, "%5ld: %s", llmsg->turn, llmsg->text);
->>>>>>> NetHack/NetHack-3.7
         putstr(win, 0, buf);
     }
     /* since start of game is logged as a major event, 'eventcnt' should
