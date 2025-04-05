@@ -1449,6 +1449,10 @@ obj_resists(struct obj *obj,
         || obj->otyp == BELL_OF_OPENING
         || (obj->otyp == CORPSE && is_rider(&mons[obj->corpsenm]))) {
         return TRUE;
+    } else if (obj->otyp == SKULL 
+                && (obj->corpsenm == PM_BLACK_DRAGON 
+                    || obj->corpsenm == PM_BABY_BLACK_DRAGON)) {
+        return TRUE;
     } else {
         int chance = rn2(100);
 

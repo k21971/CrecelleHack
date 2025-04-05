@@ -1333,7 +1333,8 @@ trapeffect_rocktrap(
             place_object(otmp, u.ux, u.uy);
 
             pline("A trap door in %s opens and %s falls on your %s!",
-                  the(ceiling(u.ux, u.uy)), an(xname(otmp)), body_part(HEAD));
+                  the(ceiling(u.ux, u.uy)), an(xname(otmp)), 
+                        (uarmh && uarmh->otyp == SKULL) ? "skull" : body_part(HEAD));
             if (uarmh) {
                 /* normally passes_rocks() would protect against a falling
                    rock, but not when wearing a helmet */

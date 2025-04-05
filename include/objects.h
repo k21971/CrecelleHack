@@ -472,6 +472,12 @@ HELM("dunce cap", "conical hat",
         /* sets Int and Wis to fixed value of 6, so actually provides
            protection against death caused by Int being drained below 3 */
                                                         DUNCE_CAP),
+HELM("skull", NoDes,
+     1, 0,           0,  2, 3, 10, 30, 10, 0, BONE, CLR_WHITE,
+                                                        SKULL),
+HELM("skull helm", NoDes,
+     1, 0,           0,  1, 3, 10, 50, 9, 10, BONE, CLR_WHITE,
+                                                        SKULL_HELM),
 HELM("dented pot", NoDes,
      1, 0,           0,  2, 0, 10,  8,  9, 3, IRON, CLR_BLACK,
                                                         DENTED_POT),

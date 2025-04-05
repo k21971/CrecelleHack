@@ -259,6 +259,9 @@
 #define has_blood(ptr) \
     (!(nonliving(ptr) || unsolid(ptr) || mindless(ptr)))
 
+#define has_skull(ptr) \
+    (has_head(ptr) && !vegan(ptr) && !unsolid(ptr))
+
 /* monkeys are tamable via bananas but not pacifiable via food,
    otherwise their theft attack could be nullified too easily;
    dogs and cats can be tamed by anything they like to eat and are

@@ -1236,6 +1236,14 @@ break_armor(void)
             }
         }
     }
+    if (((otmp = uarmh) != 0) && otmp->otyp == SKULL 
+        && has_head(uptr) && uptr->msize > mons[otmp->corpsenm].msize) {
+        if (donning(otmp))
+            cancel_don();
+        Your("%s splinters!", helm_simple_name(otmp));
+        (void) Helmet_off();
+        useup(otmp);
+    }
     if (nohands(uptr) || verysmall(uptr)) {
         if ((otmp = uarmg) != 0) {
             if (donning(otmp))

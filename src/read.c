@@ -1206,6 +1206,22 @@ seffect_enchant_armor(struct obj **sobjp)
         if (old_light)
             maybe_adjust_light(otmp, old_light);
         return;
+    } else if (s >= 0 && otmp->otyp == SKULL) {
+        pline("%s morphs into a fearsome helmet!", Yname2(otmp));
+        setworn((struct obj *) 0, W_ARMH);
+        otmp->otyp = SKULL_HELM;
+        if (sblessed) {
+            otmp->spe++;
+            cap_spe(otmp);
+            if (!otmp->blessed)
+                bless(otmp);
+        } else if (otmp->cursed)
+            uncurse(otmp);
+        otmp->known = 1;
+        setworn(otmp, W_ARMH);
+        if (otmp->unpaid)
+            alter_cost(otmp, 0L);
+        return;
     }
     pline("%s %s%s%s%s for a %s.", Yname2(otmp),
           (s == 0) ? "violently " : "",

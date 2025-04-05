@@ -29,6 +29,7 @@ staticfn int Helmet_on(void);
 staticfn int Gloves_on(void);
 staticfn int Shield_on(void);
 staticfn int Shirt_on(void);
+staticfn void mon_product_handling(struct obj *, boolean, boolean);
 staticfn void dragon_armor_handling(struct obj *, boolean, boolean);
 staticfn void Amulet_on(struct obj *) NONNULLARG1;
 staticfn void learnring(struct obj *, boolean);
@@ -443,6 +444,10 @@ Helmet_on(void)
     case DWARVISH_IRON_HELM:
     case ORCISH_HELM:
     case HELM_OF_TELEPATHY:
+    case SKULL:
+        break;
+    case SKULL_HELM:
+        mon_product_handling(uarmh, TRUE, TRUE);
         break;
     case HELM_OF_CAUTION:
         see_monsters();
@@ -528,6 +533,10 @@ Helmet_off(void)
     case ELVEN_LEATHER_HELM:
     case DWARVISH_IRON_HELM:
     case ORCISH_HELM:
+    case SKULL:
+        break;
+    case SKULL_HELM:
+        mon_product_handling(uarmh, FALSE, TRUE);
         break;
     case DUNCE_CAP:
         disp.botl = TRUE;
@@ -786,6 +795,33 @@ Shirt_off(void)
 
     setworn((struct obj *) 0, W_ARMU);
     return 0;
+}
+
+/* handle abilities granted by monster bones and meat */
+staticfn void
+mon_product_handling(
+    struct obj *otmp,
+    boolean puton,
+    boolean on_purpose)
+{
+    struct permonst *mdat = &mons[otmp->corpsenm];
+    short mr;
+    if (!otmp)
+        return;
+    for (int i = FIRE_RES; i <= STONE_RES; i++) {
+        mr = res_to_mr(i);
+        if (pm_resistance(mdat, mr)) {
+            if (puton) {
+                u.uprops[i].extrinsic |= W_ARMH;
+            } else {
+                u.uprops[i].extrinsic &= ~W_ARMH;
+                if (i == STONE_RES) {
+                    wielding_corpse(uwep, otmp, on_purpose);
+                    wielding_corpse(uswapwep, otmp, on_purpose);
+                }
+            }
+        }
+    }
 }
 
 /* handle extra abilities for hero wearing dragon scale armor */
@@ -2218,6 +2254,10 @@ accessory_or_armor_on(struct obj *obj)
             makeknown(obj->otyp);
             disp.botl = TRUE; /* for AC after zeroing u.ublessed */
             return ECMD_TIME;
+        } else if (obj->otyp == SKULL 
+                    && mons[obj->corpsenm].msize < gy.youmonst.data->msize) {
+            pline("The skull is too small to wear on your %s.", body_part(HEAD));
+            return ECMD_OK;
         }
     } else {
         /*

@@ -1058,6 +1058,16 @@ mksobj_init(struct obj **obj, boolean artif)
         case BAG_OF_TRICKS:
             otmp->spe = rn1(18, 3); /* 0..17 + 3 => 3..20 */
             break;
+        case SKULL:
+            otmp->spe = 0;
+            FALLTHROUGH;
+            /* FALLTHRU */
+        case SKULL_HELM:
+            tryct = 0;
+            do
+                otmp->corpsenm = rndmonnum_adj(10, 10);
+            while  (!has_skull(&mons[otmp->corpsenm]) && tryct++ < 30);
+            break;
         case FIGURINE:
             tryct = 0;
             /* figurines are slightly harder monsters */
@@ -1226,10 +1236,14 @@ mksobj(int otyp, boolean init, boolean artif)
         } while (!has_blood(&mons[otmp->corpsenm]))
         FALLTHROUGH;
         /*FALLTHRU*/
+    case SKULL:
+    case SKULL_HELM:
     case CORPSE:
         if (otmp->corpsenm == NON_PM) {
             otmp->corpsenm = undead_to_corpse(rndmonnum());
-            if (svm.mvitals[otmp->corpsenm].mvflags & (G_NOCORPSE | G_GONE))
+            if ((svm.mvitals[otmp->corpsenm].mvflags & (G_NOCORPSE | G_GONE))
+                || ((otmp->otyp == SKULL || otmp->otyp == SKULL_HELM) 
+                    && !has_skull(&mons[otmp->corpsenm])))
                 otmp->corpsenm = gu.urole.mnum;
         }
         FALLTHROUGH;
@@ -1343,6 +1357,9 @@ set_corpsenm(struct obj *obj, int id)
         if (obj->corpsenm != NON_PM && !dead_species(obj->corpsenm, TRUE)
             && (carried(obj) || mcarried(obj)))
             attach_fig_transform_timeout(obj);
+        obj->owt = weight(obj);
+        break;
+    case SKULL:
         obj->owt = weight(obj);
         break;
     case EGG:
@@ -1950,6 +1967,9 @@ weight(struct obj *obj)
         if (obj->oeaten)
             wt = eaten_stat(wt, obj);
         return wt;
+    } else if ((obj->otyp == SKULL || obj->otyp == SKULL_HELM) && ismnum(obj->corpsenm)) {
+        /* Yuck */
+        return max(obj->otyp == SKULL ? 1 : 10, mons[obj->corpsenm].cwt / 50);
     } else if (obj->oclass == FOOD_CLASS && obj->oeaten) {
         return eaten_stat((int) obj->quan * wt, obj);
     } else if (obj->oclass == COIN_CLASS) {

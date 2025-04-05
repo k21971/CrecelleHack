@@ -1640,6 +1640,11 @@ artifact_hit(
                 *dmgptr = 2 * mdef->mhp + FATAL_DAMAGE_MODIFIER;
                 pline(ROLL_FROM(behead_msg), wepdesc,
                       mon_nam(mdef));
+                if (mdef->data == &mons[PM_SKELETON]) {
+                    struct obj *skull = mksobj(SKULL, FALSE, FALSE);
+                    set_corpsenm(skull, PM_HUMAN);
+                    mpickobj(mdef, skull);
+                }
                 if (Hallucination && !flags.female)
                     pline("Good job Henry, but that wasn't Anne.");
                 otmp->dknown = TRUE;

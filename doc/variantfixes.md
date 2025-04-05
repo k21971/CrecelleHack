@@ -111,6 +111,13 @@
     and dwarvish weapons deal more damage but are slower.
 
 ### New Objects
+- Skull
+  - Derived from a monster.
+- Skull Helm
+  - Can be obtained by using a non-cursed scroll of enchant armor
+    to enchant a worn skull.
+  - Provide the same type of resistances possessed by the original
+    monster. 
 - Potion of blood
   - Function similarly to potions of blood from dnethack, although
     the implementation is different.

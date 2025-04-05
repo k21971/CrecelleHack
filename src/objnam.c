@@ -732,6 +732,9 @@ xname_flags(
                 Strcpy(buf, "smooth shield");
                 break;
             }
+        } else if (typ == SKULL || typ == SKULL_HELM) {
+            const char *pm_name = obj_pmname(obj);
+            Sprintf(buf, "%s ", pm_name);
         }
         ConcUpdate(buf);
 
@@ -1072,6 +1075,8 @@ minimal_xname(struct obj *obj)
     /* for a boulder, leave corpsenm as 0; non-zero produces "next boulder" */
     if (otyp != BOULDER)
         bareobj.corpsenm = NON_PM; /* suppress statue and figurine details */
+    if (otyp == SKULL_HELM || otyp == SKULL)
+        bareobj.corpsenm = obj->corpsenm; /* we need this to avoid issues with insight */
     /* but suppressing fruit details leads to "bad fruit #0"
        [perhaps we should force "slime mold" rather than use xname?] */
     if (obj->otyp == SLIME_MOLD)
@@ -1287,7 +1292,7 @@ doname_base(
             Sprintf(prefix, "%ld ", obj->quan);
         else
             Strcpy(prefix, "some ");
-    } else if (obj->otyp == CORPSE) {
+    } else if (obj->otyp == CORPSE || obj->otyp == SKULL || obj->otyp == SKULL_HELM) {
         /* skip article prefix for corpses [else corpse_xname()
            would have to be taught how to strip it off again] */
         ;
@@ -1548,7 +1553,8 @@ doname_base(
         break;
     }
 
-    if ((obj->otyp == STATUE || obj->otyp == CORPSE || obj->otyp == FIGURINE)
+    if ((obj->otyp == STATUE || obj->otyp == CORPSE || obj->otyp == FIGURINE 
+        || obj->otyp == SKULL || obj->otyp == SKULL_HELM)
         && wizard && iflags.wizmgender) {
         int cgend = (obj->spe & CORPSTAT_GENDER),
             mgend = ((cgend == CORPSTAT_MALE) ? MALE
@@ -4152,6 +4158,7 @@ readobjnam_preparse(struct _readobjnam_data *d)
          * viable but silly "female statue of a gnome ruler".
          */
         } else if ((!strncmpi(d->bp, "corpse ", l = 7)
+                    || !strncmpi(d->bp, "skull ", l = 6)
                     || !strncmpi(d->bp, "statue ", l = 7)
                     || !strncmpi(d->bp, "figurine ", l = 9))
                    && !strncmpi(d->bp + l, "of ", more_l = 3)) {
@@ -5130,6 +5137,8 @@ readobjnam(char *bp, struct obj *no_wish)
         break;
     case STATUE: /* otmp->cobj already done in mksobj() */
     case FIGURINE:
+    case SKULL:
+    case SKULL_HELM:
     case CORPSE: {
         struct permonst *P = (ismnum(d.mntmp)) ? &mons[d.mntmp] : 0;
 
@@ -5213,6 +5222,11 @@ readobjnam(char *bp, struct obj *no_wish)
             d.mntmp = can_be_hatched(d.mntmp);
             /* this also sets hatch timer if appropriate */
             set_corpsenm(d.otmp, d.mntmp);
+            break;
+        case SKULL:
+        case SKULL_HELM:
+            if (has_skull(&mons[d.mntmp]))
+                set_corpsenm(d.otmp, d.mntmp);
             break;
         case FIGURINE:
             if (!(mons[d.mntmp].geno & G_UNIQ)
@@ -5506,7 +5520,7 @@ helm_simple_name(struct obj *helmet)
      *      fedora, cornuthaum, dunce cap       -> hat
      *      all other types of helmets          -> helm
      */
-    return !hard_helmet(helmet) ? "hat" : "helm";
+    return (helmet->otyp == SKULL) ? "skull" : !hard_helmet(helmet) ? "hat" : "helm";
 }
 
 /* gloves vs gauntlets; depends upon discovery state */

@@ -1473,6 +1473,11 @@ makemon(
         if (u_wield_art(ART_EXCALIBUR) || u_wield_art(ART_DEMONBANE))
             mtmp->mpeaceful = mtmp->mtame = FALSE;
     }
+    if (uarmh && (uarmh->otyp == SKULL || uarmh->otyp == SKULL_HELM)) {
+        if (mons[uarmh->corpsenm].mlet == mtmp->data->mlet) {
+            mtmp->mpeaceful = mtmp->mtame = FALSE;
+        }
+    }
     if (mndx == PM_RAVEN && uwep && uwep->otyp == BEC_DE_CORBIN)
         mtmp->mpeaceful = TRUE;
     if (mndx == PM_LONG_WORM && (mtmp->wormno = get_wormno()) != 0) {
