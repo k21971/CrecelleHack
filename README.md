@@ -18,8 +18,9 @@ Amulet of Yendor for your god.
 
 - [Changelog](doc/variantfixes.md)
 - [Known Issues](doc/variantknownissues.md)
-- [Unique Monster Spoiler](doc/variantuniques.md)
-- [Monster Spells Spoiler](doc/variantspells.md)
+- [New Monsters Spoiler](doc/variantmonsters.md)
+- [Unique Monste Spoiler](doc/variantuniques.md)
+- [Monster Spell Spoiler](doc/variantspells.md)
 
 ## FAQ
 
