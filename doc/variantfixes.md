@@ -58,6 +58,7 @@
 
 ### Mounts
 - The following monster classes are now valid mounts: f, d
+- Many monsters now do not spawn in Gehennom.
 
 ### Monster Spells
 - Different monsters have different spell lists.
