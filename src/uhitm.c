@@ -1590,7 +1590,8 @@ hmon_hitmon_splitmon(
     struct obj *obj)    /* obj can be NULL but guards are in place below */
 {
     if ((hmd->mdat == &mons[PM_BLACK_PUDDING]
-         || hmd->mdat == &mons[PM_BROWN_PUDDING])
+         || hmd->mdat == &mons[PM_BROWN_PUDDING]
+         || hmd->mdat == &mons[PM_HELLBAT])
         /* pudding is alive and healthy enough to split */
         && mon->mhp > 1 && !mon->mcan
         /* iron weapon using melee or polearm hit [3.6.1: metal weapon too;
@@ -1598,7 +1599,8 @@ hmon_hitmon_splitmon(
         && obj && (obj == uwep || (u.twoweap && obj == uswapwep))
         && ((hmd->material == IRON
              /* allow scalpel and tsurugi to split puddings */
-             || hmd->material == METAL)
+             || hmd->material == METAL
+             || hmd->mdat == &mons[PM_HELLBAT])
             /* but not bashing with darts, arrows or ya */
             && !(is_ammo(obj) || is_missile(obj)))
         && hmd->hand_to_hand) {

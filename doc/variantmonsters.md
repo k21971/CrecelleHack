@@ -52,3 +52,6 @@
   - Fills your inventory with spam mail.
 - Spanner (t)
   - A monster that hides near water and that can drown you.
+- Hellbat (B)
+  - Originally from SLASH'EM, but heavily modified.
+  - Splits when attacked in melee.
