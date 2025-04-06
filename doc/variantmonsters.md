@@ -55,3 +55,7 @@
 - Hellbat (B)
   - Originally from SLASH'EM, but heavily modified.
   - Splits when attacked in melee.
+- Sodden One (Z)
+  - Swimming Zombie with drowning attacks.
+- Gator / Baby Gator (:)
+  - Like a crocodile but way, way scarier.

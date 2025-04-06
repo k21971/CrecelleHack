@@ -438,6 +438,7 @@ undead_to_corpse(int mndx)
 #endif
     case PM_HUMAN_ZOMBIE:
     case PM_HUMAN_MUMMY:
+    case PM_SODDEN_ONE:
         mndx = PM_HUMAN;
         break;
     case PM_GIANT_ZOMBIE:
@@ -634,6 +635,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_ORC_ZOMBIE:
     case PM_ELF_ZOMBIE:
     case PM_HUMAN_ZOMBIE:
+    case PM_SODDEN_ONE:
     case PM_GIANT_ZOMBIE:
     case PM_ETTIN_ZOMBIE:
         num = undead_to_corpse(mndx);
@@ -869,8 +871,8 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_JELLYFISH: case PM_PIRANHA: case PM_SHARK: case PM_GIANT_EEL:
     case PM_ELECTRIC_EEL: case PM_KRAKEN:
     case PM_NEWT: case PM_GECKO: case PM_IGUANA: case PM_BABY_CROCODILE:
-    case PM_LIZARD: case PM_CHAMELEON: case PM_CROCODILE:
-    case PM_SALAMANDER: case PM_LONG_WORM_TAIL:
+    case PM_LIZARD: case PM_CHAMELEON: case PM_CROCODILE: case PM_BABY_GATOR:
+    case PM_SALAMANDER: case PM_GATOR: case PM_LONG_WORM_TAIL:
 
     case PM_ARCHEOLOGIST: case PM_BARBARIAN: case PM_CAVE_DWELLER:
     case PM_HEALER: case PM_KNIGHT: case PM_MONK: case PM_CLERIC:

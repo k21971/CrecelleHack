@@ -4007,7 +4007,9 @@ mhitm_ad_phys(
             } else if (u.ustuck == magr) {
                 exercise(A_STR, FALSE);
                 You("are being %s.",
-                    (pa == &mons[PM_ROPE_GOLEM]) ? "choked" : "crushed");
+                    (pa == &mons[PM_ROPE_GOLEM]) ? "choked" :
+                        pa == &mons[PM_GATOR] || pa == &mons[PM_BABY_GATOR] ?
+                        "death rolled" : "crushed");
             }
         } else { /* hand to hand weapon */
             struct obj *otmp = MON_WEP(magr);
