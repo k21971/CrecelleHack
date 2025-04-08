@@ -57,5 +57,7 @@
   - Splits when attacked in melee.
 - Sodden One (Z)
   - Swimming Zombie with drowning attacks.
+- Crawling Zombie (Z)
+  - Zombie that hides under objects.
 - Gator / Baby Gator (:)
   - Like a crocodile but way, way scarier.

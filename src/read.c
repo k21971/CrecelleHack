@@ -3056,7 +3056,7 @@ cant_revive(
     if (*mtype == PM_GUARD || (*mtype == PM_SHOPKEEPER && !revival)
         || *mtype == PM_HIGH_CLERIC || *mtype == PM_ALIGNED_CLERIC
         || *mtype == PM_ANGEL) {
-        *mtype = PM_HUMAN_ZOMBIE;
+        *mtype = rn2(3) ? PM_HUMAN_ZOMBIE : PM_CRAWLING_ZOMBIE;
         return TRUE;
     } else if (*mtype == PM_LONG_WORM_TAIL) { /* for create_particular() */
         *mtype = PM_LONG_WORM;
