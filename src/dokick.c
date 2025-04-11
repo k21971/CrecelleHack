@@ -1265,7 +1265,7 @@ dotrip(void)
 {
     coordxy x, y;
     boolean no_trip = FALSE;
-    boolean trip_wep = uwep && is_tripweapon(uwep);
+    struct obj *trip_wep = (uwep && is_tripweapon(uwep)) ? uwep : NULL;
     struct monst *target;
 
     if (Hallucination) {
@@ -1322,7 +1322,7 @@ dotrip(void)
         pline("%s is already prone.", Monnam(target));
         return ECMD_CANCEL;
     }
-    trip_monster(&gy.youmonst, target, uwep);
+    trip_monster(&gy.youmonst, target, trip_wep);
     return ECMD_TIME;
 }
 
@@ -1339,7 +1339,7 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
         trip_diff += 100;
     }
 
-    switch (P_SKILL(P_RIDING)) {
+    switch (P_SKILL(P_TRIPPING)) {
         case P_BASIC:
             tmp = 1;
             break;
@@ -1363,6 +1363,7 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
             trip_diff += 5;
         /* Make trip */
         if (trip_roll > trip_diff) {
+            newsym(mdef->mx, mdef->my);
             pline("%s is knocked to the %s!", 
                     Monnam(mdef), surface(mdef->mx, mdef->my));
             mdef->mprone = 1;
@@ -1370,6 +1371,11 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
             if (mdef->mtame) abuse_dog(mdef);
             mselftouch(mdef, "Falling, ", TRUE);
             use_skill(P_TRIPPING, 1);
+            if (!DEADMONSTER(mdef)) {
+                if (t_at(mdef->mx, mdef->my))
+                    (void) mintrap(mdef, FORCEBUNGLE);
+                /* TODO: TRIPPING DOWN STAIRS */
+            }
         } else if (wep) {
             pline("%s avoids the sweep of %s.", Monnam(mdef), the(xname(wep)));
         } else {
