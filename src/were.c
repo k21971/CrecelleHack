@@ -105,6 +105,7 @@ int were_disguises[] = {
 void
 disguise_were(struct monst *mon)
 {
+    if (Protection_from_shape_changers) return;
     switch (mon->mnum) {
         case PM_WEREWOLF:
             mon->mappearance = PM_WOLF;
@@ -150,7 +151,7 @@ new_were(struct monst *mon)
                                   : pmname(&mons[pm], Mgender(mon)) + 4);
 
     set_mon_data(mon, &mons[pm]);
-    if (!canseemon(mon) && !Protection_from_shape_changers) {
+    if (!canseemon(mon)) {
         disguise_were(mon);
     } else if (mon->m_ap_type) {
         seemimic(mon);
