@@ -2168,7 +2168,7 @@ dograpple(void)
     if (!isok(x, y))
         return ECMD_CANCEL;
     target = m_at(x, y);
-    if (!target) {
+    if (!target || (target && target->mundetected)) {
         You("shadowbox.");
         return ECMD_OK;
     }
