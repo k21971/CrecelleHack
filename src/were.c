@@ -92,7 +92,11 @@ were_beastie(int pm)
 }
 
 int were_disguises[] = {
-    PM_HUMAN, PM_PRISONER, PM_GUARD, PM_SHOPKEEPER,
+    PM_ARCHEOLOGIST, PM_BARBARIAN, PM_CAVE_DWELLER,
+    PM_HEALER, PM_KNIGHT, PM_MONK, PM_CLERIC,
+    PM_RANGER, PM_ROGUE, PM_SAMURAI, PM_TOURIST,
+    PM_VALKYRIE, PM_WRESTLER, PM_WIZARD,
+    PM_PRISONER, PM_GUARD, PM_SHOPKEEPER,
 };
 
 /* YANI from riker: A werecreature transforming out of line of sight should
