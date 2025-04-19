@@ -67,6 +67,10 @@
  *
  */
 
+#ifndef ARTIFACT_H
+#include "artifact.h"
+#endif
+
 /* ### alloc.c ### */
 
 #if 0
@@ -184,6 +188,7 @@ extern void mkot_trap_warn(void);
 extern boolean is_magic_key(struct monst *, struct obj *);
 extern struct obj *has_magic_key(struct monst *);
 extern boolean is_art(struct obj *, int);
+extern boolean permapoisoned(struct obj *);
 
 /* ### attrib.c ### */
 
@@ -2695,7 +2700,6 @@ extern void get_plname_from_file(NHFILE *, char *, boolean) NONNULLARG12;
 #ifdef SELECTSAVED
 extern int restore_menu(winid);
 #endif
-extern void minit(void);
 extern boolean lookup_id_mapping(unsigned, unsigned *) NONNULLARG2;
 extern int validate(NHFILE *, const char *, boolean) NONNULLARG1;
 /* extern void reset_restpref(void); */
@@ -2846,11 +2850,7 @@ extern void bufoff(int);
 extern void bflush(int);
 extern void bwrite(int, const genericptr_t, unsigned) NONNULLARG2;
 extern void mread(int, genericptr_t, unsigned) NONNULLARG2;
-extern void minit(void);
 extern void bclose(int);
-#if defined(ZEROCOMP)
-extern void zerocomp_bclose(int);
-#endif
 
 /* ### shk.c ### */
 
@@ -3162,6 +3162,7 @@ extern int collect_coords(coord *, coordxy, coordxy, int, unsigned,
                           boolean (*)(coordxy, coordxy)) NONNULLARG1;
 extern boolean safe_teleds(int);
 extern boolean teleport_pet(struct monst *, boolean) NONNULLARG1;
+extern void tele_to_rnd_pet(void);
 extern void tele(void);
 extern void scrolltele(struct obj *) NO_NNARGS;
 extern int dotelecmd(void);
@@ -3537,6 +3538,9 @@ extern unsigned long get_current_feature_ver(void);
 extern const char *copyright_banner_line(int) NONNULL;
 extern void early_version_info(boolean);
 extern void dump_version_info(void);
+extern void store_critical_bytes(NHFILE *) NONNULLARG1;
+extern int compare_critical_bytes(NHFILE *);
+extern int get_critical_size_count(void);
 
 /* ### video.c ### */
 

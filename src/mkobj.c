@@ -1198,6 +1198,8 @@ mksobj_init(struct obj **obj, boolean artif)
     }
 
     mkobj_erosions(otmp);
+    if (permapoisoned(otmp))
+        otmp->opoisoned = 1;
 }
 
 /* mksobj(): create a specific type of object; result is always non-Null */
@@ -2794,10 +2796,15 @@ dealloc_obj(struct obj *obj)
         obj->where = OBJ_LUAFREE;
         return;
     }
-    /* mark object as deleted, put it into queue to be freed */
-    obj->where = OBJ_DELETED;
-    obj->nobj = go.objs_deleted;
-    go.objs_deleted = obj;
+    if (!program_state.freeingdata) {
+        /* mark object as deleted, put it into queue to be freed */
+        obj->where = OBJ_DELETED;
+        obj->nobj = go.objs_deleted;
+        go.objs_deleted = obj;
+    } else {
+        /* when saving, there's no need to stage deletions on objs_deleted */
+        dealloc_obj_real(obj);
+    }
 }
 
 /* actually deallocate the object */

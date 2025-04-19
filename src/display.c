@@ -1998,8 +1998,9 @@ show_glyph(coordxy x, coordxy y, int glyph)
     oldglyph = gg.gbuf[y][x].glyphinfo.glyph;
 
     if (a11y.glyph_updates && !a11y.mon_notices_blocked
-        && !program_state.in_docrt
-        && !program_state.in_getlev
+        && !program_state.in_docrt && !program_state.gameover
+        && !program_state.in_getlev && !program_state.stopprint
+        && !_suppress_map_output()
         && (oldglyph != glyph || gg.gbuf[y][x].gnew)) {
         int c = glyph_to_cmap(glyph);
 
@@ -2289,6 +2290,13 @@ back_to_glyph(coordxy x, coordxy y)
     case CORR:
         idx = (ptr->waslit || flags.lit_corridor) ? S_litcorr : S_corr;
         break;
+    case SDOOR:
+        if ((ptr->doormask & D_ARBOREAL) != 0) {
+            idx = S_tree;
+            break;
+        }
+        FALLTHROUGH;
+        /*FALLTHRU*/
     case HWALL:
     case VWALL:
     case TLCORNER:
@@ -2300,7 +2308,6 @@ back_to_glyph(coordxy x, coordxy y)
     case TDWALL:
     case TLWALL:
     case TRWALL:
-    case SDOOR:
         idx = ptr->seenv ? wall_angle(ptr) : S_stone;
         break;
     case DOOR:
@@ -3604,6 +3611,10 @@ wall_angle(struct rm *lev)
         break;
 
     case SDOOR:
+        if ((lev->doormask & D_ARBOREAL) != 0) {
+            idx = S_tree;
+            break;
+        }
         if (lev->horizontal)
             goto horiz;
         FALLTHROUGH;
