@@ -1752,7 +1752,7 @@
      * Fungi
      */
     MON(NAM("lightcrust"), S_FUNGUS,
-        LVL(0, 0, 10, 0, 0), (G_NOCORPSE | G_NOHELL | 3),
+        LVL(0, 0, 10, 0, 0), (G_NOCORPSE | G_NOGEN),
         A(NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
         SIZ(20, 200, MS_SILENT, MZ_SMALL), 0, 0,
         M1_BREATHLESS | M1_NOEYES | M1_NOLIMBS | M1_NOHEAD | M1_MINDLESS
