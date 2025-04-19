@@ -2655,7 +2655,7 @@ map_glyphinfo(
         if (!iflags.use_color)
             glyphinfo->gm.glyphflags |= MG_SURFACE;
     } else if (levl[x][y].typ == ROOM && levl[x][y].submask == SM_DIRT
-                && glyph_is_cmap_main(glyph) && cansee(x, y))  {
+                && glyph_is_cmap_a(glyph) && cansee(x, y))  {
         glyphinfo->gm.sym.color = CLR_BROWN;
     }
     if (sysopt.accessibility == 1
