@@ -2336,7 +2336,6 @@ int grapple_move(struct monst *mon) {
         case 8:
         case 9:
         case 10:
-        case 11:
             You("suplex %s!", mon_nam(mon));
             maketrap(mon->mx, mon->my, PIT);
             if (t_at(mon->mx, mon->my))
