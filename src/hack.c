@@ -1802,6 +1802,7 @@ u_locomotion(const char *def)
        or boots/ring/spell of levitation */
     return Levitation ? (capitalize ? "Float" : "float")
            : Flying ? (capitalize ? "Fly" : "fly")
+             : Prone ? "crawl"
              : locomotion(gy.youmonst.data, def);
 }
 

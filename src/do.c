@@ -1759,7 +1759,7 @@ goto_level(
                 u_on_dnstairs();
             /* you climb up the {stairs|ladder};
                fly up the stairs; fly up along the ladder */
-            great_effort = (Punished && !Levitation);
+            great_effort = ((Punished && !Levitation) || Prone);
             if (flags.verbose || great_effort)
                 pline("%s %s up%s the %s.",
                       great_effort ? "With great effort, you" : "You",
