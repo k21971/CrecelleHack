@@ -979,7 +979,7 @@ bot_via_windowport(void)
 #else
             test_if_enabled(bl_held) = TRUE;
 #endif
-        } else if (Upolyd && sticks(gy.youmonst.data)) {
+        } else if (Upolyd && u.usticker) {
             test_if_enabled(bl_holding) = TRUE;
         } else {
             /* grab == hero is held by sea monster and about to be drowned;

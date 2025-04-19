@@ -2628,7 +2628,7 @@ escape_from_sticky_mon(coordxy x, coordxy y)
         if (!m_next2u(u.ustuck)) {
             /* perhaps it fled (or was teleported or ... ) */
             set_ustuck((struct monst *) 0);
-        } else if (sticks(gy.youmonst.data)) {
+        } else if (u.usticker) {
             /* When polymorphed into a sticking monster,
              * u.ustuck means it's stuck to you, not you to it.
              */
@@ -2645,7 +2645,9 @@ escape_from_sticky_mon(coordxy x, coordxy y)
              * If holder is tame and there is no conflict,
              * guaranteed escape.
              */
-            switch (rn2(!u.ustuck->mcanmove ? 8 : 40)) {
+            switch (rn2(!u.ustuck->mcanmove ? 
+                        (P_SKILL(P_GRAPPLING) >= P_BASIC ? 2 :8) 
+                        : 40 - 12 * max(0, P_SKILL(P_GRAPPLING) - 1))) {
             case 3:
                 if (!u.ustuck->mcanmove) {
                     /* it's free to move on next turn */

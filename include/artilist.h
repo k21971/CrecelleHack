@@ -299,6 +299,12 @@ static NEARDATA struct artifact artilist[] = {
       LEV_TELE, A_NEUTRAL, PM_VALKYRIE, NON_PM,
       0, 12, 3500L, NO_COLOR, ORB_OF_FATE),
 
+    A("The Belt of Champions", AMULET_OF_LIFE_SAVING,
+      (SPFX_NOGEN | SPFX_RESTR | SPFX_INTEL),
+                                     (SPFX_ESP | SPFX_HPHDAM), 0,
+      NO_ATTK, NO_DFNS, NO_CARY, TAMING, A_CHAOTIC, PM_WRESTLER, NON_PM,
+      0, 12, 6500L, NO_COLOR, BELT_OF_CHAMPIONS),
+
     A("The Eye of the Aethiopica", AMULET_OF_ESP,
       (SPFX_NOGEN | SPFX_RESTR | SPFX_INTEL), (SPFX_EREGEN | SPFX_HSPDAM), 0,
       NO_ATTK, DFNS(AD_MAGM), NO_CARY, CREATE_PORTAL, A_NEUTRAL, PM_WIZARD,

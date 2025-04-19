@@ -686,16 +686,6 @@ mattacku(struct monst *mtmp)
         return 0;
     }
 
-    /* monster might attempt a trip to gain an advantage */
-    if (!ranged && (is_tripper(mtmp->data) 
-          || (MON_WEP(mtmp) && is_tripweapon(MON_WEP(mtmp))))
-        && !Prone && !Flying && !Levitation 
-        && is_trippable(gy.youmonst.data) && (u.uhp > mtmp->m_lev)
-        && !rn2((10 - u.uac > mtmp->m_lev) ? 8 : 100)) {
-        trip_monster(mtmp, &gy.youmonst, MON_WEP(mtmp));
-        return 0;
-    }
-
     /*  Work out the armor class differential   */
     tmp = AC_VALUE(u.uac) + 10; /* tmp ~= 0 - 20 */
     tmp += mtmp->m_lev;
@@ -714,6 +704,36 @@ mattacku(struct monst *mtmp)
     if (mdat->mlet == S_EEL && mtmp->minvis && cansee(mtmp->mx, mtmp->my)) {
         mtmp->minvis = 0;
         newsym(mtmp->mx, mtmp->my);
+    }
+
+    /* monster might attempt a trip to gain an advantage */
+    if (!ranged && (is_tripper(mtmp->data) 
+          || (MON_WEP(mtmp) && is_tripweapon(MON_WEP(mtmp))))
+        && !Prone && !Flying && !Levitation 
+        && is_trippable(gy.youmonst.data) && (u.uhp > mtmp->m_lev)
+        && !rn2((10 - u.uac > mtmp->m_lev) ? 8 : 100)) {
+        trip_monster(mtmp, &gy.youmonst, MON_WEP(mtmp));
+        return 0;
+    }
+
+    /* monster might grapple you to gain an advantage */
+    if (!ranged && !u.ustuck
+        && can_grapple(mtmp->data)&& !critically_low_hp(FALSE)) {
+        int grapple_chance = 1;
+        if (u.utrap && u.utraptype == TT_LAVA) grapple_chance += 20;
+        /* if (region_danger()) grapple_chance += 20; */
+        if (likes_grappling(mtmp->data)) grapple_chance += 30;
+        if (rn2(100) < grapple_chance && !unsolid(gy.youmonst.data)) {
+            boolean coil = slithy(mtmp->data) && (mtmp->data->mlet == S_SNAKE || mtmp->data->mlet == S_NAGA);
+            if (coil || dmgtype(mtmp->data, AD_WRAP))
+                urgent_pline("%s %s itself around you!",
+                                        Some_Monnam(mtmp),
+                                        coil ? "coils" : "swings");
+            else
+                urgent_pline("%s grabs you!", Some_Monnam(mtmp));
+            set_ustuck(mtmp);
+            return 0;
+        }
     }
 
     /* when not cancelled and not in current form due to shapechange, many
@@ -860,12 +880,12 @@ mattacku(struct monst *mtmp)
             }
             break;
         case AT_BREA:
-            if (range2)
+            if (range2 || u.ustuck == mtmp)
                 sum[i] = breamu(mtmp, mattk);
             /* Note: breamu takes care of displacement */
             break;
         case AT_SPIT:
-            if (range2)
+            if (range2 || u.ustuck == mtmp)
                 sum[i] = spitmu(mtmp, mattk);
             /* Note: spitmu takes care of displacement */
             break;

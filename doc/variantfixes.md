@@ -11,13 +11,18 @@
 
 ## Commands
 
+### \#grapple: Grapple a monster
+- Grappling a monster holds that monster in place.
+- Trains the grappling skill, which allows you to escape
+  and execute grabs more easily.
+- Use special techniques by using #grapple when you are
+  already grappling an opponent.
+
 ### \#trip: Trip a monster.
 - Tripping traditionally uses one's lower body, but polearms,
   whips, and flails can be used to trip as well.
 - Being tripped puts one into a downed state. Until one moves
   to a different location, AC and to-hit are reduced.
-- Select monsters or monsters wielding tripping weapons will
-  sometimes attempt to trip the player.
 
 ### \#taunt: Taunt nearby monsters.
 - Wastes a few turns and wakes up nearby monsters.
@@ -47,6 +52,7 @@
   out of sight are disguised as standard creatures of their type.
 - Horses and ponies have altered names.
 - Tigers are orange.
+- Monsters can grapple and trip the player.
 
 ### Unique Monsters
 - Dispater uses the trickster monster spell list, making him likely
@@ -84,6 +90,10 @@
   outrun them.
 - Monsters do not track the player across the entire level, as in
   vanilla.
+
+## New Role: Wrestler
+- Use your special wrestling moves and the #grapple command to
+  obtain the amulet!
 
 ## Objects
 
@@ -139,6 +149,11 @@
 - Lock picks stack.
 
 ## Roles and Races
+
+### New Role: The Wrestler
+- Can you wrestle the dungeon into submission?
+- TODO: Overwrite placeholder racial wrestling attacks.
+- TODO: Improvised weapon usage.
 
 ### General
 - Roles are not restricted by race, with the exception of

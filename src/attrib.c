@@ -86,6 +86,9 @@ static const struct innate {
   wiz_abil[] = { { 15, &(HWarning), "sensitive", "" },
                  { 17, &(HTeleport_control), "controlled", "uncontrolled" },
                  { 0, 0, 0, 0 } },
+  wre_abil[] = { { 5, &(HFast), "quick", "slow" },
+                 { 15, &(HStealth), "stealthy", "" },
+                 { 0, 0, 0, 0 } },
 
   /* Intrinsics conferred by race */
   dwa_abil[] = { { 1, &HInfravision, "", "" },
@@ -799,6 +802,7 @@ role_abil(int r)
         { PM_SAMURAI, sam_abil },
         { PM_TOURIST, tou_abil },
         { PM_VALKYRIE, val_abil },
+        { PM_WRESTLER, wre_abil },
         { PM_WIZARD, wiz_abil },
         { 0, 0 }
     };

@@ -779,6 +779,8 @@ extern void quickmimic(struct monst *) NONNULLARG1;
 extern boolean ghitm(struct monst *, struct obj *) NONNULLPTRS;
 extern void container_impact_dmg(struct obj *, coordxy, coordxy) NONNULLARG1;
 extern int dotrip(void);
+extern int dograpple(void);
+extern int grapple_move(struct monst *) NONNULLPTRS;
 extern int trip_monster(struct monst *, struct monst *, struct obj *);
 extern void make_prone(void);
 extern int dokick(void);

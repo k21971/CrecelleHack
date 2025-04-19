@@ -3411,7 +3411,7 @@ mstatusline(struct monst *mtmp)
                                      : ", engulfing you")
                      /* !u.uswallow; if both youmonst and ustuck are holders,
                         youmonst wins */
-                     : (!sticks(gy.youmonst.data) ? ", holding you"
+                     : (!u.usticker ? ", holding you"
                                                  : ", held by you"));
     }
     if (mtmp == u.usteed) {

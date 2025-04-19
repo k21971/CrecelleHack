@@ -427,6 +427,8 @@ struct you {
     Bitfield(uhandedness, 1); /* There is no advantage for either handedness.
                                  The distinction is only for flavor variation
                                  and for use in messages. */
+    Bitfield(usticker, 1);    /* need a bit to track whether the player is
+                                    doing the sticking */
 #define RIGHT_HANDED 0x00
 #define LEFT_HANDED  0x01
 

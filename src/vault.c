@@ -1054,7 +1054,7 @@ gd_move(struct monst *grd)
     }
     if (um_dist(grd->mx, grd->my, 1) || egrd->gddone) {
         if (!egrd->gddone && !rn2(10) && !Deaf && !u.uswallow
-            && !(u.ustuck && !sticks(gy.youmonst.data))) {
+            && !(u.ustuck && !u.usticker)) {
             SetVoice(grd, 0, 80, 0);
             verbalize("Move along!");
         }

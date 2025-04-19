@@ -347,6 +347,7 @@ m_initweap(struct monst *mtmp)
                 m_initthrow(mtmp, ARROW, 12);
                 break;
             case PM_THUG:
+            case PM_TRAINEE:
                 (void) mongets(mtmp, CLUB);
                 (void) mongets(mtmp, rn2(3) ? DAGGER : KNIFE);
                 if (rn2(2))

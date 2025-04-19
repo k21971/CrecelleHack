@@ -188,7 +188,7 @@ can_reach_floor(boolean check_pit)
     struct trap *t;
 
     if (u.uswallow
-        || (u.ustuck && !sticks(gy.youmonst.data)
+        || (u.ustuck && !u.usticker
             /* assume that arms are pinned rather than that the hero
                has been lifted up above the floor [doesn't explain
                how hero can attack the creature holding him or her;

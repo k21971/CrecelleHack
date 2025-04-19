@@ -290,7 +290,7 @@ dosit(void)
         else
             You("are sitting on air.");
         return ECMD_OK;
-    } else if (u.ustuck && !sticks(gy.youmonst.data)) {
+    } else if (u.ustuck && u.usticker) {
         /* holding monster is next to hero rather than beneath, but
            hero is in no condition to actually sit at has/her own spot */
         if (humanoid(u.ustuck->data))

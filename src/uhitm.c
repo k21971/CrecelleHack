@@ -635,7 +635,7 @@ known_hitum(
                 monflee(mon, !rn2(3) ? rnd(100) : 0, FALSE, TRUE);
 
                 if (u.ustuck == mon && !u.uswallow
-                    && !sticks(gy.youmonst.data))
+                    && !u.usticker)
                     set_ustuck((struct monst *) 0);
             }
             /* Vorpal Blade hit converted to miss */
@@ -3264,6 +3264,7 @@ mhitm_ad_stck(
         /* uhitm */
         if (!negated && !sticks(pd) && m_next2u(mdef)) {
             set_ustuck(mdef); /* it's now stuck to you */
+            u.usticker = 1;
             if (barbs)
                 Your("barbs stick to %s!", y_monnam(mdef));
         }
@@ -3302,6 +3303,8 @@ mhitm_ad_wrap(
                     You("%s yourself around %s!",
                         coil ? "coil" : "swing", mon_nam(mdef));
                     set_ustuck(mdef);
+                    u.usticker = 1;
+                    use_skill(P_GRAPPLING, 1);
                 }
             } else if (u.ustuck == mdef && !tailmiss) {
                 /* Monsters don't wear amulets of magical breathing */
@@ -3310,6 +3313,7 @@ mhitm_ad_wrap(
                     mhm->damage = mdef->mhp;
                 } else if (mattk->aatyp == AT_HUGS)
                     pline("%s is being crushed.", Monnam(mdef));
+                use_skill(P_GRAPPLING, 1);
             } else {
                 mhm->damage = 0;
                 if (flags.verbose) {
@@ -3333,6 +3337,7 @@ mhitm_ad_wrap(
                     urgent_pline("%s %s itself around you!",
                                  Some_Monnam(magr),
                                  coil ? "coils" : "swings");
+                    use_skill(P_GRAPPLING, 1);
                 }
             } else if (u.ustuck == magr) {
                 if (is_pool(magr->mx, magr->my) && !Swimming && !Amphibious
@@ -3351,6 +3356,7 @@ mhitm_ad_wrap(
                 } else if (mattk->aatyp == AT_HUGS) {
                     You("are being crushed.");
                 }
+                use_skill(P_GRAPPLING, 1);
             } else {
                 mhm->damage = 0;
                 if (flags.verbose) {
@@ -5673,6 +5679,7 @@ hmonas(struct monst *mon)
                     uunstick();
                 You("grab %s!", mon_nam(mon));
                 set_ustuck(mon);
+                u.usticker = 1;
                 if (silverhit && flags.verbose)
                     silver_sears(&gy.youmonst, mon, silverhit);
                 sum[i] = damageum(mon, mattk, specialdmg);

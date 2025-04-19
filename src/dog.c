@@ -1177,7 +1177,7 @@ tamedog(
     if (mtmp == u.ustuck) {
         if (u.uswallow)
             expels(mtmp, mtmp->data, TRUE);
-        else if (!(Upolyd && sticks(gy.youmonst.data)))
+        else if (!(Upolyd && u.usticker))
             unstuck(mtmp);
     }
 

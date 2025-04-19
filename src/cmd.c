@@ -1713,6 +1713,8 @@ struct ext_func_tab extcmdlist[] = {
               IFBURIED | AUTOCOMPLETE | GENERALCMD | CMD_M_PREFIX, NULL },
     { ';',    "glance", "show what type of thing a map symbol corresponds to",
               doquickwhatis, IFBURIED | GENERALCMD, NULL },
+    { '\0',   "grapple", "grapple a nearby monster",
+              dograpple,  AUTOCOMPLETE, NULL },
     { '?',    "help", "give a help message",
               dohelp, IFBURIED | GENERALCMD, NULL },
     { '\0',   "herecmdmenu", "show menu of commands you can do here",

@@ -23,17 +23,18 @@ staticfn void skill_advance(int);
 #define PN_TWO_WEAPONS (-2)
 #define PN_RIDING (-3)
 #define PN_TRIPPING (-4)
-#define PN_POLEARMS (-5)
-#define PN_SABER (-6)
-#define PN_HAMMER (-7)
-#define PN_WHIP (-8)
-#define PN_ATTACK_SPELL (-9)
-#define PN_HEALING_SPELL (-10)
-#define PN_DIVINATION_SPELL (-11)
-#define PN_ENCHANTMENT_SPELL (-12)
-#define PN_CLERIC_SPELL (-13)
-#define PN_ESCAPE_SPELL (-14)
-#define PN_MATTER_SPELL (-15)
+#define PN_GRAPPLING (-5)
+#define PN_POLEARMS (-6)
+#define PN_SABER (-7)
+#define PN_HAMMER (-8)
+#define PN_WHIP (-9)
+#define PN_ATTACK_SPELL (-10)
+#define PN_HEALING_SPELL (-11)
+#define PN_DIVINATION_SPELL (-12)
+#define PN_ENCHANTMENT_SPELL (-13)
+#define PN_CLERIC_SPELL (-14)
+#define PN_ESCAPE_SPELL (-15)
+#define PN_MATTER_SPELL (-16)
 
 static NEARDATA const short skill_names_indices[P_NUM_SKILLS] = {
     /* Weapon */
@@ -45,13 +46,13 @@ static NEARDATA const short skill_names_indices[P_NUM_SKILLS] = {
     PN_ATTACK_SPELL, PN_HEALING_SPELL, PN_DIVINATION_SPELL,
     PN_ENCHANTMENT_SPELL, PN_CLERIC_SPELL, PN_ESCAPE_SPELL, PN_MATTER_SPELL,
     /* Other */
-    PN_BARE_HANDED, PN_TWO_WEAPONS, PN_RIDING, PN_TRIPPING
+    PN_BARE_HANDED, PN_TWO_WEAPONS, PN_RIDING, PN_TRIPPING, PN_GRAPPLING
 };
 
 /* note: entry [0] isn't used */
 static NEARDATA const char *const odd_skill_names[] = {
     "no skill", "bare hands", /* use barehands_or_martial[] instead */
-    "two weapon combat", "riding", "tripping", "polearms", "saber", "hammer", "whip",
+    "two weapon combat", "riding", "tripping", "grappling", "polearms", "saber", "hammer", "whip",
     "attack spells", "healing spells", "divination spells",
     "enchantment spells", "clerical spells", "escape spells", "matter spells",
 };
@@ -1718,6 +1719,10 @@ skill_init(const struct def_skill *class_skill)
     /* High potential fighters already know how to use their hands. */
     if (P_MAX_SKILL(P_BARE_HANDED_COMBAT) > P_EXPERT)
         P_SKILL(P_BARE_HANDED_COMBAT) = P_BASIC;
+
+    /* Wrestlers have trained in grappling */
+    if (Role_if(PM_WRESTLER))
+        P_SKILL(P_GRAPPLING) = P_BASIC;
 
     /* Roles that start with a horse know how to ride it */
     if (can_saddle(&mons[gu.urole.petnum])) 

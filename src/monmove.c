@@ -353,9 +353,11 @@ release_hero(struct monst *mon)
     if (mon == u.ustuck) {
         if (u.uswallow) {
             expels(mon, mon->data, TRUE);
-        } else if (!sticks(gy.youmonst.data)) {
+        } else if (!u.usticker) {
             unstuck(mon); /* let go */
             You("get released!");
+        } else {
+            pline_mon(mon, "%s wrenches free of you!", Monnam(mon));
         }
     }
 }

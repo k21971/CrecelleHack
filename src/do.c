@@ -1110,7 +1110,7 @@ staticfn boolean
 u_stuck_cannot_go(const char *updn)
 {
     if (u.ustuck) {
-        if (u.uswallow || !sticks(gy.youmonst.data)) {
+        if (u.uswallow || !u.usticker) {
             You("are %s, and cannot go %s.",
                 !u.uswallow ? "being held"
                 : digests(u.ustuck->data) ? "swallowed"

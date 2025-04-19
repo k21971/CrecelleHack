@@ -574,7 +574,7 @@ release_hold(void)
         }
         /* gives "you get regurgitated" or "you get expelled from <mon>" */
         expels(mtmp, mtmp->data, TRUE);
-    } else if (sticks(gy.youmonst.data)) {
+    } else if (u.usticker) {
         /* order matters if 'holding' status condition is enabled;
            set_ustuck() will set flag for botl update, You() pline will
            trigger a status update with "UHold" removed */

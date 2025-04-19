@@ -3084,4 +3084,218 @@ You have an odd feeling this may be the last time you ever come here.]],
 So, have you succeeded in your quest for the Amulet of Yendor?"]],
       },
    },
+   Wre = {
+      assignquest = {
+         synopsis = "[Travel to %i; beat %n a wrestling match; return with %o.]",
+         output = "text",
+         text = [["All right, %p, looks like you're ready. Now listen up,
+because I'm only going to say this once.
+
+The moment you left us for %Z, we were set upon by %n.
+He suplexed, pile drove, and super kicked every single one of us into submission.
+To my shame, my Salamander Stunner, my Demogorgon Dash, and even my Wumpus Wallop
+proved useless against his new special move: the Cockatrice Combo.
+
+While we were lying beaten and bruised, he took %o from me, then left his beasts
+and golems behind to finish us off.
+
+You must help us, %p. Without %o, no one will take us seriously, and we will
+be left behind by the other wrestlers. This is more important than anything.
+Yes, even your quest for the... Aglet of... Wendor?
+
+Regardless, it's up to you to go to %i, find %n,
+and return %o to us.
+
+Go and take strength from %d. Go and kick butt."]],
+      },
+      badalign = {
+         synopsis = "[Go; come back when you are worthy of %d.]",
+         output = "text",
+         text = [["Unbelieveable, %p! You call yourself a face, and yet you have
+continually defied the expectations that all of us have for you. Forget fighting
+%n, your real battle lies within your own soul.
+
+Get out of here, and do not come back until you are truly ready."]],
+      },
+      badlevel = {
+         synopsis = "[Return when you are %Ra.]",
+         output = "text",
+         text = [["Sorry %p, but you have to be at least %ra in order to have a chance
+aagainst %n. Get out there and start training!"]],
+      },
+      discourage = {
+         "\"I'd fathom you can't block this one!\"",
+         "\"From the top rope!\"",
+         "\"Get over here!\"",
+         "\"HAHAHAHAHAHAHAHAHAHAHAHAHAHA!\"",
+         "\"Hit me! Go on and hit me, %p!\"",
+         "\"I've got the drop on you this time, %p!\"",
+         "\"Get ready! Here it is... My SPECIAL MOVE! Cockatrice Combo!\"",
+         "\"Pretty good, but can you block this overhead?\"",
+         "\"It doesn't matter whether you're a %S!\"",
+      },
+      encourage = {
+         "\"Do not be flustered by the taunts of %n.\"",
+         "\"%nC has a powerful signature move.\"",
+         "\"Have faith in %d and you will be steered true.\"",
+         "\"Beware! Your sleeper hold will not work on %n!\"",
+         "\"Teach you the Demogorgon Dash? Are you insane?\"",
+         "\"Hmmm... you know, maybe you SHOULD try the Salamander Smash.\"",
+         "\"The Wumpus Wallop is terrible. Never use it!\""
+      },
+      firsttime = {
+         synopsis = "[You have arrived at %l but it is not as you remember it.]",
+         output = "text",
+         text = [[You exit the magic portal to a scene of untold destruction.
+You stand before %H, the place you grew up, but it is
+not as you remember it. Furniture has been overturned, equipment smolders,
+and bodies lie in repose across the ground. Even your fearless mentor,
+%l, is nowhere to be seen.
+
+You can make out the silhouettes of wrestlers in the distance, but their forms
+are twisted and inhuman. You may have a fight on your hands.]],
+      },
+      goal_alt = {
+         text = "You have returned to %ns lair.",
+      },
+      goal_first = {
+         text = "You hear the roar of a great crowd. Your match with %n draws nigh.",
+      },
+      goal_next = {
+         text = "The crowd's roar suffuses you once more. %nC and %o await.",
+      },
+      gotit = {
+         synopsis = "[You feel %os power and know you should return %oh to %l.]",
+         output = "text",
+         text = [[As you touch %o, you feel a great sense of pride well up within
+you. In your heart you know that you should return it to %l, but you cannot help
+but wonder: What would happen if you kept it? You won the match, after all. By
+all rights, %o is yours.]],
+      },
+      guardtalk_after = {
+         "\"I was in the crowd while you were wrestling %n! What a match!\"",
+         "\"Could you show me some moves, %p?\"",
+         "\"%oC looks good on you, %p. Much better than on %l.\"",
+         "\"Now we can finally get back to training!\"",
+         "\"I'm going to train hard so that I can be like you one day, %p.\"",
+      },
+      guardtalk_before = {
+         "\"I was going to fight %n, but then I heard the promo %nh cut and got scared.\"",
+         "\"Woah, where does that magic portal lead!\"",
+         "\"Between you and me, I'm not so confident in %l.\"",
+         "\"%nC didn't sell any of my moves. It was just like fighting %l...\"",
+         "\"In times like this, I try to think of %d to remind myself what is important.\"",
+      },
+      hasamulet = {
+         synopsis = "[Take the Amulet to %ds altar on the Astral Plane.]",
+         output = "text",
+         text = [["Ah, right, it was the *Amulet* of *Yendor* you were
+after, not whatever I said. I wish I could have seen your match with
+the Wizard; I bet it was a battle to remember.
+
+Go and take the Amulet to %ds altar on the Astral Plane. We are all
+behind you, %p!"]],
+      },
+      killed_nemesis = {
+         synopsis = "[%nC curses you as %nh dies.]",
+         output = "text",
+         text = [[%nC collapses on the ground. %nH whispers:
+
+    "But... this was supposed to be an exhibition match...
+     I don't understand..."
+
+%nC dies. That was weird.]],
+      },
+      nemesis_first = {
+         synopsis = "[\"Let's put on a show for the crowd.\"]",
+         output = "text",
+         text = [["%nC stands before you, laughing boisterously.
+       
+       "So, %p, come to challenge me, eh? You've made a terrible mistake!
+
+%nC leans in close and whispers.
+
+       "Hey buddy, how you doing? Remember to take a dive on the third turn.
+        Let's put on a show for the crowd.
+
+%nC leans back and laughs once more.
+
+       "That's right, everyone! I, %n, was the one who beat
+       %l. Now I will defeat %p as well,
+       and claim %o for myself!"]],
+      },
+      leader_first = {
+         synopsis = "[You have come a long way, but are you ready for the task I require?]",
+         output = "text",
+         text = [["Oh hey, %p. I didn't see you there. You've missed a lot.
+
+Before I catch you up on what happens, though, I need to know that you're strong
+enough for the challenges to come. Wrestle with me!"]],
+      },
+      leader_last = {
+         synopsis = "[\"You're terrible! Get out of here!\"]",
+         output = "text",
+         text = [["You're terrible at this, %p! Get out of here and don't
+try to wrestle with us again!"]],
+      },
+      leader_other = {
+         text = [["How many times are we going to do this, %p?
+If you can't beat me, you'll never have a hope of beating %n."]],
+      },
+      leader_next = {
+         text = "\"So, %p, you're back. Ready for round two?\"",
+      },
+      locate_first = {
+         synopsis = "[Security is trying to stop you from fighting %n.]",
+         output = "text",
+         text = [["As you wind your way through clouds of swirling mist,
+the shadow of a great arena falls over you. This must be the way
+to %l. As you begin to make your way forward, security forces begin to spill
+from the mouth of the arena. They must be trying to stop your match with %n!"]],
+      },
+      locate_next = {
+         text = "Once again, you stand in the mists before an enormous arena.",
+      },
+      nemesis_next = {
+         synopsis = "[\"I will bury you.\"]",
+         output = "text",
+         text = [["Oh hey, %p, back for more?
+Just so you know, I'm going to bury you!"]],
+      },
+      nemesis_other = {
+         text = [["You never give up, do you? Didn't you hear the bell?"]],
+      },
+      nemesis_wantsit = {
+         text = [["Hey!  %oC is mine! Someone call the ref!"]],
+      },
+      nexttime = {
+         text = "Here you are again at %H.",
+      },
+      offeredit = {
+         synopsis = "[Take %o with you in your quest for the Amulet.]",
+         output = "text",
+         text = [[%lC notices %o in your possession and smiles widely.
+
+    "You did it, %p! %n is defeated and
+     %o is yours!
+
+    "Take %oh with you in your quest for the Amulet of Yendor, or
+     whatever it is you're doing. I'm sure it'll come in handy.
+
+    "Never forget: We and %d have your back!"]],
+      },
+      offeredit2 = {
+         synopsis = "[Keep %o, return through the portal to %Z, then find that Amulet!]",
+         output = "text",
+         text = [["%o is yours! Now it's time for the real test. Go back through the portal
+to %Z, then get that Armlet!"]],
+      },
+      othertime = {
+         text = [[You have returned to %H.
+You feel this might be your last chance to prove yourself.]],
+      },
+      posthanks = {
+         text = [["Oh hey, %p! Have you found the Armlet of Wendor?"]],
+      },
+   },
 }

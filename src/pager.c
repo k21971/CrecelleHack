@@ -429,7 +429,7 @@ look_at_monster(
             Strcat(buf, digests(mtmp->data) ? ", swallowing you"
                                             : ", engulfing you");
         else
-            Strcat(buf, (Upolyd && sticks(gy.youmonst.data))
+            Strcat(buf, (u.usticker)
                           ? ", being held" : ", holding you");
     }
     /* if mtmp isn't able to move (other than because it is a type of

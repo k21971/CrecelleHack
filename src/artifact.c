@@ -1382,7 +1382,7 @@ Mb_hit(struct monst *magr, /* attacker */
                 nomul(-3);
                 gm.multi_reason = "being scared stiff";
                 gn.nomovemsg = "";
-                if (magr && magr == u.ustuck && sticks(gy.youmonst.data)) {
+                if (magr && magr == u.ustuck && u.usticker) {
                     set_ustuck((struct monst *) 0);
                     You("release %s!", mon_nam(magr));
                 }
