@@ -266,6 +266,20 @@ doenvirons(void)
 
 }
 
+const char *
+tod_string(void)
+{
+    if (midnight()) return "Midnight";
+    if (night()) return "Night";
+    if ((u.uenvirons.tod == TOD_MORNING
+                && u.uenvirons.tod_cnt <= 100)
+        || (u.uenvirons.tod == TOD_EVENING
+                && u.uenvirons.tod_cnt >= TOD_QUARTER - 100))
+        return "Midday";
+    if (u.uenvirons.tod == TOD_MORNING) return "Morning";
+    return "Evening";
+}
+
 void
 timechange_message(boolean new_game)
 {

@@ -599,6 +599,7 @@ static struct istat_s initblstats[MAXBLSTATS] = {
        available mostly for screenshots or someone looking over shoulder;
        blstat[][BL_VERS] is actually an int copy of flags.versinfo (0...7) */
     INIT_BLSTAT("version", " %s", ANY_STR, MAXVALWIDTH, BL_VERS),
+    INIT_BLSTAT("timeofday", " %s", ANY_STR, 20, BL_TOD),
 };
 
 #undef INIT_BLSTATP
@@ -822,6 +823,9 @@ bot_via_windowport(void)
                                           : (u.ualign.type == A_NEUTRAL)
                                                ? "Neutral"
                                                : "Lawful");
+
+    /* Weather */
+    Strcpy(gb.blstats[idx][BL_TOD].val, tod_string());
 
     /* Score */
     gb.blstats[idx][BL_SCORE].a.a_long =
@@ -3886,6 +3890,7 @@ status_hilite_menu_add(int origfld)
         Sprintf(qry_buf, "%s %s text value to match:",
                 (fld == BL_CAP
                  || fld == BL_ALIGN
+                 || fld == BL_TOD
                  || fld == BL_HUNGER
                  || fld == BL_TITLE) ? "Choose" : "Enter",
                 initblstats[fld].fldname);
@@ -3911,6 +3916,19 @@ status_hilite_menu_add(int origfld)
 
             hilite.rel = TXT_VALUE;
             Strcpy(hilite.textmatch, aligntxt[rv]);
+        } else if (fld == BL_TOD) {
+            static const char *const todtxt[] = {
+                "Morning", "Midday", "Evening",
+                "Night", "Midnight"
+            };
+            int rv = query_arrayvalue(qry_buf,
+                                      todtxt, 0, 2 + 1);
+
+            if (rv < 0)
+                goto choose_behavior;
+
+            hilite.rel = TXT_VALUE;
+            Strcpy(hilite.textmatch, todtxt[rv]);
         } else if (fld == BL_HUNGER) {
             static const char *const hutxt[] = {
                 "Satiated", (char *) 0, "Hungry", "Weak",

@@ -315,6 +315,7 @@ extern int midnight(void);
 extern int rt_midnight(void);
 extern int calc_dt_vis(void);
 extern void doenvirons(void);
+extern const char *tod_string(void);
 extern void timechange_message(boolean);
 
 /* ### coloratt.c ### */
