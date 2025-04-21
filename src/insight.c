@@ -632,6 +632,8 @@ background_enlightenment(int unused_mode UNUSED, int final)
         enl_msg("It ", "is ", "was ", "the midnight hour", "");
     } else if (final ? iflags.at_night : night()) {
         enl_msg("It ", "is ", "was ", "nighttime", "");
+    } else {
+        enl_msg("It ", "is ", "was  ", "daytime", "");
     }
     /* other environmental factors */
     if (flags.moonphase == FULL_MOON || flags.moonphase == NEW_MOON) {
