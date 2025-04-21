@@ -54,6 +54,12 @@ struct u_event {
     Bitfield(ascended, 1);          /* has offered the Amulet */
 };
 
+struct u_environs {
+    unsigned tod_cnt; /* Timer for tod changes */
+    char tod;         /* Current tod  */
+    char dt_vis;      /* Vision during daytime */
+};
+
 /*
  * Achievements:  milestones reached during the current game.
  * Numerical order of these matters because they've been encoded in
@@ -433,6 +439,7 @@ struct you {
 #define LEFT_HANDED  0x01
 
     unsigned udg_cnt;           /* how long you have been demigod */
+    struct u_environs uenvirons;/* time of day and weather impacts */
     struct u_event uevent;      /* certain events have happened */
     struct u_have uhave;        /* you're carrying special objects */
     struct u_conduct uconduct;  /* KMH, conduct */
@@ -556,5 +563,11 @@ struct _hitmon_data {
 #define ULEFTY (u.uhandedness == LEFT_HANDED)
 #define RING_ON_PRIMARY (ULEFTY ? uleft : uright)
 #define RING_ON_SECONDARY (ULEFTY ? uright : uleft)
+
+#define TOD_QUARTER 625
+#define TOD_MORNING 0
+#define TOD_EVENING 1
+#define TOD_EARLYNIGHT 2
+#define TOD_LATENIGHT 3
 
 #endif /* YOU_H */

@@ -1681,6 +1681,14 @@ Can_rise_up(coordxy x, coordxy y, d_level *lev)
 }
 
 boolean
+has_no_tod_cycles(d_level *lev)
+{
+    return (In_endgame(lev) || In_mines(lev)
+            || In_hell(lev) || In_tower(lev)
+            || Is_rogue_level(lev));
+}
+
+boolean
 has_ceiling(d_level *lev)
 {
     /* FIXME: some (most? all?) of the quest home levels are conceptually

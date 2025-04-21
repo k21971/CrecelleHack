@@ -170,6 +170,11 @@
 - Dexterity contributes to AC.
 - Strength is normally the sole contributor to to-hit.
 
+### Day-Night Cycle
+- Exactly what it sounds like! Watch your vision wax and
+  wane over time!
+- TODO: Expand into weather effects.
+
 ### Reflection
 - Reflection does not reflect rays directly back at
   the one that fired them. Instead, the rays bounce off at a ninety degree

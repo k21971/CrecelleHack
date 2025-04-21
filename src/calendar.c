@@ -212,7 +212,7 @@ friday_13th(void)
 }
 
 int
-night(void)
+rt_night(void)
 {
     int hour = getlt()->tm_hour;
 
@@ -220,9 +220,79 @@ night(void)
 }
 
 int
-midnight(void)
+night(void)
+{
+    return (u.uenvirons.tod == TOD_EARLYNIGHT
+            || u.uenvirons.tod == TOD_LATENIGHT);
+}
+
+int
+rt_midnight(void)
 {
     return (getlt()->tm_hour == 0);
+}
+
+int
+midnight(void)
+{
+    return ((u.uenvirons.tod == TOD_EARLYNIGHT 
+                && u.uenvirons.tod_cnt <= 100)
+            || (u.uenvirons.tod == TOD_LATENIGHT 
+                && u.uenvirons.tod_cnt >= TOD_QUARTER - 100));
+}
+
+int
+calc_dt_vis(void)
+{
+    int amt;
+    if (night()) return u.nv_range;
+    amt = (u.uenvirons.tod == TOD_MORNING) 
+            ? (TOD_QUARTER - u.uenvirons.tod_cnt) : u.uenvirons.tod_cnt;
+    return 3 + (amt / 100);
+}
+
+void
+doenvirons(void)
+{
+    u.uenvirons.tod_cnt--;
+    u.uenvirons.dt_vis = calc_dt_vis();
+    if (!u.uenvirons.tod_cnt) {
+        u.uenvirons.tod_cnt = TOD_QUARTER;
+        u.uenvirons.tod += 1;
+        if (u.uenvirons.tod > TOD_LATENIGHT) u.uenvirons.tod = TOD_MORNING;
+        timechange_message(FALSE);
+        vision_recalc(0);
+    }
+
+}
+
+void
+timechange_message(boolean new_game)
+{
+    if (has_no_tod_cycles(&u.uz)) return;
+    if (u.uenvirons.tod == TOD_MORNING) {
+        if (Blind)
+            pline("You feel the warmth of the sun on your %s.", body_part(FACE));
+        pline("%s%s", new_game ? "" 
+                             : Hallucination
+                                ? "The morning sun has vanquished the horrible night."
+                                : "The sun crests the edge of the dungeon.",
+                     Hallucination ? "" : "It is morning.");
+    } else if (u.uenvirons.tod == TOD_EVENING) {
+        if (Blind) pline("The sun beats down atop your %s.", body_part(HEAD));
+        else pline("The sun passes the sky's zenith.");
+    } else if (u.uenvirons.tod == TOD_EARLYNIGHT) {
+        if (Blind) pline("The warmth of the sun disappears.");
+        else pline("The sun has set.");
+        /* Moon messages */
+        if (flags.moonphase == FULL_MOON && !new_game) {
+            pline("The full moon rises overhead.");
+        } else if (flags.moonphase == NEW_MOON && Hallucination && !new_game) {
+            pline("There is no moon.");
+        }
+    } else {
+        pline("It is midnight.");
+    }
 }
 
 /* calendar.c */

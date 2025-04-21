@@ -310,7 +310,12 @@ extern time_t time_from_yyyymmddhhmmss(char *);
 extern int phase_of_the_moon(void);
 extern boolean friday_13th(void);
 extern int night(void);
+extern int rt_night(void);
 extern int midnight(void);
+extern int rt_midnight(void);
+extern int calc_dt_vis(void);
+extern void doenvirons(void);
+extern void timechange_message(boolean);
 
 /* ### coloratt.c ### */
 
@@ -855,6 +860,7 @@ extern boolean Is_botlevel(d_level *) NONNULLARG1;
 extern boolean Can_fall_thru(d_level *) NONNULLARG1;
 extern boolean Can_dig_down(d_level *) NONNULLARG1;
 extern boolean Can_rise_up(coordxy, coordxy, d_level *) NONNULLARG3;
+extern boolean has_no_tod_cycles(d_level *) NONNULLARG1;
 extern boolean has_ceiling(d_level *) NONNULLARG1;
 extern boolean avoid_ceiling(d_level *) NONNULLARG1;
 extern const char *surface(coordxy, coordxy);

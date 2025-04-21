@@ -53,7 +53,6 @@ staticfn boolean finddpos(coord *, int, struct mkroom *);
 #define create_vault() create_room(-1, -1, 2, 2, -1, -1, VAULT, TRUE)
 #define init_vault() gv.vault_x = -1
 #define do_vault() (gv.vault_x != -1)
-#define LIGHTCRUST_SPAWN_DEPTH 10
 
 /* Args must be (const genericptr) so that qsort will always be happy. */
 
@@ -248,6 +247,7 @@ do_room_or_subroom(struct mkroom *croom,
         hiy = ROWNO - 2;
 
     if (lit) {
+        #if 0
         if (depth(&u.uz) < LIGHTCRUST_SPAWN_DEPTH || 
             (croom->rtype > THEMEROOM && croom->rtype != SWAMP)) {
             for (x = lowx - 1; x <= hix + 1; x++) {
@@ -256,6 +256,7 @@ do_room_or_subroom(struct mkroom *croom,
                     lev++->lit = 1;
             }
         }
+        #endif
         croom->rlit = 1;
     } else
         croom->rlit = 0;
@@ -979,7 +980,7 @@ fill_ordinary_room(
             && !occupied(pos.x, pos.y))
             (void) maketrap(pos.x, pos.y, WEB);
     }
-    if (croom->rlit && depth(&u.uz) >= LIGHTCRUST_SPAWN_DEPTH) {
+    if (croom->rlit) {
         somexyspace(croom, &pos);
         makemon(&mons[PM_LIGHTCRUST], pos.x, pos.y, MM_NOCOUNTBIRTH);
     }
