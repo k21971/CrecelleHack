@@ -1205,7 +1205,7 @@ POTION("water",                 "clear",  0, 0, 80, 100, CLR_CYAN,
            HI_PAPER, sn)
 SCROLL("enchant armor",           "4TN ETC MOTD",  1,  63,  80,
                                                         SCR_ENCHANT_ARMOR),
-SCROLL("destroy armor",              "ECNEREFER",  1,  45, 100,
+SCROLL("destroy armor",              "ET ITANIS",  1,  45, 100,
                                                         SCR_DESTROY_ARMOR),
 SCROLL("confuse monster",              "DR 0451",  1,  53, 100,
                                                         SCR_CONFUSE_MONSTER),
@@ -1217,11 +1217,11 @@ SCROLL("enchant weapon",         "FOOELS DAIYEN",  1,  80,  60,
                                                         SCR_ENCHANT_WEAPON),
 SCROLL("create monster",            "FUHUHUHUHU",  1,  45, 200,
                                                         SCR_CREATE_MONSTER),
-SCROLL("taming",                      "OLOYWAGS",  1,  15, 200,
+SCROLL("taming",                         "IFNDEF",  1,  15, 200,
                                                         SCR_TAMING),
-SCROLL("erasure",               "DOT ERSUS MOK",  1,  15, 300,
+SCROLL("erasure",               "DOT ERSUS MOK", 1,  15, 300,
                                                         SCR_GENOCIDE),
-SCROLL("light",                       "VIB GYOR",  1,  90,  50,
+SCROLL("light",                        "VIBGYOR",  1,  90,  50,
                                                         SCR_LIGHT),
 SCROLL("teleportation",        "ORBITUS TERTIUS",  1,  55, 100,
                                                         SCR_TELEPORTATION),
@@ -1233,7 +1233,7 @@ SCROLL("identify",               "YADANI CHEAVE",  1, 180,  20,
                                                         SCR_IDENTIFY),
 SCROLL("magic mapping",                "TRAESTO",  1,  45, 100,
                                                         SCR_MAGIC_MAPPING),
-SCROLL("amnesia",                   "DUAM XNAHT",  1,  35, 200,
+SCROLL("amnesia",                    "OOM KILAR",  1,  35, 200,
                                                         SCR_AMNESIA),
 SCROLL("fire",                     "LP0 ON FIRE",  1,  30, 100,
                                                         SCR_FIRE),
@@ -1268,12 +1268,12 @@ XTRA_SCROLL_LABEL(      "NARPAS SWORD", SC12), /* Metroid */
 XTRA_SCROLL_LABEL(         "BATTLE999", SC13), /* Final Fantasy 7 Debug Code */
 XTRA_SCROLL_LABEL( "SAZUN HERA DUODER", SC14), /* Merseburg Incantations */
 XTRA_SCROLL_LABEL(       "BEN ZI BENA", SC15), /* Merseburg Incantations */
-XTRA_SCROLL_LABEL(        "SORD GHOTI", SC16), /* pronounced as 'fish',
-                                                * George Bernard Shaw */
-XTRA_SCROLL_LABEL(           "KADORTO", SC17), /* Wizardry */
+XTRA_SCROLL_LABEL(           "KRYPT3R", SC16), /* Battlestar Galactica */
+XTRA_SCROLL_LABEL(         "TILTOWAIT", SC17), /* Wizardry */
 XTRA_SCROLL_LABEL(      "VAS KAL CORP", SC18), /* Ultima */
 XTRA_SCROLL_LABEL(            "H POKE", SC19), /* Glitch Pokemon */
 XTRA_SCROLL_LABEL( "SQUEMISH OSIFRAGE", SC20), /* RSA Cipher [sic] */
+XTRA_SCROLL_LABEL(          "FLVR TXT", SC21), /* suggested by my wife */
 
 #undef XTRA_SCROLL_LABEL
     /* These must come last because they have special fixed descriptions.
