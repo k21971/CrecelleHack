@@ -1357,6 +1357,10 @@ makemon(
     mtmp->mtraitor = 0;
     if ((mmflags & MM_MINVIS) != 0) /* for ^G */
         mon_set_minvis(mtmp); /* call after place_monster() */
+        
+    /* monsters spawned during the wrong time will sleep*/
+    if ((night() && (ptr->geno & G_DAY))
+        || (!night() && (ptr->geno & G_NIGHT))) mtmp->msleeping = 1;
 
     switch (ptr->mlet) {
     case S_MIMIC:
@@ -1776,6 +1780,10 @@ rndmonst_adj(int minadj, int maxadj)
             continue;
         if (Inhell && (ptr->geno & G_NOHELL))
             continue;
+        if (night() && (ptr->geno & G_DAY))
+            continue;
+        if (!night() && (ptr->geno & G_NIGHT))
+            continue;
 
         /*
          * Weighted reservoir sampling:  select ptr with a
@@ -2017,7 +2025,7 @@ mkclass_aligned(char class, int spc, /* special mons[].geno handling */
            lesser liches might grow up into them elsewhere) */
         gn_mask = (G_NOGEN | G_UNIQ);
         if (rn2(9) || class == S_LICH)
-            gn_mask |= (gehennom ? G_NOHELL : G_HELL);
+            gn_mask |= ((gehennom ? G_NOHELL : G_HELL) | (night() ? G_DAY : G_NIGHT));
         gn_mask &= ~spc;
 
         if (mk_gen_ok(MONSi(last), mv_mask, gn_mask)) {
@@ -2080,7 +2088,7 @@ mkclass_poly(int class)
     /* mkclass() does this on a per monster type basis, but doing that here
        would make the two loops inconsistent with each other for non L */
     if (rn2(9) || class == S_LICH)
-        gmask |= (Inhell ? G_NOHELL : G_HELL);
+        gmask |= ((Inhell ? G_NOHELL : G_HELL) | (night() ? G_DAY : G_NIGHT));
 
     for (last = first; last < SPECIAL_PM && mons[last].mlet == class; last++)
         if (mk_gen_ok(last, G_GENOD, gmask))

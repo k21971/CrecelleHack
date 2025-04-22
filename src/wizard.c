@@ -558,6 +558,7 @@ pick_nasty(
             arch-lich and master lich are both flagged as hell-only;
             this filtering demotes arch-lich to master lich when
             outside of Gehennom (unless the latter has been genocided) */
+        /* Ignore day and night spawning here. */
         || (mons[res].geno & (Inhell ? G_NOHELL : G_HELL)) != 0)
         alt = big_to_little(res);
     if (alt != res && (svm.mvitals[alt].mvflags & G_GENOD) == 0) {

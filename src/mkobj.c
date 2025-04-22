@@ -404,7 +404,7 @@ rndmonnum_adj(int minadj, int maxadj)
         return monsndx(ptr);
 
     /* Plan B: get any common monster */
-    excludeflags = G_UNIQ | G_NOGEN | (Inhell ? G_NOHELL : G_HELL);
+    excludeflags = G_UNIQ | G_NOGEN | (Inhell ? G_NOHELL : G_HELL) | (night() ? G_DAY : G_NIGHT);
     do {
         i = rn1(PM_STUDENT - LOW_PM, LOW_PM); /* changed to account for possible randm midbosses - antigulp */
         ptr = &mons[i];
@@ -417,7 +417,7 @@ rndmonnum_adj(int minadj, int maxadj)
 int
 rndmidboss(void)
 {
-    unsigned short excludeflags = (Inhell ? G_NOHELL : G_HELL);
+    unsigned short excludeflags = (Inhell ? G_NOHELL : G_HELL) | (night() ? G_DAY : G_NIGHT);
     int tryct = 0;
     int i;
     struct permonst *ptr;

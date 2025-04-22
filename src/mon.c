@@ -787,7 +787,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_ENERGY_VORTEX: case PM_STEAM_VORTEX: case PM_FIRE_VORTEX:
     case PM_BLACK_HOLE: case PM_CRIMSON_DEATH:
 
-    case PM_BABY_LONG_WORM: case PM_BABY_PURPLE_WORM:
+    case PM_NIGHTCRAWLER: case PM_BABY_LONG_WORM: case PM_BABY_PURPLE_WORM:
     case PM_MAIL_WORM:
     case PM_FROSTWURM: case PM_PURPLE_WORM:
 
@@ -795,7 +795,8 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_ZRUTY: case PM_COUATL: case PM_ALEAX: case PM_ANGEL:
     case PM_KI_RIN: case PM_ARCHON:
 
-    case PM_BAT: case PM_GIANT_BAT: case PM_RAVEN: case PM_VAMPIRE_BAT:
+    case PM_BAT: case PM_KESTREL: case PM_GIANT_BAT: case PM_FALCON:
+    case PM_RAVEN: case PM_VAMPIRE_BAT: case PM_GIANT_EAGLE:
     case PM_HELLBAT:
     case PM_PLAINS_CENTAUR: case PM_FOREST_CENTAUR: case PM_MOUNTAIN_CENTAUR:
 

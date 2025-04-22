@@ -42,7 +42,10 @@ hitmsg(struct monst *mtmp, struct attack *mattk)
     } else {
         switch (mattk->aatyp) {
         case AT_BITE:
-            verb = "bites";
+            if (is_bird(mtmp->data))
+                verb = "pecks";
+            else
+                verb = "bites";
             break;
         case AT_KICK:
             if (thick_skinned(gy.youmonst.data))

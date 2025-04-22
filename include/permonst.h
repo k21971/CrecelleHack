@@ -62,7 +62,7 @@ struct permonst {
         ac,                     /* (base) armor class */
         mr;                     /* (base) magic resistance */
     aligntyp maligntyp;         /* basic monster alignment */
-    unsigned short geno;        /* creation/geno mask value */
+    unsigned long geno;        /* creation/geno mask value */
     struct attack mattk[NATTK]; /* attacks matrix */
     unsigned short cwt,         /* weight of corpse */
         cnutrit;                /* its nutritional value */

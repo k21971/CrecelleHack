@@ -61,3 +61,13 @@
   - Zombie that hides under objects.
 - Gator / Baby Gator (:)
   - Like a crocodile but way, way scarier.
+- Kestrel (B)
+  - Similar to a bat, but spawns during daytime.
+  - Almost identical stats to the monster from Rogue.
+- Falcon (B)
+  - Similar to a giant bat, but spawns during the
+    daytime.
+- Giant Eagle (B)
+  - Spawns only during daytime.
+- Nightcrawler (w)
+  - Spanws in groups, only at night.

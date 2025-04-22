@@ -53,6 +53,7 @@
 - Horses and ponies have altered names.
 - Tigers are orange.
 - Monsters can grapple and trip the player.
+- Bats and vampires only spawn at night.
 
 ### Unique Monsters
 - Dispater uses the trickster monster spell list, making him likely
