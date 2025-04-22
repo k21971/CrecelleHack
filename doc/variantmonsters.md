@@ -2,11 +2,6 @@
   - Does not approach, collects objects like a nymph. Throws any and
     all objects it gets its hands on. Permanently invisible.
   - Can generate in morgues or via raising the dead.
-- Grotesque (g)
-  - Slow, hard to hit, and very high damage. Spawns in groups.
-- Mascaron (g)
-  - Stunning gaze. Spawns in groups.
-  - Peaceful, but turns hostile if alignment is abused.
 - Gravitric Sphere (e)
   - Explosion reduces HP by 1/2.
   - Does not generate randomly.

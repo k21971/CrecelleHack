@@ -757,7 +757,6 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
 
     case PM_DISPLACER_BEAST: case PM_GREMLIN:
     case PM_GARGOYLE: case PM_WINGED_GARGOYLE:
-    case PM_GROTESQUE: case PM_MASCARON:
 
     case PM_HOBBIT: case PM_DWARF: case PM_BUGBEAR: case PM_DWARF_LEADER:
     case PM_DWARF_RULER:
@@ -4163,10 +4162,6 @@ m_respond(struct monst *mtmp)
         }
         wake_nearto(mtmp->mx, mtmp->my, 25);
     }
-    if (mtmp->data == &mons[PM_MASCARON] && u.ualign.abuse > 5) {
-        if (mtmp->mtame) betrayed(mtmp);
-        else if (mtmp->mpeaceful) mtmp->mpeaceful = 0;
-    }
     if (does_callouts(mtmp->data)) {
         mcallout(mtmp);
     }
@@ -4219,8 +4214,6 @@ peacefuls_respond(struct monst *mtmp)
             else if (!mon->mpeaceful && mon->mtraitor && canseemon(mon))
                 pline("%s seems to approve.", Monnam(mon));
         }
-        if (mon->data == &mons[PM_MASCARON])
-            betrayed(mon);
 
         if (!mindless(mon->data) && mon->mpeaceful
             && couldsee(mon->mx, mon->my) && !mon->msleeping
