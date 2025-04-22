@@ -66,3 +66,5 @@
   - Spawns only during daytime.
 - Nightcrawler (w)
   - Spanws in groups, only at night.
+- Shadow Fiend (&)
+  - Insubstantial demon.
