@@ -312,6 +312,7 @@ extern boolean friday_13th(void);
 extern int night(void);
 extern int rt_night(void);
 extern int midnight(void);
+extern int midday(void);
 extern int rt_midnight(void);
 extern int calc_dt_vis(void);
 extern void doenvirons(void);

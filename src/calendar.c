@@ -242,6 +242,15 @@ midnight(void)
 }
 
 int
+midday(void)
+{
+    return ((u.uenvirons.tod == TOD_MORNING
+                && u.uenvirons.tod_cnt <= 100)
+            || (u.uenvirons.tod == TOD_EVENING
+                    && u.uenvirons.tod_cnt >= TOD_QUARTER - 100));
+}
+
+int
 calc_dt_vis(void)
 {
     int amt;
@@ -271,11 +280,7 @@ tod_string(void)
 {
     if (midnight()) return "Midnight";
     if (night()) return "Night";
-    if ((u.uenvirons.tod == TOD_MORNING
-                && u.uenvirons.tod_cnt <= 100)
-        || (u.uenvirons.tod == TOD_EVENING
-                && u.uenvirons.tod_cnt >= TOD_QUARTER - 100))
-        return "Midday";
+    if (midday()) return "Midday";
     if (u.uenvirons.tod == TOD_MORNING) return "Morning";
     return "Evening";
 }
