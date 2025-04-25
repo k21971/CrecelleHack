@@ -12,7 +12,6 @@ Note that many of the following documentation files contain spoilers.
 Read at your own risk.
 
 - [Changelog](doc/variantfixes.md)
-- [Known Issues](doc/variantknownissues.md)
 - [New Monsters Spoiler](doc/variantmonsters.md)
 - [Unique Monster Spoiler](doc/variantuniques.md)
 - [Monster Spell Spoiler](doc/variantspells.md)
@@ -71,7 +70,8 @@ significant changes in how graphical tiles are handled by NetHack.
 
 Open up a github issue, or contact me in IRC or Discord. This goes for bugs
 as well as YANIs, YASIs, and EPIs. Please don't bother the NetHack DevTeam
-about anything in this variant.
+about anything in this variant. I don't really look at Reddit or newsgroups,
+so posting there is unlikely to get an answer.
 
 Please don't hesitate to open up an issue. I'm human and I make mistakes; 
 if something in the game is broken, insensitive, or just plain not fun, I would
