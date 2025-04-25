@@ -6,6 +6,9 @@ Amulet of Yendor for your god.
 
 ## Documentation
 
+Note that many of the following documentation files contain spoilers.
+Read at your own risk.
+
 - [Changelog](doc/variantfixes.md)
 - [Known Issues](doc/variantknownissues.md)
 - [New Monsters Spoiler](doc/variantmonsters.md)
