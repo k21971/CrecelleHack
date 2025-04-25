@@ -123,9 +123,9 @@ for i=1,5 + math.random(1 - 1,1*10) do
       des.monster({ id = "orc-captain", coord = inside:rndcoord(1), peaceful=0 });
    else
       if percent(80) then
-         des.monster({ id = "Uruk-hai", coord = inside:rndcoord(1), peaceful=0 })
+         des.monster({ id = "fell orc", coord = inside:rndcoord(1), peaceful=0 })
       else
-         des.monster({ id = "Mordor orc", coord = inside:rndcoord(1), peaceful=0 })
+         des.monster({ id = "fen orc", coord = inside:rndcoord(1), peaceful=0 })
       end
    end
 end

@@ -719,7 +719,7 @@ Shield_on(void)
     switch (uarms->otyp) {
     case SMALL_SHIELD:
     case ELVEN_SHIELD:
-    case URUK_HAI_SHIELD:
+    case FELL_ORC_SHIELD:
     case ORCISH_SHIELD:
     case DWARVISH_ROUNDSHIELD:
     case LARGE_SHIELD:
@@ -745,7 +745,7 @@ Shield_off(void)
     switch (uarms->otyp) {
     case SMALL_SHIELD:
     case ELVEN_SHIELD:
-    case URUK_HAI_SHIELD:
+    case FELL_ORC_SHIELD:
     case ORCISH_SHIELD:
     case DWARVISH_ROUNDSHIELD:
     case LARGE_SHIELD:

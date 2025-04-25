@@ -453,8 +453,8 @@ m_initweap(struct monst *mtmp)
         if (rn2(2))
             (void) mongets(mtmp, ORCISH_HELM);
         switch ((mm != PM_ORC_CAPTAIN) ? mm
-                : rn2(2) ? PM_MORDOR_ORC : PM_URUK_HAI) {
-        case PM_MORDOR_ORC:
+                : rn2(2) ? PM_FEN_ORC : PM_FELL_ORC) {
+        case PM_FEN_ORC:
             if (!rn2(3))
                 (void) mongets(mtmp, SCIMITAR);
             if (!rn2(3))
@@ -466,7 +466,7 @@ m_initweap(struct monst *mtmp)
             if (!rn2(3))
                 (void) mongets(mtmp, ORCISH_CHAIN_MAIL);
             break;
-        case PM_URUK_HAI:
+        case PM_FELL_ORC:
             if (!rn2(3))
                 (void) mongets(mtmp, ORCISH_CLOAK);
             if (!rn2(3))
@@ -478,7 +478,7 @@ m_initweap(struct monst *mtmp)
                 m_initthrow(mtmp, ORCISH_ARROW, 12);
             }
             if (!rn2(3))
-                (void) mongets(mtmp, URUK_HAI_SHIELD);
+                (void) mongets(mtmp, FELL_ORC_SHIELD);
             break;
         default:
             if (mm != PM_ORC_SHAMAN && rn2(2))

@@ -987,7 +987,6 @@ name_to_monplus(
                fuzzymatch() but it isn't able to ignore trailing stuff */
             { "ki rin", PM_KI_RIN, NEUTRAL },
             { "kirin", PM_KI_RIN, NEUTRAL },
-            { "uruk hai", PM_URUK_HAI, NEUTRAL },
             { "orc captain", PM_ORC_CAPTAIN, NEUTRAL },
             { "woodland elf", PM_WOODLAND_ELF, NEUTRAL },
             { "green elf", PM_GREEN_ELF, NEUTRAL },
@@ -1012,6 +1011,10 @@ name_to_monplus(
             { "djinn", PM_DJINNI, NEUTRAL },
             { "mumakil", PM_MUMAK, NEUTRAL },
             { "erinyes", PM_ERINYS, NEUTRAL },
+            /* vanilla names */
+            { "mordor orc", PM_FEN_ORC, NEUTRAL },
+            { "uruk hai", PM_FELL_ORC, NEUTRAL },
+            { "uruk-hai", PM_FELL_ORC, NEUTRAL },
             /* end of list */
             { 0, NON_PM, NEUTRAL }
         };
@@ -1240,8 +1243,8 @@ static const short grownups[][2] = {
     { PM_MIND_FLAYER, PM_MASTER_MIND_FLAYER },
     { PM_ORC, PM_ORC_CAPTAIN },
     { PM_HILL_ORC, PM_ORC_CAPTAIN },
-    { PM_MORDOR_ORC, PM_ORC_CAPTAIN },
-    { PM_URUK_HAI, PM_ORC_CAPTAIN },
+    { PM_FEN_ORC, PM_ORC_CAPTAIN },
+    { PM_FELL_ORC, PM_ORC_CAPTAIN },
     { PM_SEWER_RAT, PM_GIANT_RAT },
     { PM_CAVE_SPIDER, PM_GIANT_SPIDER },
     { PM_OGRE, PM_OGRE_LEADER },

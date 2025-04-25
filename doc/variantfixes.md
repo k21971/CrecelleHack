@@ -54,6 +54,7 @@
 - Tigers are orange.
 - Monsters can grapple and trip the player.
 - Bats and vampires only spawn at night.
+- Renamed mordor orcs to fen orcs and uruk-hai to fell orcs.
 
 ### Unique Monsters
 - Dispater uses the trickster monster spell list, making him likely

@@ -905,7 +905,7 @@ u_init_race(void)
         knows_object(ORCISH_RING_MAIL, FALSE);
         knows_object(ORCISH_HELM, FALSE);
         knows_object(ORCISH_SHIELD, FALSE);
-        knows_object(URUK_HAI_SHIELD, FALSE);
+        knows_object(FELL_ORC_SHIELD, FALSE);
         knows_object(ORCISH_CLOAK, FALSE);
         knows_object(DUAL_AXE, FALSE);
         break;

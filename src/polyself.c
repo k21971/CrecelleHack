@@ -547,7 +547,7 @@ polyself(int psflags)
                        && mntmp != PM_HUMAN) {
                 /* far less general than mkclass() */
                 if (mntmp == PM_ORC)
-                    mntmp = rn2(3) ? PM_HILL_ORC : PM_MORDOR_ORC;
+                    mntmp = rn2(3) ? PM_HILL_ORC : PM_FEN_ORC;
                 else if (mntmp == PM_ELF)
                     mntmp = rn2(3) ? PM_GREEN_ELF : PM_GREY_ELF;
                 else if (mntmp == PM_GIANT)
@@ -1078,7 +1078,7 @@ uasmon_maxStr(void)
     struct permonst *ptr = &mons[mndx];
 
     if (is_orc(ptr)) {
-        if (mndx != PM_URUK_HAI && mndx != PM_ORC_CAPTAIN)
+        if (mndx != PM_FELL_ORC && mndx != PM_ORC_CAPTAIN)
             mndx = PM_ORC;
     } else if (is_elf(ptr)) {
         mndx = PM_ELF;
