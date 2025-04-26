@@ -3350,7 +3350,7 @@ static NEARDATA const struct o_range o_ranges[] = {
     { "lamp", TOOL_CLASS, OIL_LAMP, MAGIC_LAMP },
     { "candle", TOOL_CLASS, TALLOW_CANDLE, WAX_CANDLE },
     { "horn", TOOL_CLASS, TOOLED_HORN, HORN_OF_PLENTY },
-    { "shield", ARMOR_CLASS, SMALL_SHIELD, SHIELD_OF_REFLECTION },
+    { "shield", ARMOR_CLASS, ROUNDSHIELD, SHIELD_OF_REFLECTION },
     { "hat", ARMOR_CLASS, FEDORA, DUNCE_CAP },
     { "helm", ARMOR_CLASS, ELVEN_LEATHER_HELM, HELM_OF_TELEPATHY },
     { "gloves", ARMOR_CLASS, LEATHER_GLOVES, GAUNTLETS_OF_DEXTERITY },
@@ -5585,7 +5585,7 @@ shield_simple_name(struct obj *shield)
          */
 #if 0
         /* spellcasting uses a division like this */
-        return (weight(shield) > (int) objects[SMALL_SHIELD].oc_weight)
+        return (weight(shield) > (int) objects[ROUNDSHIELD].oc_weight)
                ? "heavy shield"
                : "light shield";
 #endif

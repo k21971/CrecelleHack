@@ -392,7 +392,7 @@ m_initweap(struct monst *mtmp)
             (void) mpickobj(mtmp, otmp);
 
             otmp = mksobj(!rn2(4) || is_lord(ptr) ? SHIELD_OF_REFLECTION
-                                                  : LARGE_SHIELD,
+                                                  : KITE_SHIELD,
                           FALSE, FALSE);
             /* uncurse(otmp); -- mksobj(,FALSE,) item is always uncursed */
             otmp->oerodeproof = TRUE;
@@ -701,9 +701,9 @@ m_initinv(struct monst *mtmp)
 
             /* round 3: shields */
             if (mac < 10 && rn2(3))
-                otmp = mongets(mtmp, SMALL_SHIELD);
+                otmp = mongets(mtmp, ROUNDSHIELD);
             else if (mac < 10 && rn2(2))
-                otmp = mongets(mtmp, LARGE_SHIELD);
+                otmp = mongets(mtmp, KITE_SHIELD);
             add_ac(otmp);
 
             /* round 4: boots */
@@ -767,7 +767,7 @@ m_initinv(struct monst *mtmp)
             (void) mongets(mtmp, rn2(7) ? ROBE
                                         : rn2(3) ? CLOAK_OF_PROTECTION
                                                  : CLOAK_OF_MAGIC_RESISTANCE);
-            (void) mongets(mtmp, SMALL_SHIELD);
+            (void) mongets(mtmp, ROUNDSHIELD);
             mkmonmoney(mtmp, (long) rn1(10, 20));
         } else if (quest_mon_represents_role(ptr, PM_MONK)) {
             (void) mongets(mtmp, rn2(11) ? ROBE : CLOAK_OF_MAGIC_RESISTANCE);

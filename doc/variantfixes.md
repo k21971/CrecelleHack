@@ -101,6 +101,8 @@
 
 ### General
 - Renamed Scroll of Genocide to Scroll of Erasure.
+- Renamed large shield to kite shield and small shield
+  to roundshield.
 - Quarterstaves can be wielded in dual weapon mode.
 - Potions leave behind empty bottles when drunk. These bottles
   can be refilled with water at fountains, sinks, and other
@@ -143,6 +145,7 @@
 - Bolas
   - Thrown weapon.
   - Players struck by a bolas are made prone.
+- Heater Shield
 - Two-Bladed Sword
 - Dual Axe
 

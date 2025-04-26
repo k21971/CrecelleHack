@@ -717,12 +717,13 @@ Shield_on(void)
        [reflection is handled by setting u.uprops[REFLECTION].extrinsic
        in setworn() called by armor_or_accessory_on() before Shield_on()] */
     switch (uarms->otyp) {
-    case SMALL_SHIELD:
+    case ROUNDSHIELD:
     case ELVEN_SHIELD:
     case FELL_ORC_SHIELD:
     case ORCISH_SHIELD:
     case DWARVISH_ROUNDSHIELD:
-    case LARGE_SHIELD:
+    case KITE_SHIELD:
+    case HEATER_SHIELD:
     case SHIELD_OF_REFLECTION:
         break;
     default:
@@ -743,12 +744,13 @@ Shield_off(void)
     /* no shield currently requires special handling when taken off, but we
        keep this uncommented in case somebody adds a new one which does */
     switch (uarms->otyp) {
-    case SMALL_SHIELD:
+    case ROUNDSHIELD:
     case ELVEN_SHIELD:
     case FELL_ORC_SHIELD:
     case ORCISH_SHIELD:
     case DWARVISH_ROUNDSHIELD:
-    case LARGE_SHIELD:
+    case KITE_SHIELD:
+    case HEATER_SHIELD:
     case SHIELD_OF_REFLECTION:
         break;
     default:
