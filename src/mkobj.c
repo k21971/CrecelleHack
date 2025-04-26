@@ -900,6 +900,7 @@ fuzz_weight(struct obj *obj) {
     if (objects[obj->otyp].oc_merge) return;
     orig_wt = (int) objects[obj->otyp].oc_weight;
     fuzz_factor = orig_wt / 8;
+    if (!fuzz_factor) return;
     wt = orig_wt + (2 * fuzz_factor -  d(4, fuzz_factor));
     if (wt < 1)
         wt = 1;
