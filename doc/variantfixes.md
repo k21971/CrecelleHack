@@ -110,6 +110,8 @@
 - Potions of water are considered inert and do not polymorph.
 - Potions of holy water deal much more damage to demons.
 - Bags have distinct appearances.
+- Non-stacking weapons, armor, and weapon-tools have their
+  weight mildly fuzzed.
 
 ### Armor
 - MC: Chance of cancelling a special effect.

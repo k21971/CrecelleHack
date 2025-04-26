@@ -9,6 +9,7 @@ staticfn boolean may_generate_eroded(struct obj *);
 staticfn void mkobj_erosions(struct obj *);
 staticfn void mkbox_cnts(struct obj *);
 staticfn unsigned nextoid(struct obj *, struct obj *);
+staticfn void fuzz_weight(struct obj *);
 staticfn void mksobj_init(struct obj **, boolean);
 staticfn int item_on_ice(struct obj *);
 staticfn void shrinking_glob_gone(struct obj *);
@@ -889,6 +890,22 @@ unknow_object(struct obj *obj)
     obj->known = objects[obj->otyp].oc_uses_known ? 0 : 1;
 }
 
+/* Fuzz the weight of a non-stacking object. Cluster weights around the
+   object class weight, so that very heavy and very light versions of
+   an object are rarer. */
+staticfn void
+fuzz_weight(struct obj *obj) {
+    int wt, orig_wt, fuzz_factor;
+
+    if (objects[obj->otyp].oc_merge) return;
+    orig_wt = (int) objects[obj->otyp].oc_weight;
+    fuzz_factor = orig_wt / 8;
+    wt = orig_wt + (2 * fuzz_factor -  d(4, fuzz_factor));
+    if (wt < 1)
+        wt = 1;
+    obj->owt = wt;
+}
+
 /* do some initialization to newly created object; otyp must already be set */
 staticfn void
 mksobj_init(struct obj **obj, boolean artif)
@@ -916,6 +933,7 @@ mksobj_init(struct obj **obj, boolean artif)
             otmp = mk_artifact(otmp, (aligntyp) A_NONE, 99, TRUE);
             *obj = otmp;
         }
+        fuzz_weight(otmp);
         break;
     case FOOD_CLASS:
         otmp->oeaten = 0;
@@ -1090,6 +1108,8 @@ mksobj_init(struct obj **obj, boolean artif)
             otmp->spe = rn1(5, 4);
             break;
         }
+        if (is_weptool(otmp))
+            fuzz_weight(otmp);
         break;
     case AMULET_CLASS:
         if (otmp->otyp == AMULET_OF_YENDOR)
@@ -1146,6 +1166,7 @@ mksobj_init(struct obj **obj, boolean artif)
             otmp->oerodeproof = otmp->rknown = 1;
 #endif
         }
+        fuzz_weight(otmp);
         break;
     case WAND_CLASS:
         if (otmp->otyp == WAN_WISHING)
@@ -1972,6 +1993,10 @@ weight(struct obj *obj)
         if (obj->oeaten)
             wt = eaten_stat(wt, obj);
         return wt;
+    } else if ((obj->oclass == WEAPON_CLASS || obj->oclass == ARMOR_CLASS
+                || is_weptool(obj))
+                && !objects[obj->otyp].oc_merge) {
+        return (int) obj->owt;
     } else if ((obj->otyp == SKULL || obj->otyp == SKULL_HELM) && ismnum(obj->corpsenm)) {
         /* Yuck */
         return max(obj->otyp == SKULL ? 1 : 10, mons[obj->corpsenm].cwt / 50);
