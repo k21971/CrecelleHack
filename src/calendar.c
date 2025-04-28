@@ -387,7 +387,7 @@ weather_effects(void)
             create_bonfire(x, y, 1, 1);
     }
     /* Tornados */
-    if (CURR_WEATHER(WTH_TORNADO) && !rn2(38)) {
+    if (CURR_WEATHER(WTH_TORNADO) && !rn2(150)) {
         (void) makemon(&mons[PM_TORNADO], 0, 0, NO_MM_FLAGS);
     }
 }
