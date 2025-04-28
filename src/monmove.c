@@ -295,7 +295,9 @@ onscary(coordxy x, coordxy y, struct monst *mtmp)
 void
 mon_regen(struct monst *mon, boolean digest_meal)
 {
-    if (svm.moves % 20 == 0 || regenerates(mon->data))
+    if (svm.moves % 20 == 0 || regenerates(mon->data)
+        || (mon->data == &mons[PM_WATER_ELEMENTAL] 
+            && IS_RAINING && !has_no_tod_cycles(&u.uz)))
         healmon(mon, 1, 0);
     if (mon->mspec_used)
         mon->mspec_used--;
@@ -683,9 +685,13 @@ m_postmove_effect(struct monst *mtmp)
         (void) create_gas_cloud(mtmp->mx, mtmp->my, rnd(6), 3);
     } else if (mtmp->data == &mons[PM_STEAM_VORTEX] && !mtmp->mcan)
         create_gas_cloud(x, y, 1, 0); /* harmless vapor */
-    else if (mtmp->data == &mons[PM_FIRE_ELEMENTAL] && !mtmp->mcan)
-        create_bonfire(x, y, 1, rnd(4));
-    else if (mtmp->data == &mons[PM_ACID_BLOB] 
+    else if (mtmp->data == &mons[PM_FIRE_ELEMENTAL] && !mtmp->mcan) {
+        /* Lets off smoke / vapor in the rain, otherwise starts things on fire. */
+        if (IS_RAINING)
+            create_gas_cloud(x, y, 1, 0);
+        else
+            create_bonfire(x, y, 1, rnd(4));
+    } else if (mtmp->data == &mons[PM_ACID_BLOB] 
             || mtmp->data == &mons[PM_GELATINOUS_CUBE]) {
         floor_alchemy(x, y, POT_ACID, NON_PM);
     } else if (mtmp->data == &mons[PM_WATER_ELEMENTAL] || 
@@ -697,6 +703,10 @@ m_postmove_effect(struct monst *mtmp)
         if (touch_petrifies(&mons[pm]))
             pm = PM_ELF;
         add_coating(x, y, COAT_BLOOD, has_blood(&mons[pm]) ? pm : PM_HUMAN);
+    } else if (mtmp->data == &mons[PM_TORNADO]) {
+        /* tornados suck up everything */
+        remove_coating(x, y, COAT_ALL);
+        wipe_engr_at(x, y, 8, FALSE);
     }
 }
 
@@ -774,6 +784,10 @@ dochug(struct monst *mtmp)
     /* Illusions may disappear in order to prevent flooding the level */
     if (mdat == &mons[PM_ILLUSION] && !rn2(14))
         mongone(mtmp);
+
+    /* Tornados make noise */
+    if (mdat == &mons[PM_TORNADO] && !Deaf && !rn2(30))
+        You_hear("a horrible sucking noise.");
 
     /* Shriekers and Medusa have irregular abilities which must be
        checked every turn. These abilities do not cost a turn when

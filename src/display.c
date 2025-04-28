@@ -2639,9 +2639,12 @@ map_glyphinfo(
         && levl[x][y].coat_info) {
         /* Order matters here. Generally the more important the coating, the higher
             priority it gets. Potions are the highest because they could kill the player. */
-        if ((levl[x][y].coat_info & COAT_POTION) != 0)
-            glyphinfo->gm.sym.color = objects[levl[x][y].pindex].oc_color;
-        else if ((levl[x][y].coat_info & COAT_SHARDS) != 0)
+        if ((levl[x][y].coat_info & COAT_POTION) != 0) {
+            if (levl[x][y].pindex == POT_WATER)
+                glyphinfo->gm.sym.color = CLR_BLUE;
+            else
+                glyphinfo->gm.sym.color = objects[levl[x][y].pindex].oc_color;
+        } else if ((levl[x][y].coat_info & COAT_SHARDS) != 0)
             glyphinfo->gm.sym.color = CLR_BRIGHT_CYAN;
         else if ((levl[x][y].coat_info & COAT_FUNGUS) != 0)
             glyphinfo->gm.sym.color = CLR_CYAN;

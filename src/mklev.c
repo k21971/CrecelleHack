@@ -248,7 +248,7 @@ do_room_or_subroom(struct mkroom *croom,
 
     if (lit) {
         #if 0
-        if (depth(&u.uz) < LIGHTCRUST_SPAWN_DEPTH || 
+        if (depth(&u.uz) < NIGHTCRUST_SPAWN_DEPTH || 
             (croom->rtype > THEMEROOM && croom->rtype != SWAMP)) {
             for (x = lowx - 1; x <= hix + 1; x++) {
                 lev = &levl[x][max(lowy - 1, 0)];
@@ -982,7 +982,7 @@ fill_ordinary_room(
     }
     if (croom->rlit) {
         somexyspace(croom, &pos);
-        makemon(&mons[PM_LIGHTCRUST], pos.x, pos.y, MM_NOCOUNTBIRTH);
+        makemon(&mons[PM_NIGHTCRUST], pos.x, pos.y, MM_NOCOUNTBIRTH);
     }
     /* put traps and mimics inside */
     x = 8 - (level_difficulty() / 6);

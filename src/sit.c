@@ -453,7 +453,10 @@ dosit(void)
         }
         
     } else if (has_coating(u.ux, u.uy, COAT_POTION)) {
-        You("sit in %s liquid.", OBJ_DESCR(objects[levl[u.ux][u.uy].pindex]));
+        if (levl[u.ux][u.uy].pindex == POT_WATER)
+            You("sit in some water."); /* goto in_water? */
+        else
+            You("sit in %s liquid.", OBJ_DESCR(objects[levl[u.ux][u.uy].pindex]));
         struct obj fakeobj = cg.zeroobj;
         fakeobj.cursed = TRUE;
         fakeobj.otyp = levl[u.ux][u.uy].pindex;

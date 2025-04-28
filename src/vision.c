@@ -538,6 +538,9 @@ vision_recalc(int control)
      * Either the light sources have been taken care of, or we must
      * recalculate them here.
      */
+    
+    /* Recalculate vision during daytime */
+    u.uenvirons.dt_vis = calc_dt_vis();
 
     /* Get the unused could see, row min, and row max arrays. */
     get_unused_cs(&next_array, &next_rmin, &next_rmax);

@@ -4655,14 +4655,17 @@ dfeature_at(coordxy x, coordxy y, char *buf)
         dfeature = "set of iron bars";
     else if (IS_COATABLE(ltyp)) { 
         if ((lev->coat_info & COAT_POTION) != 0) {
-            Sprintf(altbuf, "pool of %s liquid", OBJ_DESCR(objects[lev->pindex]));
+            if (levl[x][y].pindex == POT_WATER)
+                dfeature = "puddle of water";
+            else
+                Sprintf(altbuf, "puddle of %s liquid", OBJ_DESCR(objects[lev->pindex]));
             dfeature = altbuf;
         } else if ((lev->coat_info & COAT_BLOOD) != 0) {
             if (ismnum(levl[x][y].pindex)) {
-                Sprintf(altbuf, "pool of %s blood", mons[levl[x][y].pindex].pmnames[NEUTRAL]);
+                Sprintf(altbuf, "puddle of %s blood", mons[levl[x][y].pindex].pmnames[NEUTRAL]);
                 dfeature = altbuf;
             } else
-                dfeature = "pool of blood";
+                dfeature = "puddle of blood";
         } else if ((lev->coat_info & COAT_GRASS) != 0)
             dfeature = "patch of grass";
         else if ((lev->coat_info & COAT_ASHES) != 0)

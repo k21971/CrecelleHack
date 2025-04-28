@@ -233,8 +233,8 @@ moveloop_core(void)
                                    NO_MM_FLAGS);
 
                 /* Occasionally grow dungeon coatings */
-                if ((svm.moves % DUN_GROWTH_FREQ) == 0)
-                    grow_dungeon(DUN_GROWTH_FREQ);
+                if (!rn2(50))
+                    grow_dungeon();
 
                 u_calc_moveamt(mvl_wtcap);
                 settrack();

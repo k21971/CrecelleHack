@@ -786,6 +786,11 @@ intervene(void)
     /* cases 0 and 5 don't apply on the Astral level */
     switch (which) {
     case 0:
+        if (has_no_tod_cycles(&u.uz)) {
+            You_feel("a strange pressure in the atmosphere.");
+        }
+        harassment_weather();
+        break;
     case 1:
         You_feel("vaguely nervous.");
         break;

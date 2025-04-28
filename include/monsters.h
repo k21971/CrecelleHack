@@ -1207,6 +1207,18 @@
         M1_FLY | M1_BREATHLESS | M1_NOLIMBS | M1_NOHEAD | M1_UNSOLID,
         M2_UNDEAD | M2_STALK | M2_HOSTILE, 
         M3_INFRAVISION | M3_TRAITOR, 14, CLR_RED, CRIMSON_DEATH),
+    /* Not actually a monster, but behaves very similarly */
+    MON(NAM("tornado"), S_VORTEX,
+        LVL(20, 8, -12, 100, 0), (G_NOGEN | G_NOCORPSE),
+        A(ATTK(AT_ENGL, AD_PHYS, 4, 10),
+          NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(WT_ETHEREAL, 0, MS_SILENT, MZ_GIGANTIC),
+        MR_SLEEP | MR_POISON | MR_STONE | MR_FIRE 
+          | MR_COLD | MR_ACID | MR_DISINT, 0,
+        M1_FLY | M1_BREATHLESS | M1_NOLIMBS | M1_NOHEAD | M1_MINDLESS
+          | M1_UNSOLID,
+        M2_HOSTILE | M2_WANDER | M2_COLLECT | M2_NEUTER | M2_NOPOLY,
+        0, 21, CLR_MAGENTA, TORNADO),
     /*
      * worms
      */
@@ -1765,14 +1777,14 @@
     /*
      * Fungi
      */
-    MON(NAM("lightcrust"), S_FUNGUS,
+    MON(NAM("nightcrust"), S_FUNGUS,
         LVL(0, 0, 10, 0, 0), (G_NOCORPSE | G_NOGEN),
         A(NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
         SIZ(20, 200, MS_SILENT, MZ_SMALL), 0, 0,
         M1_BREATHLESS | M1_NOEYES | M1_NOLIMBS | M1_NOHEAD | M1_MINDLESS
             | M1_NOTAKE,
         M2_HOSTILE | M2_NEUTER, 0,
-        1, CLR_CYAN, LIGHTCRUST),
+        1, CLR_BLACK, NIGHTCRUST),
     MON(NAM("lichen"), S_FUNGUS,
         LVL(0, 1, 9, 0, 0), (G_GENO | G_NOHELL | 4),
         A(ATTK(AT_TUCH, AD_STCK, 0, 0),

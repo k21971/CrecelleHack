@@ -1802,10 +1802,15 @@ evaporate_potion_puddles(coordxy x, coordxy y) {
 void
 floor_alchemy(int x, int y, int otyp, int corpsenm) {
     struct obj fakeobj1, fakeobj2 = cg.zeroobj;
-    struct obj *otmp;
+    struct obj *otmp, *objchain;
     fakeobj1.otyp = otyp;
     fakeobj1.oclass = POTION_CLASS;
     
+    if (otyp == POT_WATER) {
+        if ((objchain = svl.level.objects[x][y]) != 0) {
+            water_damage_chain(objchain, TRUE);
+        }
+    }
     if (has_coating(x, y, COAT_POTION)) {
         if (otyp == levl[x][y].pindex)
             return;

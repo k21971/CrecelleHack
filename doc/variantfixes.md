@@ -180,7 +180,11 @@
 ### Day-Night Cycle
 - Exactly what it sounds like! Watch your vision wax and
   wane over time!
-- TODO: Expand into weather effects.
+
+### Weather
+- Experience wind, rain, hail, and more.
+- Weather changes dynamically over time, and may impact the gameplay
+  in various ways.
 
 ### Reflection
 - Reflection does not reflect rays directly back at

@@ -316,8 +316,12 @@ extern int midday(void);
 extern int rt_midnight(void);
 extern int calc_dt_vis(void);
 extern void doenvirons(void);
+extern void roll_precip(void);
+extern void roll_wind(void);
 extern const char *tod_string(void);
+extern void weatherchange_message(boolean);
 extern void timechange_message(boolean);
+extern void harassment_weather(void);
 
 /* ### coloratt.c ### */
 
@@ -2705,7 +2709,7 @@ extern int dorecover(NHFILE *) NONNULLARG1;
 extern void restcemetery(NHFILE *, struct cemetery **) NONNULLARG12;
 extern void trickery(char *) NO_NNARGS;
 extern void getlev(NHFILE *, int, xint8) NONNULLARG1;
-extern void grow_dungeon(long);
+extern void grow_dungeon(void);
 extern void get_plname_from_file(NHFILE *, char *, boolean) NONNULLARG12;
 #ifdef SELECTSAVED
 extern int restore_menu(winid);
@@ -3855,6 +3859,7 @@ extern int wiz_show_vision(void);
 extern int wiz_show_wmodes(void);
 extern int wiz_smell(void);
 extern int wiz_telekinesis(void);
+extern int wiz_weather(void);
 extern int wiz_where(void);
 extern int wiz_wish(void);
 extern void makemap_remove_mons(void);

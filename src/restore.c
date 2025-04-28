@@ -1285,46 +1285,41 @@ getlev(NHFILE *nhfp, int pid, xint8 lev)
 
 /* advance dungeon state - grow grass, etc. */
 void
-grow_dungeon(long elapsed) {
-    int x, y;
+grow_dungeon(void) {
     coord cc;
-    while (elapsed > 0) {
-        x = rn2(COLNO);
-        y = rn2(ROWNO);
-        if (!isok(x, y)) {
-            elapsed -= DUN_GROWTH_FREQ;
-            continue;
-        }
-        /* hack to grow in acceptable locations */
-        if (has_coating(x, y, COAT_FUNGUS))
-            enexto(&cc, x, y, &mons[PM_EARTH_ELEMENTAL]); /* fungus can grow on walls */
-        else
-            enexto(&cc, x, y, &mons[PM_GRID_BUG]); /* technically any land-dwelling monster is good */
-        /* grow things */
-        if (IS_TREE(levl[x][y].typ) &&
-            levl[cc.x][cc.y].typ == ROOM) {
-            levl[cc.x][cc.y].typ = TREE;
-            levl[cc.x][cc.y].flags |= TREE_LOOTED;
-            newsym(cc.x, cc.y);
-            block_point(cc.x, cc.y);
-            if (cansee(cc.x, cc.y)) pline_xy(cc.x, cc.y, "You see a sapling sprout.");
-        }
-        if (has_coating(x, y, COAT_GRASS) 
-            && !has_coating(cc.x, cc.y, COAT_GRASS)
-            && add_coating(cc.x, cc.y, COAT_GRASS, 0)) {
-            if (cansee(cc.x, cc.y)) pline_xy(cc.x, cc.y, "You see some grass grow.");
-        }
-        if (has_coating(x, y, COAT_FUNGUS) 
-            && !has_coating(cc.x, cc.y, COAT_FUNGUS)
-            && add_coating(cc.x, cc.y, COAT_FUNGUS, 0)) {
-            if (cansee(cc.x, cc.y)) pline_xy(cc.x, cc.y, "You see some fungus grow.");
-        }
-        /* evaporate potions */
-        if (has_coating(x, y, COAT_POTION)) {
-            remove_coating(x, y, COAT_POTION);
-            if (cansee(x, y)) pline_xy(x, y, "You see some liquid evaporate.");
-        }
-        elapsed -= DUN_GROWTH_FREQ;
+    int x = rn2(COLNO);
+    int y = rn2(ROWNO);
+    if (!isok(x, y)) {
+        return;
+    }
+    /* hack to grow in acceptable locations */
+    if (has_coating(x, y, COAT_FUNGUS))
+        enexto(&cc, x, y, &mons[PM_EARTH_ELEMENTAL]); /* fungus can grow on walls */
+    else
+        enexto(&cc, x, y, &mons[PM_GRID_BUG]); /* technically any land-dwelling monster is good */
+    /* grow things */
+    if (IS_TREE(levl[x][y].typ) &&
+        levl[cc.x][cc.y].typ == ROOM) {
+        levl[cc.x][cc.y].typ = TREE;
+        levl[cc.x][cc.y].flags |= TREE_LOOTED;
+        newsym(cc.x, cc.y);
+        block_point(cc.x, cc.y);
+        if (cansee(cc.x, cc.y)) pline_xy(cc.x, cc.y, "You see a sapling sprout.");
+    }
+    if (has_coating(x, y, COAT_GRASS) 
+        && !has_coating(cc.x, cc.y, COAT_GRASS)
+        && add_coating(cc.x, cc.y, COAT_GRASS, 0)) {
+        if (cansee(cc.x, cc.y)) pline_xy(cc.x, cc.y, "You see some grass grow.");
+    }
+    if (has_coating(x, y, COAT_FUNGUS) 
+        && !has_coating(cc.x, cc.y, COAT_FUNGUS)
+        && add_coating(cc.x, cc.y, COAT_FUNGUS, 0)) {
+        if (cansee(cc.x, cc.y)) pline_xy(cc.x, cc.y, "You see some fungus grow.");
+    }
+    /* evaporate potions */
+    if (!IS_RAINING && has_coating(x, y, COAT_POTION)) {
+        remove_coating(x, y, COAT_POTION);
+        if (cansee(x, y)) pline_xy(x, y, "You see some liquid evaporate.");
     }
 }
 

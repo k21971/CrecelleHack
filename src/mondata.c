@@ -205,7 +205,8 @@ resists_drli(struct monst *mon)
     if (is_undead(ptr) || is_demon(ptr) || is_were(ptr)
         /* is_were() doesn't handle hero in human form */
         || (mon == &gy.youmonst && u.ulycn >= LOW_PM)
-        || ptr == &mons[PM_DEATH] || is_vampshifter(mon))
+        || ptr == &mons[PM_DEATH] || is_vampshifter(mon)
+        || ptr == &mons[PM_TORNADO])
         return TRUE;
     return defended(mon, AD_DRLI);
 }

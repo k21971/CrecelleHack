@@ -1031,6 +1031,10 @@ u_init(void)
     u.utotype = UTOTYPE_NONE;
 #endif /* 0 */
     u.uenvirons.tod_cnt = TOD_QUARTER;
+    roll_precip();
+    roll_wind();
+    u.uenvirons.precip_cnt = rn1(400, 200);
+    u.uenvirons.wind_cnt = rn1(200, 100);
     u.uenvirons.tod = TOD_MORNING;
 
     u.uz.dlevel = 1;

@@ -626,8 +626,12 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
         Strcat(outbuf, "ashy ");
     if ((levl[x][y].coat_info & COAT_FUNGUS) != 0)
         Strcat(outbuf, "fungus-encrusted ");
+    if ((levl[x][y].coat_info & COAT_POTION) != 0
+         && levl[x][y].pindex == POT_WATER)
+            Strcat(outbuf, "wet ");
 
-    if ((levl[x][y].coat_info & COAT_POTION) != 0)
+    if ((levl[x][y].coat_info & COAT_POTION) != 0
+         && levl[x][y].pindex != POT_WATER)
         Sprintf(buf, "%s covered in %s liquid", floor_descr(x, y, symidx), OBJ_DESCR(objects[levl[x][y].pindex]));
     else if ((levl[x][y].coat_info & COAT_BLOOD) != 0) {
         if (ismnum(levl[x][y].pindex))

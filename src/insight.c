@@ -635,6 +635,10 @@ background_enlightenment(int unused_mode UNUSED, int final)
     } else {
         enl_msg("It ", "is ", "was  ", "daytime", "");
     }
+    /* Weather */
+    if (!has_no_tod_cycles(&u.uz) && IS_RAINING) {
+        enl_msg("It ", "is ", "was ", "raining", "");
+    }
     /* other environmental factors */
     if (flags.moonphase == FULL_MOON || flags.moonphase == NEW_MOON) {
         /* [This had "tonight" but has been changed to "in effect".

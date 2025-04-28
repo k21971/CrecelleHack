@@ -54,10 +54,54 @@ struct u_event {
     Bitfield(ascended, 1);          /* has offered the Amulet */
 };
 
+
+/* 
+ * Weather: Weather is tracked via precipitation and wind. The two change
+   on seperate timers, but both impact the same weather field.
+ */
+/* Precipitation */
+#define WTH_DRIZZLE   0x0001
+#define WTH_RAIN      0x0002
+#define WTH_HAIL      0x0004
+#define WTH_DOWNBURST 0x0008
+#define WTH_ACIDRAIN  0x0010
+#define WTH_FIRERAIN  0x0020
+#define WTH_ASHES   0x0040
+/* Wind */
+#define WTH_BREEZE    0x0100
+#define WTH_WIND      0x0200
+#define WTH_GUST      0x0400
+#define WTH_TORNADO   0x0800
+
+/* Macros */
+#define WTHM_ALL 0xFFFF
+#define WTHM_WINDY (WTH_WIND | WTH_GUST)
+#define WTHM_RAINS (WTH_RAIN | WTH_DRIZZLE | WTH_DOWNBURST | WTH_ACIDRAIN)
+#define WTHM_ALL_PRECIPS (WTH_DRIZZLE | WTH_RAIN | WTH_DOWNBURST | WTH_HAIL | WTH_ACIDRAIN | WTH_FIRERAIN | WTH_ASHES )
+#define WTHM_ALL_WINDS (WTHM_WINDY | WTH_BREEZE | WTH_TORNADO)
+#define INC_PRECIP(x) (u.uenvirons.inc_precip->def & x)
+#define INC_WIND(x) (u.uenvirons.inc_wind->def & x)
+#define CURR_WEATHER(x) (u.uenvirons.curr_weather & x)
+#define IS_RAINING CURR_WEATHER(WTHM_RAINS)
+#define IS_WINDY CURR_WEATHER(WTHM_WINDS)
+
+struct weather {
+    const char *str;
+    short def;
+    short overwrite;
+    int timeout;
+    int prob;
+};
+
 struct u_environs {
-    unsigned tod_cnt; /* Timer for tod changes */
-    char tod;         /* Current tod  */
-    char dt_vis;      /* Vision during daytime */
+    unsigned tod_cnt;              /* Timer for tod changes */
+    unsigned precip_cnt;           /* Timer for precip changes */
+    unsigned wind_cnt;             /* Timer for wind changes */
+    char tod;                      /* Current tod  */
+    char dt_vis;                   /* Vision during daytime */
+    struct weather *inc_precip;    /* Incoming precipitation */
+    struct weather *inc_wind;      /* Incoming wind */
+    short curr_weather;            /* Current weather */
 };
 
 /*

@@ -784,7 +784,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_PONY: case PM_HORSE: case PM_WARHORSE:
     case PM_FOG_CLOUD: case PM_DUST_VORTEX: case PM_ICE_VORTEX:
     case PM_ENERGY_VORTEX: case PM_STEAM_VORTEX: case PM_FIRE_VORTEX:
-    case PM_BLACK_HOLE: case PM_CRIMSON_DEATH:
+    case PM_BLACK_HOLE: case PM_CRIMSON_DEATH: case PM_TORNADO:
 
     case PM_NIGHTCRAWLER: case PM_BABY_LONG_WORM: case PM_BABY_PURPLE_WORM:
     case PM_MAIL_WORM:
@@ -808,7 +808,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_STALKER: case PM_AIR_ELEMENTAL: case PM_FIRE_ELEMENTAL:
     case PM_EARTH_ELEMENTAL: case PM_WATER_ELEMENTAL:
 
-    case PM_LIGHTCRUST: case PM_LICHEN: case PM_BROWN_MOLD: case PM_YELLOW_MOLD:
+    case PM_NIGHTCRUST: case PM_LICHEN: case PM_BROWN_MOLD: case PM_YELLOW_MOLD:
     case PM_GREEN_MOLD: case PM_RED_MOLD: case PM_SHRIEKER:
     case PM_VIOLET_FUNGUS:
 
@@ -1014,6 +1014,13 @@ minliquid_core(struct monst *mtmp)
         }
         water_damage_chain(mtmp->minvent, FALSE);
         return 0;
+    } else if (mtmp->data == &mons[PM_TORNADO]) {
+        mtmp->mhp--;
+        if (DEADMONSTER(mtmp)) {
+            mondied(mtmp);
+            if (DEADMONSTER(mtmp))
+                return 1;
+        }
     }
 
     if (inlava) {
@@ -1866,6 +1873,7 @@ mpickstuff(struct monst *mtmp)
 
             if (otmp->otyp == CORPSE && mtmp->data->mlet != S_NYMPH 
                 && mtmp->data != &mons[PM_BLACK_HOLE]
+                && mtmp->data != &mons[PM_TORNADO]
                 /* let a handful of corpse types thru to can_carry() */
                 && !touch_petrifies(&mons[otmp->corpsenm])
                 && otmp->corpsenm != PM_LIZARD
@@ -2461,6 +2469,8 @@ mm_aggression(
        like to eat shriekers, so attack the latter when feasible */
     if ((mndx == PM_PURPLE_WORM || mndx == PM_BABY_PURPLE_WORM)
         && mdef->data == &mons[PM_SHRIEKER])
+        return ALLOW_M | ALLOW_TM;
+    if (mndx == PM_TORNADO)
         return ALLOW_M | ALLOW_TM;
     /* Various other combinations such as dog vs cat, cat vs rat, and
        elf vs orc have been suggested.  For the time being we don't
@@ -3237,7 +3247,7 @@ corpse_chance(
         return FALSE;
     }
 
-    if (mdat == &mons[PM_LIGHTCRUST]) {
+    if (mdat == &mons[PM_NIGHTCRUST]) {
         add_coating(mon->mx, mon->my, COAT_FUNGUS, 0);
         return FALSE;
     }
