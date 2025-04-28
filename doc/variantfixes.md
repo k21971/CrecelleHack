@@ -112,6 +112,9 @@
 - Bags have distinct appearances.
 - Non-stacking weapons, armor, and weapon-tools have their
   weight mildly fuzzed.
+- All gems shatter when thrown, regardless of their material.
+  This opens up an additional route for getting glass onto
+  the floor.
 
 ### Armor
 - MC: Chance of cancelling a special effect.

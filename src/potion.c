@@ -1761,7 +1761,8 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
                 You_hear("a soft tinkling.");
             }
         }
-        remove_coating(x, y, COAT_SHARDS);
+        if (!rn2(3))
+            remove_coating(x, y, COAT_SHARDS);
     }
     if (has_coating(x, y, COAT_BLOOD) && touch_petrifies(&mons[levl[x][y].pindex])) {
         if (isyou && !uarmf && !Stone_resistance) {

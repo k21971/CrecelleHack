@@ -2570,8 +2570,9 @@ breaktest(struct obj *obj)
 
     if (obj_resists(obj, nonbreakchance, 99))
         return FALSE;
-    if (objects[obj->otyp].oc_material == GLASS && !obj->oartifact
-        && obj->oclass != GEM_CLASS)
+    if (objects[obj->otyp].oc_material == GLASS && !obj->oartifact)
+        return TRUE;
+    if (obj->oclass == GEM_CLASS)
         return TRUE;
     switch (obj->oclass == POTION_CLASS ? POT_WATER : obj->otyp) {
     case EXPENSIVE_CAMERA:
@@ -2597,7 +2598,8 @@ breakmsg(struct obj *obj, boolean in_view)
         return;
 
     to_pieces = "";
-    switch (obj->oclass == POTION_CLASS ? POT_WATER : obj->otyp) {
+    switch (obj->oclass == POTION_CLASS ? POT_WATER :
+            obj->oclass == GEM_CLASS ? WORTHLESS_VIOLET_GLASS : obj->otyp) {
     default: /* glass or crystal wand */
         if (obj->oclass != WAND_CLASS)
             impossible("breaking odd object (%d)?", obj->otyp);
@@ -2612,6 +2614,7 @@ breakmsg(struct obj *obj, boolean in_view)
         FALLTHROUGH;
     /*FALLTHRU*/
     case BOTTLE:
+    case WORTHLESS_VIOLET_GLASS:
     case POT_WATER: /* really, all potions */
         if (!in_view)
             You_hear("%s shatter!", something);
