@@ -473,7 +473,7 @@
     OBJCLASS( 6,  '(', TOOL,   S_tool, "tools",
                                        "useful item (pick-axe, key, lamp...)")
     OBJCLASS( 7,  '%', FOOD,   S_food, "food", "piece of food")
-    OBJCLASS( 8,  '!', POTION, S_potion, "potions", "potion")
+    OBJCLASS( 8,  '!', POTION, S_potion, "tonics", "tonic or potion")
     OBJCLASS( 9,  '?', SCROLL, S_scroll, "scrolls", "scroll")
     OBJCLASS(10,  '+', SPBOOK, S_book, "spellbooks", "spellbook")
     OBJCLASS(11,  '/', WAND,   S_wand, "wands", "wand")

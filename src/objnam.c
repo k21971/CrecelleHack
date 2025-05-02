@@ -222,7 +222,7 @@ obj_typename(int otyp)
     case COIN_CLASS:
         return strcpy(buf, actualn); /* "gold piece" */
     case POTION_CLASS:
-        Strcpy(buf, "potion");
+        Strcpy(buf, "tonic");
         break;
     case SCROLL_CLASS:
         Strcpy(buf, "scroll");
@@ -837,7 +837,7 @@ xname_flags(
         if (dknown && obj->odiluted)
             Strcpy(buf, "diluted ");
         if (nn || un || !dknown) {
-            Strcat(buf, "potion");
+            Strcat(buf, "tonic");
             if (!dknown)
                 break;
             if (nn) {
@@ -856,7 +856,7 @@ xname_flags(
             }
         } else {
             Strcat(buf, dn);
-            Strcat(buf, " potion");
+            Strcat(buf, " tonic");
         }
         break;
     case SCROLL_CLASS:
@@ -2516,13 +2516,15 @@ bare_artifactname(struct obj *obj)
 }
 
 static const char *const wrp[] = {
-    "wand",   "ring",      "potion",     "scroll", "gem",
+    "wand",   "ring",      "tonic",
+    "potion", "scroll",    "gem",
     "amulet", "spellbook", "spell book",
     /* for non-specific wishes */
     "weapon", "armor",     "tool",       "food",   "comestible",
 };
 static const char wrpsym[] = { WAND_CLASS,   RING_CLASS,   POTION_CLASS,
-                               SCROLL_CLASS, GEM_CLASS,    AMULET_CLASS,
+                               POTION_CLASS, SCROLL_CLASS, GEM_CLASS,
+                               AMULET_CLASS,
                                SPBOOK_CLASS, SPBOOK_CLASS, WEAPON_CLASS,
                                ARMOR_CLASS,  TOOL_CLASS,   FOOD_CLASS,
                                FOOD_CLASS };
@@ -3395,7 +3397,7 @@ static const struct alt_spellings {
     { "gauntlets of giant strength", GAUNTLETS_OF_POWER },
     { "elven chain mail", ELVEN_MITHRIL_COAT },
     { "silver shield", SHIELD_OF_REFLECTION },
-    { "potion of sleep", POT_SLEEPING },
+    { "tonic of sleep", POT_SLEEPING },
     { "scroll of recharging", SCR_CHARGING },
     { "recharging", SCR_CHARGING },
     { "stone", ROCK },

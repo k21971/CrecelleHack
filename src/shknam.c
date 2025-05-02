@@ -240,7 +240,7 @@ const struct shclass shtypes[] = {
         { 0, 0 },
         { 0, 0 } },
       shkbooks },
-    { "liquor emporium", "potion shop",
+    { "liquor emporium", "tonic shop",
       POTION_CLASS,
       10,
       D_SHOP,

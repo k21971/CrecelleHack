@@ -64,7 +64,7 @@ precheck(struct monst *mon, struct obj *obj)
 
     if (obj->oclass == POTION_CLASS) {
         coord cc;
-        static const char *const empty = "The potion turns out to be empty.";
+        static const char *const empty = "The tonic turns out to be empty.";
         struct monst *mtmp;
 
         if (objdescr_is(obj, "milky")) {
@@ -1207,7 +1207,7 @@ use_defensive(struct monst *mtmp)
     case MUSE_POT_HEALING:
     case MUSE_POT_BLOOD:
         if (!otmp)
-            panic(MissingDefensiveItem, "potion of healing / blood");
+            panic(MissingDefensiveItem, "tonic of healing / blood");
         mquaffmsg(mtmp, otmp);
         i = d(6 + 2 * bcsign(otmp), 4);
         healmon(mtmp, i, 1);
@@ -2424,7 +2424,7 @@ use_misc(struct monst *mtmp)
     switch (gm.m.has_misc) {
     case MUSE_POT_GAIN_LEVEL:
         if (!otmp)
-            panic(MissingMiscellaneousItem, "potion of gain level");
+            panic(MissingMiscellaneousItem, "tonic of gain level");
         mquaffmsg(mtmp, otmp);
         if (otmp->cursed) {
             if (Can_rise_up(mtmp->mx, mtmp->my, &u.uz)) {
@@ -2467,7 +2467,7 @@ use_misc(struct monst *mtmp)
     case MUSE_WAN_MAKE_INVISIBLE:
     case MUSE_POT_INVISIBILITY:
         if (!otmp)
-            panic(MissingMiscellaneousItem, "potion of invisibility");
+            panic(MissingMiscellaneousItem, "toninc of invisibility");
         if (otmp->otyp == WAN_MAKE_INVISIBLE) {
             mzapwand(mtmp, otmp, TRUE);
         } else
@@ -2502,7 +2502,7 @@ use_misc(struct monst *mtmp)
         return 2;
     case MUSE_POT_SPEED:
         if (!otmp)
-            panic(MissingMiscellaneousItem, "potion of speed");
+            panic(MissingMiscellaneousItem, "tonic of speed");
         mquaffmsg(mtmp, otmp);
         /* note difference in potion effect due to substantially
            different methods of maintaining speed ratings:
@@ -2522,7 +2522,7 @@ use_misc(struct monst *mtmp)
         return 2;
     case MUSE_POT_POLYMORPH:
         if (!otmp)
-            panic(MissingMiscellaneousItem, "potion of polymorph");
+            panic(MissingMiscellaneousItem, "tonic of polymorph");
         mquaffmsg(mtmp, otmp);
         m_useup(mtmp, otmp);
         if (vismon)

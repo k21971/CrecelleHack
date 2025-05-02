@@ -5795,7 +5795,7 @@ item_what(int dmgtyp)
             what = simpleonames((xtrinsic & W_AMUL) ? uamul : ublindf);
         } else if (xtrinsic & W_RING) {
             if ((xtrinsic & W_RING) == W_RING) /* both */
-                what = "rings";
+                what = "bands";
             else
                 what = simpleonames((xtrinsic & W_RINGL) ? uleft : uright);
         } else if (xtrinsic & W_WEP) {
@@ -5824,9 +5824,9 @@ item_what(int dmgtyp)
  */
 const char *const destroy_strings[][3] = {
     /* also used in trap.c */
-    { "freezes and shatters", "freeze and shatter", "shattered potion" },
-    { "boils and explodes", "boil and explode", "boiling potion" },
-    { "ignites and explodes", "ignite and explode", "exploding potion" },
+    { "freezes and shatters", "freeze and shatter", "shattered tonic" },
+    { "boils and explodes", "boil and explode", "boiling tonic" },
+    { "ignites and explodes", "ignite and explode", "exploding tonic" },
     { "catches fire and burns", "catch fire and burn", "burning scroll" },
     { "catches fire and burns", "", "burning book" },
     { "turns to dust and vanishes", "", "" },

@@ -74,10 +74,10 @@ des.engraving({ coord = { 5, 16 }, type = "engrave", text = "Let's start with th
 des.door({ coord = { 6, 16 }, state = "closed" });
 --
 des.door({ coord = { 8, 8 }, state = "closed" });
-des.engraving({ coord = { 8, 13 }, type = "engrave", text = "Try throwing this potion at something", degrade = false });
-des.object({ id = "potion of acid", spe = 0, buc = "not-cursed", coord = { 8, 13} });
-des.engraving({ coord = { 8, 7 }, type = "engrave", text = "Notice how the potion splattered all over the floor", degrade = false });
-des.engraving({ coord = { 8, 6 }, type = "engrave", text = "The dungeon in CrecelleHack can become coated in all sorts of things, including potions, grass, and more", degrade = false });
+des.engraving({ coord = { 8, 13 }, type = "engrave", text = "Try throwing this tonic at something", degrade = false });
+des.object({ id = "tonic of acid", spe = 0, buc = "not-cursed", coord = { 8, 13} });
+des.engraving({ coord = { 8, 7 }, type = "engrave", text = "Notice how the tonic splattered all over the floor", degrade = false });
+des.engraving({ coord = { 8, 6 }, type = "engrave", text = "The dungeon in CrecelleHack can become coated in all sorts of things, including tonics, grass, and more", degrade = false });
 des.door({ coord = { 8, 5 }, state = "closed" });
 --
 des.door({ coord = { 10, 5 }, state = "closed" });
@@ -94,14 +94,14 @@ des.engraving({ coord = { 15, 6 }, type = "engrave", text = "Magic Cancellation 
 des.object({ id = "cloak of protection", spe = 0, buc = "not-cursed", coord = { 15, 5 }})
 -- Niche
 des.engraving({ coord = { 17, 6 }, type = "engrave", text = "Dexterity contributes to AC instead of to-hit", degrade = false });
-des.object({ coord = { 17, 5 }, id = "potion of gain ability", buc = "blessed", quantity = math.random(3, 5) });
+des.object({ coord = { 17, 5 }, id = "tonic of gain ability", buc = "blessed", quantity = math.random(3, 5) });
 -- Niche
 des.engraving({ coord = { 19, 6 }, type = "engrave", text = "Scrolls of Genocide have been renamed to Scrolls of Erasure", degrade = false });
 des.object({ coord = { 19, 5 }, id = "scroll of light", buc = "not-cursed", name = "(Not a Real SoE)" });
 -- Niche
 des.engraving({ coord = { 21, 6 }, type = "engrave", text = "Holy water no longer blessed items", degrade = false });
 des.engraving({ coord = { 21, 5 }, type = "engrave", text = "Pay a priest 50 times your level in zorkmids instead", degrade = false });
-des.object({ coord = { 21, 5 }, id = "potion of water", buc = "blessed", quantity = math.random(3, 5) });
+des.object({ coord = { 21, 5 }, id = "tonic of water", buc = "blessed", quantity = math.random(3, 5) });
 -- Niche
 des.engraving({ coord = { 15, 8 }, type = "engrave", text = "Unlocking items are discarded after a single use", degrade = false });
 des.object({ coord = { 15, 9 }, id = "skeleton key", buc = "not-cursed" });

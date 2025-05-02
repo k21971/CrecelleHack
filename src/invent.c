@@ -3348,7 +3348,7 @@ itemactions(struct obj *otmp)
     /* q: drink item */
     if (otmp->oclass == POTION_CLASS) {
         Sprintf(buf, "Quaff (drink) %s",
-                (otmp->quan > 1L) ? "one of these potions" : "this potion");
+                (otmp->quan > 1L) ? "one of these tonics" : "this tonic");
         ia_addmenu(win, IA_QUAFF_OBJ, 'q', buf);
     }
 
@@ -5248,7 +5248,7 @@ doprring(void)
         (void) dispinv_with_action(lets, use_inuse_mode,
                                    /* note; alternate label will be ignored
                                       if 'use_inuse_mode' is False */
-                                   (ct == 1) ? "Ring" : "Rings");
+                                   (ct == 1) ? "Band" : "Bands");
     }
     return ECMD_OK;
 }
@@ -5367,7 +5367,7 @@ useupf(struct obj *obj, long numused)
  */
 static NEARDATA const char *names[] = {
     0, "Illegal objects", "Weapons", "Armor", "Rings", "Amulets", "Tools",
-    "Comestibles", "Potions", "Scrolls", "Spellbooks", "Wands", "Coins",
+    "Comestibles", "Tonics", "Scrolls", "Spellbooks", "Wands", "Coins",
     "Gems/Stones", "Boulders/Statues", "Empty Bottles", "Iron balls", "Chains", "Venoms"
 };
 static NEARDATA const char oth_symbols[] = { CONTAINED_SYM, '\0' };

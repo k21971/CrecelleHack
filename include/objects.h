@@ -86,7 +86,7 @@ GENERIC("ring",       RING_CLASS,    GENERIC_RING),    /* [4] */
 GENERIC("amulet",     AMULET_CLASS,  GENERIC_AMULET),  /* [5] */
 GENERIC("tool",       TOOL_CLASS,    GENERIC_TOOL),    /* [6] */
 GENERIC("food",       FOOD_CLASS,    GENERIC_FOOD),    /* [7] */
-GENERIC("potion",     POTION_CLASS,  GENERIC_POTION),  /* [8] */
+GENERIC("tonic",      POTION_CLASS,  GENERIC_POTION),  /* [8] */
 GENERIC("scroll",     SCROLL_CLASS,  GENERIC_SCROLL),  /* [9] */
 GENERIC("spellbook",  SPBOOK_CLASS,  GENERIC_SPBOOK),  /* [10] */
 GENERIC("wand",       WAND_CLASS,    GENERIC_WAND),    /* [11] */

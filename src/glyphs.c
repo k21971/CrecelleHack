@@ -950,7 +950,7 @@ parse_id(
                             buf2 = "scroll of ";
                         else if ((i >= POT_GAIN_ABILITY) && (i <= POT_WATER))
                             buf2 = (i == POT_WATER) ? "flask of n"
-                                                    : "potion of ";
+                                                    : "tonic of ";
                         else if ((i >= RIN_ADORNMENT)
                                  && (i <= RIN_PROTECTION_FROM_SHAPE_CHAN))
                             buf2 = "ring of ";
