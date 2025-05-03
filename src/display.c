@@ -2671,6 +2671,8 @@ map_glyphinfo(
     } else if (levl[x][y].typ == ROOM && glyph_is_cmap_a(glyph) && cansee(x, y))  {
         if (levl[x][y].submask == SM_DIRT)
             glyphinfo->gm.sym.color = CLR_BROWN;
+        if (levl[x][y].submask == SM_SAND)
+            glyphinfo->gm.sym.color = CLR_YELLOW;
     }
     if (sysopt.accessibility == 1
         && (mgflags & MG_FLAG_NOOVERRIDE) && glyph_is_pet(glyph)) {
