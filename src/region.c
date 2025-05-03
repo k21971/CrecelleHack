@@ -491,6 +491,7 @@ run_regions(void)
 
 void
 spread_bonfire(NhRegion *reg) {
+    NhRegion *newreg;
     int startx = max(0, reg->bounding_box.lx - 1);
     int starty = max(0, reg->bounding_box.ly - 1);
     int stopx = min(COLNO - 1, reg->bounding_box.hx + 1);
@@ -500,21 +501,22 @@ spread_bonfire(NhRegion *reg) {
             if (has_coating(x, y, COAT_GRASS) && !rn2(10)) {
                 remove_coating(x, y, COAT_GRASS);
                 add_coating(x, y, COAT_ASHES, 0);
-                create_bonfire(x, y, rnd(IS_RAINING ? 2 : 10), d(2, 4));
+                newreg = create_bonfire(x, y, rnd(IS_RAINING ? 2 : 10), d(2, 4));
             }
             if (has_coating(x, y, COAT_FUNGUS) && !rn2(4)) {
                 remove_coating(x, y, COAT_FUNGUS);
                 add_coating(x, y, COAT_ASHES, 0);
-                create_bonfire(x, y, rnd(IS_RAINING ? 2 : 4), d(4, 4));
+                newreg = create_bonfire(x, y, rnd(IS_RAINING ? 2 : 4), d(4, 4));
             }
             if (has_coating(x, y, COAT_POTION)
                         && levl[x][y].pindex == POT_OIL) {
                 remove_coating(x, y, COAT_POTION);
-                create_bonfire(x, y, rn1(20, 10), d(4, 4));
+                newreg = create_bonfire(x, y, rn1(20, 10), d(4, 4));
             }
             if (x == reg->bounding_box.lx && y == reg->bounding_box.ly) {
                 evaporate_potion_puddles(x, y);
             }
+            newreg->player_flags = reg->player_flags;
         }
     }
 }

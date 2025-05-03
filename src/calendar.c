@@ -387,8 +387,9 @@ weather_effects(void)
     if (CURR_WEATHER(WTH_FIRERAIN)) {
         x = rn2(COLNO);
         y = rn2(ROWNO);
-        if (isok(x, y))
-            create_bonfire(x, y, 1, 1);
+        if (isok(x, y)) {
+            clear_heros_fault(create_bonfire(x, y, 1, 1));
+        }
     }
     /* Tornados */
     if (CURR_WEATHER(WTH_TORNADO) && !rn2(150)) {
