@@ -6092,6 +6092,10 @@ passive(
             You("are jolted with electricity!");
             mdamageu(mon, tmp);
             break;
+        case AD_HONY:
+            if (canseemon(mon)) pline("Some honey drips from %s.", mon_nam(mon));
+            add_coating(mon->mx, mon->my, COAT_HONEY, 0);
+            break;
         default:
             break;
         }

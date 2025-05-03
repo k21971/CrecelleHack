@@ -2600,6 +2600,11 @@ passiveum(
             pline_mon(mtmp, "%s is jolted with your electricity!",
                       Monnam(mtmp));
             break;
+        case AD_HONY:
+            You("release some honey.");
+            add_coating(u.ux, u.uy, COAT_HONEY, 0);
+            tmp = 0;
+            break;
         default:
             tmp = 0;
             break;
