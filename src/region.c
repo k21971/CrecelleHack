@@ -516,7 +516,8 @@ spread_bonfire(NhRegion *reg) {
             if (x == reg->bounding_box.lx && y == reg->bounding_box.ly) {
                 evaporate_potion_puddles(x, y);
             }
-            newreg->player_flags = reg->player_flags;
+            if (newreg)
+                newreg->player_flags = reg->player_flags;
         }
     }
 }
