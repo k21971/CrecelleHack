@@ -6136,7 +6136,7 @@ is_boosted(int x, int y, short boost) {
         && levl[x][y].submask == SM_DIRT) {
         return TRUE;
     } else if ((boost & BST_SAND) && levl[x][y].typ == ROOM
-        && levl[x][y].submask == SM_DIRT) {
+        && levl[x][y].submask == SM_SAND) {
         return TRUE;
     } else if ((boost & BST_ROCK) && !levl[x][y].submask
                 && (levl[x][y].typ == ROOM || levl[x][y].typ == STONE)) {
