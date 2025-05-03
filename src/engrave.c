@@ -589,6 +589,14 @@ doengrave_sfx_item_WAN(struct _doengrave_ctx *de)
                     surface(u.ux, u.uy));
         }
         break;
+    case WAN_FECUNDITY:
+        if (!Blind) {
+            Sprintf(de->post_engr_text, "The bugs on the %s grow up!",
+                    surface(u.ux, u.uy));
+        }
+        makemon(&mons[PM_GRID_BUG], u.ux, u.uy, rn2(5) 
+                ? (NO_MINVENT | MM_NOMSG) : (MM_EDOG | MM_NOMSG | NO_MINVENT));
+        break;
     case WAN_POLYMORPH:
         if (de->oep) {
             if (!Blind) {

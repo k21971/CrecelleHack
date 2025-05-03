@@ -146,6 +146,10 @@
     and dwarvish weapons deal more damage but are slower.
 
 ### New Objects
+- Wand of Fecundity
+  - Causes grass to grow when zapped.
+  - Zapped monsters grow up.
+  - Zapped eggs instantly start hatching.
 - Skull
   - Derived from a monster.
 - Skull Helm

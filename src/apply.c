@@ -3950,6 +3950,7 @@ do_break_wand(struct obj *obj)
     case WAN_WISHING:
     case WAN_NOTHING:
     case WAN_LOCKING:
+    case WAN_FECUNDITY:
     case WAN_PROBING:
     case WAN_ENLIGHTENMENT:
     case WAN_SECRET_DOOR_DETECTION:

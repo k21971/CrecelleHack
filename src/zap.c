@@ -374,6 +374,14 @@ bhitm(struct monst *mtmp, struct obj *otmp)
         probe_monster(mtmp);
         learn_it = TRUE;
         break;
+    case WAN_FECUNDITY:
+        if (!mtmp->mtame || !rn2(8)) {
+            grow_up(mtmp, (struct monst *) 0);
+        }
+        wake = FALSE;
+        reveal_invis = FALSE;
+        helpful_gesture = TRUE;
+        break;
     case WAN_OPENING:
     case SPE_KNOCK:
         if (disguised_mimic && box_or_door(mtmp))
@@ -2178,9 +2186,10 @@ bhito(struct obj *obj, struct obj *otmp)
     /*
      * Some parts of this function expect the object to be on the floor
      * obj->{ox,oy} to be valid.  The exception to this (so far) is
-     * for the STONE_TO_FLESH spell.
+     * for the STONE_TO_FLESH spell and the wand of fecundity.
      */
-    if (!(obj->where == OBJ_FLOOR || otmp->otyp == SPE_STONE_TO_FLESH))
+    if (!(obj->where == OBJ_FLOOR || otmp->otyp == SPE_STONE_TO_FLESH
+         || otmp->otyp == WAN_FECUNDITY))
         impossible("bhito: obj is not floor or Stone To Flesh spell");
 
     if (obj == uball) {
@@ -2405,6 +2414,12 @@ bhito(struct obj *obj, struct obj *otmp)
                 res = 0;
             if (res)
                 learn_it = TRUE;
+            break;
+        case WAN_FECUNDITY:
+            /* kludge */
+            if (obj->otyp == EGG)
+                hatch_egg(obj_to_any(obj), svm.moves);
+            res = 0;
             break;
         case WAN_SLOW_MONSTER: /* no effect on objects */
         case SPE_SLOW_MONSTER:
@@ -2947,6 +2962,15 @@ zapyourself(struct obj *obj, boolean ordinary)
             boxlock_invent(obj);
         }
         break;
+    case WAN_FECUNDITY: {
+        struct obj *otmp, *onxt;
+        for (otmp = gi.invent; otmp; otmp = onxt) {
+            onxt = otmp->nobj;
+            if (bhito(otmp, obj))
+                learn_it = TRUE;
+        }
+        break;
+    }
     case WAN_DIGGING:
     case SPE_DIG:
     case SPE_DETECT_UNSEEN:
@@ -3294,6 +3318,13 @@ zap_updown(struct obj *obj) /* wand or spell, nonnull */
             /* down will trigger trapdoor, hole, or [spiked-] pit */
         } else if (u.dz > 0 && !u.utrap) {
             (void) openfallingtrap(&gy.youmonst, FALSE, &disclose);
+        }
+        break;
+    case WAN_FECUNDITY:
+        if (u.dz > 0) {
+            if (Blind && !uarmf) You_feel("some grass tickle your %s.", body_part(FOOT));
+            else if (!Blind) pline("Some grass grows.");
+            add_coating(x, y, COAT_GRASS, 0);
         }
         break;
     case WAN_STRIKING:
@@ -3723,6 +3754,13 @@ zap_map(
                 break;
             }
         } /* find_drawbridge */
+        if (obj->otyp == WAN_FECUNDITY) {
+            if (cansee(x, y) && !has_coating(x, y, COAT_GRASS)
+                && add_coating(x, y, COAT_GRASS, 0)) {
+                pline("You see some grass grow.");
+                learn_it = TRUE;
+            }
+        }
     } /* !u.uz */
 
     if (obj->otyp == WAN_PROBING) {
