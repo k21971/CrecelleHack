@@ -2418,7 +2418,7 @@ bhito(struct obj *obj, struct obj *otmp)
         case WAN_FECUNDITY:
             /* kludge */
             if (obj->otyp == EGG)
-                hatch_egg(obj_to_any(obj), svm.moves);
+                revive_egg(obj);
             res = 0;
             break;
         case WAN_SLOW_MONSTER: /* no effect on objects */
