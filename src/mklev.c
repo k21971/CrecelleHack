@@ -1607,6 +1607,8 @@ coat_floors(void)
                 } else if (rn2(2)) {
                     levl[x][y].submask = SM_SAND;
                 }
+                if (!Is_valley(&u.uz) && !Inhell && !rn2(7))
+                    add_coating(x, y,  COAT_GRASS, 0);
             }
         }
     }
