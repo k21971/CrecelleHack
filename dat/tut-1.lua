@@ -33,15 +33,15 @@ des.map([[
 ---------------------------------------------------------------------------
 |...|.......|.............................................................|
 |...|.......|.............................................................|
-|.---.......|.............................................................|
-|.|.|.......|.---------...................................................|
-|--.---|+|+--.|.|.|.|.|...................................................|
-|.....||.|.|---.-.-.-.--..................................................|
-|.....||.|..+..........+..................................................|
-|.....|-+------.-.-.-.--..................................................|
-|.....|...|...|.|.|.|.|...................................................|
-|.....|...|...-S-------...................................................|
-|--.---...---...|.........................................................|
+|.---.......|.............----------......................................|
+|.|.|.......|.---------...|........|......................................|
+|--.---|+|+--.|.|.|.|.|...|........|......................................|
+|.....||.|.|---.-.-.-.-----........|-----.................................|
+|.....||.|..+..........+................|.................................|
+|.....|-+------.-.-.-.-----........|-----.................................|
+|.....|...|...|.|.|.|.|...|........|......................................|
+|.....|...|...-S-------...|........|......................................|
+|--.---...---...|.........----------......................................|
 |.|.|.......|...|.........................................................|
 |.|.|.......|...|.........................................................|
 |.|.|.......|...|.........................................................|
@@ -99,10 +99,6 @@ des.object({ coord = { 17, 5 }, id = "tonic of gain ability", buc = "blessed", q
 des.engraving({ coord = { 19, 6 }, type = "engrave", text = "Scrolls of Genocide have been renamed to Scrolls of Erasure", degrade = false });
 des.object({ coord = { 19, 5 }, id = "scroll of light", buc = "not-cursed", name = "(Not a Real SoE)" });
 -- Niche
-des.engraving({ coord = { 21, 6 }, type = "engrave", text = "Holy water no longer blessed items", degrade = false });
-des.engraving({ coord = { 21, 5 }, type = "engrave", text = "Pay a priest 50 times your level in zorkmids instead", degrade = false });
-des.object({ coord = { 21, 5 }, id = "tonic of water", buc = "blessed", quantity = math.random(3, 5) });
--- Niche
 des.engraving({ coord = { 15, 8 }, type = "engrave", text = "Unlocking items are discarded after a single use", degrade = false });
 des.object({ coord = { 15, 9 }, id = "skeleton key", buc = "not-cursed" });
 des.door({ coord = { 15, 10 }, state = "locked"});
@@ -112,10 +108,19 @@ des.engraving({ coord = { 11, 16 }, type = "engrave", text = "A custom taunt can
 des.monster({ coord = { 11, 9 }, id = "mountain nymph", peaceful = 1, asleep = 1 });
 
 
-des.engraving({ coord = { 22, 7 }, type = "engrave", text = "Please note that this is not a comprehensive list of changes, merely the most important ones", degrade = false });
+des.engraving({ coord = { 22, 7 }, type = "engrave", text = "Please note that this is not a comprehensive list of changes, merely a few salient ones.", degrade = false });
 des.door({ coord = { 23, 7 }, state = "closed" });
 ----------------
-des.engraving({ coord = { 24, 7 }, type = "engrave", text = "Tutorial Under Construction...", degrade = false });
+des.engraving({ coord = { 24, 7 }, type = "engrave", text = "Welcome to the final area of the tutorial.", degrade = false });
+des.engraving({ coord = { 25, 7 }, type = "engrave", text = "Sometimes, monsters may become extra powerful if standing on terrain they favor.", degrade = false });
+des.engraving({ coord = { 26, 7 }, type = "engrave", text = "For example, elves get stronger on grass.", degrade = false});
+des.engraving({ coord = { 27, 7 }, type = "engrave", text = "This is called harmonizing.", degrade = false});
+des.monster({ coord = { 28, 7 }, id = "wolf", peaceful = 1 });
+des.monster({ coord = { 29, 7 }, id = "wolf", peaceful = 1 });
+-- This should be harmonic?
+des.object({ id = "dagger", spe = 0, coord = { 38, 7 } });
+des.engraving({ coord = { 38, 7 }, type = "engrave", text = "Some objects allow you to harmonize with specific types of terrain. Find them all!", degrade = false});
+des.engraving({ coord = { 39, 7 }, type = "engrave", text = "So ends the CrecelleHack tutorial. Go forth!", degrade = false});
 
 -- entering and leaving tutorial _branch_ now handled by core
 -- // nh.callback("cmd_before", "tutorial_cmd_before");

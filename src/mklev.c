@@ -1587,7 +1587,7 @@ coat_floors(void)
 {
     for (int x = 0; x < COLNO; x++) {
         for (int y = 0; y < ROWNO; y++) {
-            if (!IS_COATABLE(levl[x][y].typ))
+            if (!IS_COATABLE(levl[x][y].typ) || IS_STWALL(levl[x][y].typ))
                 continue;
             if (Is_juiblex_level(&u.uz) && !rn2(3))
                 add_coating(x, y, COAT_FUNGUS, 0);
