@@ -1194,6 +1194,9 @@ coat_room(struct mkroom *croom, unsigned char coat_type) {
     
     for (x = lx - 1; x <= hx + 1; x++) {
         for (y = ly - 1; y <= hy + 1; y++) {
+            if (croom->irregular && 
+                (IS_STWALL(levl[x][y].typ) || levl[x][y].typ == CORR))
+                continue;
             if ((coat_type & COAT_GRASS) != 0 &&
                 x >= lx && x <= hx && y >= ly && y <= hy) {
                 if (grass_chance ? rn2(4) : !rn2(u.uz.dlevel)) {
