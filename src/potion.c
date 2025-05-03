@@ -1861,8 +1861,8 @@ void
 potion_splatter(coordxy x, coordxy y, int otyp, int corpsenm) {
     int startx = max(x - 1, 0);
     int starty = max(y - 1, 0);
-    int stopx = min(x + 1, COLNO);
-    int stopy = min(y + 1, ROWNO);
+    int stopx = min(x + 1, COLNO - 1);
+    int stopy = min(y + 1, ROWNO - 1);
 
     for (int i = startx; i <= stopx; i++) {
         for (int j = starty; j <= stopy; j++) {
