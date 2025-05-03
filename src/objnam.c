@@ -27,6 +27,7 @@ struct _readobjnam_data {
     int tmp, tinv, tvariety, mgend;
     int wetness, gsize;
     int ftype;
+    int booster;
     boolean zombify;
     char globbuf[BUFSZ];
     char fruitbuf[BUFSZ];
@@ -38,6 +39,7 @@ staticfn void releaseobuf(char *) NONNULLARG1;
 staticfn void xcalled(char *, int, const char *, const char *);
 staticfn char *xname_flags(struct obj *, unsigned);
 staticfn char *minimal_xname(struct obj *);
+staticfn void add_boost_words(struct obj *, char *);
 staticfn void add_erosion_words(struct obj *, char *);
 staticfn char *doname_base(struct obj *obj, unsigned);
 staticfn boolean singplur_lookup(char *, char *, boolean,
@@ -1147,6 +1149,46 @@ the_unique_pm(struct permonst *ptr)
     return uniq;
 }
 
+static struct boostnam boostnams[] = {
+   { BST_GRASS, "Grass" },
+   { BST_DIRT, "Dirt" },
+   { BST_ROCK, "Rock" },
+   { BST_WATER, "Water" },
+   { BST_ASHES, "Ashes" },
+   { BST_FUNGI, "Fungi" },
+   { BST_BLOOD, "Blood" },
+   { BST_SAND, "Sand" },
+   { BST_POTION, "Potion" },
+   { BST_HONEY, "Honey" }
+};
+
+staticfn void
+add_boost_words(struct obj *obj, char *prefix)
+{
+    if (!obj->booster) return;
+    Strcat(prefix, "{");
+    for (int i = 0; i < SIZE(boostnams); i++) {
+        if (obj->booster & boostnams[i].boost_short) {
+            Sprintf(eos(prefix), "%c", boostnams[i].nam[0]);
+        }
+    }
+    Strcat(prefix, "} ");
+}
+
+void
+boost_object(struct obj *obj, short force)
+{
+    if (force) {
+        obj->booster = force;
+    } else {
+        obj->booster = 0;
+        while (1) {
+            obj->booster |= (ROLL_FROM(boostnams)).boost_short;
+            if (rn2(10)) break;
+        }
+    }
+}
+
 staticfn void
 add_erosion_words(struct obj *obj, char *prefix)
 {
@@ -1428,6 +1470,9 @@ doname_base(
         add_erosion_words(obj, prefix);
         if (known) {
             Sprintf(eos(prefix), "%+d ", obj->spe); /* sitoa(obj->spe)+" " */
+            add_boost_words(obj, prefix);
+        } else if (obj->booster) {
+            Strcat(prefix, "harmonic ");
         }
         break;
     case TOOL_CLASS:
@@ -3946,7 +3991,7 @@ readobjnam_init(char *bp, struct _readobjnam_data *d)
         = d->trapped = d->locked = d->unlocked = d->broken
         = d->open = d->closed = d->doorless /* wizard mode door */
         = d->looted /* wizard mode fountain/sink/throne/tree and grave */
-        = d->real = d->fake = 0; /* Amulet */
+        = d->real = d->fake = d->booster = 0; /* Amulet */
     d->tvariety = RANDOM_TIN;
     d->mgend = -1; /* not specified, aka random */
     d->mntmp = NON_PM;
@@ -4089,6 +4134,8 @@ readobjnam_preparse(struct _readobjnam_data *d)
                    || !strncmpi(d->bp, "cracked ", l = 8)) {
             d->eroded = 1 + d->very;
             d->very = 0;
+        } else if (!strncmpi(d->bp, "harmonic ", l = 9)) {
+            d->booster = 1;
         } else if (!strncmpi(d->bp, "corroded ", l = 9)
                    || !strncmpi(d->bp, "rotted ", l = 7)) {
             d->eroded2 = 1 + d->very;
@@ -5391,6 +5438,9 @@ readobjnam(char *bp, struct obj *no_wish)
             d.otmp->oeaten = nut;
             consume_oeaten(d.otmp, 1);
         }
+    }
+    if (d.booster && (d.otmp->oclass == WEAPON_CLASS || d.otmp->oclass == ARMOR_CLASS)) {
+        boost_object(d.otmp, 0);
     }
     d.otmp->owt = weight(d.otmp);
     if (d.very && d.otmp->otyp == HEAVY_IRON_BALL)

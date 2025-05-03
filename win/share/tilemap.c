@@ -587,6 +587,9 @@ init_tilemap(void)
     Fprintf(tilemap_file, "GLYPH_PET_OFF = %d\n", GLYPH_PET_OFF);
     Fprintf(tilemap_file, "GLYPH_PET_MALE_OFF = %d\n", GLYPH_PET_MALE_OFF);
     Fprintf(tilemap_file, "GLYPH_PET_FEM_OFF = %d\n", GLYPH_PET_FEM_OFF);
+    Fprintf(tilemap_file, "GLYPH_BOOSTED_OFF = %d\n", GLYPH_BOOSTED_OFF);
+    Fprintf(tilemap_file, "GLYPH_BOOSTED_MALE_OFF = %d\n", GLYPH_BOOSTED_MALE_OFF);
+    Fprintf(tilemap_file, "GLYPH_BOOSTED_FEM_OFF = %d\n", GLYPH_BOOSTED_FEM_OFF);
     Fprintf(tilemap_file, "GLYPH_INVIS_OFF = %d\n", GLYPH_INVIS_OFF);
     Fprintf(tilemap_file, "GLYPH_DETECT_OFF = %d\n", GLYPH_DETECT_OFF);
     Fprintf(tilemap_file, "GLYPH_DETECT_MALE_OFF = %d\n",
@@ -731,6 +734,7 @@ init_tilemap(void)
         file_entry++;
         tilemap[GLYPH_MON_FEM_OFF + i].tilenum = tilenum;
         tilemap[GLYPH_PET_FEM_OFF + i].tilenum = tilenum;
+        tilemap[GLYPH_BOOSTED_FEM_OFF + i].tilenum = tilenum;
         tilemap[GLYPH_DETECT_FEM_OFF + i].tilenum = tilenum;
         tilemap[GLYPH_RIDDEN_FEM_OFF + i].tilenum = tilenum;
 #if defined(OBTAIN_TILEMAP)
@@ -739,6 +743,9 @@ init_tilemap(void)
                  sizeof tilemap[0].name, "female %s", buf);
         Snprintf(tilemap[GLYPH_PET_FEM_OFF + i].name,
                  sizeof tilemap[0].name, "%s female %s", "pet",
+                 buf);
+        Snprintf(tilemap[GLYPH_PET_BOOSTED_OFF + i].name,
+                 sizeof tilemap[0].name, "%s female %s", "boosted",
                  buf);
         Snprintf(tilemap[GLYPH_DETECT_FEM_OFF + i].name,
                  sizeof tilemap[0].name, "%s female %s",
@@ -755,6 +762,8 @@ init_tilemap(void)
                     file_entry, tilemap[GLYPH_MON_FEM_OFF + i].name, "");
         add_tileref(tilenum, GLYPH_PET_FEM_OFF + i, monsters_file,
                     file_entry, tilemap[GLYPH_PET_FEM_OFF + i].name, "");
+        add_tileref(tilenum, GLYPH_BOOSTED_FEM_OFF + i, monsters_file,
+                    file_entry, tilemap[GLYPH_BOOSTED_FEM_OFF + i].name, "");
         add_tileref(tilenum, GLYPH_DETECT_FEM_OFF + i, monsters_file,
                     file_entry, tilemap[GLYPH_DETECT_FEM_OFF + i].name, "");
         add_tileref(tilenum, GLYPH_RIDDEN_FEM_OFF + i, monsters_file,

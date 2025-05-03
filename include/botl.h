@@ -41,8 +41,8 @@ enum statusfields {
     BL_ALIGN, BL_SCORE, BL_CAP, BL_GOLD, BL_ENE, BL_ENEMAX, /* 7..12 */
     BL_XP, BL_AC, BL_MC, BL_HD, BL_TIME, BL_HUNGER, BL_HP, /* 13..19 */
     BL_HPMAX, BL_LEVELDESC, BL_EXP, BL_CONDITION, /* 20..23 */
-    BL_VERS, BL_TOD, /* 24..25 */
-    MAXBLSTATS, /* [26] */
+    BL_VERS, BL_TOD, BL_BOOST, /* 24..26 */
+    MAXBLSTATS, /* [27] */
 };
 
 enum relationships {

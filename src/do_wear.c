@@ -2501,20 +2501,34 @@ find_ac(void)
     int uac = mons[u.umonnum].ac; /* base armor class for current form */
 
     /* armor class from worn gear */
-    if (uarm)
+    if (uarm) {
         uac -= ARM_BONUS(uarm);
-    if (uarmc)
+        uac -= (!Prone && is_boosted(u.ux, u.uy, uarm->booster) ? 3 : 0);
+    }
+    if (uarmc) {
         uac -= ARM_BONUS(uarmc);
-    if (uarmh)
+        uac -= (!Prone && is_boosted(u.ux, u.uy, uarmc->booster) ? 3 : 0);
+    }
+    if (uarmh) {
         uac -= ARM_BONUS(uarmh);
-    if (uarmf)
+        uac -= (!Prone && is_boosted(u.ux, u.uy, uarmh->booster) ? 3 : 0);
+    }
+    if (uarmf) {
         uac -= ARM_BONUS(uarmf);
-    if (uarms)
+        uac -= (!Prone && is_boosted(u.ux, u.uy, uarmf->booster) ? 3 : 0);
+    }
+    if (uarms) {
         uac -= ARM_BONUS(uarms);
-    if (uarmg)
+        uac -= (!Prone && is_boosted(u.ux, u.uy, uarms->booster) ? 3 : 0);
+    }
+    if (uarmg) {
         uac -= ARM_BONUS(uarmg);
-    if (uarmu)
+        uac -= (!Prone && is_boosted(u.ux, u.uy, uarmg->booster) ? 3 : 0);
+    }
+    if (uarmu) {
         uac -= ARM_BONUS(uarmu);
+        uac -= (!Prone && is_boosted(u.ux, u.uy, uarmu->booster) ? 3 : 0);
+    }
     if (uleft && uleft->otyp == RIN_PROTECTION)
         uac -= uleft->spe;
     if (uright && uright->otyp == RIN_PROTECTION)

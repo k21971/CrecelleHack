@@ -657,6 +657,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
         while (num--)
             obj = mksobj_at(FIRST_GLASS_GEM + rn2(NUM_GLASS_GEMS),
                             x, y, TRUE, FALSE);
+        add_coating(x, y, COAT_SHARDS, 0);
         free_mgivenname(mtmp);
         break;
     case PM_CLAY_GOLEM:
@@ -6109,4 +6110,41 @@ flash_mon(struct monst *mtmp)
     gv.viz_array[my][mx] = saveviz;
     newsym(mx, my);
 }
+
+boolean 
+is_boosted(int x, int y, short boost) {
+    if ((boost & BST_BLOOD)
+        && has_coating(x, y, COAT_BLOOD)) {
+        return TRUE;
+    } else if ((boost & (BST_POTION | BST_WATER))
+        && has_coating(x, y, COAT_POTION)) {
+        if (boost & BST_WATER) return levl[x][y].pindex == POT_WATER;
+        if (boost & BST_POTION) return levl[x][y].pindex != POT_WATER;
+    } else if ((boost & BST_GRASS)
+        && has_coating(x, y, COAT_GRASS)) {
+        return TRUE;
+    } else if ((boost & BST_ASHES)
+        && has_coating(x, y, COAT_ASHES)) {
+        return TRUE;
+    } else if ((boost & BST_FUNGI)
+        && has_coating(x, y, COAT_FUNGUS)) {
+        return TRUE;
+    } else if ((boost & BST_HONEY) && levl[x][y].typ == ROOM
+        && levl[x][y].submask == SM_HONY) {
+        return TRUE;
+    } else if ((boost & BST_DIRT) && levl[x][y].typ == ROOM
+        && levl[x][y].submask == SM_DIRT) {
+        return TRUE;
+    } else if ((boost & BST_SAND) && levl[x][y].typ == ROOM
+        && levl[x][y].submask == SM_DIRT) {
+        return TRUE;
+    } else if ((boost & BST_ROCK) 
+                && (levl[x][y].typ == ROOM || levl[x][y].typ == STONE)) {
+        return TRUE;
+    } else if ((boost & BST_ICE) && levl[x][y].typ == ICE) {
+        return TRUE;
+    }
+    return FALSE;
+}
+
 /*mon.c*/

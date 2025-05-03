@@ -5004,7 +5004,7 @@ mergable(
         || (obj->bknown != otmp->bknown && !Role_if(PM_CLERIC) &&
             (Blind || Hallucination))
         || obj->oeroded != otmp->oeroded || obj->oeroded2 != otmp->oeroded2
-        || obj->greased != otmp->greased)
+        || obj->greased != otmp->greased || obj->booster != otmp->booster)
         return FALSE;
 
     if ((erosion_matters(obj))

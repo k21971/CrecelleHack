@@ -126,7 +126,7 @@ enum levl_typ_types {
 #define IS_AIR(typ) ((typ) == AIR || (typ) == CLOUD)
 #define IS_SOFT(typ) ((typ) == AIR || (typ) == CLOUD || IS_POOL(typ))
 #define IS_WATERWALL(typ) ((typ) == WATER)
-#define IS_COATABLE(typ) (IS_STWALL(typ) || IS_DOOR(typ) || ((typ) >= ROOM && (typ) < ALTAR))
+#define IS_COATABLE(typ) (IS_STWALL(typ) || ((typ) >= IRONBARS && (typ) < ALTAR))
 /* for surface checks when it's unknown whether a drawbridge is involved;
    drawbridge_up is the spot in front of a closed drawbridge and not the
    current surface at that spot; caveat: this evaluates its arguments more
@@ -231,6 +231,8 @@ struct rm {
    that they are more easily tracked as flags. */
 #define SM_STONE 0x00
 #define SM_DIRT  0x01
+#define SM_SAND  0x02
+#define SM_HONY  0x04
 
 /* candig is used for floor trap locations so is available for overload
    on walls, doors, secret doors, and furniture */

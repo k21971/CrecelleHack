@@ -23,6 +23,8 @@
   whips, and flails can be used to trip as well.
 - Being tripped puts one into a downed state. Until one moves
   to a different location, AC and to-hit are reduced.
+- While in a prone state, all harmonic bonuses are negated. This
+  applies to both players and monsters.
 
 ### \#taunt: Taunt nearby monsters.
 - Wastes a few turns and wakes up nearby monsters.
@@ -37,12 +39,25 @@
 - Room floors can be dirt or stone. 
 - Floors can be coated with various substances, such as potions, grass,
   blood, and more.
+- These coatings interface with the harmony system.
 - All of these coatings can be interacted with in various ways, to
   various effects. Have fun!
+
+## Day-Night Cycle
+- Exactly what it sounds like! Watch your vision wax and
+  wane over time!
 
 ## GUI
 - MC is displayed on the status line as a percentage.
 - Display level names on status line.
+
+## Harmony System
+- Most monsters harmonize on a specific type of terrain. While
+  harmonizing, a monster deals double damage.
+- Harmonic weapons and armor provide massive bonuses while standing
+  on terrain that they harmonize with.
+  - Armor grants 3 bonus points of AC while harmonized.
+  - Weapons deal double damage when harmonized.
 
 ## Monsters
 
@@ -180,15 +195,6 @@
 - Dexterity contributes to AC.
 - Strength is normally the sole contributor to to-hit.
 
-### Day-Night Cycle
-- Exactly what it sounds like! Watch your vision wax and
-  wane over time!
-
-### Weather
-- Experience wind, rain, hail, and more.
-- Weather changes dynamically over time, and may impact the gameplay
-  in various ways.
-
 ### Reflection
 - Reflection does not reflect rays directly back at
   the one that fired them. Instead, the rays bounce off at a ninety degree
@@ -205,3 +211,8 @@
 ### Misc
 - Ported Hardfought's HTML Dumps and other tweaks.
 - Ported xNetHack's invweight patch. Thanks to aosdict.
+
+## Weather System
+- Experience wind, rain, hail, and more.
+- Weather changes dynamically over time, and may impact the gameplay
+  in various ways.

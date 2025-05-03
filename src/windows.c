@@ -1536,6 +1536,8 @@ mg_hl_attr(unsigned special)
         hl |= HL_INVERSE;
     if ((special & MG_BW_LAVA) && iflags.use_inverse)
         hl |= HL_INVERSE;
+    if ((special & MG_BOOST) && iflags.use_inverse)
+        hl |= HL_INVERSE;
     return hl;
 }
 
@@ -1601,7 +1603,7 @@ static const enum statusfields
     { BL_ALIGN, BL_GOLD, BL_HP, BL_HPMAX, BL_ENE, BL_ENEMAX,
       BL_AC, BL_XP, BL_EXP, BL_HD, BL_HUNGER,
       BL_CAP, BL_FLUSH, blPAD, blPAD },
-    { BL_LEVELDESC, BL_TOD, BL_TIME, BL_CONDITION, BL_FLUSH, blPAD,
+    { BL_LEVELDESC, BL_TOD, BL_BOOST, BL_TIME, BL_CONDITION, BL_FLUSH,
       blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD }
 };
 static const enum statusfields (*fieldorder)[MAX_PER_ROW];

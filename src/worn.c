@@ -654,6 +654,8 @@ find_mac(struct monst *mon)
             else
                 base -= ARM_BONUS(obj);
             /* since ARM_BONUS is positive, subtracting it increases AC */
+            if (!mon->mprone)
+                base -= is_boosted(mon->mx, mon->my, obj->booster);
         }
     }
     if (mon->mprone)

@@ -3848,7 +3848,7 @@ tty_print_glyph(
     const glyph_info *bkglyphinfo)
 {
     boolean inverse_on = FALSE, colordone = FALSE, glyphdone = FALSE;
-    boolean petattr = FALSE;
+    boolean petattr = FALSE, boostattr = FALSE;
     int ch;
     uint32 color;
     unsigned special;
@@ -3913,6 +3913,9 @@ tty_print_glyph(
         && bkglyphinfo && bkglyphinfo->framecolor != NO_COLOR) {
         ttyDisplay->framecolor = bkglyphinfo->framecolor;
         term_start_bgcolor(bkglyphinfo->framecolor);
+    } else if ((special & MG_BOOST)) {
+        term_start_attr(ATR_ULINE);
+        boostattr = TRUE;
     } else if ((special & MG_PET) != 0 && iflags.hilite_pet) {
         term_start_attr(iflags.wc2_petattr);
         petattr = TRUE;
@@ -3950,6 +3953,8 @@ tty_print_glyph(
         term_end_attr(ATR_INVERSE);
     else if (petattr)
         term_end_attr(iflags.wc2_petattr);
+    else if (boostattr)
+        term_end_attr(ATR_ULINE);
     if (iflags.use_color) {
         /* turn off color as well, turning off ATR_INVERSE may have done
           this already and if so, we won't know the current state unless
@@ -4282,8 +4287,8 @@ static const enum statusfields
     { BL_ALIGN, BL_GOLD, BL_HP, BL_HPMAX, BL_ENE, BL_ENEMAX,
       BL_AC, BL_MC, BL_XP, BL_EXP, BL_HD, BL_HUNGER,
       BL_CAP, BL_FLUSH, blPAD, blPAD },
-    { BL_LEVELDESC, BL_TOD, BL_TIME, BL_CONDITION, BL_VERS, BL_FLUSH,
-      blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD }
+    { BL_LEVELDESC, BL_TOD, BL_BOOST, BL_TIME, BL_CONDITION, BL_VERS, BL_FLUSH,
+      blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD }
 };
 static const enum statusfields (*fieldorder)[MAX_PER_ROW];
 #undef MAX_PER_ROW
@@ -4740,7 +4745,7 @@ status_sanity_check(void)
         "BL_ENE", "BL_ENEMAX", "BL_XP", "BL_AC", "BL_MC", "BL_HD",         /* 11..15 */
         "BL_TIME", "BL_HUNGER", "BL_HP", "BL_HPMAX",              /* 16..19 */
         "BL_LEVELDESC", "BL_EXP", "BL_CONDITION",                 /* 20..22 */
-        "BL_VERS", "BL_TOD",                                      /*   23..24  */
+        "BL_VERS", "BL_TOD", "BL_BOOST",                          /*   23..25  */
     };
     static boolean in_sanity_check = FALSE;
     int i;

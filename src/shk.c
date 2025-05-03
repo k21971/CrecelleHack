@@ -2910,6 +2910,10 @@ get_cost(
     if (obj->oartifact)
         tmp *= 4L;
 
+    /* harmonic objects cost significantly more */
+    if (obj->booster)
+        tmp *= 2L;
+
     /* anger surcharge should match rile_shk's, so we do it separately
        from the multiplier/divisor calculation */
     if (shkp && ESHK(shkp)->surcharge)

@@ -1245,7 +1245,10 @@ seffect_enchant_armor(struct obj **sobjp)
         /* despite being schar, it shouldn't be possible for spe to wrap
            here because it has been capped at 99 and s is quite small;
            however, might need to change s if it takes spe past 99 */
-        otmp->spe += s;
+        if (s < 0)
+            otmp->spe += s;
+        else
+            boost_object(otmp, 0);
         cap_spe(otmp); /* make sure that it doesn't exceed SPE_LIM */
         s = otmp->spe - oldspe; /* cap_spe() might have throttled 's' */
         if (s) /* skip if it got changed to 0 */

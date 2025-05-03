@@ -811,7 +811,7 @@ newgame(void)
 
     if (flags.legacy) {
         flush_screen(1);
-        com_pager(u.uroleplay.pauper ? "pauper_legacy" : "legacy");
+        com_pager("crecelle");
     }
     
     adj_midbosses();
@@ -872,8 +872,8 @@ welcome(boolean new_game) /* false => restoring an old game */
             (currentgend && gu.urole.name.f) ? gu.urole.name.f
                                              : gu.urole.name.m);
 
-    pline(new_game ? "%s %s, welcome to CrecelleHack!  You are a%s."
-                   : "%s %s, the%s, welcome back to CrecelleHack!",
+    pline(new_game ? "%s %s, welcome to CrecelleHack.  You are a%s."
+                   : "%s %s, the%s, welcome back to CrecelleHack.",
           Hello((struct monst *) 0), svp.plname, buf);
     timechange_message(new_game);
 

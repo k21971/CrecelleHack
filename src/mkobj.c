@@ -773,6 +773,7 @@ static const char *const alteration_verbs[] = {
     "cancel", "drain", "uncharge", "unbless", "uncurse", "disenchant",
     "degrade", "dilute", "erase", "burn", "neutralize", "destroy", "splatter",
     "bite", "open", "break the lock on", "rust", "rot", "tarnish", "crack",
+    "detune", 
 };
 
 /* possibly bill for an object which the player has just modified */
@@ -933,6 +934,10 @@ mksobj_init(struct obj **obj, boolean artif)
             /* mk_artifact() with otmp and A_NONE will never return NULL */
             otmp = mk_artifact(otmp, (aligntyp) A_NONE, 99, TRUE);
             *obj = otmp;
+        }
+        /* 1/10 chance of making the object harmonic. */
+        if (!rn2(10)) {
+            boost_object(otmp, 0);
         }
         fuzz_weight(otmp);
         break;
@@ -1166,6 +1171,10 @@ mksobj_init(struct obj **obj, boolean artif)
 #else
             otmp->oerodeproof = otmp->rknown = 1;
 #endif
+        }
+        /* Armor has a slightly higher chance than weapons of being harmonic */
+        if (!rn2(8)) {
+            boost_object(otmp, 0);
         }
         fuzz_weight(otmp);
         break;

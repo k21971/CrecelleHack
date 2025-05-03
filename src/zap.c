@@ -1307,6 +1307,10 @@ cancel_item(struct obj *obj)
             costly_alteration(obj, COST_CANCEL);
             obj->spe = cancelled_spe;
         }
+        if (obj->booster) {
+            costly_alteration(obj, COST_UNHARMONIZE);
+            obj->booster = 0;
+        }
         switch (obj->oclass) {
         case SCROLL_CLASS:
             costly_alteration(obj, COST_CANCEL);
@@ -5239,6 +5243,9 @@ zap_over_floor(
                         && levl[x][y].pindex == POT_HAZARDOUS_WASTE) {
                 remove_coating(x, y, COAT_POTION);
                 explode(x, y, 11, d(4, 6), 0, EXPL_NOXIOUS);
+            }
+            if (levl[x][y].typ == ROOM && levl[x][y].submask == SM_SAND) {
+                add_coating(x, y, COAT_SHARDS, 0);
             }
             evaporate_potion_puddles(x, y);
         }

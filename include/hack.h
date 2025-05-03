@@ -301,6 +301,7 @@ enum cost_alteration_types {
     COST_ROT     = 17, /* rotting attack */
     COST_CORRODE = 18, /* acid damage */
     COST_CRACK   = 19, /* damage to crystal armor */
+    COST_UNHARMONIZE = 20, /* de-harmonized an object */
 };
 
 /* used by unpaid_cost(shk.h) */

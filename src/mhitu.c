@@ -1188,7 +1188,8 @@ hitmu(struct monst *mtmp, struct attack *mattk)
 
     /*  First determine the base damage done */
     mhm.damage = d((int) mattk->damn, (int) mattk->damd);
-    if ((is_undead(mdat) || is_vampshifter(mtmp)) && midnight())
+    if (((is_undead(mdat) || is_vampshifter(mtmp)) && midnight())
+        || is_boosted(mtmp->mx, mtmp->my, mtmp->data->mboost))
         mhm.damage += d((int) mattk->damn, (int) mattk->damd); /* extra dmg */
 
     mhitm_adtyping(mtmp, mattk, &gy.youmonst, &mhm);

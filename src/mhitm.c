@@ -1025,6 +1025,9 @@ mdamagem(
     mhm.dieroll = dieroll;
     mhm.done = FALSE;
 
+    if (is_boosted(magr->mx, magr->my, magr->data->mboost))
+        mhm.damage += d((int) mattk->damn, (int) mattk->damd);
+
     if ((touch_petrifies(pd) /* or flesh_petrifies() */
          || (mattk->adtyp == AD_DGST && pd == &mons[PM_MEDUSA]))
         && !resists_ston(magr)) {

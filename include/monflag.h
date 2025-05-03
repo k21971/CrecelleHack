@@ -194,6 +194,24 @@ enum ms_sounds {
 #define MH_GNOME        M2_GNOME
 #define MH_ORC          M2_ORC
 
+/* Boosts */
+#define BST_GRASS 0x0001
+#define BST_DIRT  0x0002
+#define BST_ROCK  0x0004
+#define BST_WATER 0x0008
+#define BST_ICE   0x0010
+#define BST_ASHES 0x0020
+#define BST_FUNGI 0x0040
+#define BST_BLOOD 0x0080
+#define BST_SAND 0x0100
+#define BST_POTION 0x0200
+#define BST_HONEY  0x0400
+
+struct boostnam {
+   short boost_short;
+   const char *nam;
+};
+
 /* for mons[].geno (constant during game) */
 #define G_DAY           0x00010000 /* generated only in day */
 #define G_NIGHT         0x00008000 /* generated only in night */
