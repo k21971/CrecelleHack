@@ -1215,6 +1215,10 @@ coat_room(struct mkroom *croom, unsigned char coat_type) {
             if ((coat_type & COAT_FUNGUS) != 0) {
                 if (!rn2(max(2, abs(13 - u.uz.dlevel)))) add_coating(x, y, COAT_FUNGUS, 0);
             }
+            if (svl.level.flags.temperature == 1)
+                if (rn2(4)) add_coating(x, y, COAT_ASHES, 0);
+            if (svl.level.flags.has_swamp)
+                if (rn2(5)) add_coating(x, y, COAT_POTION, POT_WATER);
         }
     }
 }
@@ -1583,10 +1587,27 @@ coat_floors(void)
 {
     for (int x = 0; x < COLNO; x++) {
         for (int y = 0; y < ROWNO; y++) {
-            if (!IS_ROOM(levl[x][y].typ))
+            if (!IS_COATABLE(levl[x][y].typ))
                 continue;
-            if (svl.level.flags.arboreal) add_coating(x, y, COAT_GRASS, 0);
-            else if (Is_firelevel(&u.uz)) add_coating(x, y, COAT_ASHES, 0);
+            if (Is_juiblex_level(&u.uz) && !rn2(3))
+                add_coating(x, y, COAT_FUNGUS, 0);
+            if (svl.level.flags.arboreal) {
+                if (rn2(4)) {
+                    if (levl[x][y].typ == ROOM) {
+                        levl[x][y].submask = SM_DIRT;
+                    }
+                    add_coating(x, y, COAT_GRASS, 0);
+                }
+            } else if (svl.level.flags.temperature == 1) {
+                if (rn2(3))
+                    add_coating(x, y, COAT_ASHES, 0);
+            } else if (levl[x][y].typ == ROOM) {
+                if (rn2(3)) {
+                    levl[x][y].submask = SM_DIRT;
+                } else if (rn2(2)) {
+                    levl[x][y].submask = SM_SAND;
+                }
+            }
         }
     }
 }
@@ -1599,7 +1620,8 @@ level_finalize_topology(void)
 
     bound_digging();
     mineralize(-1, -1, -1, -1, FALSE);
-    coat_floors();
+    if (svl.level.flags.is_maze_lev)
+        coat_floors();
     gi.in_mklev = FALSE;
     /* avoid coordinates in future lua-loads for this level being thrown off
      * because xstart and ystart aren't saved with the level and will be 0
@@ -1611,12 +1633,14 @@ level_finalize_topology(void)
     if (svl.level.flags.has_morgue)
         svl.level.flags.graveyard = 1;
     if (!svl.level.flags.is_maze_lev) {
-        for (croom = &svr.rooms[0]; croom != &svr.rooms[svn.nroom]; croom++)
+        for (croom = &svr.rooms[0]; croom != &svr.rooms[svn.nroom]; croom++) {
 #ifdef SPECIALIZATION
             topologize(croom, FALSE);
 #else
             topologize(croom);
 #endif
+            coat_room(croom, COAT_GRASS);
+        }
     }
     set_wall_state();
     /* for many room types, svr.rooms[].rtype is zeroed once the room has been
