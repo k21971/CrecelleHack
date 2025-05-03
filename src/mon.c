@@ -6129,8 +6129,7 @@ is_boosted(int x, int y, short boost) {
     } else if ((boost & BST_FUNGI)
         && has_coating(x, y, COAT_FUNGUS)) {
         return TRUE;
-    } else if ((boost & BST_HONEY) && levl[x][y].typ == ROOM
-        && levl[x][y].submask == SM_HONY) {
+    } else if ((boost & BST_HONEY) && has_coating(x, y, COAT_HONEY)) {
         return TRUE;
     } else if ((boost & BST_DIRT) && levl[x][y].typ == ROOM
         && levl[x][y].submask == SM_DIRT) {

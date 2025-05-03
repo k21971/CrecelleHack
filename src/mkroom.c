@@ -393,9 +393,7 @@ fill_zoo(struct mkroom *sroom)
                 if (!rn2(3))
                     (void) mksobj_at(LUMP_OF_ROYAL_JELLY, sx, sy, TRUE,
                                      FALSE);
-                if (levl[sx][sy].typ == ROOM) {
-                    levl[sx][sy].submask = SM_HONY;
-                }
+                add_coating(sx, sy, COAT_HONEY, 0);
                 remove_coating(sx, sy, COAT_ALL);
                 break;
             case BARRACKS:

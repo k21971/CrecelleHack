@@ -1787,8 +1787,6 @@ surface(coordxy x, coordxy y)
         return"dirt";
     else if (levtyp == ROOM && levl[x][y].submask == SM_SAND)
         return "sand";
-    else if (levtyp == ROOM && levl[x][y].submask == SM_HONY)
-        return "honeycomb";
     else if (IS_ROOM(levtyp) && !Is_earthlevel(&u.uz))
         return "floor";
     else

@@ -2466,6 +2466,9 @@ breakobj(
                           EF_DESTROY | EF_VERBOSE) == ER_DESTROYED);
 
     switch (obj->oclass == POTION_CLASS ? POT_WATER : obj->otyp) {
+    case LUMP_OF_ROYAL_JELLY:
+        add_coating(x, y, COAT_HONEY, 0);
+        break;
     case MIRROR:
         if (hero_caused)
             change_luck(-2);
@@ -2583,6 +2586,7 @@ breaktest(struct obj *obj)
     case MELON:
     case ACID_VENOM:
     case BLINDING_VENOM:
+    case LUMP_OF_ROYAL_JELLY:
         return TRUE;
     default:
         return FALSE;
@@ -2624,6 +2628,7 @@ breakmsg(struct obj *obj, boolean in_view)
         break;
     case EGG:
     case MELON:
+    case LUMP_OF_ROYAL_JELLY:
         pline("Splat!");
         break;
     case CREAM_PIE:

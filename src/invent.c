@@ -4670,6 +4670,10 @@ dfeature_at(coordxy x, coordxy y, char *buf)
             dfeature = "patch of grass";
         else if ((lev->coat_info & COAT_ASHES) != 0)
             dfeature = "pile of ash";
+        else if ((lev->coat_info & COAT_HONEY) != 0)
+            dfeature = "smattering of honey";
+        else if ((lev->coat_info & COAT_SHARDS) != 0)
+            dfeature = "sharp dust";
     }
 
     if (cmap >= 0)

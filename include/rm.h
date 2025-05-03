@@ -149,6 +149,7 @@ enum levl_typ_types {
 #define COAT_BLOOD  0x08 /* various types of blood */
 #define COAT_FUNGUS 0x10 /* luminescent fungus */
 #define COAT_SHARDS 0x20 /* shards of glass */
+#define COAT_HONEY  0x40 /* honey */
 #define COAT_ALL 0xff
 
 /*
@@ -170,7 +171,8 @@ struct rm {
 
     /* HORRIBLE HACK INCOMING DANGER DANGER */
     Bitfield(pindex, 10);    /* This puts a hard upper limit on monster and potion types of 1024.*/
-    Bitfield(coat_info, 6);  /* Stores the info about the floor's coating. */
+    /* 6 free  bits */
+    Bitfield(coat_info, 8);  /* Stores the info about the floor's coating. */
 
     Bitfield(roomno, 6); /* room # for special rooms */
     Bitfield(edge, 1);   /* marks boundaries for special rooms*/
@@ -232,7 +234,6 @@ struct rm {
 #define SM_STONE 0x00
 #define SM_DIRT  0x01
 #define SM_SAND  0x02
-#define SM_HONY  0x04
 
 /* candig is used for floor trap locations so is available for overload
    on walls, doors, secret doors, and furniture */

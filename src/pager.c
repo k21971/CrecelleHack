@@ -605,8 +605,6 @@ floor_descr(coordxy x, coordxy y, short symidx) {
             return "dirt";
         } else if (levl[x][y].submask == SM_SAND) {
             return "sand";
-        } else if (levl[x][y].submask == SM_HONY) {
-            return "honeycomb";
         } else {
             return defsyms[symidx].explanation;
         }
@@ -626,6 +624,8 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
 
     if ((levl[x][y].coat_info & COAT_SHARDS) != 0)
         Strcat(outbuf, "glass-strewn ");
+    if ((levl[x][y].coat_info & COAT_HONEY) != 0)
+        Strcat(outbuf, "sticky ");
     if ((levl[x][y].coat_info & COAT_GRASS) != 0)
         Strcat(outbuf, "grassy ");
     if ((levl[x][y].coat_info & COAT_ASHES) != 0)

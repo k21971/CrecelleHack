@@ -1764,6 +1764,21 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
         if (!rn2(3))
             remove_coating(x, y, COAT_SHARDS);
     }
+    if (has_coating(x, y, COAT_HONEY)) {
+        if ((!Levitation && !Flying) && !rn2(3)) {
+            if (uarmf) {
+                struct obj *otmp;
+                pline("%s in some honey and yanked from your %s!",
+                        Yobjnam2(uarmf, "stick"),
+                        makeplural(body_part(FOOT)));
+                otmp = uarmf;
+                remove_worn_item(otmp, TRUE);
+                dropx(otmp);
+            } else {
+                pline("Some honey sticks to your %s.", body_part(FOOT));
+            }
+        }
+    }
     if (has_coating(x, y, COAT_BLOOD) && touch_petrifies(&mons[levl[x][y].pindex])) {
         if (isyou && !uarmf && !Stone_resistance) {
             pline("You touch %s blood with your %s.",
