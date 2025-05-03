@@ -35,7 +35,7 @@ static struct weather dungeon_precips[] = {
     { "Rain", WTH_RAIN, WTHM_ALL_PRECIPS, 100, 200 },
     { "Downburst", WTH_DOWNBURST, WTHM_ALL_PRECIPS, 50, 10 },
     { "Acid Rain", WTH_ACIDRAIN, WTHM_ALL_PRECIPS, 50, 5 },
-    { "Hail", WTH_HAIL, 20, 5, 10 },
+    { "Hail", WTH_HAIL, 0, 20, 10 },
 };
 
 static struct weather dungeon_winds[] = {
@@ -332,6 +332,8 @@ doenvirons(void)
     }
     if (!u.uenvirons.precip_cnt) {
         weatherchange_message(TRUE);
+        if (!u.uenvirons.inc_precip)
+            u.uenvirons.inc_precip = &dungeon_precips[0];
         u.uenvirons.curr_weather &= ~u.uenvirons.inc_precip->overwrite;
         u.uenvirons.curr_weather |= u.uenvirons.inc_precip->def;
         u.uenvirons.precip_cnt = rn1(u.uenvirons.inc_precip->timeout, u.uenvirons.inc_precip->timeout);
@@ -342,6 +344,8 @@ doenvirons(void)
         if (INC_WIND(WTH_TORNADO)) {
             (void) makemon(&mons[PM_TORNADO], 0, 0, NO_MM_FLAGS);
         }
+        if (!u.uenvirons.inc_wind)
+            u.uenvirons.inc_wind = &dungeon_winds[0];
         u.uenvirons.curr_weather &= ~u.uenvirons.inc_wind->overwrite;
         u.uenvirons.curr_weather |= u.uenvirons.inc_wind->def;
         u.uenvirons.wind_cnt = rn1(u.uenvirons.inc_wind->timeout, u.uenvirons.inc_wind->timeout);
