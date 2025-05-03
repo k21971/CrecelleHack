@@ -1158,7 +1158,7 @@ spawn_mirror_image(struct monst *mtmp, int x, int y) {
         makemon(&mons[PM_ILLUSION], 
         x, y, MM_NOCOUNTBIRTH | MM_ANGRY | MM_NOMSG);
     if (illusion) {
-        if (mtmp->mappearance)
+        if (mtmp->mappearance && !Protection_from_shape_changers)
             illusion->mappearance = mtmp->mappearance;
         else
             illusion->mappearance = mtmp->mnum;
