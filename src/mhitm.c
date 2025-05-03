@@ -1440,6 +1440,10 @@ passivemm(
                 pline_mon(magr, "%s is jolted with electricity!",
                           Monnam(magr));
             break;
+        case AD_HONY:
+            add_coating(mdef->mx, mdef->my, COAT_HONEY, 0);
+            tmp = 0;
+            break;
         default:
             tmp = 0;
             break;
