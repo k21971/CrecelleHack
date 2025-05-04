@@ -782,7 +782,7 @@ dochug(struct monst *mtmp)
         aggravate();
 
     /* Illusions may disappear in order to prevent flooding the level */
-    if (mdat == &mons[PM_ILLUSION] && !rn2(14))
+    if (mdat == &mons[PM_ILLUSION] && !rn2(10))
         mongone(mtmp);
 
     /* Tornados make noise */
