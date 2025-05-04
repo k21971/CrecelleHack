@@ -292,29 +292,41 @@ calc_dt_vis(void)
 void
 roll_precip(void)
 {
-    int x = rn2(1000);
+    int i;
+    int x = 0;
     int total_prob = 0;
-    for (int i = 0; i < SIZE(dungeon_precips); i++) {
+    for (i = 0; i < SIZE(dungeon_precips); i++) {
+        x += dungeon_precips[i].prob;
+    }
+    x = rn2(x);
+    for (i = 0; i < SIZE(dungeon_precips); i++) {
         total_prob += dungeon_precips[i].prob;
         if (x < total_prob) {
             u.uenvirons.inc_precip = &dungeon_precips[i];
-            break;
+            return;
         }
     }
+    panic("Like tears in the rain... (%d %d)", x, total_prob);
 }
 
 void
 roll_wind(void)
 {
-    int x = rn2(1000);
+    int i;
+    int x = 0;
     int total_prob = 0;
-    for (int i = 0; i < SIZE(dungeon_winds); i++) {
+    for (i = 0; i < SIZE(dungeon_winds); i++) {
+        x += dungeon_winds[i].prob;
+    }
+    x = rn2(x);
+    for (i = 0; i < SIZE(dungeon_winds); i++) {
         total_prob += dungeon_winds[i].prob;
         if (x < total_prob) {
-            u.uenvirons.inc_wind = &dungeon_winds[i];
-            break;
+            u.uenvirons.inc_precip = &dungeon_winds[i];
+            return;
         }
     }
+    panic("A black wind blows through you... (%d %d)", x, total_prob);
 }
 
 void
