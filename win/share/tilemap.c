@@ -699,6 +699,7 @@ init_tilemap(void)
 
         tilemap[GLYPH_MON_MALE_OFF + i].tilenum = tilenum;
         tilemap[GLYPH_PET_MALE_OFF + i].tilenum = tilenum;
+        tilemap[GLYPH_BOOSTED_MALE_OFF + i].tilenum = tilenum;
         tilemap[GLYPH_DETECT_MALE_OFF + i].tilenum = tilenum;
         tilemap[GLYPH_RIDDEN_MALE_OFF + i].tilenum = tilenum;
         tilemap[GLYPH_BODY_OFF + i].tilenum = corpsetile;
@@ -709,6 +710,8 @@ init_tilemap(void)
                  sizeof tilemap[0].name,"male %s", buf);
         Snprintf(tilemap[GLYPH_PET_MALE_OFF + i].name,
                  sizeof tilemap[0].name, "%s male %s", "pet", buf);
+        Snprintf(tilemap[GLYPH_BOOSTED_MALE_OFF + i].name,
+                 sizeof tilemap[0].name, "%s male %s", "boosted", buf);
         Snprintf(tilemap[GLYPH_DETECT_MALE_OFF + i].name,
                  sizeof tilemap[0].name, "%s male %s", "detected", buf);
         Snprintf(tilemap[GLYPH_RIDDEN_MALE_OFF + i].name,
@@ -721,6 +724,8 @@ init_tilemap(void)
                     file_entry, tilemap[GLYPH_MON_MALE_OFF + i].name, "");
         add_tileref(tilenum, GLYPH_PET_MALE_OFF + i, monsters_file,
                     file_entry, tilemap[GLYPH_PET_MALE_OFF + i].name, "");
+        add_tileref(tilenum, GLYPH_BOOSTED_MALE_OFF + i, monsters_file,
+                    file_entry, tilemap[GLYPH_BOOSTED_MALE_OFF + i].name, "");
         add_tileref(tilenum, GLYPH_DETECT_MALE_OFF + i, monsters_file,
                     file_entry, tilemap[GLYPH_DETECT_MALE_OFF + i].name,"");
         add_tileref(tilenum, GLYPH_RIDDEN_MALE_OFF + i, monsters_file,
