@@ -744,7 +744,7 @@ init_tilemap(void)
         Snprintf(tilemap[GLYPH_PET_FEM_OFF + i].name,
                  sizeof tilemap[0].name, "%s female %s", "pet",
                  buf);
-        Snprintf(tilemap[GLYPH_PET_BOOSTED_OFF + i].name,
+        Snprintf(tilemap[GLYPH_BOOSTED_OFF + i].name,
                  sizeof tilemap[0].name, "%s female %s", "boosted",
                  buf);
         Snprintf(tilemap[GLYPH_DETECT_FEM_OFF + i].name,
