@@ -4604,6 +4604,8 @@ dfeature_at(coordxy x, coordxy y, char *buf)
     const char *dfeature = 0;
     static char altbuf[BUFSZ];
     stairway *stway = stairway_at(x, y);
+    boolean listing = FALSE;
+    altbuf[0] = '\0';
 
     if (IS_DOOR(ltyp)) {
         switch (lev->doormask) {
@@ -4653,27 +4655,41 @@ dfeature_at(coordxy x, coordxy y, char *buf)
         cmap = S_tree; /* "tree" */
     else if (ltyp == IRONBARS)
         dfeature = "set of iron bars";
-    else if (IS_COATABLE(ltyp)) { 
+    else if (IS_COATABLE(ltyp)) {
+        Sprintf(altbuf, "patch of ");
         if ((lev->coat_info & COAT_POTION) != 0) {
             if (levl[x][y].pindex == POT_WATER)
-                dfeature = "puddle of water";
+                Sprintf(eos(altbuf), "water");
             else
-                Sprintf(altbuf, "puddle of %s liquid", OBJ_DESCR(objects[lev->pindex]));
-            dfeature = altbuf;
-        } else if ((lev->coat_info & COAT_BLOOD) != 0) {
+                Sprintf(eos(altbuf), "%s liquid", OBJ_DESCR(objects[lev->pindex]));
+            listing = TRUE;
+        }
+        if ((lev->coat_info & COAT_BLOOD) != 0) {
             if (ismnum(levl[x][y].pindex)) {
-                Sprintf(altbuf, "puddle of %s blood", mons[levl[x][y].pindex].pmnames[NEUTRAL]);
-                dfeature = altbuf;
+                Sprintf(eos(altbuf), "%s%s blood", listing ? " and " : "", mons[levl[x][y].pindex].pmnames[NEUTRAL]);
             } else
-                dfeature = "puddle of blood";
-        } else if ((lev->coat_info & COAT_GRASS) != 0)
-            dfeature = "patch of grass";
-        else if ((lev->coat_info & COAT_ASHES) != 0)
-            dfeature = "pile of ash";
-        else if ((lev->coat_info & COAT_HONEY) != 0)
-            dfeature = "smattering of honey";
-        else if ((lev->coat_info & COAT_SHARDS) != 0)
-            dfeature = "sharp dust";
+                Sprintf(eos(altbuf), "%sblood", listing ? " and " : "");
+            listing = TRUE;
+        }
+        if ((lev->coat_info & COAT_GRASS) != 0) {
+            Sprintf(eos(altbuf), "%sgrass", listing ? " and " : "");
+            listing = TRUE;
+        }
+        if ((lev->coat_info & COAT_ASHES) != 0) {
+            Sprintf(eos(altbuf), "%sash", listing ? " and " : "");
+            listing = TRUE;
+        }
+        if ((lev->coat_info & COAT_HONEY) != 0) {
+            Sprintf(eos(altbuf), "%shoney", listing ? " and " : "");
+            listing = TRUE;
+        }
+        if ((lev->coat_info & COAT_SHARDS) != 0) {
+            Sprintf(eos(altbuf), "%ssharp dust", listing ? " and " : "");
+            listing = TRUE;
+        }
+        Sprintf(eos(altbuf), " on the %s", surface(x, y));
+        if (listing)
+            dfeature = altbuf;
     }
 
     if (cmap >= 0)
