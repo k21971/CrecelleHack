@@ -478,7 +478,7 @@ timechange_message(boolean new_game)
                              : Hallucination
                                 ? "The morning sun has vanquished the horrible night."
                                 : "The sun crests the edge of the dungeon.",
-                     Hallucination ? "" : "It is morning.");
+                     Hallucination ? "" : " It is morning.");
     } else if (u.uenvirons.tod == TOD_EVENING) {
         if (Blind) pline("The sun beats down atop your %s.", body_part(HEAD));
         else pline("The sun passes the sky's zenith.");
