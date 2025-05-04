@@ -227,9 +227,9 @@ wiz_weather(void)
     putstr(win, 0, buf);
     Sprintf(buf, "Turns until wind change: %d", u.uenvirons.wind_cnt);
     putstr(win, 0, buf);
-    Sprintf(buf, "Next Precip: %s", u.uenvirons.inc_precip.str);
+    Sprintf(buf, "Next Precip: %s", u.uenvirons.inc_precip->str);
     putstr(win, 0, buf);
-    Sprintf(buf, "Next Wind: %s", u.uenvirons.inc_wind.str);
+    Sprintf(buf, "Next Wind: %s", u.uenvirons.inc_wind->str);
     putstr(win, 0, buf);
     Sprintf(buf, "Current Weather: %hd", u.uenvirons.curr_weather);
     putstr(win, 0, buf);

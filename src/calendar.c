@@ -297,11 +297,10 @@ roll_precip(void)
     for (int i = 0; i < SIZE(dungeon_precips); i++) {
         total_prob += dungeon_precips[i].prob;
         if (x < total_prob) {
-            u.uenvirons.inc_precip = dungeon_precips[i];
-            return;
+            u.uenvirons.inc_precip = &dungeon_precips[i];
+            break;
         }
     }
-    panic("Like tears in the rain... (%d, %d)", total_prob, x);
 }
 
 void
@@ -312,11 +311,10 @@ roll_wind(void)
     for (int i = 0; i < SIZE(dungeon_winds); i++) {
         total_prob += dungeon_winds[i].prob;
         if (x < total_prob) {
-            u.uenvirons.inc_wind = dungeon_winds[i];
-            return;
+            u.uenvirons.inc_wind = &dungeon_winds[i];
+            break;
         }
     }
-    panic("A black wind blows through you (%d, %d)", total_prob, x);
 }
 
 void
@@ -334,9 +332,11 @@ doenvirons(void)
     }
     if (!u.uenvirons.precip_cnt) {
         weatherchange_message(TRUE);
-        u.uenvirons.curr_weather &= ~u.uenvirons.inc_precip.overwrite;
-        u.uenvirons.curr_weather |= u.uenvirons.inc_precip.def;
-        u.uenvirons.precip_cnt = rn1(u.uenvirons.inc_precip.timeout, u.uenvirons.inc_precip.timeout);
+        if (!u.uenvirons.inc_precip)
+            u.uenvirons.inc_precip = &dungeon_precips[0];
+        u.uenvirons.curr_weather &= ~u.uenvirons.inc_precip->overwrite;
+        u.uenvirons.curr_weather |= u.uenvirons.inc_precip->def;
+        u.uenvirons.precip_cnt = rn1(u.uenvirons.inc_precip->timeout, u.uenvirons.inc_precip->timeout);
         roll_precip();
     }
     if (!u.uenvirons.wind_cnt) {
@@ -344,9 +344,11 @@ doenvirons(void)
         if (INC_WIND(WTH_TORNADO)) {
             (void) makemon(&mons[PM_TORNADO], 0, 0, NO_MM_FLAGS);
         }
-        u.uenvirons.curr_weather &= ~u.uenvirons.inc_wind.overwrite;
-        u.uenvirons.curr_weather |= u.uenvirons.inc_wind.def;
-        u.uenvirons.wind_cnt = rn1(u.uenvirons.inc_wind.timeout, u.uenvirons.inc_wind.timeout);
+        if (!u.uenvirons.inc_wind)
+            u.uenvirons.inc_wind = &dungeon_winds[0];
+        u.uenvirons.curr_weather &= ~u.uenvirons.inc_wind->overwrite;
+        u.uenvirons.curr_weather |= u.uenvirons.inc_wind->def;
+        u.uenvirons.wind_cnt = rn1(u.uenvirons.inc_wind->timeout, u.uenvirons.inc_wind->timeout);
         roll_wind();
     }
     weather_effects();
@@ -411,7 +413,7 @@ weatherchange_message(boolean rain)
     if (has_no_tod_cycles(&u.uz)) return;
     if (rain) {
         /* Don't do messages if the weather is continuing */
-        if (u.uenvirons.curr_weather & u.uenvirons.inc_precip.def) return;
+        if (u.uenvirons.curr_weather & u.uenvirons.inc_precip->def) return;
         /* Actually do messages */
         if (INC_PRECIP(WTH_ACIDRAIN)) {
             if (IS_RAINING) {
@@ -490,7 +492,7 @@ harassment_weather(void)
     for (int i = 0; i < SIZE(harassment_precip); i++) {
         total_prob += harassment_precip[i].prob;
         if (x < total_prob) {
-            u.uenvirons.inc_precip = harassment_precip[i];
+            u.uenvirons.inc_precip = &harassment_precip[i];
             break;
         }
     }
