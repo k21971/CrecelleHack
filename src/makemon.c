@@ -1080,6 +1080,8 @@ newmonhp(struct monst *mon, int mndx)
         mon->mhpmax = mon->mhp = golemhp(mndx);
     } else if (mon->data == &mons[PM_ILLUSION]) {
         mon->mhpmax = mon->mhp = 1;
+    } else if (mon->data == &mons[PM_TORNADO]){
+        mon->mhpmax = mon->mhp = rn1(30, 10);
     } else if (is_rider(ptr)) {
         /* we want low HP, but a high mlevel so they can attack well */
         basehp = 10; /* minimum is 1 per false (weaker) level */
