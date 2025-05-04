@@ -491,7 +491,7 @@ run_regions(void)
 
 void
 spread_bonfire(NhRegion *reg) {
-    NhRegion *newreg;
+    NhRegion *newreg = NULL;
     int startx = max(0, reg->bounding_box.lx - 1);
     int starty = max(0, reg->bounding_box.ly - 1);
     int stopx = min(COLNO - 1, reg->bounding_box.hx + 1);
@@ -516,8 +516,8 @@ spread_bonfire(NhRegion *reg) {
             if (x == reg->bounding_box.lx && y == reg->bounding_box.ly) {
                 evaporate_potion_puddles(x, y);
             }
-            if (newreg)
-                newreg->player_flags = reg->player_flags;
+            if (heros_fault(reg) && newreg)
+                set_heros_fault(newreg);
         }
     }
 }
