@@ -30,26 +30,26 @@ staticfn struct tm *getlt(void);
 staticfn void weather_effects(void);
 
 static struct weather dungeon_precips[] = {
-    { "Calm", 0, WTHM_ALL_PRECIPS, 300, 575 },
-    { "Drizzle", WTH_DRIZZLE, WTHM_ALL_PRECIPS, 200, 200 },
-    { "Rain", WTH_RAIN, WTHM_ALL_PRECIPS, 100, 200 },
-    { "Downburst", WTH_DOWNBURST, WTHM_ALL_PRECIPS, 50, 10 },
-    { "Acid Rain", WTH_ACIDRAIN, WTHM_ALL_PRECIPS, 50, 5 },
-    { "Hail", WTH_HAIL, 0, 20, 10 },
+    { 0, WTHM_ALL_PRECIPS, 300, 575 },
+    { WTH_DRIZZLE, WTHM_ALL_PRECIPS, 200, 200 },
+    { WTH_RAIN, WTHM_ALL_PRECIPS, 100, 200 },
+    { WTH_DOWNBURST, WTHM_ALL_PRECIPS, 50, 10 },
+    { WTH_ACIDRAIN, WTHM_ALL_PRECIPS, 50, 5 },
+    { WTH_HAIL, 0, 20, 10 },
 };
 
 static struct weather dungeon_winds[] = {
-    { "Calm", 0, WTHM_ALL_WINDS, 250, 400 },
-    { "Breeze", WTH_BREEZE, WTH_GUST, 300, 250 },
-    { "Wind", WTH_WIND, 0, 150, 200 },
-    { "Gust", WTH_GUST, WTH_BREEZE, 150, 100 },
-    { "Tornado", WTH_TORNADO | WTH_GUST, 0, 100, 50 }
+    { 0, WTHM_ALL_WINDS, 200, 400 },
+    { WTH_BREEZE, WTH_GUST, 300, 250 },
+    { WTH_WIND, 0, 150, 200 },
+    { WTH_GUST, WTH_BREEZE, 150, 145 },
+    { WTH_TORNADO | WTH_GUST, 0, 50, 5 }
 };
 
 static struct weather harassment_precip[] = {
-    { "Acidstorm", 0, WTH_ACIDRAIN, 100, 350 },
-    { "Firestorm", 0, WTH_FIRERAIN, 100, 350 },
-    { "Hailstorm", 0, WTH_HAIL, 100, 300 }
+    { WTH_ACIDRAIN, 0, 100, 350 },
+    { WTH_FIRERAIN, 0, 100, 350 },
+    { WTH_HAIL, 0, 100, 300 }
 };
 
 time_t
@@ -289,8 +289,7 @@ calc_dt_vis(void)
     return max(1, 3 + (amt / 100));
 }
 
-void
-roll_precip(void)
+struct weather *roll_precip(void)
 {
     int i;
     int x = 0;
@@ -302,15 +301,14 @@ roll_precip(void)
     for (i = 0; i < SIZE(dungeon_precips); i++) {
         total_prob += dungeon_precips[i].prob;
         if (x < total_prob) {
-            u.uenvirons.inc_precip = &dungeon_precips[i];
-            return;
+            u.uenvirons.inc_precip = dungeon_precips[i];
+            return &dungeon_precips[i];
         }
     }
     panic("Like tears in the rain... (%d %d)", x, total_prob);
 }
 
-void
-roll_wind(void)
+struct weather *roll_wind(void)
 {
     int i;
     int x = 0;
@@ -322,8 +320,8 @@ roll_wind(void)
     for (i = 0; i < SIZE(dungeon_winds); i++) {
         total_prob += dungeon_winds[i].prob;
         if (x < total_prob) {
-            u.uenvirons.inc_precip = &dungeon_winds[i];
-            return;
+            u.uenvirons.inc_precip = dungeon_winds[i];
+            return &dungeon_precips[i];
         }
     }
     panic("A black wind blows through you... (%d %d)", x, total_prob);
@@ -344,11 +342,9 @@ doenvirons(void)
     }
     if (!u.uenvirons.precip_cnt) {
         weatherchange_message(TRUE);
-        if (!u.uenvirons.inc_precip)
-            u.uenvirons.inc_precip = &dungeon_precips[0];
-        u.uenvirons.curr_weather &= ~u.uenvirons.inc_precip->overwrite;
-        u.uenvirons.curr_weather |= u.uenvirons.inc_precip->def;
-        u.uenvirons.precip_cnt = rn1(u.uenvirons.inc_precip->timeout, u.uenvirons.inc_precip->timeout);
+        u.uenvirons.curr_weather &= ~u.uenvirons.inc_precip.overwrite;
+        u.uenvirons.curr_weather |= u.uenvirons.inc_precip.def;
+        u.uenvirons.precip_cnt = rn1(u.uenvirons.inc_precip.timeout, u.uenvirons.inc_precip.timeout);
         roll_precip();
     }
     if (!u.uenvirons.wind_cnt) {
@@ -356,11 +352,9 @@ doenvirons(void)
         if (INC_WIND(WTH_TORNADO)) {
             (void) makemon(&mons[PM_TORNADO], 0, 0, NO_MM_FLAGS);
         }
-        if (!u.uenvirons.inc_wind)
-            u.uenvirons.inc_wind = &dungeon_winds[0];
-        u.uenvirons.curr_weather &= ~u.uenvirons.inc_wind->overwrite;
-        u.uenvirons.curr_weather |= u.uenvirons.inc_wind->def;
-        u.uenvirons.wind_cnt = rn1(u.uenvirons.inc_wind->timeout, u.uenvirons.inc_wind->timeout);
+        u.uenvirons.curr_weather &= ~u.uenvirons.inc_precip.overwrite;
+        u.uenvirons.curr_weather |= u.uenvirons.inc_precip.def;
+        u.uenvirons.wind_cnt = rn1(u.uenvirons.inc_precip.timeout, u.uenvirons.inc_precip.timeout);
         roll_wind();
     }
     weather_effects();
@@ -425,7 +419,7 @@ weatherchange_message(boolean rain)
     if (has_no_tod_cycles(&u.uz)) return;
     if (rain) {
         /* Don't do messages if the weather is continuing */
-        if (!u.uenvirons.inc_precip || (u.uenvirons.curr_weather & u.uenvirons.inc_precip->def))
+        if (u.uenvirons.curr_weather & u.uenvirons.inc_precip.def)
             return;
         /* Actually do messages */
         if (INC_PRECIP(WTH_ACIDRAIN)) {
@@ -455,7 +449,7 @@ weatherchange_message(boolean rain)
             pline("It stops raining.");
         }
     } else {
-        if (!u.uenvirons.inc_wind || (u.uenvirons.curr_weather & u.uenvirons.inc_wind->def))
+        if (u.uenvirons.curr_weather & u.uenvirons.inc_wind.def)
             return;
         if (INC_WIND(WTH_WIND) && !CURR_WEATHER(WTHM_WINDY)) {
             pline("The wind picks up.");
@@ -507,11 +501,10 @@ harassment_weather(void)
     for (int i = 0; i < SIZE(harassment_precip); i++) {
         total_prob += harassment_precip[i].prob;
         if (x < total_prob) {
-            u.uenvirons.inc_precip = &harassment_precip[i];
-            break;
+            u.uenvirons.inc_precip = harassment_precip[i];
+            return;
         }
     }
-    u.uenvirons.precip_cnt = 1;
 }
 
 /* calendar.c */
