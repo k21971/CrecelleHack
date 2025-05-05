@@ -3134,7 +3134,7 @@ Go and take strength from %d. Go and kick butt."]],
       badalign = {
          synopsis = "[Go; come back when you are worthy of %d.]",
          output = "text",
-         text = [["Unbelieveable, %p! You call yourself a face, and yet you have
+         text = [["Unbelievable, %p! You call yourself a face, and yet you have
 continually defied the expectations that all of us have for you. Forget fighting
 %n, your real battle lies within your own soul.
 
@@ -3144,7 +3144,7 @@ Get out of here, and do not come back until you are truly ready."]],
          synopsis = "[Return when you are %Ra.]",
          output = "text",
          text = [["Sorry %p, but you have to be at least %ra in order to have a chance
-aagainst %n. Get out there and start training!"]],
+against %n. Get out there and start training!"]],
       },
       discourage = {
          "\"I'd fathom you can't block this one!\"",
@@ -3233,7 +3233,7 @@ behind you, %p!"]],
          synopsis = "[\"Let's put on a show for the crowd.\"]",
          output = "text",
          text = [["%nC stands before you, laughing boisterously.
-       
+
        "So, %p, come to challenge me, eh? You've made a terrible mistake!
 
 %nC leans in close and whispers.
@@ -3299,8 +3299,7 @@ Just so you know, I'm going to bury you!"]],
          output = "text",
          text = [[%lC notices %o in your possession and smiles widely.
 
-    "You did it, %p! %n is defeated and
-     %o is yours!
+    "You did it, %p! %n is defeated and %o is yours!
 
     "Take %oh with you in your quest for the Amulet of Yendor, or
      whatever it is you're doing. I'm sure it'll come in handy.
