@@ -1939,7 +1939,7 @@ dump_headers(void)
 
     fprintf(dumphtml_file, "<!DOCTYPE html>\n");
     fprintf(dumphtml_file, "<head>\n");
-    fprintf(dumphtml_file, "<title>NetHack %s (%s)</title>\n",  version_string(vers, sizeof vers), svp.plname);
+    fprintf(dumphtml_file, "<title>CrecelleHack %s (%s)</title>\n",  version_string(vers, sizeof vers), svp.plname);
     fprintf(dumphtml_file, "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />\n");
     fprintf(dumphtml_file, "<meta name=\"generator\" content=\"CrecelleHack %s (%s)\" />\n", vers, svp.plname);
     fprintf(dumphtml_file, "<meta name=\"date\" content=\"%s\" />\n", iso8601);
