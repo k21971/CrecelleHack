@@ -135,22 +135,23 @@ Go now!  You are banished from this place.]],
       crecelle = {
          synopsis = "[%dC has chosen you to recover the Amulet of Yendor for %dI.]",
          output = "menu",
-         text = [[Late-Yendorian Style roofs with shingles that dangle like rotting teeth inhale
-the sky in sepulchral yawns, exposing the dungeon within to the ravages
-of both the elements and your senses. Among the leagues of ruined
+         text = [[Late-Yendorian-style roofs with shingles that dangle like rotting teeth
+inhale the sky in sepulchral yawns, exposing the dungeon within to the
+ravages of both the elements and your senses. Among the leagues of ruined
 corridors you catch snatches of landscape subsumed by the architectural
-mass. A vast mines, its inhabitants toiling. The glimering surface of
-an underground sea. The mminarets of a castle, improbably large.
+mass. A vast mine, its inhabitants toiling. The glimmering surface of an
+underground sea. The minarets of a castle, improbably large.
+
 According to legend, somewhere beneath the sprawl is an unassuming
-staircase. It spirals deep into the earth, where the air tuns to poison
-and even %d dares not tread. Somewhere in that hell, the
-object of your quest awaits you.
+staircase. It spirals deep into the earth, where the air turns to poison
+and even %d dares not tread. Somewhere in that hell, the object of your
+quest awaits you.
 
 As you descend toward the complex, the air is filled with the peal of
-tocsins and clang of church bells, announcing your arrival alongside
-the sun's. War has come to Yendor, and it shall not be caught
-unprepared. The cantor of bells continues, growing faint only when you
-cross the first threshold.
+tocsins and the clang of church bells, announcing your arrival alongside
+the sun's. War has come to Yendor, and it shall not be caught unprepared.
+The cantor of bells continues, growing faint only when you cross the first
+threshold.
 
 The eye of Moloch is upon you, and his song shall follow you into the deep.]],
       },
