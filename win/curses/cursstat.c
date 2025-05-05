@@ -259,7 +259,7 @@ draw_horizontal(boolean border)
           /*xspace*/ BL_STR, BL_DX, BL_CO, BL_IN, BL_WI, BL_CH,
           /*xspace*/ BL_ALIGN,
           /*xspace*/ BL_SCORE,
-          BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD },
+          BL_TOD, BL_BOOST, BL_FLUSH, blPAD, blPAD, blPAD, blPAD },
         { BL_LEVELDESC,
           /*xspace*/ BL_GOLD,
           /*xspace*/ BL_HP, BL_HPMAX,
