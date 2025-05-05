@@ -425,7 +425,8 @@ weatherchange_message(boolean rain)
     if (has_no_tod_cycles(&u.uz)) return;
     if (rain) {
         /* Don't do messages if the weather is continuing */
-        if (u.uenvirons.curr_weather & u.uenvirons.inc_precip->def) return;
+        if (!u.uenvirons.inc_precip || (u.uenvirons.curr_weather & u.uenvirons.inc_precip->def))
+            return;
         /* Actually do messages */
         if (INC_PRECIP(WTH_ACIDRAIN)) {
             if (IS_RAINING) {
@@ -454,6 +455,8 @@ weatherchange_message(boolean rain)
             pline("It stops raining.");
         }
     } else {
+        if (!u.uenvirons.inc_wind || (u.uenvirons.curr_weather & u.uenvirons.inc_wind->def))
+            return;
         if (INC_WIND(WTH_WIND) && !CURR_WEATHER(WTHM_WINDY)) {
             pline("The wind picks up.");
         }
