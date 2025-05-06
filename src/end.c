@@ -115,7 +115,7 @@ done2(void)
             schedule_goto(&u.ucamefrom, UTOTYPE_ATSTAIRS,
                           "Resuming regular play.", (char *) 0);
         disp.botl = TRUE;
-        init_weather();
+        init_environs();
         return ECMD_OK;
     }
 

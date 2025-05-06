@@ -508,7 +508,7 @@ harassment_weather(void)
 }
 
 void
-init_weather(void)
+init_environs(void)
 {
     u.uenvirons.tod_cnt = TOD_QUARTER;
     roll_precip();

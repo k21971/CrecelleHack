@@ -318,7 +318,7 @@ extern int calc_dt_vis(void);
 extern void doenvirons(void);
 extern struct weather *roll_precip(void);
 extern struct weather *roll_wind(void);
-extern void init_weather(void);
+extern void init_environs(void);
 extern const char *tod_string(void);
 extern void weatherchange_message(boolean);
 extern void timechange_message(boolean);

@@ -1030,7 +1030,7 @@ u_init(void)
     u.uz.dnum = u.uz0.dnum = 0;
     u.utotype = UTOTYPE_NONE;
 #endif /* 0 */
-    init_weather();
+    init_environs();
 
     u.uz.dlevel = 1;
     u.uz0.dlevel = 0;
