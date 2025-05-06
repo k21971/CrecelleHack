@@ -766,9 +766,25 @@ basics_enlightenment(int mode UNUSED, int final)
                 (u.uac < 0) ? "best" : "worst");
     enl_msg("Your armor class ", "is ", "was ", buf, "");
 
-    /* Are ya boosting? */
+    /* Are ya boostin', son? */
     if (u_boosted(gy.youmonst.data->mboost))
         you_are("harmonizing with your environment", "");
+    if (uwep && uwep->known && u_boosted(uwep->booster))
+        enl_msg("Your weapon ", "is ", "was ", "harmonizing with the environment", "");
+    if (uarm && uarm->known && u_boosted(uarm->booster))
+        enl_msg("Your armor ", "is ", "was ", "harmonizing with the environment", "");
+    if (uarmc && uarmc->known && u_boosted(uarmc->booster))
+        enl_msg("Your cloak ", "is ", "was ", "harmonizing with the environment", "");
+    if (uarmh && uarmh->known && u_boosted(uarmh->booster))
+        enl_msg("Your helmet ", "is ", "was ", "harmonizing with the environment", "");
+    if (uarmf && uarmf->known && u_boosted(uarmf->booster))
+        enl_msg("Your boots ", "are ", "were ", "harmonizing with the environment", "");
+    if (uarmu && uarmu->known && u_boosted(uarmu->booster))
+        enl_msg("Your undergarments ", "are ", "were ", "harmonizing with the environment", "");
+    if (uarmg && uarmg->known && u_boosted(uarmg->booster))
+        enl_msg("Your gloves ", "are ", "were ", "harmonizing with the environment", "");
+    if (uarms && uarms->known && u_boosted(uarms->booster))
+        enl_msg("Your shield ", "is ", "was ", "harmonizing with the environment", "");
 
     /* gold; similar to doprgold (#showgold) but without shop billing info;
        includes container contents, unlike status line but like doprgold */
