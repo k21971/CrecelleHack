@@ -1201,13 +1201,13 @@ coat_room(struct mkroom *croom, unsigned char coat_type) {
                 x >= lx && x <= hx && y >= ly && y <= hy) {
                 if (grass_chance ? rn2(4) : !rn2(u.uz.dlevel)) {
                     add_coating(x, y, COAT_GRASS, 0);
-                    if (levl[x][y].typ == ROOM) {
+                    if (IS_SUBMASKABLE(levl[x][y].typ)) {
                         levl[x][y].submask = SM_DIRT;
                     }
-                } else if (rn2(2) && levl[x][y].typ == ROOM) {
+                } else if (rn2(2) && IS_SUBMASKABLE(levl[x][y].typ)) {
                     levl[x][y].submask = SM_SAND;
                 }
-                if (levl[x][y].typ == ROOM &&
+                if (IS_SUBMASKABLE(levl[x][y].typ) &&
                     (!rn2(u.uz.dlevel) || croom->rtype == MORGUE)) {
                     levl[x][y].submask = SM_DIRT;
                 }
@@ -1593,7 +1593,7 @@ coat_floors(void)
                 add_coating(x, y, COAT_FUNGUS, 0);
             if (svl.level.flags.arboreal) {
                 if (rn2(4)) {
-                    if (levl[x][y].typ == ROOM) {
+                    if (IS_SUBMASKABLE(levl[x][y].typ)) {
                         levl[x][y].submask = SM_DIRT;
                     }
                     add_coating(x, y, COAT_GRASS, 0);
@@ -1601,7 +1601,7 @@ coat_floors(void)
             } else if (svl.level.flags.temperature == 1) {
                 if (rn2(3))
                     add_coating(x, y, COAT_ASHES, 0);
-            } else if (levl[x][y].typ == ROOM) {
+            } else if (IS_SUBMASKABLE(levl[x][y].typ)) {
                 if (rn2(3)) {
                     levl[x][y].submask = SM_DIRT;
                 } else if (rn2(2)) {
