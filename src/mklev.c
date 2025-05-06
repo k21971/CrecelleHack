@@ -1204,7 +1204,7 @@ coat_room(struct mkroom *croom, unsigned char coat_type) {
                     if (levl[x][y].typ == ROOM) {
                         levl[x][y].submask = SM_DIRT;
                     }
-                } else if (rn2(2)) {
+                } else if (rn2(2) && levl[x][y].typ == ROOM) {
                     levl[x][y].submask = SM_SAND;
                 }
                 if (levl[x][y].typ == ROOM &&
