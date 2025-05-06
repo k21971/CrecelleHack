@@ -507,5 +507,15 @@ harassment_weather(void)
     }
 }
 
+void
+init_weather(void)
+{
+    u.uenvirons.tod_cnt = TOD_QUARTER;
+    roll_precip();
+    roll_wind();
+    u.uenvirons.precip_cnt = rn1(400, 200);
+    u.uenvirons.wind_cnt = rn1(200, 100);
+    u.uenvirons.tod = TOD_MORNING;
+}
 /* calendar.c */
 
