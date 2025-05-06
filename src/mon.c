@@ -6150,4 +6150,14 @@ is_boosted(int x, int y, short boost) {
     return FALSE;
 }
 
+boolean
+u_boosted(short boost) {
+    return is_boosted(u.ux, u.uy, boost);
+}
+
+boolean
+mon_boosted(struct monst *mtmp, short boost) {
+    return is_boosted(mtmp->mx, mtmp->my, boost);
+}
+
 /*mon.c*/

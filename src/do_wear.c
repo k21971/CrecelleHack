@@ -2503,31 +2503,31 @@ find_ac(void)
     /* armor class from worn gear */
     if (uarm) {
         uac -= ARM_BONUS(uarm);
-        uac -= (!Prone && is_boosted(u.ux, u.uy, uarm->booster) ? 3 : 0);
+        uac -= (!Prone && u_boosted(uarm->booster) ? 3 : 0);
     }
     if (uarmc) {
         uac -= ARM_BONUS(uarmc);
-        uac -= (!Prone && is_boosted(u.ux, u.uy, uarmc->booster) ? 3 : 0);
+        uac -= (!Prone && u_boosted(uarmc->booster) ? 3 : 0);
     }
     if (uarmh) {
         uac -= ARM_BONUS(uarmh);
-        uac -= (!Prone && is_boosted(u.ux, u.uy, uarmh->booster) ? 3 : 0);
+        uac -= (!Prone && u_boosted(uarmh->booster) ? 3 : 0);
     }
     if (uarmf) {
         uac -= ARM_BONUS(uarmf);
-        uac -= (!Prone && is_boosted(u.ux, u.uy, uarmf->booster) ? 3 : 0);
+        uac -= (!Prone && u_boosted(uarmf->booster) ? 3 : 0);
     }
     if (uarms) {
         uac -= ARM_BONUS(uarms);
-        uac -= (!Prone && is_boosted(u.ux, u.uy, uarms->booster) ? 3 : 0);
+        uac -= (!Prone && u_boosted(uarms->booster) ? 3 : 0);
     }
     if (uarmg) {
         uac -= ARM_BONUS(uarmg);
-        uac -= (!Prone && is_boosted(u.ux, u.uy, uarmg->booster) ? 3 : 0);
+        uac -= (!Prone && u_boosted(uarmg->booster) ? 3 : 0);
     }
     if (uarmu) {
         uac -= ARM_BONUS(uarmu);
-        uac -= (!Prone && is_boosted(u.ux, u.uy, uarmu->booster) ? 3 : 0);
+        uac -= (!Prone && u_boosted(uarmu->booster) ? 3 : 0);
     }
     if (uleft && uleft->otyp == RIN_PROTECTION)
         uac -= uleft->spe;

@@ -446,7 +446,7 @@ look_at_monster(
         /* arbitrary reason why it isn't moving */
         Strcat(buf, ", meditating");
 
-    if (is_boosted(mtmp->mx, mtmp->my, mtmp->data->mboost))
+    if (mon_boosted(mtmp, mtmp->data->mboost))
         Strcat(buf, ", harmonizing");
     if (mtmp->mleashed)
         Strcat(buf, ", leashed to you");

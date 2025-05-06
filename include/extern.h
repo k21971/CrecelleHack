@@ -1840,6 +1840,8 @@ extern void see_nearby_monsters(void);
 extern void shieldeff_mon(struct monst *) NONNULLARG1;
 extern void flash_mon(struct monst *) NONNULLARG1;
 extern boolean is_boosted(int, int, short);
+extern boolean u_boosted(short);
+extern boolean mon_boosted(struct monst *, short);
 
 /* ### mondata.c ### */
 

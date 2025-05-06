@@ -601,7 +601,7 @@ display_monster(
                 num = petnum_to_glyph(PM_LONG_WORM_TAIL, mgendercode);
             else
                 num = pet_to_glyph(mon, rn2_on_display_rng);
-        } else if (!Hallucination && is_boosted(mon->mx, mon->my, mon->data->mboost)) {
+        } else if (!Hallucination && mon_boosted(mon, mon->data->mboost)) {
             if (worm_tail)
                 num = boosted_monnum_to_glyph(PM_LONG_WORM_TAIL, mgendercode);
             else

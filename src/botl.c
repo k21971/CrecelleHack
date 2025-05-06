@@ -830,9 +830,9 @@ bot_via_windowport(void)
 
     /* Harmony */
     hm = 0;
-    if (is_boosted(u.ux, u.uy, gy.youmonst.data->mboost))
+    if (u_boosted(gy.youmonst.data->mboost))
         hm++;
-    if (uwep && uwep->known && is_boosted(u.ux, u.uy, uwep->booster))
+    if (uwep && uwep->known && u_boosted(uwep->booster))
         hm++;
 
     if (hm)

@@ -767,7 +767,7 @@ basics_enlightenment(int mode UNUSED, int final)
     enl_msg("Your armor class ", "is ", "was ", buf, "");
 
     /* Are ya boosting? */
-    if (is_boosted(u.ux, u.uy, gy.youmonst.data->mboost))
+    if (u_boosted(gy.youmonst.data->mboost))
         you_are("harmonizing with your environment", "");
 
     /* gold; similar to doprgold (#showgold) but without shop billing info;
