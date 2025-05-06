@@ -5282,7 +5282,7 @@ zap_over_floor(
                 remove_coating(x, y, COAT_POTION);
                 explode(x, y, 11, d(4, 6), 0, EXPL_NOXIOUS);
             }
-            if (levl[x][y].typ == ROOM && levl[x][y].submask == SM_SAND) {
+            if (IS_SUBMASKABLE(levl[x][y].typ) && levl[x][y].submask == SM_SAND) {
                 add_coating(x, y, COAT_SHARDS, 0);
             }
             evaporate_potion_puddles(x, y);

@@ -2668,7 +2668,7 @@ map_glyphinfo(
         /* indicator for colorless games */
         if (!iflags.use_color)
             glyphinfo->gm.glyphflags |= MG_SURFACE;
-    } else if (levl[x][y].typ == ROOM && glyph_is_cmap_a(glyph) && cansee(x, y))  {
+    } else if (IS_SUBMASKABLE(levl[x][y].typ) && glyph_is_cmap_a(glyph) && cansee(x, y))  {
         if (levl[x][y].submask == SM_DIRT)
             glyphinfo->gm.sym.color = CLR_BROWN;
         if (levl[x][y].submask == SM_SAND)

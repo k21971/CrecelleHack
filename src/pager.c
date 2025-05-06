@@ -600,7 +600,7 @@ waterbody_name(coordxy x, coordxy y)
 /* describe the floor itself */
 staticfn const char *
 floor_descr(coordxy x, coordxy y, short symidx) {
-    if (levl[x][y].typ == ROOM) {
+    if (IS_SUBMASKABLE(levl[x][y].typ)) {
         if (levl[x][y].submask == SM_DIRT) {
             return "dirt";
         } else if (levl[x][y].submask == SM_SAND) {
