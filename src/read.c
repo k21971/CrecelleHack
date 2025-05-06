@@ -2027,6 +2027,7 @@ seffect_identify(struct obj **sobjp)
         pline("You're not carrying anything%s to be identified.",
               (is_scroll) ? " else" : "");
     }
+    disp.botl = TRUE;
 }
 
 staticfn void
