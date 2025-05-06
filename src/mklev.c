@@ -733,7 +733,7 @@ static NEARDATA const char *trap_engravings[TRAPNUM] = {
     (char *) 0,      (char *) 0,    (char *) 0,    (char *) 0, (char *) 0,
     (char *) 0,      (char *) 0,    (char *) 0,    (char *) 0,
     /* 14..16: trap door, teleport, level-teleport */
-    "Vlad was here", "ad aerarium", "ad aerarium", (char *) 0, (char *) 0,
+    "Here! - Elaisa", "Watch out! - E.", "Take a closer look. - E.", (char *) 0, (char *) 0,
     (char *) 0,      (char *) 0,    (char *) 0,    (char *) 0, (char *) 0,
     /* 24..25 */
     (char *) 0, (char *) 0,
