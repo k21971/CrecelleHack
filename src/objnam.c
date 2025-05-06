@@ -1158,7 +1158,7 @@ static struct boostnam boostnams[] = {
    { BST_FUNGI, "Fungi" },
    { BST_BLOOD, "Blood" },
    { BST_SAND, "Sand" },
-   { BST_POTION, "Potion" },
+   { BST_POTION, "Tonic" },
    { BST_HONEY, "Honey" }
 };
 

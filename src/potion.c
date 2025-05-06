@@ -3029,7 +3029,7 @@ potion_dip(struct obj *obj, struct obj *potion)
                 Sprintf(newbuf, "turns %s",
                         hcolor(OBJ_DESCR(objects[mixture])));
             if (*newbuf)
-                pline_The("%spotion%s %s.", oldbuf,
+                pline_The("%stonic%s %s.", oldbuf,
                           more_than_one ? " that you dipped into" : "",
                           newbuf);
             else

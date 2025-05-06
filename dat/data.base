@@ -661,6 +661,7 @@ boomerang
 	Elves, and Gnomes).
 	  [ The Tough Guide to Fantasyland, by Diana Wynne Jones ]
 *booze
+tonic of sleeping
 potion of sleeping
 	On waking, he found himself on the green knoll whence he had
 	first seen the old man of the glen.  He rubbed his eyes -- it
@@ -2303,6 +2304,7 @@ hachi
 	statue was erected on the station platform in his honor.  It
 	is said to bring you luck if you touch his statue.
 hallucinat*
+tonic of hallucination
 potion of hallucination
 	All at once, and without further warning, my reason forsook me
 	altogether, and I started from Fr. Moffitt's house to go to my
@@ -4305,6 +4307,7 @@ user
 #			[ theme song from "Monk" ]
 poison
 poisoned
+tonic of sickness
 potion of sickness
 *venom
 	Fate intervened. Some of us, that day, she led inexorably
@@ -4394,6 +4397,7 @@ poseido*n
 ~*sleeping
 ~*booze
 *potion*
+*tonic*
 	POTABLE, n.  Suitable for drinking.  Water is said to be
 	potable; indeed, some declare it our natural beverage,
 	although even they find it palatable only when suffering
