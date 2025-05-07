@@ -173,9 +173,10 @@
 - Two-Bladed Sword
 - Dual Axe
 
-### Door and Chest Keys
-- Unlocking tools now stack and are destroyed after use.
-- Lock picks stack.
+### Locks and Picks
+- Unlocking tools now stack.
+- Unlocking tools have a small chance of being destroyed upon use.
+  The chance is dependent upon the type of unlocking tool.
 
 ## Roles and Races
 
