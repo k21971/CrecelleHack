@@ -458,7 +458,7 @@ weatherchange_message(boolean rain)
             pline("The wind dies down.");
         }
         if (INC_WIND(WTH_TORNADO) && !Blind) {
-            pline("You see a funnel cloud touch down!");
+            urgent_pline("You see a funnel cloud touch down!");
             stop_occupation();
         }
     }
