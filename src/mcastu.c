@@ -85,7 +85,18 @@ staticfn void
 cursetxt(struct monst *mtmp, boolean undirected)
 {
     if (canseemon(mtmp) && couldsee(mtmp->mx, mtmp->my)) {
+        const char *pointer_msg; /* how do they point? */
         const char *point_msg; /* spellcasting monsters are impolite */
+
+        if (nohands(mtmp->data)) {
+            if (haseyes(mtmp->data)) {
+                pointer_msg = "looks";
+            } else {
+                pointer_msg = "wiggles";
+            }
+        } else {
+            pointer_msg = "points";
+        }
 
         if (undirected)
             point_msg = "all around, then curses";
@@ -99,7 +110,7 @@ cursetxt(struct monst *mtmp, boolean undirected)
         else
             point_msg = "at you, then curses";
 
-        pline_mon(mtmp, "%s points %s.", Monnam(mtmp), point_msg);
+        pline_mon(mtmp, "%s %s %s.", Monnam(mtmp), pointer_msg, point_msg);
     } else if ((!(svm.moves % 4) || !rn2(4))) {
         if (!Deaf)
             Norep("You hear a mumbled curse.");   /* Deaf-aware */
