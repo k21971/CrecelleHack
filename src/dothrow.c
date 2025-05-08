@@ -2575,7 +2575,7 @@ breaktest(struct obj *obj)
         return FALSE;
     if (objects[obj->otyp].oc_material == GLASS && !obj->oartifact)
         return TRUE;
-    if (obj->oclass == GEM_CLASS)
+    if (obj->oclass == GEM_CLASS && objects[obj->otyp].oc_material != MINERAL)
         return TRUE;
     switch (obj->oclass == POTION_CLASS ? POT_WATER : obj->otyp) {
     case EXPENSIVE_CAMERA:
