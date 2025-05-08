@@ -28,6 +28,7 @@
 
 staticfn struct tm *getlt(void);
 staticfn void weather_effects(void);
+staticfn void weather_messages(void);
 
 static struct weather dungeon_precips[] = {
     { 0, WTHM_ALL_PRECIPS, 300, 575 },
@@ -320,7 +321,7 @@ struct weather *roll_wind(void)
     for (i = 0; i < SIZE(dungeon_winds); i++) {
         total_prob += dungeon_winds[i].prob;
         if (x < total_prob) {
-            u.uenvirons.inc_precip = dungeon_winds[i];
+            u.uenvirons.inc_wind = dungeon_winds[i];
             return &dungeon_precips[i];
         }
     }
@@ -334,6 +335,7 @@ doenvirons(void)
     u.uenvirons.precip_cnt--;
     u.uenvirons.wind_cnt--;
     u.uenvirons.dt_vis = calc_dt_vis();
+    weather_messages();
     if (!u.uenvirons.tod_cnt) {
         u.uenvirons.tod_cnt = TOD_QUARTER;
         u.uenvirons.tod += 1;
@@ -352,9 +354,9 @@ doenvirons(void)
         if (INC_WIND(WTH_TORNADO)) {
             (void) makemon(&mons[PM_TORNADO], 0, 0, NO_MM_FLAGS);
         }
-        u.uenvirons.curr_weather &= ~u.uenvirons.inc_precip.overwrite;
-        u.uenvirons.curr_weather |= u.uenvirons.inc_precip.def;
-        u.uenvirons.wind_cnt = rn1(u.uenvirons.inc_precip.timeout, u.uenvirons.inc_precip.timeout);
+        u.uenvirons.curr_weather &= ~u.uenvirons.inc_wind.overwrite;
+        u.uenvirons.curr_weather |= u.uenvirons.inc_wind.def;
+        u.uenvirons.wind_cnt = rn1(u.uenvirons.inc_wind.timeout, u.uenvirons.inc_wind.timeout);
         roll_wind();
     }
     weather_effects();
@@ -403,6 +405,44 @@ weather_effects(void)
     }
 }
 
+staticfn void
+weather_messages(void)
+{
+    int hallu = Hallucination ? 1 : 0;
+    /* Windy winds */
+    if (CURR_WEATHER(WTH_BREEZE) && !rn2(200))
+        pline("You feel a %s breeze.",
+                (svl.level.flags.temperature == 1) ? "hot"
+                : Is_oracle_level(&u.uz) ? "strange"
+                : (svl.level.flags.temperature == -1) ? "chill" : "cool");
+    if (CURR_WEATHER(WTH_WIND) && !Deaf && !rn2(200))
+        You_hear1("the whispering of the wind.");
+    if (CURR_WEATHER(WTH_GUST) && !Deaf && !rn2(200))
+        pline("The wind is howling.");
+    /* Incoming weather messages */
+    if (INC_PRECIP(WTH_ACIDRAIN) && !CURR_WEATHER(WTH_ACIDRAIN) && !rn2(200)) {
+        static const char *const acidrain_msg[4] = {
+            "turn green", "boil",
+            "release an acrid smell", "get mean",
+        };
+        pline("The clouds are starting to %s.", acidrain_msg[rn2(3) + hallu]);
+    }
+    if (INC_PRECIP(WTH_RAIN) && !CURR_WEATHER(WTH_RAIN) && !rn2(200)) {
+        static const char *const incrain_msg[4] = {
+            "It smells like rain.", "The clouds are darkening.",
+            "A storm begins to roll in.", "Get ready for a shower!",
+        };
+        pline("%s", incrain_msg[rn2(3) + hallu]);
+    }
+    if (INC_WIND(WTH_TORNADO) && !CURR_WEATHER(WTH_TORNADO) && !rn2(200)) {
+        static const char *const tornado_msg[4] = {
+            "The sky is turning orange.", "The temperature suddenly plumets!",
+            "The clouds overhead are rotating.", "That tornado is carrying a car!",
+        };
+        pline("%s", tornado_msg[rn2(3) + hallu]);
+    }
+}
+
 const char *
 tod_string(void)
 {
@@ -418,47 +458,62 @@ weatherchange_message(boolean rain)
 {
     if (has_no_tod_cycles(&u.uz)) return;
     if (rain) {
-        /* Don't do messages if the weather is continuing */
         if (u.uenvirons.curr_weather & u.uenvirons.inc_precip.def)
             return;
-        /* Actually do messages */
-        if (INC_PRECIP(WTH_ACIDRAIN)) {
-            if (IS_RAINING) {
-                pline("The rain suddenly begins to burn your %s!", body_part(NOSE));
-                stop_occupation();
-            } else {
-                pline("It's raining acid!");
-                stop_occupation();
-            }
-        } else if (INC_PRECIP(WTH_HAIL)) {
-            pline("It starts to hail!");
-            stop_occupation();
-        } else if (INC_PRECIP(WTH_FIRERAIN)) {
-            pline("Fire falls from the sky!");
-            stop_occupation();
-        } else if (INC_PRECIP(WTH_DRIZZLE)) {
-            if (!IS_RAINING)
-                pline("It starts drizzling.");
-            else
+        /* Drizzle */
+        if (INC_PRECIP(WTH_DRIZZLE)) {
+            if (CURR_WEATHER(WTHM_ALL_PRECIPS))
                 pline("The rain lessens.");
-        } else if (INC_PRECIP(WTH_ASHES)) {
-            pline("Flakes of ash begin falling from the sky.");
-        } else if (INC_PRECIP(WTHM_RAINS) && !IS_RAINING) {
+            else
+                pline("It starts drizzling.");
+        }
+        /* Rain */
+        if (INC_PRECIP(WTH_RAIN) && !IS_RAINING) {
             pline("It starts to rain.");
         } else if (!INC_PRECIP(WTHM_RAINS) && IS_RAINING) {
             pline("It stops raining.");
         }
+        /* Hail */
+        if (INC_PRECIP(WTH_HAIL)) {
+            pline("It starts to hail!");
+            stop_occupation();
+        } else if (!INC_PRECIP(WTH_HAIL) && CURR_WEATHER(WTH_HAIL)) {
+            pline("It stops hailing.");
+        }
+        /* Weird Weather */
+        if (INC_PRECIP(WTH_DOWNBURST)) {
+            pline("The sky opens up! The rain is pounding!");
+        }
+        if (INC_PRECIP(WTH_ACIDRAIN)) {
+            if (IS_RAINING) {
+                pline("The rain suddenly begins to burn your %s!", body_part(NOSE));
+            } else {
+                pline("It's raining acid!");
+            }
+            stop_occupation();
+        }
+        if (INC_PRECIP(WTH_FIRERAIN)) {
+            pline("Fire falls from the sky!");
+            stop_occupation();
+        }
+        if (INC_PRECIP(WTH_ASHES)) {
+            pline("Flakes of ash begin falling from the sky.");
+        }
     } else {
         if (u.uenvirons.curr_weather & u.uenvirons.inc_wind.def)
             return;
-        if (INC_WIND(WTH_WIND) && !CURR_WEATHER(WTHM_WINDY)) {
+        if (INC_WIND(WTHM_WINDY) && !CURR_WEATHER(WTHM_WINDY)) {
             pline("The wind picks up.");
         }
         if (!INC_WIND(WTHM_WINDY) && CURR_WEATHER(WTHM_WINDY)) {
             pline("The wind dies down.");
         }
-        if (INC_WIND(WTH_TORNADO) && !Blind) {
-            urgent_pline("You see a funnel cloud touch down!");
+        /* Twisters */
+        if (INC_WIND(WTH_TORNADO)) {
+            if (Blind)
+                pline("The air pressure begins to fluctuate!");
+            else
+                urgent_pline("You see a funnel cloud touch down!");
             stop_occupation();
         }
     }
@@ -516,6 +571,9 @@ init_environs(void)
     u.uenvirons.precip_cnt = rn1(400, 200);
     u.uenvirons.wind_cnt = rn1(200, 100);
     u.uenvirons.tod = TOD_MORNING;
+    /* sometimes we start with a little breeze */
+    if (!rn2(2))
+        u.uenvirons.curr_weather |= WTH_BREEZE;
 }
 /* calendar.c */
 
