@@ -510,7 +510,8 @@ do_attack(struct monst *mtmp)
                 end_running(TRUE);
                 return TRUE;
             } else if (mtmp->mfrozen || helpless(mtmp)
-                       || (mtmp->data->mmove == 0 && rn2(6))) {
+                       || (mtmp->data->mmove == 0 
+                            && mtmp->data != &mons[PM_NIGHTCRUST] && rn2(6))) {
                 pline("%s doesn't seem to move!", Monnam(mtmp));
                 end_running(TRUE);
                 return TRUE;
