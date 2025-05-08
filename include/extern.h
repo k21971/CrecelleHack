@@ -317,9 +317,8 @@ extern int rt_midnight(void);
 extern int calc_dt_vis(void);
 extern void doenvirons(void);
 extern struct weather *roll_precip(void);
-extern struct weather *find_precip(short);
 extern struct weather *roll_wind(void);
-extern struct weather *find_wind(short);
+extern void init_environs(void);
 extern const char *tod_string(void);
 extern void weatherchange_message(boolean);
 extern void timechange_message(boolean);
@@ -1841,6 +1840,8 @@ extern void see_nearby_monsters(void);
 extern void shieldeff_mon(struct monst *) NONNULLARG1;
 extern void flash_mon(struct monst *) NONNULLARG1;
 extern boolean is_boosted(int, int, short);
+extern boolean u_boosted(short);
+extern boolean mon_boosted(struct monst *, short);
 
 /* ### mondata.c ### */
 

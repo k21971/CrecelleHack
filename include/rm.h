@@ -126,7 +126,8 @@ enum levl_typ_types {
 #define IS_AIR(typ) ((typ) == AIR || (typ) == CLOUD)
 #define IS_SOFT(typ) ((typ) == AIR || (typ) == CLOUD || IS_POOL(typ))
 #define IS_WATERWALL(typ) ((typ) == WATER)
-#define IS_COATABLE(typ) (IS_STWALL(typ) || ((typ) >= IRONBARS && (typ) < STAIRS))
+#define IS_COATABLE(typ) (IS_STWALL(typ) || ((typ) >= IRONBARS && (typ) < ALTAR))
+#define IS_SUBMASKABLE(typ) (typ == ROOM || typ == CORR || typ == STONE)
 /* for surface checks when it's unknown whether a drawbridge is involved;
    drawbridge_up is the spot in front of a closed drawbridge and not the
    current surface at that spot; caveat: this evaluates its arguments more
@@ -198,7 +199,7 @@ struct rm {
  * pool    |ICED_MOAT    | ICED_POOL   |            |            |            |
  * grave   |             |             |            |            | emptygrave |
  * altar   |AM_SANCTUM   | AM_SHRINE   | AM_MASK    | AM_MASK    | AM_MASK    |
- * room    |             |             |            |            | SM_DIRT    |
+ * room    |             |             |            | SM_SAND    | SM_DIRT    |
  *         |             |             |            |            |            |
  *         +-------------+-------------+------------+------------+------------+
  *

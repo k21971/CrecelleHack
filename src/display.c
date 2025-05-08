@@ -601,7 +601,7 @@ display_monster(
                 num = petnum_to_glyph(PM_LONG_WORM_TAIL, mgendercode);
             else
                 num = pet_to_glyph(mon, rn2_on_display_rng);
-        } else if (!Hallucination && is_boosted(mon->mx, mon->my, mon->data->mboost)) {
+        } else if (!Hallucination && mon_boosted(mon, mon->data->mboost)) {
             if (worm_tail)
                 num = boosted_monnum_to_glyph(PM_LONG_WORM_TAIL, mgendercode);
             else
@@ -2668,7 +2668,7 @@ map_glyphinfo(
         /* indicator for colorless games */
         if (!iflags.use_color)
             glyphinfo->gm.glyphflags |= MG_SURFACE;
-    } else if (levl[x][y].typ == ROOM && glyph_is_cmap_a(glyph) && cansee(x, y))  {
+    } else if (IS_SUBMASKABLE(levl[x][y].typ) && glyph_is_cmap_a(glyph) && cansee(x, y))  {
         if (levl[x][y].submask == SM_DIRT)
             glyphinfo->gm.sym.color = CLR_BROWN;
         if (levl[x][y].submask == SM_SAND)

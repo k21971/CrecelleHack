@@ -490,7 +490,7 @@ readmail(struct obj *otmp UNUSED)
            (suboptimal but works correctly);
            dollar sign and fractional zorkmids are inappropriate within
            nethack but are suitable for typical dysfunctional spam mail */
-        ("Buy a potion of gain level for only $19.99! "
+        ("Buy a tonic of gain level for only $19.99! "
          " Guaranteed to be blessed!"),
         /* DEVTEAM_URL will be substituted for 2nd "%s";
            terminating punctuation (formerly "!") has deliberately been

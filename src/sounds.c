@@ -228,7 +228,7 @@ dosounds(void)
             "a slow drip.", "a gurgling noise.", "dishes being washed!",
         };
         static const char *const rainy_sink_msg[3] = {
-            "water spattering.", "liquid burbling", "sinking in the rain!",
+            "water spattering.", "liquid burbling.", "sinking in the rain!",
         };
         You_hear1(IS_RAINING ? rainy_sink_msg[rn2(2) + hallu]
                              : sink_msg[rn2(2) + hallu]);
@@ -237,12 +237,6 @@ dosounds(void)
         if (get_iter_mons(throne_mon_sound))
             return;
     }
-    if (CURR_WEATHER(WTH_BREEZE) && !rn2(200))
-        You_feel("a cool breeze.");
-    if (CURR_WEATHER(WTH_WIND) && !rn2(200))
-        You_hear1("the whispering of the wind.");
-    if (CURR_WEATHER(WTH_GUST) && !rn2(200))
-        You_hear1("the wind howling.");
     if (svl.level.flags.has_swamp && !rn2(200)) {
         static const char *const swamp_msg[3] = {
             "hear mosquitoes!", "smell marsh gas!", /* so it's a smell...*/
@@ -1071,7 +1065,7 @@ domonnoise(struct monst *mtmp)
                 t->tseen = 1;
             verbl_msg = "I'm trapped!";
         } else if (mtmp->mhp < mtmp->mhpmax / 2)
-            pline_msg = "asks for a potion of healing.";
+            pline_msg = "asks for a tonic of healing.";
         else if (mtmp->mtame && !mtmp->isminion
                  && svm.moves > EDOG(mtmp)->hungrytime)
             verbl_msg = "I'm hungry.";

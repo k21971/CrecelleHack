@@ -1764,7 +1764,7 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
         if (!rn2(3))
             remove_coating(x, y, COAT_SHARDS);
     }
-    if (has_coating(x, y, COAT_HONEY)) {
+    if (isyou && has_coating(x, y, COAT_HONEY)) {
         if ((!Levitation && !Flying) && !rn2(3)) {
             if (uarmf) {
                 struct obj *otmp;
@@ -3029,7 +3029,7 @@ potion_dip(struct obj *obj, struct obj *potion)
                 Sprintf(newbuf, "turns %s",
                         hcolor(OBJ_DESCR(objects[mixture])));
             if (*newbuf)
-                pline_The("%spotion%s %s.", oldbuf,
+                pline_The("%stonic%s %s.", oldbuf,
                           more_than_one ? " that you dipped into" : "",
                           newbuf);
             else

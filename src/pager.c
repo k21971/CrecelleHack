@@ -446,7 +446,7 @@ look_at_monster(
         /* arbitrary reason why it isn't moving */
         Strcat(buf, ", meditating");
 
-    if (is_boosted(mtmp->mx, mtmp->my, mtmp->data->mboost))
+    if (mon_boosted(mtmp, mtmp->data->mboost))
         Strcat(buf, ", harmonizing");
     if (mtmp->mleashed)
         Strcat(buf, ", leashed to you");
@@ -600,7 +600,7 @@ waterbody_name(coordxy x, coordxy y)
 /* describe the floor itself */
 staticfn const char *
 floor_descr(coordxy x, coordxy y, short symidx) {
-    if (levl[x][y].typ == ROOM) {
+    if (IS_SUBMASKABLE(levl[x][y].typ)) {
         if (levl[x][y].submask == SM_DIRT) {
             return "dirt";
         } else if (levl[x][y].submask == SM_SAND) {

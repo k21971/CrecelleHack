@@ -830,17 +830,15 @@ bot_via_windowport(void)
 
     /* Harmony */
     hm = 0;
-    if (is_boosted(u.ux, u.uy, gy.youmonst.data->mboost))
+    if (u_boosted(gy.youmonst.data->mboost))
         hm++;
-    if (uwep && is_boosted(u.ux, u.uy, uwep->booster))
+    if (uwep && uwep->known && u_boosted(uwep->booster))
         hm++;
-    if (hm == 2) {
-        Strcpy(gb.blstats[idx][BL_BOOST].val, "Clarity"); 
-    } else if (hm) {
-        Strcpy(gb.blstats[idx][BL_BOOST].val, "Harmony");
-    } else {
-        Strcpy(gb.blstats[idx][BL_BOOST].val, "Discord");
-    }
+
+    if (hm)
+        Sprintf(gb.blstats[idx][BL_BOOST].val, "Hmny%s", (hm == 2) ? "+" : "");
+    else
+        strcpy(gb.blstats[idx][BL_BOOST].val, "Discord");
 
     /* Score */
     gb.blstats[idx][BL_SCORE].a.a_long =

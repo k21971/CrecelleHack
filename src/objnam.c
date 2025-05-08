@@ -1158,7 +1158,7 @@ static struct boostnam boostnams[] = {
    { BST_FUNGI, "Fungi" },
    { BST_BLOOD, "Blood" },
    { BST_SAND, "Sand" },
-   { BST_POTION, "Potion" },
+   { BST_POTION, "Tonic" },
    { BST_HONEY, "Honey" }
 };
 
@@ -1743,11 +1743,11 @@ doname_base(
         if (with_price && bp_eos[-1] == ')')
             ConcatF1(bp, 1, 
                      wizard ? ", %u aum)" : ", {%u})",
-                     obj->owt);
+                     (obj->otyp == LOADSTONE && !obj->bknown) ? 10 : obj->owt);
         else
             ConcatF1(bp, 0,
                      wizard ? " (%u aum)" : " {%u}", 
-                     obj->owt);
+                     (obj->otyp == LOADSTONE && !obj->bknown) ? 10 : obj->owt);
 
         /* ConcatF1(bp) updates bp_eos and bpspaceleft but we're done
            with them now; add a fake use so compiler won't complain

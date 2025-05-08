@@ -5282,7 +5282,7 @@ zap_over_floor(
                 remove_coating(x, y, COAT_POTION);
                 explode(x, y, 11, d(4, 6), 0, EXPL_NOXIOUS);
             }
-            if (levl[x][y].typ == ROOM && levl[x][y].submask == SM_SAND) {
+            if (IS_SUBMASKABLE(levl[x][y].typ) && levl[x][y].submask == SM_SAND) {
                 add_coating(x, y, COAT_SHARDS, 0);
             }
             evaporate_potion_puddles(x, y);
@@ -6260,12 +6260,12 @@ wishcmdassist(int triesleft)
         wishinfo[] = {
   "Wish details:",
   "",
-  "Enter the name of an object, such as \"potion of monster detection\",",
+  "Enter the name of an object, such as \"tonic of monster detection\",",
   "\"scroll labeled README\", \"elven mithril-coat\", or \"Grimtooth\"",
   "(without the quotes).",
   "",
   "For object types which come in stacks, you may specify a plural name",
-  "such as \"potions of healing\", or specify a count, such as \"1000 gold",
+  "such as \"tonics of healing\", or specify a count, such as \"1000 gold",
   "pieces\", although that aspect of your wish might not be granted.",
   "",
   "You may also specify various prefix values which might be used to",

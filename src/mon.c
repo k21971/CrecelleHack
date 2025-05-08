@@ -6131,22 +6131,33 @@ is_boosted(int x, int y, short boost) {
         return TRUE;
     } else if ((boost & BST_HONEY) && has_coating(x, y, COAT_HONEY)) {
         return TRUE;
-    } else if ((boost & BST_DIRT) && levl[x][y].typ == ROOM
+    } else if ((boost & BST_DIRT) && IS_SUBMASKABLE(levl[x][y].typ)
         && !levl[x][y].coat_info
         && levl[x][y].submask == SM_DIRT) {
         return TRUE;
-    } else if ((boost & BST_SAND) && levl[x][y].typ == ROOM
+    } else if ((boost & BST_SAND) && IS_SUBMASKABLE(levl[x][y].typ)
         && !levl[x][y].coat_info
         && levl[x][y].submask == SM_SAND) {
         return TRUE;
-    } else if ((boost & BST_ROCK) && !levl[x][y].submask
+    } else if (((boost & BST_ROCK)
+                && !levl[x][y].submask
                 && !levl[x][y].coat_info
-                && (levl[x][y].typ == ROOM || levl[x][y].typ == STONE)) {
+                && IS_SUBMASKABLE(levl[x][y].typ)) || levl[x][y].typ == STONE) {
         return TRUE;
     } else if ((boost & BST_ICE) && levl[x][y].typ == ICE && !levl[x][y].coat_info) {
         return TRUE;
     }
     return FALSE;
+}
+
+boolean
+u_boosted(short boost) {
+    return is_boosted(u.ux, u.uy, boost);
+}
+
+boolean
+mon_boosted(struct monst *mtmp, short boost) {
+    return is_boosted(mtmp->mx, mtmp->my, boost);
 }
 
 /*mon.c*/

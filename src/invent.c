@@ -3209,7 +3209,7 @@ itemactions(struct obj *otmp)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', buf);
     } else if (otmp->oclass == POTION_CLASS) {
         /* FIXME? this should probably be moved to 'D' rather than be 'a' */
-        Sprintf(buf, "Dip something into %s potion%s",
+        Sprintf(buf, "Dip something into %s tonic%s",
                 is_plural(otmp) ? "one of these" : "this", plur(otmp->quan));
         ia_addmenu(win, IA_DIP_OBJ, 'a', buf);
     } else if (otmp->otyp == EXPENSIVE_CAMERA)

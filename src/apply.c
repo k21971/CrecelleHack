@@ -1730,7 +1730,7 @@ light_cocktail(struct obj **optr)
     if (split1off)
         obj = splitobj(obj, 1L);
 
-    You("light %spotion.%s", shk_your(buf, obj),
+    You("light %stonic.%s", shk_your(buf, obj),
         Blind ? "" : "  It gives off a dim light.");
 
     if (obj->unpaid && costly_spot(u.ux, u.uy)) {

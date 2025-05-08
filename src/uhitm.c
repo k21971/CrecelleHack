@@ -4851,11 +4851,11 @@ damageum(
     }
 
     /* If boosted, multiply damage */
-    if (is_boosted(u.ux, u.uy, gy.youmonst.data->mboost))
+    if (u_boosted(gy.youmonst.data->mboost))
         mhm.damage += d((int) mattk->damn, (int) mattk->damd);
 
     if (mattk->aatyp == AT_WEAP && uwep 
-        && is_boosted(u.ux, u.uy, uwep->booster)) {
+        && u_boosted(uwep->booster)) {
         mhm.damage += d((int) mattk->damn, (int) mattk->damd);
     }
 

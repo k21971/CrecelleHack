@@ -1030,12 +1030,7 @@ u_init(void)
     u.uz.dnum = u.uz0.dnum = 0;
     u.utotype = UTOTYPE_NONE;
 #endif /* 0 */
-    u.uenvirons.tod_cnt = TOD_QUARTER;
-    roll_precip();
-    roll_wind();
-    u.uenvirons.precip_cnt = rn1(400, 200);
-    u.uenvirons.wind_cnt = rn1(200, 100);
-    u.uenvirons.tod = TOD_MORNING;
+    init_environs();
 
     u.uz.dlevel = 1;
     u.uz0.dlevel = 0;
