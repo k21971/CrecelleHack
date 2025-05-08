@@ -1764,7 +1764,7 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
         if (!rn2(3))
             remove_coating(x, y, COAT_SHARDS);
     }
-    if (has_coating(x, y, COAT_HONEY)) {
+    if (isyou && has_coating(x, y, COAT_HONEY)) {
         if ((!Levitation && !Flying) && !rn2(3)) {
             if (uarmf) {
                 struct obj *otmp;
