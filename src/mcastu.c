@@ -784,7 +784,7 @@ cast_monster_spell(struct monst *mtmp, int dmg, int spellnum)
             choose_stairs(&sx, &sy, (mtmp->m_id % 2));
             mnearto(mtmp, sx, sy, TRUE, RLOC_NOMSG);
             /* Leave behind an illusory duplicate (maybe) */
-            if (rn2(mtmp->m_lev) < 20) {
+            if (!Protection_from_shape_changers && rn2(mtmp->m_lev) < 20) {
                 spawn_mirror_image(mtmp, ox, oy);
             }
         }
@@ -1118,7 +1118,8 @@ spell_would_be_useless(struct monst *mtmp, int spellnum)
             return rn2(100) ? TRUE : FALSE;
     }
     /* Cannot disguise if protected */
-    if (Protection_from_shape_changers && spellnum == MCU_DISGUISE)
+    if (Protection_from_shape_changers
+        && (spellnum == MCU_DISGUISE || spellnum == MCU_MIRROR_IMAGE))
         return TRUE;
     if (mtmp->mpeaceful && spellnum == MCU_INSECTS)
         return TRUE;
