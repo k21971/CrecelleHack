@@ -1268,7 +1268,7 @@ mksobj(int otyp, boolean init, boolean artif)
         otmp->fromsink = 0;
         do {
             otmp->corpsenm = rndmonnum();
-        } while (!has_blood(&mons[otmp->corpsenm]))
+        } while (!has_blood(&mons[otmp->corpsenm]));
         FALLTHROUGH;
         /*FALLTHRU*/
     case SKULL:
