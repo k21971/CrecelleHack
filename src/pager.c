@@ -617,11 +617,13 @@ floor_descr(coordxy x, coordxy y, short symidx) {
 staticfn char *
 coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
     char buf[BUFSZ];
+    int pindex;
     if (!levl[x][y].coat_info) {
         Strcpy(outbuf, floor_descr(x, y, symidx));
         return outbuf;
     }
 
+    pindex = levl[x][y].pindex;
     if ((levl[x][y].coat_info & COAT_SHARDS) != 0)
         Strcat(outbuf, "glass-strewn ");
     if ((levl[x][y].coat_info & COAT_HONEY) != 0)
@@ -633,12 +635,13 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
     if ((levl[x][y].coat_info & COAT_FUNGUS) != 0)
         Strcat(outbuf, "fungus-encrusted ");
     if ((levl[x][y].coat_info & COAT_POTION) != 0
-         && levl[x][y].pindex == POT_WATER)
+         && pindex == POT_WATER)
             Strcat(outbuf, "wet ");
-
-    if ((levl[x][y].coat_info & COAT_POTION) != 0
-         && levl[x][y].pindex != POT_WATER)
-        Sprintf(buf, "%s covered in %s liquid", floor_descr(x, y, symidx), OBJ_DESCR(objects[levl[x][y].pindex]));
+    
+    if ((levl[x][y].coat_info & COAT_POTION) != 0 && pindex != POT_WATER)
+        Sprintf(buf, "%s covered in %s %s", floor_descr(x, y, symidx),
+                objects[pindex].oc_name_known ? OBJ_NAME(objects[pindex]) : OBJ_DESCR(objects[pindex]),
+                objects[pindex].oc_name_known ? "tonic" : "liquid");
     else if ((levl[x][y].coat_info & COAT_BLOOD) != 0) {
         if (ismnum(levl[x][y].pindex))
             Sprintf(buf, "%s covered in %s blood", floor_descr(x, y, symidx),  mons[levl[x][y].pindex].pmnames[NEUTRAL]);

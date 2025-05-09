@@ -4660,6 +4660,8 @@ dfeature_at(coordxy x, coordxy y, char *buf)
         if ((lev->coat_info & COAT_POTION) != 0) {
             if (levl[x][y].pindex == POT_WATER)
                 Sprintf(eos(altbuf), "water");
+            else if (levl[x][y].pindex > 0 && objects[levl[x][y].pindex].oc_name_known)
+                Sprintf(eos(altbuf), "%s tonic", OBJ_NAME(objects[lev->pindex]));
             else
                 Sprintf(eos(altbuf), "%s liquid", OBJ_DESCR(objects[lev->pindex]));
             listing = TRUE;
