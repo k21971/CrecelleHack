@@ -837,8 +837,6 @@ bot_via_windowport(void)
 
     if (hm)
         Sprintf(gb.blstats[idx][BL_BOOST].val, "Hmny%s", (hm == 2) ? "+" : "");
-    else
-        strcpy(gb.blstats[idx][BL_BOOST].val, "Discord");
 
     /* Score */
     gb.blstats[idx][BL_SCORE].a.a_long =
@@ -3936,7 +3934,7 @@ status_hilite_menu_add(int origfld)
                 "Night", "Midnight"
             };
             int rv = query_arrayvalue(qry_buf,
-                                      todtxt, 0, 2 + 1);
+                                      todtxt, 0, 5);
 
             if (rv < 0)
                 goto choose_behavior;
@@ -3945,10 +3943,10 @@ status_hilite_menu_add(int origfld)
             Strcpy(hilite.textmatch, todtxt[rv]);
         } else if (fld == BL_BOOST) {
             static const char *const boost_txt[] = {
-                "Harmony", "Discord"
+                (char *) 0, "Hmny", "Hmny+"
             };
             int rv = query_arrayvalue(qry_buf,
-                                      boost_txt, 0, 2 + 1);
+                                      boost_txt, 0, 3);
 
             if (rv < 0)
                 goto choose_behavior;
