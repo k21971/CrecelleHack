@@ -6004,7 +6004,6 @@ adj_midbosses(void)
             pm->geno |= G_MIDBOSS;
         }
     }
-
 }
 
 /* make erinyes more dangerous based on your alignment abuse */

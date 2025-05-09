@@ -339,7 +339,7 @@ dosounds(void)
             };
             static const char *const rainy_shop_msg[3] = {
                 "someone cursing the rain.",
-                "a tarp being aired out.", "A rainy day sale!",
+                "a tarp being aired out.", "a rainy day sale!",
             };
             You_hear1(IS_RAINING ? rainy_shop_msg[rn2(2) + hallu]
                                  : shop_msg[rn2(2) + hallu]);

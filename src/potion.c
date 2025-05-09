@@ -1738,9 +1738,10 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
     if (has_coating(x, y, COAT_SHARDS)) {
         if (isyou) {
             if (uarmf) {
-                pline("Shards of glass crunch under your %s.", xname(uarmf));
+                pline("Shards of glass crunch under %s.",
+                    yobjnam(uarmf, (const char *) 0));
             } else if (thick_skinned(mon->data)) {
-                pline("Shards of glass crunch under you.");
+                pline("Shards of glass crunch under your %s.", makeplural(body_part(FOOT)));
             } else {
                 if (u.uhp > 1) u.uhp--;
                 pline("Your %s are cut by shards of glass!", makeplural(body_part(FOOT)));
@@ -2339,10 +2340,12 @@ potionbreathe(struct obj *obj)
             Your1(vision_clears);
         break;
     case POT_BLOOD:
-        You("catch a whiff of iron.");
+        if (olfaction(gy.youmonst.data))
+            You("catch a whiff of iron.");
         break;
     case POT_HAZARDOUS_WASTE:
-        pline("It smells like gas.");
+        if (olfaction(gy.youmonst.data))
+            pline("It smells like gas.");
         break;
     case POT_WATER:
         if (u.umonnum == PM_GREMLIN) {
@@ -2358,15 +2361,18 @@ potionbreathe(struct obj *obj)
         break;
     case POT_ACID:
     case POT_POLYMORPH:
+        /* Not all forms have noses, maybe check if humanoid? */
         pline("Your nose burns.");
         exercise(A_CON, FALSE);
         break;
     case POT_FRUIT_JUICE:
     case POT_SEE_INVISIBLE:
-        pline("It smells like %s.", makeplural(fruitname(FALSE)));
+        if (olfaction(gy.youmonst.data))
+            pline("It smells like %s.", makeplural(fruitname(FALSE)));
         break;
     case POT_OIL:
-        pline("It smells like machinery.");
+        if (olfaction(gy.youmonst.data))
+            pline("It smells like machinery.");
         break;
     /*
     case POT_GAIN_LEVEL:
