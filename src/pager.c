@@ -638,11 +638,10 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
          && pindex == POT_WATER)
             Strcat(outbuf, "wet ");
     
-    if ((levl[x][y].coat_info & COAT_POTION) != 0 && pindex != POT_WATER)
-        Sprintf(buf, "%s covered in %s %s", floor_descr(x, y, symidx),
-                objects[pindex].oc_name_known ? OBJ_NAME(objects[pindex]) : OBJ_DESCR(objects[pindex]),
-                objects[pindex].oc_name_known ? "tonic" : "liquid");
-    else if ((levl[x][y].coat_info & COAT_BLOOD) != 0) {
+    if ((levl[x][y].coat_info & COAT_POTION) != 0 && pindex != POT_WATER) {
+        Sprintf(buf, "%s covered in ", floor_descr(x, y, symidx));
+        potion_coating_text(eos(buf), pindex);
+    } else if ((levl[x][y].coat_info & COAT_BLOOD) != 0) {
         if (ismnum(levl[x][y].pindex))
             Sprintf(buf, "%s covered in %s blood", floor_descr(x, y, symidx),  mons[levl[x][y].pindex].pmnames[NEUTRAL]);
         else
@@ -651,6 +650,16 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
         Sprintf(buf, "%s", floor_descr(x, y, symidx));
     Strcat(outbuf, buf);
     
+    return outbuf;
+}
+
+/* describe the tonic depending on if it is known or unknown */
+char *
+potion_coating_text(char *outbuf, int pindex) {
+    Sprintf(outbuf, "%s %s",
+                objects[pindex].oc_name_known ? OBJ_NAME(objects[pindex]) 
+                                              : OBJ_DESCR(objects[pindex]),
+                objects[pindex].oc_name_known ? "tonic" : "liquid");
     return outbuf;
 }
 
