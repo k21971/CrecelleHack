@@ -2467,7 +2467,7 @@ use_misc(struct monst *mtmp)
     case MUSE_WAN_MAKE_INVISIBLE:
     case MUSE_POT_INVISIBILITY:
         if (!otmp)
-            panic(MissingMiscellaneousItem, "toninc of invisibility");
+            panic(MissingMiscellaneousItem, "tonic of invisibility");
         if (otmp->otyp == WAN_MAKE_INVISIBLE) {
             mzapwand(mtmp, otmp, TRUE);
         } else

@@ -444,7 +444,7 @@ static const char *const tutorial_yeahs[] = {
     "Yeah, help me out",
     "Yeah, I've got time",
     "Yes, do a tutorial",
-    "Ys, assuage my variant paranoia",
+    "Yes, assuage my variant paranoia",
 };
 
 static const char *const tutorial_nos[] = {
