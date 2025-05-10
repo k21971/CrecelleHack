@@ -1583,6 +1583,9 @@ create_polymon(struct obj *obj, int okind)
         material = "metal ";
         break;
     case COPPER:
+        pm_index = rn2(7) ? PM_CLAY_GOLEM : PM_COLOSSUS;
+        material = "bronze ";
+        break;
     case SILVER:
     case PLATINUM:
     case GEMSTONE:

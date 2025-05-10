@@ -800,6 +800,8 @@ m_initinv(struct monst *mtmp)
             otmp->quan = (long) rn1(2, 2);
             otmp->owt = weight(otmp);
             (void) mpickobj(mtmp, otmp);
+        } else if (ptr == &mons[PM_COLOSSUS]) {
+            (void) mongets(mtmp, BOULDER);
         }
         break;
     case S_WRAITH:
@@ -873,6 +875,12 @@ m_initinv(struct monst *mtmp)
             otmp->spe = 0;
             otmp->recharged = 6;
             (void) mpickobj(mtmp, otmp);
+        }
+        break;
+    case S_FELINE:
+        if (ptr == &mons[PM_PUSS_IN_BOOTS]) {
+            (void) mongets(mtmp, SILVER_SABER);
+            (void) mongets(mtmp, rn2(2) ? SPEED_BOOTS : IRON_SHOES);
         }
         break;
     default:
@@ -1049,7 +1057,7 @@ monhp_per_lvl(struct monst *mon)
     int hp = rnd(8); /* default is d8 */
 
     /* like newmonhp, but home elementals are ignored, riders use normal d8 */
-    if (is_golem(ptr)) {
+    if (is_golem(ptr) || ptr == &mons[PM_BLOB]) {
         /* draining usually won't be applicable for these critters */
         hp = golemhp(monsndx(ptr)) / (int) ptr->mlevel;
     } else if (ptr->mlevel > 49) {
@@ -1075,7 +1083,7 @@ newmonhp(struct monst *mon, int mndx)
     int basehp = 0;
 
     mon->m_lev = adj_lev(ptr);
-    if (is_golem(ptr)) {
+    if (is_golem(ptr) || ptr == &mons[PM_BLOB]) {
         /* golems have a fixed amount of HP, varying by golem type */
         mon->mhpmax = mon->mhp = golemhp(mndx);
     } else if (mon->data == &mons[PM_ILLUSION]) {
@@ -2350,8 +2358,12 @@ golemhp(int type)
         return 100;
     case PM_GLASS_GOLEM:
         return 80;
+    case PM_BLOB:
+        return 100;
     case PM_IRON_GOLEM:
         return 120;
+    case PM_COLOSSUS:
+        return 400;
     default:
         return 0;
     }

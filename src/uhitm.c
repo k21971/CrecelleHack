@@ -1597,7 +1597,8 @@ hmon_hitmon_splitmon(
 {
     if ((hmd->mdat == &mons[PM_BLACK_PUDDING]
          || hmd->mdat == &mons[PM_BROWN_PUDDING]
-         || hmd->mdat == &mons[PM_HELLBAT])
+         || hmd->mdat == &mons[PM_HELLBAT]
+         || hmd->mdat == &mons[PM_BLOB])
         /* pudding is alive and healthy enough to split */
         && mon->mhp > 1 && !mon->mcan
         /* iron weapon using melee or polearm hit [3.6.1: metal weapon too;

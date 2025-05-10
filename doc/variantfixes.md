@@ -3,6 +3,11 @@
 ## New Monsters
 - Salt Golem
 
+## Unique Monsters
+- Many new unique monsters.
+- The deferred Goblin King boss is now a potential unique
+  monster spawn.
+
 ## Floor Coating System
 - Added ice as a floor coating.
 

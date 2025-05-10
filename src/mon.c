@@ -646,6 +646,13 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
         obj = mkcorpstat(CORPSE, mtmp, &mons[num], x, y, corpstatflags);
         obj->age -= (TAINT_AGE + 1); /* this is an *OLD* corpse */
         break;
+    case PM_COLOSSUS:
+        num = d(2, 6);
+        while (num--)
+            obj = mksobj_at(BRONZE_PLATE_MAIL, x, y, TRUE, FALSE);
+        free_mgivenname(mtmp);
+        break;
+        /*FALLTHRU*/
     case PM_IRON_GOLEM:
         num = d(2, 6);
         while (num--)
@@ -741,6 +748,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_FIRE_ANT: case PM_SNOW_ANT: case PM_GIANT_BEETLE: case PM_QUEEN_BEE:
 
     case PM_QUIVERING_BLOB: case PM_ACID_BLOB: case PM_GELATINOUS_CUBE:
+    case PM_BLOB:
     case PM_CHICKATRICE: case PM_COCKATRICE: case PM_PYROLISK:
 
     case PM_JACKAL: case PM_FOX: case PM_COYOTE: case PM_WEREJACKAL:
@@ -753,7 +761,8 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_FLAMING_SPHERE: case PM_SHOCKING_SPHERE: case PM_GRAVIMETRIC_SPHERE:
 
     case PM_KITTEN: case PM_HOUSECAT: case PM_JAGUAR: case PM_LYNX:
-    case PM_PANTHER: case PM_LARGE_CAT:  case PM_TIGER: case PM_SMILODON:
+    case PM_PANTHER: case PM_LARGE_CAT:  case PM_TIGER:
+    case PM_PUSS_IN_BOOTS: case PM_SMILODON:
     case PM_CATERWAUL: case PM_HELLCAT:
 
     case PM_DISPLACER_BEAST: case PM_GREMLIN:
@@ -888,7 +897,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_ARCH_PRIEST: case PM_ORION: case PM_MASTER_OF_THIEVES:
     case PM_LORD_SATO: case PM_TWOFLOWER: case PM_NORN:
     case PM_NEFERET_THE_GREEN: case PM_MASKED_MUMMY: case PM_MINION_OF_HUHETOTL:
-    case PM_THOTH_AMON: case PM_CHROMATIC_DRAGON: case PM_CYCLOPS:
+    case PM_THOTH_AMON: case PM_CHROMATIC_DRAGON: case PM_GOBLIN_KING: case PM_CYCLOPS:
     case PM_IXOTH: case PM_MASTER_KAEN: case PM_NALZOK:
     case PM_SCORPIUS: case PM_MASTER_ASSASSIN: case PM_ASHIKAGA_TAKAUJI:
     case PM_LORD_SURTUR: case PM_HEEL: case PM_DARK_ONE: case PM_STUDENT:
