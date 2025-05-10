@@ -2923,9 +2923,17 @@ setup_rolemenu(
             any.a_int = i + 1;
         else
             any.a_string = roles[i].name.m;
-        thisch = lowc(*roles[i].name.m);
-        if (thisch == lastch)
-            thisch = highc(thisch);
+        /* Kludge: We want to keep wizard as the final role in the array, but
+           also preserve its capitalization. */
+        if (roles[i].mnum == PM_WRESTLER)
+            thisch = 'W';
+        else if (roles[i].mnum == PM_WIZARD)
+            thisch = 'w';
+        else {
+            thisch = lowc(*roles[i].name.m);
+            if (thisch == lastch)
+                thisch = highc(thisch);
+        }
         Strcpy(rolenamebuf, roles[i].name.m);
         if (roles[i].name.f) {
             /* role has distinct name for female (C,P) */
