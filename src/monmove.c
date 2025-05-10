@@ -684,13 +684,7 @@ m_postmove_effect(struct monst *mtmp)
         mtmp->mspec_used = rnd(20);
         (void) create_gas_cloud(mtmp->mx, mtmp->my, rnd(6), 0, 3);
     } else if (mtmp->data == &mons[PM_STEAM_VORTEX] && !mtmp->mcan)
-<<<<<<< HEAD
         create_gas_cloud(x, y, 1, 0, 0); /* harmless vapor */
-    else if (mtmp->data == &mons[PM_FIRE_ELEMENTAL] && !mtmp->mcan)
-        create_bonfire(x, y, 1, rnd(4));
-    else if (mtmp->data == &mons[PM_ACID_BLOB] 
-=======
-        create_gas_cloud(x, y, 1, 0); /* harmless vapor */
     else if (mtmp->data == &mons[PM_FIRE_ELEMENTAL] && !mtmp->mcan) {
         /* Lets off smoke / vapor in the rain, otherwise starts things on fire. */
         if (IS_RAINING)
@@ -698,7 +692,6 @@ m_postmove_effect(struct monst *mtmp)
         else
             create_bonfire(x, y, 1, rnd(4));
     } else if (mtmp->data == &mons[PM_ACID_BLOB] 
->>>>>>> main
             || mtmp->data == &mons[PM_GELATINOUS_CUBE]) {
         floor_alchemy(x, y, POT_ACID, NON_PM);
     } else if (mtmp->data == &mons[PM_WATER_ELEMENTAL] || 
