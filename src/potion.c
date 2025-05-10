@@ -1655,14 +1655,14 @@ impact_arti_light(
 
 /* check if a section of floor has already been coated */
 boolean
-has_coating(coordxy x, coordxy y, unsigned char coatflags) {
+has_coating(coordxy x, coordxy y, short coatflags) {
     return (IS_COATABLE(levl[x][y].typ)
             && (levl[x][y].coat_info & coatflags) != 0);
 }
 
 /* add a coating to the floor */
 boolean
-add_coating(coordxy x, coordxy y, unsigned char coatflags, int pindex) {
+add_coating(coordxy x, coordxy y, short coatflags, int pindex) {
     if (!IS_COATABLE(levl[x][y].typ))
         return FALSE;
     else {
@@ -1694,7 +1694,7 @@ add_coating(coordxy x, coordxy y, unsigned char coatflags, int pindex) {
 
 /* remove a coating from the floor */
 boolean
-remove_coating(coordxy x, coordxy y, unsigned char coatflags) {
+remove_coating(coordxy x, coordxy y, short coatflags) {
     if (!IS_COATABLE(levl[x][y].typ))
         return FALSE;
     if ((coatflags & COAT_FUNGUS) != 0) {

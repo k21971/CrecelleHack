@@ -151,7 +151,7 @@ enum levl_typ_types {
 #define COAT_FUNGUS 0x10 /* luminescent fungus */
 #define COAT_SHARDS 0x20 /* shards of glass */
 #define COAT_HONEY  0x40 /* honey */
-#define COAT_ALL 0xff
+#define COAT_ALL 0xffff
 
 /*
  * The structure describing a coordinate position.
@@ -172,8 +172,8 @@ struct rm {
 
     /* HORRIBLE HACK INCOMING DANGER DANGER */
     Bitfield(pindex, 10);    /* This puts a hard upper limit on monster and potion types of 1024.*/
-    /* 6 free  bits */
-    Bitfield(coat_info, 8);  /* Stores the info about the floor's coating. */
+    Bitfield(coat_info, 14);  /* Stores the info about the floor's coating. */
+    /* 0 free bits (can steal from coat_info, however) */
 
     Bitfield(roomno, 6); /* room # for special rooms */
     Bitfield(edge, 1);   /* marks boundaries for special rooms*/
