@@ -5396,9 +5396,14 @@ zap_over_floor(
         if (ZAP_POS(lev->typ))
             (void) create_gas_cloud(x, y, 1, 0, 8);
         break;
+    case ZT_SLEEP:
+        if (ZAP_POS(lev->typ) && zaptype(type) == ZT_BREATH(ZT_SLEEP))
+            (void) create_gas_cloud(x, y, 1, POT_SLEEPING, 8);
+        break;
     case ZT_DEATH:
         /* Kill any grass on a surface. */
-        remove_coating(x, y, COAT_GRASS);
+        remove_coating(x, y, ((zaptype(type)) == ZT_BREATH(ZT_DEATH))
+                                ? COAT_ALL : COAT_GRASS);
         break;
 
     case ZT_LIGHTNING:
