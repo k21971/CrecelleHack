@@ -3322,8 +3322,10 @@ zap_updown(struct obj *obj) /* wand or spell, nonnull */
         break;
     case WAN_FECUNDITY:
         if (u.dz > 0) {
-            if (Blind && !uarmf) You_feel("some grass tickle your %s.", body_part(FOOT));
-            else if (!Blind) pline("Some grass grows.");
+            if (Blind && !uarmf)
+                You_feel("some grass tickle your %s.", body_part(FOOT));
+            else if (!Blind)
+                pline("Some grass grows.");
             add_coating(x, y, COAT_GRASS, 0);
         }
         break;
@@ -3757,7 +3759,7 @@ zap_map(
         if (obj->otyp == WAN_FECUNDITY) {
             if (cansee(x, y) && !has_coating(x, y, COAT_GRASS)
                 && add_coating(x, y, COAT_GRASS, 0)) {
-                pline("You see some grass grow.");
+                You_see("some grass grow.");
                 learn_it = TRUE;
             }
         }
@@ -5404,6 +5406,7 @@ zap_over_floor(
         int k = (int) dirs_ord[rn2(N_DIRS)];
         int dx = xdir[k];
         int dy = ydir[k];
+        char cond_buf[BUFSZ];
         boolean potion = has_coating(x, y, COAT_POTION) && levl[x][y].pindex != POT_WATER;
         boolean blood = has_coating(x, y, COAT_BLOOD);
         if (has_coating(x, y, COAT_GRASS) || has_coating(x, y, COAT_FUNGUS)) {
@@ -5413,11 +5416,12 @@ zap_over_floor(
         if (potion || blood || IS_POOL(levl[x][y].typ)) {
             if (!rn2(6)) {
                 if (cansee(x, y)) {
-                    if (potion)
-                        pline_The("%s liquid conducts the %s!", 
-                                    OBJ_DESCR(objects[levl[x][y].pindex]),
-                                    flash_str(zaptype(type), FALSE));
-                    else if (blood)
+                    if (potion) {
+                        potion_coating_text(cond_buf, levl[x][y].pindex);
+                        pline_The("%s conducts the %s!", 
+                                    cond_buf, flash_str(zaptype(type), FALSE));
+
+                    } else if (blood)
                         pline_The("%s blood conducts the %s!",
                                     mons[levl[x][y].pindex].pmnames[NEUTRAL],
                                     flash_str(zaptype(type), FALSE));
@@ -5458,6 +5462,8 @@ zap_over_floor(
                     && levl[x][y].pindex == POT_HAZARDOUS_WASTE) {
             remove_coating(x, y, COAT_POTION);
             explode(x, y, 11, d(4, 6), 0, EXPL_NOXIOUS);
+        } else {
+            add_coating(x, y, COAT_POTION, POT_ACID);
         }
         break; /* ZT_ACID */
 

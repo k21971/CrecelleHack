@@ -1920,13 +1920,14 @@ m_move(struct monst *mtmp, int after)
                               && (dist2(omx, omy, ggx, ggy) <= 36));
         #endif
         boolean should_see = (distmin(omx, omy, ggx, ggy) <= 1);
-        if(mtmp->mcansee) {
-			if (couldsee(omx, omy)) {
-				if (infravision(mtmp->data) || (gv.viz_array[ggy][ggx] & TEMP_LIT)) {
-					should_see = TRUE;
-				}
-			}
-		}
+        if (mtmp->mcansee) {
+            if (couldsee(omx, omy)) {
+                if (infravision(mtmp->data)
+                    || (gv.viz_array[ggy][ggx] & TEMP_LIT)) {
+                    should_see = TRUE;
+                }
+            }
+        }
 
         if (!mtmp->mcansee
             || (should_see && Invis && !perceives(ptr) && rn2(11))
@@ -2131,7 +2132,8 @@ m_move(struct monst *mtmp, int after)
         /* Reset prone */
         if (mtmp->mprone) {
             if (canseemon(mtmp)) 
-                pline("%s regains %s footing.", Monnam(mtmp), mhis(mtmp));
+                pline_mon(mtmp, "%s regains %s footing.",
+                    Monnam(mtmp), mhis(mtmp));
             mtmp->mprone = 0;
         }
 

@@ -4168,7 +4168,7 @@ m_respond(struct monst *mtmp)
     }
     if (mtmp->data == &mons[PM_CATERWAUL]) {
         if (!Deaf) {
-            pline("%s caterwails.", Monnam(mtmp));
+            pline_mon(mtmp, "%s caterwails.", Monnam(mtmp));
             stop_occupation();
         }
         wake_nearto(mtmp->mx, mtmp->my, 25);
@@ -4221,9 +4221,9 @@ peacefuls_respond(struct monst *mtmp)
 
         if (is_traitor(mon->data) && mon->data->msound != MS_SILENT && !Deaf) {
             if (mon->mtame && !betrayed(mon))
-                pline("%s laughs at you.", Monnam(mon));
+                pline_mon(mon, "%s laughs at you.", Monnam(mon));
             else if (!mon->mpeaceful && mon->mtraitor && canseemon(mon))
-                pline("%s seems to approve.", Monnam(mon));
+                pline_mon(mon, "%s seems to approve.", Monnam(mon));
         }
 
         if (!mindless(mon->data) && mon->mpeaceful
@@ -6004,7 +6004,6 @@ adj_midbosses(void)
             pm->geno |= G_MIDBOSS;
         }
     }
-
 }
 
 /* make erinyes more dangerous based on your alignment abuse */

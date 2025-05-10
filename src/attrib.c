@@ -1244,7 +1244,12 @@ schar
 amodifier(int chridx)
 {
     int attr = ACURR(chridx);
-    return ((attr - 10) + ((attr >= 0) ? 0 : -1)) / 2;
+    if (ACURR(A_STR) <= STR18(0))
+        return ((attr - 10) + ((attr >= 0) ? 0 : -1)) / 2;
+    else if (ACURR(A_STR) < STR18(50))
+        return 5;
+    else
+        return 6;
 }
 
 /* condense clumsy ACURR(A_STR) value into value that fits into formulas */

@@ -1769,7 +1769,8 @@ rub_ok(struct obj *obj)
 
     if (obj->otyp == OIL_LAMP || obj->otyp == MAGIC_LAMP
         || obj->otyp == BRASS_LANTERN || is_graystone(obj)
-        || obj->otyp == LUMP_OF_ROYAL_JELLY)
+        || obj->otyp == LUMP_OF_ROYAL_JELLY
+        || obj->otyp == TOWEL)
         return GETOBJ_SUGGEST;
 
     return GETOBJ_EXCLUDE;
@@ -1832,6 +1833,16 @@ dorub(void)
         /* message from Adventure */
         pline("Rubbing the electric lamp is not particularly rewarding.");
         pline("Anyway, nothing exciting happens.");
+    } else if (obj->otyp == TOWEL) {
+        if (Levitation) You("cannot reach the %s.", surface(u.ux, u.uy));
+        else if (has_coating(u.ux, u.uy, COAT_POTION) || has_coating(u.ux, u.uy, COAT_BLOOD)) {
+            You("sop up the liquid on the floor.");
+            remove_coating(u.ux, u.uy, COAT_POTION);
+            remove_coating(u.ux, u.uy, COAT_BLOOD);
+            wet_a_towel(obj, -1, TRUE);
+        } else {
+            pline("There is nothing here to clean up.");
+        }
     } else
         pline1(nothing_happens);
     return ECMD_TIME;

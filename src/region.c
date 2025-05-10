@@ -472,7 +472,7 @@ run_regions(void)
         gg.gas_cloud_diss_within = FALSE;
     }
     if (gg.bonfire_diss_within) {
-        pline_The("flames around you die.");
+        pline_The("flames around you dwindle and die out.");
         gg.bonfire_diss_within = 0;
         gg.bonfire_diss_seen = 0;
     }
@@ -1506,7 +1506,7 @@ region_safety(void)
         if (f_indx == INSIDE_GAS_CLOUD)
             pline_The("gas cloud enveloping you dissipates.");
         else if (f_indx == INSIDE_BONFIRE)
-            pline_The("fire around you is snuffed out.");
+            pline_The("surrounding fire is snuffed out.");
     } else {
         /* cloud dissipated on its own, so nothing needs to be done */
         if (f_indx == INSIDE_GAS_CLOUD)

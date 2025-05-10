@@ -1934,6 +1934,8 @@ struct ext_func_tab extcmdlist[] = {
 #endif
     { '\0',   "wizcast", "cast any spell",
               dowizcast, IFBURIED | WIZMODECMD, NULL },
+    { '\0',   "wizcrown", "become crowned",
+              wiz_crown, IFBURIED | AUTOCOMPLETE | WIZMODECMD, NULL },
     { '\0',   "wizcustom", "show customized glyphs",
               wiz_custom, IFBURIED | WIZMODECMD | NOFUZZERCMD, NULL },
     { C('e'), "wizdetect", "reveal hidden things within a small radius",

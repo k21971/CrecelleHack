@@ -951,18 +951,12 @@ int
 abon(struct obj *obj)
 {
     int sbon;
-    int str = ACURR(A_STR);
     int finesse = obj ? objects[obj->otyp].oc_finesse : 0;
 
     if (Upolyd)
         return (adj_lev(&mons[u.umonnum]) - 3);
 
-    if (str <= STR18(50))
-        sbon = AMOD(A_STR);
-    else if (str < STR18(100))
-        sbon = 5;
-    else
-        sbon = 6;
+    sbon = AMOD(A_STR);
 
     if (finesse)
         sbon = max(sbon, AMOD(A_DEX));

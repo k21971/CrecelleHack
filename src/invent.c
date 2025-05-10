@@ -948,7 +948,7 @@ merged(struct obj **potmp, struct obj **pobj)
         if (discovered && otmp->where == OBJ_INVENT
             && obj->how_lost != LOST_THROWN
             && otmp->how_lost != LOST_THROWN) {
-            pline("You learn more about your items by comparing them.");
+            You("learn more about your items by comparing them.");
         }
 
         obfree(obj, otmp); /* free(obj), bill->otmp */
@@ -4661,7 +4661,7 @@ dfeature_at(coordxy x, coordxy y, char *buf)
             if (levl[x][y].pindex == POT_WATER)
                 Sprintf(eos(altbuf), "water");
             else
-                Sprintf(eos(altbuf), "%s liquid", OBJ_DESCR(objects[lev->pindex]));
+                potion_coating_text(eos(altbuf), levl[x][y].pindex);
             listing = TRUE;
         }
         if ((lev->coat_info & COAT_BLOOD) != 0) {

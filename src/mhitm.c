@@ -774,7 +774,7 @@ gazemm(struct monst *magr, struct monst *mdef, struct attack *mattk)
                 return M_ATTK_MISS;
             }
             if (canseemon(magr))
-                pline("%s closes %s eyes.", Monnam(magr), mhis(magr));
+                pline_mon(magr, "%s closes %s eyes.", Monnam(magr), mhis(magr));
             magr->mblinded = rnd(8);
             magr->mcansee = 0;
             // monstone(magr);
@@ -943,7 +943,7 @@ gulpmm(
     } else {                           /* both alive, put them back */
         if (MON_AT(dx, dy)) { /* handle monsters that tele on engulfing like black hole */
             if (cansee(dx, dy)) {
-                pline("%s is %s!", Monnam(mdef),
+                pline_mon(mdef, "%s is %s!", Monnam(mdef),
                     digests(magr->data) ? "regurgitated"
                         : enfolds(magr->data) ? "released"
                         : "expelled");

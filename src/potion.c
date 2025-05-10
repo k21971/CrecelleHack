@@ -1677,7 +1677,9 @@ add_coating(coordxy x, coordxy y, unsigned char coatflags, int pindex) {
         if ((coatflags & COAT_POTION) != 0) {
             remove_coating(x, y, COAT_BLOOD);
             levl[x][y].pindex = pindex;
-            if (pindex < POT_GAIN_ABILITY || pindex > POT_WATER) {
+            if (pindex == POT_ACID) {
+                remove_coating(x, y, COAT_GRASS | COAT_ASHES | COAT_HONEY);
+            } else if (pindex < POT_GAIN_ABILITY || pindex > POT_WATER) {
                 impossible("coating floor with invalid object index %d?", pindex);
             }
         } else if ((coatflags & COAT_BLOOD) != 0) {
@@ -1728,7 +1730,7 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
             gn.nomovemsg = "You regain your footing.";
         } else {
             if (canseemon(mon)) {
-                pline("%s slips on a patch of oil!", Monnam(mon));
+                pline_mon(mon, "%s slips on a patch of oil!", Monnam(mon));
             }
             mon->mfrozen = 2;
             mon->mcanmove = 0;
@@ -1738,19 +1740,20 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
     if (has_coating(x, y, COAT_SHARDS)) {
         if (isyou) {
             if (uarmf) {
-                pline("Shards of glass crunch under your %s.", xname(uarmf));
+                pline("Shards of glass crunch under %s.",
+                    yobjnam(uarmf, (const char *) 0));
             } else if (thick_skinned(mon->data)) {
-                pline("Shards of glass crunch under you.");
+                pline("Shards of glass crunch under your %s.", makeplural(body_part(FOOT)));
             } else {
                 if (u.uhp > 1) u.uhp--;
-                pline("Your %s are cut by shards of glass!", makeplural(body_part(FOOT)));
+                Your("%s are cut by shards of glass!", makeplural(body_part(FOOT)));
                 add_coating(x, y, COAT_BLOOD, gy.youmonst.mnum);
                 disp.botl = TRUE;
             }
         } else {
             if (!which_armor(mon, W_ARMF) && !thick_skinned(mon->data)) {
                 if (canseemon(mon))
-                    pline("%s steps on some broken glass.", Monnam(mon));
+                    pline_mon(mon, "%s steps on some broken glass.", Monnam(mon));
                 if (mon->mtame)
                     yelp(mon);
                 else
@@ -1781,7 +1784,7 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
     }
     if (has_coating(x, y, COAT_BLOOD) && touch_petrifies(&mons[levl[x][y].pindex])) {
         if (isyou && !uarmf && !Stone_resistance) {
-            pline("You touch %s blood with your %s.",
+            You("touch %s blood with your %s.",
                 pmname(&mons[levl[x][y].pindex], MALE), body_part(FOOT));
             Sprintf(buf, "stepping in %s blood", pmname(&mons[levl[x][y].pindex], MALE));
             instapetrify(buf);
@@ -2277,7 +2280,7 @@ potionbreathe(struct obj *obj)
                 else
                     u.uhp -= 5;
             }
-            You("feel sick.");
+            You_feel("sick.");
             disp.botl = TRUE;
             exercise(A_CON, FALSE);
         }
@@ -2339,10 +2342,12 @@ potionbreathe(struct obj *obj)
             Your1(vision_clears);
         break;
     case POT_BLOOD:
-        You("catch a whiff of iron.");
+        if (olfaction(gy.youmonst.data))
+            You("catch a whiff of iron.");
         break;
     case POT_HAZARDOUS_WASTE:
-        pline("It smells like gas.");
+        if (olfaction(gy.youmonst.data))
+            pline("It smells like gas.");
         break;
     case POT_WATER:
         if (u.umonnum == PM_GREMLIN) {
@@ -2358,15 +2363,18 @@ potionbreathe(struct obj *obj)
         break;
     case POT_ACID:
     case POT_POLYMORPH:
-        pline("Your nose burns.");
+        /* Not all forms have noses, maybe check if humanoid? */
+        Your("nose burns.");
         exercise(A_CON, FALSE);
         break;
     case POT_FRUIT_JUICE:
     case POT_SEE_INVISIBLE:
-        pline("It smells like %s.", makeplural(fruitname(FALSE)));
+        if (olfaction(gy.youmonst.data))
+            pline("It smells like %s.", makeplural(fruitname(FALSE)));
         break;
     case POT_OIL:
-        pline("It smells like machinery.");
+        if (olfaction(gy.youmonst.data))
+            pline("It smells like machinery.");
         break;
     /*
     case POT_GAIN_LEVEL:

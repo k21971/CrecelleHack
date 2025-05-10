@@ -339,7 +339,7 @@ dosounds(void)
             };
             static const char *const rainy_shop_msg[3] = {
                 "someone cursing the rain.",
-                "a tarp being aired out.", "A rainy day sale!",
+                "a tarp being aired out.", "a rainy day sale!",
             };
             You_hear1(IS_RAINING ? rainy_shop_msg[rn2(2) + hallu]
                                  : shop_msg[rn2(2) + hallu]);
@@ -1468,7 +1468,7 @@ tiphat(void)
     You("briefly doff your %s.", helm_simple_name(uarmh));
 
     if (IS_RAINING && !has_no_tod_cycles(&u.uz)) {
-        pline("Your %s gets wet.", body_part(HEAD));
+        Your("%s gets wet.", body_part(HEAD));
     }
 
     if (!u.dx && !u.dy) {

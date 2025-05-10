@@ -510,8 +510,9 @@ do_attack(struct monst *mtmp)
                 end_running(TRUE);
                 return TRUE;
             } else if (mtmp->mfrozen || helpless(mtmp)
-                       || (mtmp->data->mmove == 0 && rn2(6))) {
-                pline("%s doesn't seem to move!", Monnam(mtmp));
+                       || (mtmp->data->mmove == 0 
+                            && mtmp->data != &mons[PM_NIGHTCRUST] && rn2(6))) {
+                pline_mon(mtmp, "%s doesn't seem to move!", Monnam(mtmp));
                 end_running(TRUE);
                 return TRUE;
             } else
@@ -6093,7 +6094,8 @@ passive(
             mdamageu(mon, tmp);
             break;
         case AD_HONY:
-            if (canseemon(mon)) pline("Some honey drips from %s.", mon_nam(mon));
+            if (canseemon(mon))
+                pline_mon(mon, "Some honey drips from %s.", mon_nam(mon));
             add_coating(mon->mx, mon->my, COAT_HONEY, 0);
             break;
         default:

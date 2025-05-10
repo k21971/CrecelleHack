@@ -45,6 +45,15 @@ Read at your own risk.
   that they thought they would never see in NetHack, like potions coating
   and alchemizing on the floor and a dynamic day/night cycle.
 
+## Ascending
+
+So you ascended! Congratulations. If you post an issue with proof that you
+did so, I will add your character (or a character you create) to the game
+in the form of a unique monster. One per person, while supplies last, and
+I reserve the right to reject anything in poor taste or remove them in
+the future. I'm sure this is a good idea and that only good things will
+come of this.
+
 ## FAQ
 
 ### What license is this under?
@@ -54,9 +63,9 @@ CrecelleHack of course falls under the NetHack license.
 ### What happened to SpliceHack?
 
 SpliceHack is no longer maintained by me. This variant is, in many ways,
-a designn evolution of SpliceHack. It's more focused, more tightly coded,
+a design evolution of SpliceHack. It's more focused, more tightly coded,
 less buggy, and hopefully more culturally sensitive. It's not perfect
-(we've inhereted the Samurai role from vanilla NetHack, after all) but
+(we've inherited the Samurai role from vanilla NetHack, after all) but
 I'm endeavouring not to make the same missteps I feel that I did previously.
 
 ### Why doesn't this variant support tiles?
@@ -68,7 +77,7 @@ significant changes in how graphical tiles are handled by NetHack.
 
 ### How do I report a bug?
 
-Open up a github issue, or contact me in IRC or Discord. This goes for bugs
+Open up a GitHub issue, or contact me in IRC or Discord. This goes for bugs
 as well as YANIs, YASIs, and EPIs. Please don't bother the NetHack DevTeam
 about anything in this variant. I don't really look at Reddit or newsgroups,
 so posting there is unlikely to get an answer.

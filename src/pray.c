@@ -801,6 +801,14 @@ at_your_feet(const char *str)
     }
 }
 
+int
+wiz_crown(void)
+{
+    Your("crown, my %s.", flags.female ? "queen" : "king");
+    gcrownu();
+    return 0;
+}
+
 staticfn void
 gcrownu(void)
 {
@@ -1729,6 +1737,7 @@ sacrifice_your_race(
             pline(
             "The blood floods the altar, which vanishes in %s cloud!",
                     an(hcolor(NH_BLACK)));
+            potion_splatter(u.ux, u.uy, POT_BLOOD, gu.urace.mnum);
             levl[u.ux][u.uy].typ = ROOM;
             levl[u.ux][u.uy].altarmask = 0;
             newsym(u.ux, u.uy);
