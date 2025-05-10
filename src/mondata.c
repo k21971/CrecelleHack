@@ -205,7 +205,8 @@ resists_drli(struct monst *mon)
     if (is_undead(ptr) || is_demon(ptr) || is_were(ptr)
         /* is_were() doesn't handle hero in human form */
         || (mon == &gy.youmonst && u.ulycn >= LOW_PM)
-        || ptr == &mons[PM_DEATH] || is_vampshifter(mon))
+        || ptr == &mons[PM_DEATH] || is_vampshifter(mon)
+        || ptr == &mons[PM_TORNADO])
         return TRUE;
     return defended(mon, AD_DRLI);
 }
@@ -987,7 +988,6 @@ name_to_monplus(
                fuzzymatch() but it isn't able to ignore trailing stuff */
             { "ki rin", PM_KI_RIN, NEUTRAL },
             { "kirin", PM_KI_RIN, NEUTRAL },
-            { "uruk hai", PM_URUK_HAI, NEUTRAL },
             { "orc captain", PM_ORC_CAPTAIN, NEUTRAL },
             { "woodland elf", PM_WOODLAND_ELF, NEUTRAL },
             { "green elf", PM_GREEN_ELF, NEUTRAL },
@@ -1012,6 +1012,10 @@ name_to_monplus(
             { "djinn", PM_DJINNI, NEUTRAL },
             { "mumakil", PM_MUMAK, NEUTRAL },
             { "erinyes", PM_ERINYS, NEUTRAL },
+            /* vanilla names */
+            { "mordor orc", PM_FEN_ORC, NEUTRAL },
+            { "uruk hai", PM_FELL_ORC, NEUTRAL },
+            { "uruk-hai", PM_FELL_ORC, NEUTRAL },
             /* end of list */
             { 0, NON_PM, NEUTRAL }
         };
@@ -1240,8 +1244,8 @@ static const short grownups[][2] = {
     { PM_MIND_FLAYER, PM_MASTER_MIND_FLAYER },
     { PM_ORC, PM_ORC_CAPTAIN },
     { PM_HILL_ORC, PM_ORC_CAPTAIN },
-    { PM_MORDOR_ORC, PM_ORC_CAPTAIN },
-    { PM_URUK_HAI, PM_ORC_CAPTAIN },
+    { PM_FEN_ORC, PM_ORC_CAPTAIN },
+    { PM_FELL_ORC, PM_ORC_CAPTAIN },
     { PM_SEWER_RAT, PM_GIANT_RAT },
     { PM_CAVE_SPIDER, PM_GIANT_SPIDER },
     { PM_OGRE, PM_OGRE_LEADER },
@@ -1278,6 +1282,7 @@ static const short grownups[][2] = {
     { PM_BABY_LONG_WORM, PM_LONG_WORM },
     { PM_BABY_PURPLE_WORM, PM_PURPLE_WORM },
     { PM_BABY_CROCODILE, PM_CROCODILE },
+    { PM_BABY_GATOR, PM_GATOR },
     { PM_SOLDIER, PM_SERGEANT },
     { PM_SERGEANT, PM_LIEUTENANT },
     { PM_LIEUTENANT, PM_CAPTAIN },
@@ -1288,6 +1293,7 @@ static const short grownups[][2] = {
     { PM_PAGE, PM_KNIGHT },
     { PM_ACOLYTE, PM_CLERIC },
     { PM_APPRENTICE, PM_WIZARD },
+    { PM_TRAINEE, PM_WRESTLER },
     { PM_MANES, PM_LEMURE },
     { PM_KEYSTONE_KOP, PM_KOP_SERGEANT },
     { PM_KOP_SERGEANT, PM_KOP_LIEUTENANT },

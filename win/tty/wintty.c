@@ -1330,7 +1330,8 @@ process_menu_window(winid window, struct WinDesc *cw)
     tty_menu_item *page_start, *page_end, *curr;
     long count;
     int n, attr_n, curr_page, page_lines, resp_len, previous_page_lines;
-    boolean finished, counting, reset_count;
+    boolean finished, counting, reset_count, show_obj_syms,
+            only_if_no_headers = (iflags.menuobjsyms & 4) != 0;
     char *cp, *rp, resp[QBUFSZ], gacc[QBUFSZ], *msave, *morestr, really_morc;
 #define MENU_EXPLICIT_CHOICE 0x7f /* pseudo menu manipulation char */
 
@@ -1377,6 +1378,15 @@ process_menu_window(winid window, struct WinDesc *cw)
 #undef GSELIDX
     }
     resp_len = 0; /* lint suppression */
+
+    show_obj_syms = iflags.use_menu_glyphs;
+    if (only_if_no_headers) {
+        for (curr = cw->mlist; curr; curr = curr->next)
+            if (curr->identifier.a_void == 0) {
+                show_obj_syms = FALSE;
+                break;
+            }
+    }
 
     /* loop until finished */
     while (!finished) {
@@ -1432,7 +1442,7 @@ process_menu_window(winid window, struct WinDesc *cw)
                     if (curr->str[0] && curr->str[1] == ' '
                         && curr->str[2] && strchr("-+#", curr->str[2])
                         && curr->str[3] == ' ')
-                        /* [0]=letter, [1]==space, [2]=[-+#], [3]=space */
+                        /* [0]=letter, [1]=space, [2]=[-+#], [3]=space */
                         attr_n = 4; /* [4:N]=entry description */
 
                     /*
@@ -1454,15 +1464,25 @@ process_menu_window(winid window, struct WinDesc *cw)
                         if (n == attr_n && (color != NO_COLOR
                                             || attr != ATR_NONE))
                             toggle_menu_attr(TRUE, color, attr);
-                        if (n == 2
-                            && curr->identifier.a_void != 0
+                        if (n == 2 && curr->identifier.a_void != 0
                             && curr->selected) {
-                            if (curr->count == -1L)
-                                (void) putchar('+'); /* all selected */
-                            else
-                                (void) putchar('#'); /* count selected */
-                        } else
+                            char c = (curr->count == -1L) ? '*' : '#';
+
+                            /* all selected: '*' vs count selected: '#' */
+                            (void) putchar(c);
+                        } else if (n == 2 && curr->identifier.a_void != 0
+                                   && show_obj_syms
+                                   && curr->glyphinfo.glyph != NO_GLYPH) {
+                            int gcolor = curr->glyphinfo.gm.sym.color;
+
+                            /* tty_print_glyph could be used, but is overkill
+                               and requires referencing the cursor location */
+                            toggle_menu_attr(TRUE, gcolor, ATR_NONE);
+                            (void) putchar(curr->glyphinfo.ttychar);
+                            toggle_menu_attr(FALSE, gcolor, ATR_NONE);
+                        } else {
                             (void) putchar(*cp);
+                        }
                     } /* for *cp */
                     if (n > attr_n && (color != NO_COLOR || attr != ATR_NONE))
                         toggle_menu_attr(FALSE, color, attr);
@@ -2537,8 +2557,8 @@ tty_start_menu(winid window, unsigned long mbehavior)
 void
 tty_add_menu(
     winid window,  /* window to use, must be of type NHW_MENU */
-    const glyph_info *glyphinfo UNUSED, /* glyph info with glyph to
-                                         * display with item */
+    const glyph_info *glyphinfo, /* glyph info with glyph to
+                                  * display with item */
     const anything *identifier, /* what to return if selected */
     char ch,                /* selector letter (0 = pick our own) */
     char gch,               /* group accelerator (0 = no group) */
@@ -2595,6 +2615,7 @@ tty_add_menu(
     item->attr = attr;
     item->color = clr;
     item->str = dupstr(newstr);
+    item->glyphinfo = *glyphinfo;
 
     item->next = cw->mlist;
     cw->mlist = item;
@@ -3602,7 +3623,7 @@ tty_wait_synch(void)
 {
     HUPSKIP();
     /* we just need to make sure all windows are synch'd */
-    if (!ttyDisplay || ttyDisplay->rawprint) {
+    if (WIN_MAP == WIN_ERR || !ttyDisplay || ttyDisplay->rawprint) {
         getret();
         if (ttyDisplay)
             ttyDisplay->rawprint = 0;
@@ -3836,7 +3857,7 @@ tty_print_glyph(
     const glyph_info *bkglyphinfo)
 {
     boolean inverse_on = FALSE, colordone = FALSE, glyphdone = FALSE;
-    boolean petattr = FALSE;
+    boolean petattr = FALSE, boostattr = FALSE;
     int ch;
     uint32 color;
     unsigned special;
@@ -3901,6 +3922,9 @@ tty_print_glyph(
         && bkglyphinfo && bkglyphinfo->framecolor != NO_COLOR) {
         ttyDisplay->framecolor = bkglyphinfo->framecolor;
         term_start_bgcolor(bkglyphinfo->framecolor);
+    } else if ((special & MG_BOOST)) {
+        term_start_attr(ATR_ULINE);
+        boostattr = TRUE;
     } else if ((special & MG_PET) != 0 && iflags.hilite_pet) {
         term_start_attr(iflags.wc2_petattr);
         petattr = TRUE;
@@ -3938,6 +3962,8 @@ tty_print_glyph(
         term_end_attr(ATR_INVERSE);
     else if (petattr)
         term_end_attr(iflags.wc2_petattr);
+    else if (boostattr)
+        term_end_attr(ATR_ULINE);
     if (iflags.use_color) {
         /* turn off color as well, turning off ATR_INVERSE may have done
           this already and if so, we won't know the current state unless
@@ -4255,12 +4281,12 @@ static const char *const encvals[3][6] = {
 static const enum statusfields
     twolineorder[3][MAX_PER_ROW] = {
     { BL_TITLE, BL_STR, BL_DX, BL_CO, BL_IN, BL_WI, BL_CH, BL_ALIGN,
-      BL_SCORE, BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD },
+      BL_SCORE, BL_TOD, BL_BOOST, BL_FLUSH, blPAD, blPAD, blPAD, blPAD },
     { BL_LEVELDESC, BL_GOLD, BL_HP, BL_HPMAX, BL_ENE, BL_ENEMAX,
       BL_AC, BL_MC, BL_XP, BL_EXP, BL_TIME, BL_HUNGER,
       BL_CAP, BL_CONDITION, BL_VERS, BL_FLUSH },
     /* third row of array isn't used for twolineorder */
-    { BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD,
+    { BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD,
       blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD }
 },
     /* Align moved from 1 to 2, Leveldesc+Time+Cond+Vers moved from 2 to 3 */
@@ -4270,8 +4296,8 @@ static const enum statusfields
     { BL_ALIGN, BL_GOLD, BL_HP, BL_HPMAX, BL_ENE, BL_ENEMAX,
       BL_AC, BL_MC, BL_XP, BL_EXP, BL_HD, BL_HUNGER,
       BL_CAP, BL_FLUSH, blPAD, blPAD },
-    { BL_LEVELDESC, BL_TIME, BL_CONDITION, BL_VERS, BL_FLUSH, blPAD,
-      blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD }
+    { BL_LEVELDESC, BL_TOD, BL_BOOST, BL_TIME, BL_CONDITION, BL_VERS, BL_FLUSH,
+      blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD }
 };
 static const enum statusfields (*fieldorder)[MAX_PER_ROW];
 #undef MAX_PER_ROW
@@ -4728,7 +4754,7 @@ status_sanity_check(void)
         "BL_ENE", "BL_ENEMAX", "BL_XP", "BL_AC", "BL_MC", "BL_HD",         /* 11..15 */
         "BL_TIME", "BL_HUNGER", "BL_HP", "BL_HPMAX",              /* 16..19 */
         "BL_LEVELDESC", "BL_EXP", "BL_CONDITION",                 /* 20..22 */
-        "BL_VERS",                                                /*   23   */
+        "BL_VERS", "BL_TOD", "BL_BOOST",                          /*   23..25  */
     };
     static boolean in_sanity_check = FALSE;
     int i;

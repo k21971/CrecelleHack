@@ -202,6 +202,8 @@ erode_obj(
 
     switch (type) {
     case ERODE_BURN:
+        if (uvictim && otmp && otmp->otyp == HEATER_SHIELD)
+            pline("%s up.", Yobjnam2(otmp, "heat"));
         if (uvictim && inventory_resistance_check(AD_FIRE))
             return ER_NOTHING;
         vulnerable = is_flammable(otmp);
@@ -1333,7 +1335,8 @@ trapeffect_rocktrap(
             place_object(otmp, u.ux, u.uy);
 
             pline("A trap door in %s opens and %s falls on your %s!",
-                  the(ceiling(u.ux, u.uy)), an(xname(otmp)), body_part(HEAD));
+                  the(ceiling(u.ux, u.uy)), an(xname(otmp)), 
+                        (uarmh && uarmh->otyp == SKULL) ? "skull" : body_part(HEAD));
             if (uarmh) {
                 /* normally passes_rocks() would protect against a falling
                    rock, but not when wearing a helmet */
@@ -4583,7 +4586,7 @@ pot_acid_damage(
             or "...your <color> potion." (or just "...your potion.");
             don't re-describe potion here; if we used "It explodes!"
             then "it" might be misconstrued as applying to "grease" */
-        pline_The("potion%s %s!",
+        pline_The("tonic%s %s!",
                     plur(obj->quan), otense(obj, "explode"));
     } else {
         /* First message is

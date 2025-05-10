@@ -301,6 +301,7 @@ enum cost_alteration_types {
     COST_ROT     = 17, /* rotting attack */
     COST_CORRODE = 18, /* acid damage */
     COST_CRACK   = 19, /* damage to crystal armor */
+    COST_UNHARMONIZE = 20, /* de-harmonized an object */
 };
 
 /* used by unpaid_cost(shk.h) */
@@ -760,7 +761,7 @@ struct rogueroom {
     int nroom; /* Only meaningful for "real" rooms */
 };
 
-#define NUM_ROLES (13)
+#define NUM_ROLES (14)
 struct role_filter {
     boolean roles[NUM_ROLES + 1];
     short mask;
@@ -795,6 +796,7 @@ struct sinfo {
     int exiting;                /* an exit handler is executing */
     int saving;                 /* creating a save file */
     int restoring;              /* reloading a save file */
+    int freeingdata;            /* in saveobjchn(), mode FREEING */
     int in_getlev;              /* in getlev() */
     int in_moveloop;            /* normal gameplay in progress */
     int in_impossible;          /* reporting a warning */
@@ -1156,6 +1158,10 @@ typedef uint32_t mmflags_nht;     /* makemon MM_ flags */
 #define MHID_ALTMON  4 /* if mimicking a monster, include that */
 #define MHID_REGION  8 /* include region when mon is in one */
 
+/* flags for that_is_a_mimic() */
+#define MIM_REVEAL    1 /* seemimic() */
+#define MIM_OMIT_WAIT 2 /* strip beginning from "Wait!  That is a <foo>" */
+
 /* flags for make_corpse() and mkcorpstat(); 0..7 are recorded in obj->spe */
 #define CORPSTAT_NONE     0x00
 #define CORPSTAT_GENDER   0x03 /* 0x01 | 0x02 */
@@ -1300,9 +1306,6 @@ typedef uint32_t mmflags_nht;     /* makemon MM_ flags */
 #define MMOVE_DIED    2 /* monster died */
 #define MMOVE_DONE    3 /* monster used up all actions */
 #define MMOVE_NOMOVES 4 /* monster has no valid locations to move to */
-
-/* dungeon growth freq */
-#define DUN_GROWTH_FREQ 50
 
 /*** some utility macros ***/
 #define y_n(query) yn_function(query, ynchars, 'n', TRUE)
@@ -1521,17 +1524,16 @@ typedef uint32_t mmflags_nht;     /* makemon MM_ flags */
 #define getlogin() ((char *) 0)
 #endif /* MICRO */
 
-/* The function argument to qsort() requires a particular
- * calling convention under WINCE which is not the default
- * in that environment.
- */
-#if defined(WIN_CE)
-#define QSORTCALLBACK __cdecl
-#else
+/* These may have been defined to platform-specific values in *conf.h
+ * or on the compiler command line from a hints file or Makefile */
+
+#ifndef QSORTCALLBACK
 #define QSORTCALLBACK
 #endif
 
+#ifndef SIG_RET_TYPE
 #define SIG_RET_TYPE void (*)(int)
+#endif
 
 #define DEVTEAM_EMAIL "Antigulp"
 #define DEVTEAM_URL "https://www.github.com/nullcgt/crecellehack"

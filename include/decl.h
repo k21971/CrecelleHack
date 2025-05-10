@@ -737,7 +737,6 @@ struct instance_globals_o {
 
     /* restore.c */
     struct fruit *oldfruit;
-    long omoves;
 
     /* rumors.c */
     int oracle_flg; /* -1=>don't use, 0=>need init, 1=>init done */
@@ -1175,6 +1174,8 @@ struct instance_globals_saved_n {
 struct instance_globals_saved_o {
     /* rumors.c */
     unsigned oracle_cnt; /* oracles are handled differently from rumors... */
+    /* other */
+    long omoves;  /* level timestamp */
 };
 
 struct instance_globals_saved_p {

@@ -1,0 +1,73 @@
+# 1.0
+
+## Attributes
+- Dexterity contributes to AC.
+- Strength is normally the sole contributor to to-hit.
+
+## Artifacts
+- Many artifacts have semi-randomized object types.
+  - The randomized object type must have a similar damage
+    type to the original type of the artifact. For example,
+    Sunsword cannot be a mace.
+  - The brands are always the same type.
+
+## Weapons
+- Some weapons are "finesse weapons." To-hit bonuses with
+  finesse weapons are determined based on strength or
+  dexterity, whichever is higher.
+- Some weapons have a speed bonus or a speed penalty.
+  - Generally, orc weapons are faster, elven weapons deal more damage,
+    and dwarvish weapons deal more damage but are slower.
+- As in dNetHack, d(1, Luck) is added to your to-hit instead
+  of Luck.
+- New To-Hit bonuses:
+  Restricted: -2
+  Unskilled: 0
+  Basic: +1
+  Skilled: +2
+  Expert +3
+- New Damage bonuses:
+  Restricted: -2
+  Unskilled: 0
+  Basic: +1
+  Skilled: +2
+  Expert: +3
+
+## Object Descriptions
+### Potions
+- Volatile: Explodes upon breaking or colliding with an object.
+- Smelly: Smells revolting instead of peculiar.
+- Boiling: Causes damage when drunk. When broken, releases steam.
+- Freezing: Causes damage when drunk.
+
+## Roles and Races
+- Roles are not restricted by race, with the exception of
+  tourists (always human).
+- Knights receive a different mount depending on race.
+  Orcs: Warg
+  Elves: Jaguar
+
+## Monsters
+- The following monster classes are now valid mounts: f, d
+- New Monster: Poltergeist
+  - Invisible ghost class monster.
+  - Does not approach, collects objects like a nypmph. Throws any and
+    all objects it gets its hands on.
+
+## Monster AI
+- Elves and princes can engrave Elbereth to ward off the player.
+  - TODO: Forbid ranged attacks while on Elbereth?
+  - TODO: Intentionally break Elbereth when player hp is low?
+  - TODO: Elbereth vanishment?
+- Some monsters will avoid following the player into chokepoints.
+- Incorporated Slash'Em's traitor system, but updated to 3.7.
+- Monsters will only flee from the player if they could conceivably
+  outrun them.
+- Monsters will slather items with cans of grease if the player is
+  polymorphed into a relevant form.
+
+## Objects
+- Potions of water are considered inert and do not polymorph.
+- Potions leave behind empty bottles when drunk. These bottles
+  can be refilled with water at fountains, sinks, and other
+  locations.

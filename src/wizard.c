@@ -40,7 +40,7 @@ static NEARDATA const int nasties[] = {
     PM_BLACK_DRAGON, PM_RED_DRAGON, PM_ARCH_LICH, PM_VAMPIRE_LEADER,
     PM_MASTER_MIND_FLAYER, PM_DISENCHANTER, PM_WINGED_GARGOYLE,
     PM_STORM_GIANT, PM_OLOG_HAI, PM_ELF_NOBLE, PM_ELVEN_MONARCH,
-    PM_OGRE_TYRANT, PM_CAPTAIN, PM_GREMLIN, PM_GROTESQUE,
+    PM_OGRE_TYRANT, PM_CAPTAIN, PM_GREMLIN,
     /* lawful */
     PM_SILVER_DRAGON, PM_ORANGE_DRAGON, PM_GREEN_DRAGON,
     PM_YELLOW_DRAGON, PM_GUARDIAN_NAGA, PM_FIRE_GIANT,
@@ -558,6 +558,7 @@ pick_nasty(
             arch-lich and master lich are both flagged as hell-only;
             this filtering demotes arch-lich to master lich when
             outside of Gehennom (unless the latter has been genocided) */
+        /* Ignore day and night spawning here. */
         || (mons[res].geno & (Inhell ? G_NOHELL : G_HELL)) != 0)
         alt = big_to_little(res);
     if (alt != res && (svm.mvitals[alt].mvflags & G_GENOD) == 0) {
@@ -785,6 +786,11 @@ intervene(void)
     /* cases 0 and 5 don't apply on the Astral level */
     switch (which) {
     case 0:
+        if (has_no_tod_cycles(&u.uz)) {
+            You_feel("a strange pressure in the atmosphere.");
+        }
+        harassment_weather();
+        break;
     case 1:
         You_feel("vaguely nervous.");
         break;

@@ -47,19 +47,8 @@ staticfn void dispose_of_orig_obj(struct obj *);
    of hit points that will fit in a 15 bit integer. */
 #define FATAL_DAMAGE_MODIFIER 200
 
-/* artifact tracking; gift and wish imply found; it also gets set for items
-   seen on the floor, in containers, and wielded or dropped by monsters */
-struct arti_info {
-    Bitfield(exists, 1); /* 1 if corresponding artifact has been created */
-    Bitfield(found, 1);  /* 1 if artifact is known by hero to exist */
-    Bitfield(gift, 1);   /* 1 iff artifact was created as a prayer reward */
-    Bitfield(wish, 1);   /* 1 iff artifact was created via wish */
-    Bitfield(named, 1);  /* 1 iff artifact was made by naming an item */
-    Bitfield(viadip, 1); /* 1 iff dipped long sword became Excalibur */
-    Bitfield(lvldef, 1); /* 1 iff created by special level definition */
-    Bitfield(bones, 1);  /* 1 iff came from bones file */
-    Bitfield(rndm, 1);   /* 1 iff randomly generated */
-};
+/* arti_info struct definition moved to artifact.h */
+
 /* array of flags tracking which artifacts exist, indexed by ART_xx;
    ART_xx values are 1..N, element [0] isn't used; no terminator needed */
 static struct arti_info artiexist[1 + NROFARTIFACTS];
@@ -68,7 +57,7 @@ static short artiotypes[NROFARTIFACTS];
 /* discovery list; for N discovered artifacts, the first N entries are ART_xx
    values in discovery order, the remaining (NROFARTIFACTS-N) slots are 0 */
 static xint16 artidisco[NROFARTIFACTS];
-/* note: artiexist[] and artidisco[] don't need to be in struct g; they
+/* note: artiexist[] and artidisco[] don't need to be in struct ga; they
  * get explicitly initialized at game start so don't need to be part of
  * bulk re-init if game restart ever gets implemented.  They are saved
  * and restored but that is done through this file so they can be local.
@@ -124,7 +113,8 @@ hack_artifact_otyps(void)
             do {
                 otyp = rn2(BULLWHIP - SPEAR) + SPEAR;
             } while (!(objects[otyp].oc_dir & objects[art->otyp].oc_dir)
-                     || objects[otyp].oc_skill == P_POLEARMS);
+                     || objects[otyp].oc_skill == P_POLEARMS
+                     || otyp == RUBBER_HOSE);
             artiotypes[i] = otyp;
         }
         i++;
@@ -154,20 +144,44 @@ init_artifacts(void)
 void
 save_artifacts(NHFILE *nhfp)
 {
-    if (nhfp->structlevel) {
-        bwrite(nhfp->fd, (genericptr_t) artiexist, sizeof artiexist);
-        bwrite(nhfp->fd, (genericptr_t) artidisco, sizeof artidisco);
-        bwrite(nhfp->fd, (genericptr_t) artidisco, sizeof artiotypes);
+    int i;
+
+    for (i = 0; i < (NROFARTIFACTS + 1); ++i) {
+        if (nhfp->structlevel)
+            bwrite(nhfp->fd, (genericptr_t) &artiexist[i],
+                   sizeof (struct arti_info));
+    }
+    for (i = 0; i < (NROFARTIFACTS); ++i) {
+        if (nhfp->structlevel)
+            bwrite(nhfp->fd, (genericptr_t) &artidisco[i],
+                   sizeof (xint16));
+    }
+    for (i = 0; i < (NROFARTIFACTS); ++i) {
+        if (nhfp->structlevel)
+            bwrite(nhfp->fd, (genericptr_t) &artiotypes[i],
+                   sizeof (xint16));
     }
 }
 
 void
 restore_artifacts(NHFILE *nhfp)
 {
-    if (nhfp->structlevel) {
-        mread(nhfp->fd, (genericptr_t) artiexist, sizeof artiexist);
-        mread(nhfp->fd, (genericptr_t) artidisco, sizeof artidisco);
-        mread(nhfp->fd, (genericptr_t) artidisco, sizeof artiotypes);
+    int i;
+
+    for (i = 0; i < (NROFARTIFACTS + 1); ++i) {
+        if (nhfp->structlevel)
+            mread(nhfp->fd, (genericptr_t) &artiexist[i],
+                  sizeof (struct arti_info));
+    }
+    for (i = 0; i < (NROFARTIFACTS); ++i) {
+        if (nhfp->structlevel)
+            mread(nhfp->fd, (genericptr_t) &artidisco[i],
+                  sizeof (xint16));
+    }
+    for (i = 0; i < (NROFARTIFACTS); ++i) {
+        if (nhfp->structlevel)
+            mread(nhfp->fd, (genericptr_t) &artiotypes[i],
+                  sizeof (xint16));
     }
     hack_artifacts();   /* redo non-saved special cases */
 }
@@ -328,6 +342,8 @@ mk_artifact(
             otmp = 0;
         } /* otherwise, otmp has not changed; just fallthrough to return it */
     }
+    if (permapoisoned(otmp))
+        otmp->opoisoned = 1;
     return otmp;
 }
 
@@ -1382,7 +1398,7 @@ Mb_hit(struct monst *magr, /* attacker */
                 nomul(-3);
                 gm.multi_reason = "being scared stiff";
                 gn.nomovemsg = "";
-                if (magr && magr == u.ustuck && sticks(gy.youmonst.data)) {
+                if (magr && magr == u.ustuck && u.usticker) {
                     set_ustuck((struct monst *) 0);
                     You("release %s!", mon_nam(magr));
                 }
@@ -1640,6 +1656,11 @@ artifact_hit(
                 *dmgptr = 2 * mdef->mhp + FATAL_DAMAGE_MODIFIER;
                 pline(ROLL_FROM(behead_msg), wepdesc,
                       mon_nam(mdef));
+                if (mdef->data == &mons[PM_SKELETON]) {
+                    struct obj *skull = mksobj(SKULL, FALSE, FALSE);
+                    set_corpsenm(skull, PM_HUMAN);
+                    mpickobj(mdef, skull);
+                }
                 if (Hallucination && !flags.female)
                     pline("Good job Henry, but that wasn't Anne.");
                 otmp->dknown = TRUE;
@@ -2054,6 +2075,31 @@ arti_invoke(struct obj *obj)
             }
             break;
         }
+        case FLING_POISON:
+            if (getdir((char *) 0)) {
+                int venom = rn2(2) ? BLINDING_VENOM : ACID_VENOM;
+                struct obj *otmp = mksobj(venom, TRUE, FALSE);
+
+                otmp->spe = 1; /* the poison is yours */
+                throwit(otmp, 0L, FALSE, (struct obj *) 0);
+            } else {
+                /* no direction picked */
+                pline("%s", Never_mind);
+                obj->age = svm.moves;
+            }
+            break;
+        case SNOWSTORM:
+        case FIRESTORM:
+            {
+                int storm = oart->inv_prop == SNOWSTORM ? SPE_CONE_OF_COLD : SPE_FIREBALL;
+                int skill = spell_skilltype(storm);
+                int expertise = P_SKILL(skill);
+
+                P_SKILL(skill) = P_EXPERT;
+                (void) spelleffects(storm, FALSE, TRUE);
+                P_SKILL(skill) = expertise;
+            }
+            break;
         case BLINDING_RAY:
             if (getdir((char *) 0)) {
                 if (u.dx || u.dy) {
@@ -2743,5 +2789,12 @@ get_artifact(struct obj *obj)
             return &artilist[artidx];
     }
     return &artilist[ART_NONARTIFACT];
+}
+
+/* is object permanently poisoned? (currently only Grimtooth) */
+boolean
+permapoisoned(struct obj *obj)
+{
+    return (obj && is_art(obj, ART_GRIMTOOTH));
 }
 /*artifact.c*/

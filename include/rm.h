@@ -1,4 +1,4 @@
-/* NetHack 3.7	rm.h	$NHDT-Date: 1684058570 2023/05/14 10:02:50 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.107 $ */
+/* NetHack 3.7	rm.h	$NHDT-Date: 1745114235 2025/04/19 17:57:15 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.120 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Pasi Kallinen, 2017. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -126,7 +126,8 @@ enum levl_typ_types {
 #define IS_AIR(typ) ((typ) == AIR || (typ) == CLOUD)
 #define IS_SOFT(typ) ((typ) == AIR || (typ) == CLOUD || IS_POOL(typ))
 #define IS_WATERWALL(typ) ((typ) == WATER)
-#define IS_COATABLE(typ) (IS_STWALL(typ) || IS_DOOR(typ) || ((typ) >= ROOM && (typ) < ALTAR))
+#define IS_COATABLE(typ) (IS_STWALL(typ) || ((typ) >= IRONBARS && (typ) < ALTAR))
+#define IS_SUBMASKABLE(typ) (typ == ROOM || typ == CORR || typ == STONE)
 /* for surface checks when it's unknown whether a drawbridge is involved;
    drawbridge_up is the spot in front of a closed drawbridge and not the
    current surface at that spot; caveat: this evaluates its arguments more
@@ -149,6 +150,7 @@ enum levl_typ_types {
 #define COAT_BLOOD  0x08 /* various types of blood */
 #define COAT_FUNGUS 0x10 /* luminescent fungus */
 #define COAT_SHARDS 0x20 /* shards of glass */
+#define COAT_HONEY  0x40 /* honey */
 #define COAT_ALL 0xff
 
 /*
@@ -170,7 +172,8 @@ struct rm {
 
     /* HORRIBLE HACK INCOMING DANGER DANGER */
     Bitfield(pindex, 10);    /* This puts a hard upper limit on monster and potion types of 1024.*/
-    Bitfield(coat_info, 6);  /* Stores the info about the floor's coating. */
+    /* 6 free  bits */
+    Bitfield(coat_info, 8);  /* Stores the info about the floor's coating. */
 
     Bitfield(roomno, 6); /* room # for special rooms */
     Bitfield(edge, 1);   /* marks boundaries for special rooms*/
@@ -183,10 +186,11 @@ struct rm {
  *         |   bit5      |     bit4    |    bit3    |    bit2    |     bit1   |
  *         |   0x10      |      0x8    |     0x4    |     0x2    |      0x1   |
  *         +-------------+-------------+------------+------------+------------+
+ * wall    |W_NONPASSWALL|W_NONDIGGABLE| W_MASK     | W_MASK     | W_MASK     |
  * door    |D_TRAPPED    | D_LOCKED    | D_CLOSED   | D_ISOPEN   | D_BROKEN   |
  *         |D_WARNED     |             |            |            |            |
+ * sdoor   |D_TRAPPED    | D_LOCKED    | W_MASK     | W_MASK     | W_MASK     |
  * drawbr. |DB_FLOOR     | DB_ICE      | DB_LAVA    | DB_DIR     | DB_DIR     |
- * wall    |W_NONPASSWALL|W_NONDIGGABLE| W_MASK     | W_MASK     | W_MASK     |
  * sink    |             |             | S_LRING    | S_LDWASHER | S_LPUDDING |
  * tree    |             |             |            | TREE_SWARM | TREE_LOOTED|
  * throne  |             |             |            |            | T_LOOTED   |
@@ -195,7 +199,7 @@ struct rm {
  * pool    |ICED_MOAT    | ICED_POOL   |            |            |            |
  * grave   |             |             |            |            | emptygrave |
  * altar   |AM_SANCTUM   | AM_SHRINE   | AM_MASK    | AM_MASK    | AM_MASK    |
- * room    |             |             |            |            | SM_DIRT    |
+ * room    |             |             |            | SM_SAND    | SM_DIRT    |
  *         |             |             |            |            |            |
  *         +-------------+-------------+------------+------------+------------+
  *
@@ -211,8 +215,8 @@ struct rm {
  *      it isn't set to D_LOCKED (see cvt_sdoor_to_door() in detect.c).
  *
  *      D_LOCKED conflicts with W_NONDIGGABLE but the latter is not
- *      expected to be used on door locations.  D_TRAPPED conflicts
- *      with W_NONPASSWALL but secret doors aren't trapped.
+ *      expected to be used on door locations.
+ *      D_TRAPPED conflicts with W_NONPASSWALL.
  *      D_SECRET would not fit within struct rm's 5-bit 'flags' field.
  */
 
@@ -230,6 +234,11 @@ struct rm {
    that they are more easily tracked as flags. */
 #define SM_STONE 0x00
 #define SM_DIRT  0x01
+#define SM_SAND  0x02
+
+/* candig is used for floor trap locations so is available for overload
+   on walls, doors, secret doors, and furniture */
+#define arboreal_sdoor candig
 
 /*
  * The 5 possible states of doors.

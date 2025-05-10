@@ -9,6 +9,7 @@ staticfn boolean may_generate_eroded(struct obj *);
 staticfn void mkobj_erosions(struct obj *);
 staticfn void mkbox_cnts(struct obj *);
 staticfn unsigned nextoid(struct obj *, struct obj *);
+staticfn void fuzz_weight(struct obj *);
 staticfn void mksobj_init(struct obj **, boolean);
 staticfn int item_on_ice(struct obj *);
 staticfn void shrinking_glob_gone(struct obj *);
@@ -404,7 +405,7 @@ rndmonnum_adj(int minadj, int maxadj)
         return monsndx(ptr);
 
     /* Plan B: get any common monster */
-    excludeflags = G_UNIQ | G_NOGEN | (Inhell ? G_NOHELL : G_HELL);
+    excludeflags = G_UNIQ | G_NOGEN | (Inhell ? G_NOHELL : G_HELL) | (night() ? G_DAY : G_NIGHT);
     do {
         i = rn1(PM_STUDENT - LOW_PM, LOW_PM); /* changed to account for possible randm midbosses - antigulp */
         ptr = &mons[i];
@@ -417,7 +418,7 @@ rndmonnum_adj(int minadj, int maxadj)
 int
 rndmidboss(void)
 {
-    unsigned short excludeflags = (Inhell ? G_NOHELL : G_HELL);
+    unsigned short excludeflags = (Inhell ? G_NOHELL : G_HELL) | (night() ? G_DAY : G_NIGHT);
     int tryct = 0;
     int i;
     struct permonst *ptr;
@@ -426,6 +427,8 @@ rndmidboss(void)
         i = rn1(PM_STUDENT, LOW_PM);
         ptr = &mons[i];
         
+        if (tryct++ > 300)
+            return NON_PM;
         if ((ptr->geno & excludeflags) != 0)
             continue;
         if ((svm.mvitals[i].mvflags & G_GONE) != 0)
@@ -434,8 +437,6 @@ rndmidboss(void)
             continue;
         if (!montoostrong(i, monmax_difficulty(level_difficulty() + 4)))
             break;
-        if (tryct++ > 200)
-            return NON_PM;
     }
     return i;
 }
@@ -485,8 +486,11 @@ splitobj(struct obj *obj, long num)
 {
     struct obj *otmp;
 
+    /* can't split containers */
     if (obj->cobj || num <= 0L || obj->quan <= num)
-        panic("splitobj"); /* can't split containers */
+        panic("splitobj [cobj=%s num=%ld quan=%ld]",
+              obj->cobj ? "non-empty container" : "(null)", num, obj->quan);
+
     otmp = newobj();
     *otmp = *obj; /* copies whole structure */
     otmp->oextra = (struct oextra *) 0;
@@ -769,6 +773,7 @@ static const char *const alteration_verbs[] = {
     "cancel", "drain", "uncharge", "unbless", "uncurse", "disenchant",
     "degrade", "dilute", "erase", "burn", "neutralize", "destroy", "splatter",
     "bite", "open", "break the lock on", "rust", "rot", "tarnish", "crack",
+    "detune", 
 };
 
 /* possibly bill for an object which the player has just modified */
@@ -886,6 +891,26 @@ unknow_object(struct obj *obj)
     obj->known = objects[obj->otyp].oc_uses_known ? 0 : 1;
 }
 
+/* Fuzz the weight of a non-stacking object. Cluster weights around the
+   object class weight, so that very heavy and very light versions of
+   an object are rarer. Assumes that the obj's weight has already been
+   initialized. */
+staticfn void
+fuzz_weight(struct obj *obj) {
+    int wt, orig_wt, fuzz_factor;
+
+    if (objects[obj->otyp].oc_merge)
+        return;
+    orig_wt = obj->owt;
+    fuzz_factor = orig_wt / 4;
+    if (!fuzz_factor)
+        return;
+    wt = orig_wt + (2 * fuzz_factor) + 2 -  d(4, fuzz_factor);
+    if (wt < 1)
+        wt = 1;
+    obj->owt = wt;
+}
+
 /* do some initialization to newly created object; otyp must already be set */
 staticfn void
 mksobj_init(struct obj **obj, boolean artif)
@@ -912,6 +937,10 @@ mksobj_init(struct obj **obj, boolean artif)
             /* mk_artifact() with otmp and A_NONE will never return NULL */
             otmp = mk_artifact(otmp, (aligntyp) A_NONE, 99, TRUE);
             *obj = otmp;
+        }
+        /* 1/10 chance of making the object harmonic. */
+        if (!rn2(10)) {
+            boost_object(otmp, 0);
         }
         break;
     case FOOD_CLASS:
@@ -1058,6 +1087,16 @@ mksobj_init(struct obj **obj, boolean artif)
         case BAG_OF_TRICKS:
             otmp->spe = rn1(18, 3); /* 0..17 + 3 => 3..20 */
             break;
+        case SKULL:
+            otmp->spe = 0;
+            FALLTHROUGH;
+            /* FALLTHRU */
+        case SKULL_HELM:
+            tryct = 0;
+            do
+                otmp->corpsenm = rndmonnum_adj(10, 10);
+            while  (!has_skull(&mons[otmp->corpsenm]) && tryct++ < 30);
+            break;
         case FIGURINE:
             tryct = 0;
             /* figurines are slightly harder monsters */
@@ -1133,6 +1172,10 @@ mksobj_init(struct obj **obj, boolean artif)
             otmp->oerodeproof = otmp->rknown = 1;
 #endif
         }
+        /* Armor has a slightly higher chance than weapons of being harmonic */
+        if (!rn2(8)) {
+            boost_object(otmp, 0);
+        }
         break;
     case WAND_CLASS:
         if (otmp->otyp == WAN_WISHING)
@@ -1188,6 +1231,8 @@ mksobj_init(struct obj **obj, boolean artif)
     }
 
     mkobj_erosions(otmp);
+    if (permapoisoned(otmp))
+        otmp->opoisoned = 1;
 }
 
 /* mksobj(): create a specific type of object; result is always non-Null */
@@ -1223,13 +1268,17 @@ mksobj(int otyp, boolean init, boolean artif)
         otmp->fromsink = 0;
         do {
             otmp->corpsenm = rndmonnum();
-        } while (!has_blood(&mons[otmp->corpsenm]))
+        } while (!has_blood(&mons[otmp->corpsenm]));
         FALLTHROUGH;
         /*FALLTHRU*/
+    case SKULL:
+    case SKULL_HELM:
     case CORPSE:
         if (otmp->corpsenm == NON_PM) {
             otmp->corpsenm = undead_to_corpse(rndmonnum());
-            if (svm.mvitals[otmp->corpsenm].mvflags & (G_NOCORPSE | G_GONE))
+            if ((svm.mvitals[otmp->corpsenm].mvflags & (G_NOCORPSE | G_GONE))
+                || ((otmp->otyp == SKULL || otmp->otyp == SKULL_HELM) 
+                    && !has_skull(&mons[otmp->corpsenm])))
                 otmp->corpsenm = gu.urole.mnum;
         }
         FALLTHROUGH;
@@ -1280,7 +1329,49 @@ mksobj(int otyp, boolean init, boolean artif)
         otmp = mk_artifact(otmp, (aligntyp) A_NONE, 99, FALSE);
     }
     otmp->owt = weight(otmp);
+
+    /* Fuzz weights after base weight is set,
+     * mergeable items are checked for in fuzz_weight */
+    if (otmp->oclass == WEAPON_CLASS || otmp->oclass == ARMOR_CLASS
+        || is_weptool(otmp))
+        fuzz_weight(otmp);
     return otmp;
+}
+
+/* potential mimic shapes that should be undone by stone-to-flesh;
+   not used for objects that will be transformed when hit by stone-to-flesh */
+boolean
+stone_object_type(unsigned mappearance)
+{
+    int otyp = (int) mappearance;
+
+    /* we exclude wands, rings, and gems even though some qualify as stone;
+       there aren't any weapons or armor classified as made out of stone */
+    return (otyp == BOULDER || otyp == STATUE || otyp == FIGURINE);
+}
+
+/* possible mimic shapes that are affected by stone-to-flesh;
+   mappearance for furniture is a display symbol rather than a terrain type */
+boolean
+stone_furniture_type(unsigned mappearance)
+{
+    int sym = (int) mappearance;
+
+    switch (sym) {
+    case S_upstair:
+    case S_dnstair:
+    case S_brupstair:
+    case S_brdnstair:
+    case S_altar:
+    case S_throne:
+    case S_sink: /* stone sink is iffy; metal might be more appropriate */
+        return TRUE;
+    default:
+        if (sym >= S_vwall && sym <= S_trwall)
+            return TRUE;
+        break;
+    }
+    return FALSE;
 }
 
 /*
@@ -1343,6 +1434,9 @@ set_corpsenm(struct obj *obj, int id)
         if (obj->corpsenm != NON_PM && !dead_species(obj->corpsenm, TRUE)
             && (carried(obj) || mcarried(obj)))
             attach_fig_transform_timeout(obj);
+        obj->owt = weight(obj);
+        break;
+    case SKULL:
         obj->owt = weight(obj);
         break;
     case EGG:
@@ -1950,6 +2044,13 @@ weight(struct obj *obj)
         if (obj->oeaten)
             wt = eaten_stat(wt, obj);
         return wt;
+    } else if ((obj->oclass == WEAPON_CLASS || obj->oclass == ARMOR_CLASS
+                || is_weptool(obj))
+                && !objects[obj->otyp].oc_merge) {
+        return wt;
+    } else if ((obj->otyp == SKULL || obj->otyp == SKULL_HELM) && ismnum(obj->corpsenm)) {
+        /* Yuck */
+        return max(obj->otyp == SKULL ? 1 : 10, mons[obj->corpsenm].cwt / 50);
     } else if (obj->oclass == FOOD_CLASS && obj->oeaten) {
         return eaten_stat((int) obj->quan * wt, obj);
     } else if (obj->oclass == COIN_CLASS) {
@@ -2486,7 +2587,7 @@ remove_object(struct obj *otmp)
     coordxy y = otmp->oy;
 
     if (otmp->where != OBJ_FLOOR)
-        panic("remove_object: obj not on floor");
+        panic("remove_object: obj where=%d, not on floor", otmp->where);
     extract_nexthere(otmp, &svl.level.objects[x][y]);
     extract_nobj(otmp, &fobj);
     if (otmp->otyp == BOULDER)
@@ -2561,7 +2662,7 @@ obj_extract_self(struct obj *obj)
         extract_nobj(obj, &gb.billobjs);
         break;
     default:
-        panic("obj_extract_self");
+        panic("obj_extract_self, where=%d", obj->where);
         break;
     }
 }
@@ -2625,7 +2726,7 @@ add_to_minv(struct monst *mon, struct obj *obj)
     struct obj *otmp;
 
     if (obj->where != OBJ_FREE)
-        panic("add_to_minv: obj not free");
+        panic("add_to_minv: obj where=%d, not free", obj->where);
 
     /* merge if possible */
     for (otmp = mon->minvent; otmp; otmp = otmp->nobj)
@@ -2653,7 +2754,7 @@ add_to_container(struct obj *container, struct obj *obj)
     struct obj *otmp;
 
     if (obj->where != OBJ_FREE)
-        panic("add_to_container: obj not free");
+        panic("add_to_container: obj where=%d, not free", obj->where);
     if (container->where != OBJ_INVENT && container->where != OBJ_MINVENT)
         obj_no_longer_held(obj);
 
@@ -2673,7 +2774,7 @@ void
 add_to_migration(struct obj *obj)
 {
     if (obj->where != OBJ_FREE)
-        panic("add_to_migration: obj not free");
+        panic("add_to_migration: obj where=%d, not free", obj->where);
 
     if (obj->unpaid) /* caller should have changed unpaid item to stolen */
         impossible("unpaid object migrating to another level? [%s]",
@@ -2695,7 +2796,7 @@ void
 add_to_buried(struct obj *obj)
 {
     if (obj->where != OBJ_FREE)
-        panic("add_to_buried: obj not free");
+        panic("add_to_buried: obj where=%d, not free", obj->where);
 
     obj->where = OBJ_BURIED;
     obj->nobj = svl.level.buriedobjlist;
@@ -2774,10 +2875,15 @@ dealloc_obj(struct obj *obj)
         obj->where = OBJ_LUAFREE;
         return;
     }
-    /* mark object as deleted, put it into queue to be freed */
-    obj->where = OBJ_DELETED;
-    obj->nobj = go.objs_deleted;
-    go.objs_deleted = obj;
+    if (!program_state.freeingdata) {
+        /* mark object as deleted, put it into queue to be freed */
+        obj->where = OBJ_DELETED;
+        obj->nobj = go.objs_deleted;
+        go.objs_deleted = obj;
+    } else {
+        /* when saving, there's no need to stage deletions on objs_deleted */
+        dealloc_obj_real(obj);
+    }
 }
 
 /* actually deallocate the object */
@@ -2803,12 +2909,12 @@ dobjsfree(void)
     struct obj *otmp;
 
     while (go.objs_deleted) {
-        otmp = go.objs_deleted->nobj;
-        if (go.objs_deleted->where != OBJ_DELETED)
-            panic("dobjsfree: obj where is not OBJ_DELETED");
-        obj_extract_self(go.objs_deleted);
-        dealloc_obj_real(go.objs_deleted);
-        go.objs_deleted = otmp;
+        otmp = go.objs_deleted;
+        go.objs_deleted = otmp->nobj;
+        if (otmp->where != OBJ_DELETED)
+            panic("dobjsfree: obj where=%d, not OBJ_DELETED", otmp->where);
+        obj_extract_self(otmp);
+        dealloc_obj_real(otmp);
     }
 }
 
@@ -2844,7 +2950,7 @@ hornoplenty(
                 if (obj->otyp == POT_OIL)
                     fixup_oil(obj, (struct obj *) NULL);
             }
-            what = (obj->quan > 1L) ? "Some potions" : "A potion";
+            what = (obj->quan > 1L) ? "Some tonics" : "A tonic";
         } else {
             obj = mkobj(FOOD_CLASS, FALSE);
             if (obj->otyp == FOOD_RATION && !rn2(7))

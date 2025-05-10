@@ -948,7 +948,7 @@ merged(struct obj **potmp, struct obj **pobj)
         if (discovered && otmp->where == OBJ_INVENT
             && obj->how_lost != LOST_THROWN
             && otmp->how_lost != LOST_THROWN) {
-            pline("You learn more about your items by comparing them.");
+            You("learn more about your items by comparing them.");
         }
 
         obfree(obj, otmp); /* free(obj), bill->otmp */
@@ -3209,7 +3209,7 @@ itemactions(struct obj *otmp)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', buf);
     } else if (otmp->oclass == POTION_CLASS) {
         /* FIXME? this should probably be moved to 'D' rather than be 'a' */
-        Sprintf(buf, "Dip something into %s potion%s",
+        Sprintf(buf, "Dip something into %s tonic%s",
                 is_plural(otmp) ? "one of these" : "this", plur(otmp->quan));
         ia_addmenu(win, IA_DIP_OBJ, 'a', buf);
     } else if (otmp->otyp == EXPENSIVE_CAMERA)
@@ -3348,7 +3348,7 @@ itemactions(struct obj *otmp)
     /* q: drink item */
     if (otmp->oclass == POTION_CLASS) {
         Sprintf(buf, "Quaff (drink) %s",
-                (otmp->quan > 1L) ? "one of these potions" : "this potion");
+                (otmp->quan > 1L) ? "one of these tonics" : "this tonic");
         ia_addmenu(win, IA_QUAFF_OBJ, 'q', buf);
     }
 
@@ -4604,6 +4604,8 @@ dfeature_at(coordxy x, coordxy y, char *buf)
     const char *dfeature = 0;
     static char altbuf[BUFSZ];
     stairway *stway = stairway_at(x, y);
+    boolean listing = FALSE;
+    altbuf[0] = '\0';
 
     if (IS_DOOR(ltyp)) {
         switch (lev->doormask) {
@@ -4653,20 +4655,41 @@ dfeature_at(coordxy x, coordxy y, char *buf)
         cmap = S_tree; /* "tree" */
     else if (ltyp == IRONBARS)
         dfeature = "set of iron bars";
-    else if (IS_COATABLE(ltyp)) { 
+    else if (IS_COATABLE(ltyp)) {
+        Sprintf(altbuf, "patch of ");
         if ((lev->coat_info & COAT_POTION) != 0) {
-            Sprintf(altbuf, "pool of %s liquid", OBJ_DESCR(objects[lev->pindex]));
-            dfeature = altbuf;
-        } else if ((lev->coat_info & COAT_BLOOD) != 0) {
+            if (levl[x][y].pindex == POT_WATER)
+                Sprintf(eos(altbuf), "water");
+            else
+                potion_coating_text(eos(altbuf), levl[x][y].pindex);
+            listing = TRUE;
+        }
+        if ((lev->coat_info & COAT_BLOOD) != 0) {
             if (ismnum(levl[x][y].pindex)) {
-                Sprintf(altbuf, "pool of %s blood", mons[levl[x][y].pindex].pmnames[NEUTRAL]);
-                dfeature = altbuf;
+                Sprintf(eos(altbuf), "%s%s blood", listing ? " and " : "", mons[levl[x][y].pindex].pmnames[NEUTRAL]);
             } else
-                dfeature = "pool of blood";
-        } else if ((lev->coat_info & COAT_GRASS) != 0)
-            dfeature = "patch of grass";
-        else if ((lev->coat_info & COAT_ASHES) != 0)
-            dfeature = "pile of ash";
+                Sprintf(eos(altbuf), "%sblood", listing ? " and " : "");
+            listing = TRUE;
+        }
+        if ((lev->coat_info & COAT_GRASS) != 0) {
+            Sprintf(eos(altbuf), "%sgrass", listing ? " and " : "");
+            listing = TRUE;
+        }
+        if ((lev->coat_info & COAT_ASHES) != 0) {
+            Sprintf(eos(altbuf), "%sash", listing ? " and " : "");
+            listing = TRUE;
+        }
+        if ((lev->coat_info & COAT_HONEY) != 0) {
+            Sprintf(eos(altbuf), "%shoney", listing ? " and " : "");
+            listing = TRUE;
+        }
+        if ((lev->coat_info & COAT_SHARDS) != 0) {
+            Sprintf(eos(altbuf), "%ssharp dust", listing ? " and " : "");
+            listing = TRUE;
+        }
+        Sprintf(eos(altbuf), " on the %s", surface(x, y));
+        if (listing)
+            dfeature = altbuf;
     }
 
     if (cmap >= 0)
@@ -5002,7 +5025,7 @@ mergable(
         || (obj->bknown != otmp->bknown && !Role_if(PM_CLERIC) &&
             (Blind || Hallucination))
         || obj->oeroded != otmp->oeroded || obj->oeroded2 != otmp->oeroded2
-        || obj->greased != otmp->greased)
+        || obj->greased != otmp->greased || obj->booster != otmp->booster)
         return FALSE;
 
     if ((erosion_matters(obj))
@@ -5246,7 +5269,7 @@ doprring(void)
         (void) dispinv_with_action(lets, use_inuse_mode,
                                    /* note; alternate label will be ignored
                                       if 'use_inuse_mode' is False */
-                                   (ct == 1) ? "Ring" : "Rings");
+                                   (ct == 1) ? "Band" : "Bands");
     }
     return ECMD_OK;
 }
@@ -5365,7 +5388,7 @@ useupf(struct obj *obj, long numused)
  */
 static NEARDATA const char *names[] = {
     0, "Illegal objects", "Weapons", "Armor", "Rings", "Amulets", "Tools",
-    "Comestibles", "Potions", "Scrolls", "Spellbooks", "Wands", "Coins",
+    "Comestibles", "Tonics", "Scrolls", "Spellbooks", "Wands", "Coins",
     "Gems/Stones", "Boulders/Statues", "Empty Bottles", "Iron balls", "Chains", "Venoms"
 };
 static NEARDATA const char oth_symbols[] = { CONTAINED_SYM, '\0' };

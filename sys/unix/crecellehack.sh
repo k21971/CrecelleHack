@@ -5,7 +5,7 @@
 
 HACKDIR=/usr/games/lib/crecellehackdir
 export HACKDIR
-HACK=$HACKDIR/nethack
+HACK=$HACKDIR/crecellehack
 
 # Since Nethack.ad is installed in HACKDIR, add it to XUSERFILESEARCHPATH
 case "x$XUSERFILESEARCHPATH" in

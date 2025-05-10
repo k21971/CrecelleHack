@@ -62,7 +62,7 @@ struct permonst {
         ac,                     /* (base) armor class */
         mr;                     /* (base) magic resistance */
     aligntyp maligntyp;         /* basic monster alignment */
-    unsigned short geno;        /* creation/geno mask value */
+    unsigned long geno;        /* creation/geno mask value */
     struct attack mattk[NATTK]; /* attacks matrix */
     unsigned short cwt,         /* weight of corpse */
         cnutrit;                /* its nutritional value */
@@ -73,6 +73,7 @@ struct permonst {
     unsigned long mflags1,      /* boolean bitflags */
         mflags2,                /* more boolean bitflags */
         mflags3;                /* yet more boolean bitflags */
+    unsigned short mboost;      /* boosts on this terrain */
     uchar difficulty;           /* toughness (formerly from  makedefs -m) */
     uchar mcolor;               /* color to use */
 };

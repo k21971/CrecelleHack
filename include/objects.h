@@ -86,7 +86,7 @@ GENERIC("ring",       RING_CLASS,    GENERIC_RING),    /* [4] */
 GENERIC("amulet",     AMULET_CLASS,  GENERIC_AMULET),  /* [5] */
 GENERIC("tool",       TOOL_CLASS,    GENERIC_TOOL),    /* [6] */
 GENERIC("food",       FOOD_CLASS,    GENERIC_FOOD),    /* [7] */
-GENERIC("potion",     POTION_CLASS,  GENERIC_POTION),  /* [8] */
+GENERIC("tonic",      POTION_CLASS,  GENERIC_POTION),  /* [8] */
 GENERIC("scroll",     SCROLL_CLASS,  GENERIC_SCROLL),  /* [9] */
 GENERIC("spellbook",  SPBOOK_CLASS,  GENERIC_SPBOOK),  /* [10] */
 GENERIC("wand",       WAND_CLASS,    GENERIC_WAND),    /* [11] */
@@ -365,6 +365,10 @@ WEAPON("mace", NoDes,
        1, 0, 0, 0, 40,  30,   5,  6,  6, 0, 0, B,   P_MACE, IRON, HI_METAL,
                                                         MACE),
         /* +1 small */
+WEAPON("silver mace", NoDes,
+       1, 0, 0, 0,  2,  36,  60,  6,  6, 0, 0, B,   P_MACE, SILVER, HI_SILVER,
+                                                        SILVER_MACE),
+        /* +1 small */
 WEAPON("morning star", NoDes,
        1, 0, 0, 0, 12, 120,  10,  4,  6, 0, 1, B,   P_MORNING_STAR, IRON, HI_METAL,
                                                         MORNING_STAR),
@@ -472,6 +476,12 @@ HELM("dunce cap", "conical hat",
         /* sets Int and Wis to fixed value of 6, so actually provides
            protection against death caused by Int being drained below 3 */
                                                         DUNCE_CAP),
+HELM("skull", NoDes,
+     1, 0,           0,  2, 3, 10, 30, 10, 0, BONE, CLR_WHITE,
+                                                        SKULL),
+HELM("skull helm", NoDes,
+     1, 0,           0,  1, 3, 10, 50, 9, 10, BONE, CLR_WHITE,
+                                                        SKULL_HELM),
 HELM("dented pot", NoDes,
      1, 0,           0,  2, 0, 10,  8,  9, 3, IRON, CLR_BLACK,
                                                         DENTED_POT),
@@ -658,21 +668,24 @@ CLOAK("cloak of displacement", "piece of cloth",
                                                         CLOAK_OF_DISPLACEMENT),
 
 /* shields */
-SHIELD("small shield", NoDes,
+SHIELD("roundshield", NoDes,
        1, 0, 0,          0, 6, 0,  30,  3, 9, 20,  WOOD, HI_WOOD,
-                                                        SMALL_SHIELD),
+                                                        ROUNDSHIELD),
 SHIELD("elven shield", "blue and green shield",
        0, 0, 0,          0, 2, 0,  40,  7, 8, 20,  WOOD, CLR_GREEN,
                                                         ELVEN_SHIELD),
-SHIELD("Uruk-hai shield", "white-handed shield",
+SHIELD("fell orc shield", "serrated roundshield",
        0, 0, 0,          0, 2, 0,  50,  7, 9, 20,  IRON, HI_METAL,
-                                                        URUK_HAI_SHIELD),
-SHIELD("orcish shield", "red-eyed shield",
+                                                        FELL_ORC_SHIELD),
+SHIELD("orcish shield", "notched roundshield",
        0, 0, 0,          0, 2, 0,  50,  7, 9, 20,  IRON, CLR_RED,
                                                         ORCISH_SHIELD),
-SHIELD("large shield", NoDes,
+SHIELD("kite shield", NoDes,
        1, 0, 1,          0, 7, 0, 100, 10, 8, 20,  IRON, HI_METAL,
-                                                        LARGE_SHIELD),
+                                                        KITE_SHIELD),
+SHIELD("heater shield", NoDes,
+       1, 0, 1,          0, 7, 0, 120, 10, 7, 20,  IRON, HI_METAL,
+                                                        HEATER_SHIELD),
 SHIELD("dwarvish roundshield", "large round shield",
        0, 0, 0,          0, 4, 0, 100, 10, 8, 20,  IRON, HI_METAL,
                                                         DWARVISH_ROUNDSHIELD),
@@ -1193,9 +1206,9 @@ POTION("water",                 "clear",  0, 0, 80, 100, CLR_CYAN,
            BITS(0, 1, 0, 0, mgc, 0, 0, 0, 0, 0, 0, 0, P_NONE, PAPER),    \
            0, SCROLL_CLASS, prob, 0, 5, cost, 0, 0, 0, 0, 6, \
            HI_PAPER, sn)
-SCROLL("enchant armor",           "4TN ETC MOTD",  1,  63,  80,
+SCROLL("harmonize armor",         "4TN ETC MOTD",  1,  63,  80,
                                                         SCR_ENCHANT_ARMOR),
-SCROLL("destroy armor",              "ECNEREFER",  1,  45, 100,
+SCROLL("destroy armor",              "ET ITANIS",  1,  45, 100,
                                                         SCR_DESTROY_ARMOR),
 SCROLL("confuse monster",              "DR 0451",  1,  53, 100,
                                                         SCR_CONFUSE_MONSTER),
@@ -1203,15 +1216,15 @@ SCROLL("scare monster",           "UDLER BASTRT",  1,  35, 100,
                                                         SCR_SCARE_MONSTER),
 SCROLL("remove curse",                "BOFH PFY",  1,  65,  80,
                                                         SCR_REMOVE_CURSE),
-SCROLL("enchant weapon",         "FOOELS DAIYEN",  1,  80,  60,
+SCROLL("harmonize weapon",       "FOOELS DAIYEN",  1,  80,  60,
                                                         SCR_ENCHANT_WEAPON),
 SCROLL("create monster",            "FUHUHUHUHU",  1,  45, 200,
                                                         SCR_CREATE_MONSTER),
-SCROLL("taming",                      "OLOYWAGS",  1,  15, 200,
+SCROLL("taming",                         "IFNDEF",  1,  15, 200,
                                                         SCR_TAMING),
-SCROLL("erasure",               "DOT ERSUS MOK",  1,  15, 300,
+SCROLL("erasure",               "DOT ERSUS MOK", 1,  15, 300,
                                                         SCR_GENOCIDE),
-SCROLL("light",                       "VIB GYOR",  1,  90,  50,
+SCROLL("light",                        "VIBGYOR",  1,  90,  50,
                                                         SCR_LIGHT),
 SCROLL("teleportation",        "ORBITUS TERTIUS",  1,  55, 100,
                                                         SCR_TELEPORTATION),
@@ -1223,7 +1236,7 @@ SCROLL("identify",               "YADANI CHEAVE",  1, 180,  20,
                                                         SCR_IDENTIFY),
 SCROLL("magic mapping",                "TRAESTO",  1,  45, 100,
                                                         SCR_MAGIC_MAPPING),
-SCROLL("amnesia",                   "DUAM XNAHT",  1,  35, 200,
+SCROLL("amnesia",                    "OOM KILAR",  1,  35, 200,
                                                         SCR_AMNESIA),
 SCROLL("fire",                     "LP0 ON FIRE",  1,  30, 100,
                                                         SCR_FIRE),
@@ -1258,12 +1271,12 @@ XTRA_SCROLL_LABEL(      "NARPAS SWORD", SC12), /* Metroid */
 XTRA_SCROLL_LABEL(         "BATTLE999", SC13), /* Final Fantasy 7 Debug Code */
 XTRA_SCROLL_LABEL( "SAZUN HERA DUODER", SC14), /* Merseburg Incantations */
 XTRA_SCROLL_LABEL(       "BEN ZI BENA", SC15), /* Merseburg Incantations */
-XTRA_SCROLL_LABEL(        "SORD GHOTI", SC16), /* pronounced as 'fish',
-                                                * George Bernard Shaw */
-XTRA_SCROLL_LABEL(           "KADORTO", SC17), /* Wizardry */
+XTRA_SCROLL_LABEL(           "KRYPT3R", SC16), /* Battlestar Galactica */
+XTRA_SCROLL_LABEL(         "TILTOWAIT", SC17), /* Wizardry */
 XTRA_SCROLL_LABEL(      "VAS KAL CORP", SC18), /* Ultima */
 XTRA_SCROLL_LABEL(            "H POKE", SC19), /* Glitch Pokemon */
 XTRA_SCROLL_LABEL( "SQUEMISH OSIFRAGE", SC20), /* RSA Cipher [sic] */
+XTRA_SCROLL_LABEL(          "FLVR TXT", SC21), /* suggested by my wife */
 
 #undef XTRA_SCROLL_LABEL
     /* These must come last because they have special fixed descriptions.
@@ -1488,6 +1501,8 @@ WAND("opening",          "zinc", 25, 150, 1, IMMEDIATE, METAL, HI_METAL,
                                                     WAN_OPENING),
 WAND("locking",      "aluminum", 25, 150, 1, IMMEDIATE, METAL, HI_METAL,
                                                     WAN_LOCKING),
+WAND("fecundity",      "swishy", 45, 200, 1, IMMEDIATE, WOOD,  HI_WOOD,
+                                                    WAN_FECUNDITY),
 WAND("probing",       "uranium", 30, 150, 1, IMMEDIATE, METAL, HI_METAL,
                                                     WAN_PROBING),
 WAND("digging",          "iron", 55, 150, 1, RAY, IRON, HI_METAL,

@@ -188,7 +188,7 @@ can_reach_floor(boolean check_pit)
     struct trap *t;
 
     if (u.uswallow
-        || (u.ustuck && !sticks(gy.youmonst.data)
+        || (u.ustuck && !u.usticker
             /* assume that arms are pinned rather than that the hero
                has been lifted up above the floor [doesn't explain
                how hero can attack the creature holding him or her;
@@ -588,6 +588,14 @@ doengrave_sfx_item_WAN(struct _doengrave_ctx *de)
             Sprintf(de->post_engr_text, "The bugs on the %s speed up!",
                     surface(u.ux, u.uy));
         }
+        break;
+    case WAN_FECUNDITY:
+        if (!Blind) {
+            Sprintf(de->post_engr_text, "The bugs on the %s grow up!",
+                    surface(u.ux, u.uy));
+        }
+        makemon(&mons[PM_GRID_BUG], u.ux, u.uy, rn2(5) 
+                ? (NO_MINVENT | MM_NOMSG) : (MM_EDOG | MM_NOMSG | NO_MINVENT));
         break;
     case WAN_POLYMORPH:
         if (de->oep) {
@@ -1330,7 +1338,7 @@ engrave(void)
          * However, you can engrave "Elb", then "ere", then "th", by taking
          * advantage of the rounding down. */
         if (svc.context.engraving.actionct %
-            ((levl[u.ux][u.uy].typ == ROOM && levl[u.ux][u.uy].submask == SM_DIRT) ? 6 : 2) == 1) { /* 1st,3rd,... action */
+            ((IS_SUBMASKABLE(levl[u.ux][u.uy].typ) && levl[u.ux][u.uy].submask == SM_DIRT) ? 6 : 2) == 1) { /* 1st,3rd,... action */
             /* deduct a point on 1st, 3rd, 5th, ... turns, unless this is the
              * last character being engraved (a rather convoluted way to round
              * down), but always deduct a point on the 1st turn to prevent
@@ -1536,9 +1544,10 @@ save_engravings(NHFILE *nhfp)
             dealloc_engr(ep);
     }
     if (perform_bwrite(nhfp)) {
-        if (nhfp->structlevel)
+        if (nhfp->structlevel) {
             bwrite(nhfp->fd, (genericptr_t) &no_more_engr,
                    sizeof no_more_engr);
+        }
     }
     if (release_data(nhfp))
         head_engr = 0;
@@ -1552,9 +1561,9 @@ rest_engravings(NHFILE *nhfp)
 
     head_engr = 0;
     while (1) {
-        if (nhfp->structlevel)
-            mread(nhfp->fd, (genericptr_t) &lth, sizeof (unsigned));
-
+        if (nhfp->structlevel) {
+            mread(nhfp->fd, (genericptr_t) &lth, sizeof(unsigned));
+        }
         if (lth == 0)
             return;
         ep = newengr(lth);

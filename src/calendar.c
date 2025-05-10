@@ -27,6 +27,31 @@
 #endif
 
 staticfn struct tm *getlt(void);
+staticfn void weather_effects(void);
+staticfn void weather_messages(void);
+
+static struct weather dungeon_precips[] = {
+    { 0, WTHM_ALL_PRECIPS, 300, 575 },
+    { WTH_DRIZZLE, WTHM_ALL_PRECIPS, 200, 200 },
+    { WTH_RAIN, WTHM_ALL_PRECIPS, 100, 200 },
+    { WTH_DOWNBURST, WTHM_ALL_PRECIPS, 50, 10 },
+    { WTH_ACIDRAIN, WTHM_ALL_PRECIPS, 50, 5 },
+    { WTH_HAIL, 0, 20, 10 },
+};
+
+static struct weather dungeon_winds[] = {
+    { 0, WTHM_ALL_WINDS, 200, 400 },
+    { WTH_BREEZE, WTH_GUST, 300, 250 },
+    { WTH_WIND, 0, 150, 200 },
+    { WTH_GUST, WTH_BREEZE, 150, 145 },
+    { WTH_TORNADO | WTH_GUST, 0, 50, 5 }
+};
+
+static struct weather harassment_precip[] = {
+    { WTH_ACIDRAIN, 0, 100, 350 },
+    { WTH_FIRERAIN, 0, 100, 350 },
+    { WTH_HAIL, 0, 100, 300 }
+};
 
 time_t
 getnow(void)
@@ -212,7 +237,7 @@ friday_13th(void)
 }
 
 int
-night(void)
+rt_night(void)
 {
     int hour = getlt()->tm_hour;
 
@@ -220,10 +245,335 @@ night(void)
 }
 
 int
-midnight(void)
+night(void)
+{
+    return (u.uenvirons.tod == TOD_EARLYNIGHT
+            || u.uenvirons.tod == TOD_LATENIGHT);
+}
+
+int
+rt_midnight(void)
 {
     return (getlt()->tm_hour == 0);
 }
 
+int
+midnight(void)
+{
+    return ((u.uenvirons.tod == TOD_EARLYNIGHT 
+                && u.uenvirons.tod_cnt <= 100)
+            || (u.uenvirons.tod == TOD_LATENIGHT 
+                && u.uenvirons.tod_cnt >= TOD_QUARTER - 100));
+}
+
+int
+midday(void)
+{
+    return ((u.uenvirons.tod == TOD_MORNING
+                && u.uenvirons.tod_cnt <= 100)
+            || (u.uenvirons.tod == TOD_EVENING
+                    && u.uenvirons.tod_cnt >= TOD_QUARTER - 100));
+}
+
+int
+calc_dt_vis(void)
+{
+    int amt;
+    if (night()) return u.nv_range;
+    amt = (u.uenvirons.tod == TOD_MORNING) 
+            ? (TOD_QUARTER - u.uenvirons.tod_cnt) : u.uenvirons.tod_cnt;
+    if (u.uenvirons.curr_weather & WTH_DRIZZLE) amt -= 100;
+    if (u.uenvirons.curr_weather & (WTH_RAIN | WTH_ACIDRAIN)) {
+         amt -= 200;
+    }
+    if (u.uenvirons.curr_weather & WTH_ASHES) amt -= 300;
+    return max(1, 3 + (amt / 100));
+}
+
+struct weather *roll_precip(void)
+{
+    int i;
+    int x = 0;
+    int total_prob = 0;
+    for (i = 0; i < SIZE(dungeon_precips); i++) {
+        x += dungeon_precips[i].prob;
+    }
+    x = rn2(x);
+    for (i = 0; i < SIZE(dungeon_precips); i++) {
+        total_prob += dungeon_precips[i].prob;
+        if (x < total_prob) {
+            u.uenvirons.inc_precip = dungeon_precips[i];
+            return &dungeon_precips[i];
+        }
+    }
+    panic("Like tears in the rain... (%d %d)", x, total_prob);
+}
+
+struct weather *roll_wind(void)
+{
+    int i;
+    int x = 0;
+    int total_prob = 0;
+    for (i = 0; i < SIZE(dungeon_winds); i++) {
+        x += dungeon_winds[i].prob;
+    }
+    x = rn2(x);
+    for (i = 0; i < SIZE(dungeon_winds); i++) {
+        total_prob += dungeon_winds[i].prob;
+        if (x < total_prob) {
+            u.uenvirons.inc_wind = dungeon_winds[i];
+            return &dungeon_precips[i];
+        }
+    }
+    panic("A black wind blows through you... (%d %d)", x, total_prob);
+}
+
+void
+doenvirons(void)
+{
+    u.uenvirons.tod_cnt--;
+    u.uenvirons.precip_cnt--;
+    u.uenvirons.wind_cnt--;
+    u.uenvirons.dt_vis = calc_dt_vis();
+    weather_messages();
+    if (!u.uenvirons.tod_cnt) {
+        u.uenvirons.tod_cnt = TOD_QUARTER;
+        u.uenvirons.tod += 1;
+        if (u.uenvirons.tod > TOD_LATENIGHT) u.uenvirons.tod = TOD_MORNING;
+        timechange_message(FALSE);
+    }
+    if (!u.uenvirons.precip_cnt) {
+        weatherchange_message(TRUE);
+        u.uenvirons.curr_weather &= ~u.uenvirons.inc_precip.overwrite;
+        u.uenvirons.curr_weather |= u.uenvirons.inc_precip.def;
+        u.uenvirons.precip_cnt = rn1(u.uenvirons.inc_precip.timeout, u.uenvirons.inc_precip.timeout);
+        roll_precip();
+    }
+    if (!u.uenvirons.wind_cnt) {
+        weatherchange_message(FALSE);
+        if (INC_WIND(WTH_TORNADO)) {
+            (void) makemon(&mons[PM_TORNADO], 0, 0, NO_MM_FLAGS);
+        }
+        u.uenvirons.curr_weather &= ~u.uenvirons.inc_wind.overwrite;
+        u.uenvirons.curr_weather |= u.uenvirons.inc_wind.def;
+        u.uenvirons.wind_cnt = rn1(u.uenvirons.inc_wind.timeout, u.uenvirons.inc_wind.timeout);
+        roll_wind();
+    }
+    weather_effects();
+}
+
+staticfn void
+weather_effects(void)
+{
+    int x, y;
+    if (has_no_tod_cycles(&u.uz)) return;
+    /* Rain and acid rain */
+    if (IS_RAINING) {
+        if (rn2(CURR_WEATHER(WTH_DRIZZLE) ? 2 
+                : CURR_WEATHER(WTH_DOWNBURST) ? 8 : 4)) {
+            x = rn2(COLNO);
+            y = rn2(ROWNO);
+            floor_alchemy(x, y, CURR_WEATHER(WTH_ACIDRAIN) ? POT_ACID 
+                                                          : POT_WATER, 0);
+        }
+    }
+    /* Ash fall */
+    if (CURR_WEATHER(WTH_ASHES)) {
+        x = rn2(COLNO);
+        y = rn2(ROWNO);
+        add_coating(x, y, COAT_ASHES, 0);
+    }
+    /* Hailstones */
+    if (CURR_WEATHER(WTH_HAIL)) {
+        if (!rn2(4)) {
+            You("are pounded by hailstones!");
+            losehp(Maybe_Half_Phys(d(1, 4)), "pounded by hailstones",
+                NO_KILLER_PREFIX);
+        }
+    }
+    /* Rain of Fire */
+    if (CURR_WEATHER(WTH_FIRERAIN)) {
+        x = rn2(COLNO);
+        y = rn2(ROWNO);
+        if (isok(x, y)) {
+            clear_heros_fault(create_bonfire(x, y, 1, 1));
+        }
+    }
+    /* Tornados */
+    if (CURR_WEATHER(WTH_TORNADO) && !rn2(150)) {
+        (void) makemon(&mons[PM_TORNADO], 0, 0, NO_MM_FLAGS);
+    }
+}
+
+staticfn void
+weather_messages(void)
+{
+    int hallu = Hallucination ? 1 : 0;
+    /* Windy winds */
+    if (CURR_WEATHER(WTH_BREEZE) && !rn2(200))
+        You("feel a %s breeze.",
+                (svl.level.flags.temperature == 1) ? "hot"
+                : Is_oracle_level(&u.uz) ? "strange"
+                : (svl.level.flags.temperature == -1) ? "chill" : "cool");
+    if (CURR_WEATHER(WTH_WIND) && !Deaf && !rn2(200))
+        You_hear1("the whispering of the wind.");
+    if (CURR_WEATHER(WTH_GUST) && !Deaf && !rn2(200))
+        pline("The wind is howling.");
+    /* Incoming weather messages */
+    if (INC_PRECIP(WTH_ACIDRAIN) && !CURR_WEATHER(WTH_ACIDRAIN) && !rn2(200)) {
+        static const char *const acidrain_msg[4] = {
+            "turn green", "boil",
+            "release an acrid smell", "get mean",
+        };
+        pline("The clouds are starting to %s.", acidrain_msg[rn2(3) + hallu]);
+    }
+    if (INC_PRECIP(WTH_RAIN) && !CURR_WEATHER(WTH_RAIN) && !rn2(200)) {
+        static const char *const incrain_msg[4] = {
+            "It smells like rain.", "The clouds are darkening.",
+            "A storm begins to roll in.", "Get ready for a shower!",
+        };
+        pline("%s", incrain_msg[rn2(3) + hallu]);
+    }
+    if (INC_WIND(WTH_TORNADO) && !CURR_WEATHER(WTH_TORNADO) && !rn2(200)) {
+        static const char *const tornado_msg[4] = {
+            "The sky is turning orange.", "The temperature suddenly plumets!",
+            "The clouds overhead are rotating.", "That tornado is carrying a car!",
+        };
+        pline("%s", tornado_msg[rn2(3) + hallu]);
+    }
+}
+
+const char *
+tod_string(void)
+{
+    if (midnight()) return "Midnight";
+    if (night()) return "Night";
+    if (midday()) return "Midday";
+    if (u.uenvirons.tod == TOD_MORNING) return "Morning";
+    return "Evening";
+}
+
+void
+weatherchange_message(boolean rain)
+{
+    if (has_no_tod_cycles(&u.uz)) return;
+    if (rain) {
+        if (u.uenvirons.curr_weather & u.uenvirons.inc_precip.def)
+            return;
+        /* Drizzle */
+        if (INC_PRECIP(WTH_DRIZZLE)) {
+            if (CURR_WEATHER(WTHM_ALL_PRECIPS))
+                pline("The rain lessens.");
+            else
+                pline("It starts drizzling.");
+        }
+        /* Rain */
+        if (INC_PRECIP(WTH_RAIN) && !IS_RAINING) {
+            pline("It starts to rain.");
+        } else if (!INC_PRECIP(WTHM_RAINS) && IS_RAINING) {
+            pline("It stops raining.");
+        }
+        /* Hail */
+        if (INC_PRECIP(WTH_HAIL)) {
+            pline("It starts to hail!");
+            stop_occupation();
+        } else if (!INC_PRECIP(WTH_HAIL) && CURR_WEATHER(WTH_HAIL)) {
+            pline("It stops hailing.");
+        }
+        /* Weird Weather */
+        if (INC_PRECIP(WTH_DOWNBURST)) {
+            pline("The sky opens up! The rain is pounding!");
+        }
+        if (INC_PRECIP(WTH_ACIDRAIN)) {
+            if (IS_RAINING) {
+                pline("The rain suddenly begins to burn your %s!", body_part(NOSE));
+            } else {
+                pline("It's raining acid!");
+            }
+            stop_occupation();
+        }
+        if (INC_PRECIP(WTH_FIRERAIN)) {
+            pline("Fire falls from the sky!");
+            stop_occupation();
+        }
+        if (INC_PRECIP(WTH_ASHES)) {
+            pline("Flakes of ash begin falling from the sky.");
+        }
+    } else {
+        if (u.uenvirons.curr_weather & u.uenvirons.inc_wind.def)
+            return;
+        if (INC_WIND(WTHM_WINDY) && !CURR_WEATHER(WTHM_WINDY)) {
+            pline("The wind picks up.");
+        }
+        if (!INC_WIND(WTHM_WINDY) && CURR_WEATHER(WTHM_WINDY)) {
+            pline("The wind dies down.");
+        }
+        /* Twisters */
+        if (INC_WIND(WTH_TORNADO)) {
+            if (Blind)
+                pline("The air pressure begins to fluctuate!");
+            else
+                urgent_pline("You see a funnel cloud touch down!");
+            stop_occupation();
+        }
+    }
+}
+
+void
+timechange_message(boolean new_game)
+{
+    if (has_no_tod_cycles(&u.uz)) return;
+    if (u.uenvirons.tod == TOD_MORNING) {
+        if (Blind)
+            You_feel("the warmth of the sun on your %s.", body_part(FACE));
+        pline("%s%s", new_game ? ""
+                             : Hallucination
+                                ? "The morning sun has vanquished the horrible night."
+                                : "The sun crests the edge of the dungeon.",
+                     Hallucination ? "" : " It is morning.");
+    } else if (u.uenvirons.tod == TOD_EVENING) {
+        if (Blind) pline("The sun beats down atop your %s.", body_part(HEAD));
+        else pline("The sun passes the sky's zenith.");
+    } else if (u.uenvirons.tod == TOD_EARLYNIGHT) {
+        if (Blind) pline("The warmth of the sun disappears.");
+        else pline("The sun has set.");
+        /* Moon messages */
+        if (flags.moonphase == FULL_MOON && !new_game) {
+            pline("The full moon rises overhead.");
+        } else if (flags.moonphase == NEW_MOON && Hallucination && !new_game) {
+            pline("There is no moon.");
+        }
+    } else {
+        pline("It is midnight.");
+    }
+}
+
+void
+harassment_weather(void)
+{
+    int x = rn2(1000);
+    int total_prob = 0;
+    for (int i = 0; i < SIZE(harassment_precip); i++) {
+        total_prob += harassment_precip[i].prob;
+        if (x < total_prob) {
+            u.uenvirons.inc_precip = harassment_precip[i];
+            return;
+        }
+    }
+}
+
+void
+init_environs(void)
+{
+    u.uenvirons.tod_cnt = TOD_QUARTER;
+    roll_precip();
+    roll_wind();
+    u.uenvirons.precip_cnt = rn1(400, 200);
+    u.uenvirons.wind_cnt = rn1(200, 100);
+    u.uenvirons.tod = TOD_MORNING;
+    /* sometimes we start with a little breeze */
+    if (!rn2(2))
+        u.uenvirons.curr_weather |= WTH_BREEZE;
+}
 /* calendar.c */
 

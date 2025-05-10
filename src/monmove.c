@@ -295,7 +295,9 @@ onscary(coordxy x, coordxy y, struct monst *mtmp)
 void
 mon_regen(struct monst *mon, boolean digest_meal)
 {
-    if (svm.moves % 20 == 0 || regenerates(mon->data))
+    if (svm.moves % 20 == 0 || regenerates(mon->data)
+        || (mon->data == &mons[PM_WATER_ELEMENTAL] 
+            && IS_RAINING && !has_no_tod_cycles(&u.uz)))
         healmon(mon, 1, 0);
     if (mon->mspec_used)
         mon->mspec_used--;
@@ -353,9 +355,11 @@ release_hero(struct monst *mon)
     if (mon == u.ustuck) {
         if (u.uswallow) {
             expels(mon, mon->data, TRUE);
-        } else if (!sticks(gy.youmonst.data)) {
+        } else if (!u.usticker) {
             unstuck(mon); /* let go */
             You("get released!");
+        } else {
+            pline_mon(mon, "%s wrenches free of you!", Monnam(mon));
         }
     }
 }
@@ -680,10 +684,21 @@ m_postmove_effect(struct monst *mtmp)
         mtmp->mspec_used = rnd(20);
         (void) create_gas_cloud(mtmp->mx, mtmp->my, rnd(6), 0, 3);
     } else if (mtmp->data == &mons[PM_STEAM_VORTEX] && !mtmp->mcan)
+<<<<<<< HEAD
         create_gas_cloud(x, y, 1, 0, 0); /* harmless vapor */
     else if (mtmp->data == &mons[PM_FIRE_ELEMENTAL] && !mtmp->mcan)
         create_bonfire(x, y, 1, rnd(4));
     else if (mtmp->data == &mons[PM_ACID_BLOB] 
+=======
+        create_gas_cloud(x, y, 1, 0); /* harmless vapor */
+    else if (mtmp->data == &mons[PM_FIRE_ELEMENTAL] && !mtmp->mcan) {
+        /* Lets off smoke / vapor in the rain, otherwise starts things on fire. */
+        if (IS_RAINING)
+            create_gas_cloud(x, y, 1, 0, 0);
+        else
+            create_bonfire(x, y, 1, rnd(4));
+    } else if (mtmp->data == &mons[PM_ACID_BLOB] 
+>>>>>>> main
             || mtmp->data == &mons[PM_GELATINOUS_CUBE]) {
         floor_alchemy(x, y, POT_ACID, NON_PM);
     } else if (mtmp->data == &mons[PM_WATER_ELEMENTAL] || 
@@ -695,6 +710,10 @@ m_postmove_effect(struct monst *mtmp)
         if (touch_petrifies(&mons[pm]))
             pm = PM_ELF;
         add_coating(x, y, COAT_BLOOD, has_blood(&mons[pm]) ? pm : PM_HUMAN);
+    } else if (mtmp->data == &mons[PM_TORNADO]) {
+        /* tornados suck up everything */
+        remove_coating(x, y, COAT_ALL);
+        wipe_engr_at(x, y, 8, FALSE);
     }
 }
 
@@ -770,8 +789,12 @@ dochug(struct monst *mtmp)
         aggravate();
 
     /* Illusions may disappear in order to prevent flooding the level */
-    if (mdat == &mons[PM_ILLUSION] && !rn2(14))
+    if (mdat == &mons[PM_ILLUSION] && !rn2(10))
         mongone(mtmp);
+
+    /* Tornados make noise */
+    if (mdat == &mons[PM_TORNADO] && !Deaf && !rn2(30))
+        You_hear("a horrible sucking noise.");
 
     /* Shriekers and Medusa have irregular abilities which must be
        checked every turn. These abilities do not cost a turn when
@@ -1904,13 +1927,14 @@ m_move(struct monst *mtmp, int after)
                               && (dist2(omx, omy, ggx, ggy) <= 36));
         #endif
         boolean should_see = (distmin(omx, omy, ggx, ggy) <= 1);
-        if(mtmp->mcansee) {
-			if (couldsee(omx, omy)) {
-				if (infravision(mtmp->data) || (gv.viz_array[ggy][ggx] & TEMP_LIT)) {
-					should_see = TRUE;
-				}
-			}
-		}
+        if (mtmp->mcansee) {
+            if (couldsee(omx, omy)) {
+                if (infravision(mtmp->data)
+                    || (gv.viz_array[ggy][ggx] & TEMP_LIT)) {
+                    should_see = TRUE;
+                }
+            }
+        }
 
         if (!mtmp->mcansee
             || (should_see && Invis && !perceives(ptr) && rn2(11))
@@ -2115,7 +2139,8 @@ m_move(struct monst *mtmp, int after)
         /* Reset prone */
         if (mtmp->mprone) {
             if (canseemon(mtmp)) 
-                pline("%s regains %s footing.", Monnam(mtmp), mhis(mtmp));
+                pline_mon(mtmp, "%s regains %s footing.",
+                    Monnam(mtmp), mhis(mtmp));
             mtmp->mprone = 0;
         }
 

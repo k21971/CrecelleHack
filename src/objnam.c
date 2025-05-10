@@ -1,4 +1,4 @@
-/* NetHack 3.7	objnam.c	$NHDT-Date: 1737528848 2025/01/21 22:54:08 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.444 $ */
+/* NetHack 3.7	objnam.c	$NHDT-Date: 1745114235 2025/04/19 17:57:15 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.453 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2011. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -27,6 +27,7 @@ struct _readobjnam_data {
     int tmp, tinv, tvariety, mgend;
     int wetness, gsize;
     int ftype;
+    int booster;
     boolean zombify;
     char globbuf[BUFSZ];
     char fruitbuf[BUFSZ];
@@ -38,6 +39,7 @@ staticfn void releaseobuf(char *) NONNULLARG1;
 staticfn void xcalled(char *, int, const char *, const char *);
 staticfn char *xname_flags(struct obj *, unsigned);
 staticfn char *minimal_xname(struct obj *);
+staticfn void add_boost_words(struct obj *, char *);
 staticfn void add_erosion_words(struct obj *, char *);
 staticfn char *doname_base(struct obj *obj, unsigned);
 staticfn boolean singplur_lookup(char *, char *, boolean,
@@ -222,7 +224,7 @@ obj_typename(int otyp)
     case COIN_CLASS:
         return strcpy(buf, actualn); /* "gold piece" */
     case POTION_CLASS:
-        Strcpy(buf, "potion");
+        Strcpy(buf, "tonic");
         break;
     case SCROLL_CLASS:
         Strcpy(buf, "scroll");
@@ -732,6 +734,9 @@ xname_flags(
                 Strcpy(buf, "smooth shield");
                 break;
             }
+        } else if (typ == SKULL || typ == SKULL_HELM) {
+            const char *pm_name = obj_pmname(obj);
+            Sprintf(buf, "%s ", pm_name);
         }
         ConcUpdate(buf);
 
@@ -834,7 +839,7 @@ xname_flags(
         if (dknown && obj->odiluted)
             Strcpy(buf, "diluted ");
         if (nn || un || !dknown) {
-            Strcat(buf, "potion");
+            Strcat(buf, "tonic");
             if (!dknown)
                 break;
             if (nn) {
@@ -853,7 +858,7 @@ xname_flags(
             }
         } else {
             Strcat(buf, dn);
-            Strcat(buf, " potion");
+            Strcat(buf, " tonic");
         }
         break;
     case SCROLL_CLASS:
@@ -1072,6 +1077,8 @@ minimal_xname(struct obj *obj)
     /* for a boulder, leave corpsenm as 0; non-zero produces "next boulder" */
     if (otyp != BOULDER)
         bareobj.corpsenm = NON_PM; /* suppress statue and figurine details */
+    if (otyp == SKULL_HELM || otyp == SKULL)
+        bareobj.corpsenm = obj->corpsenm; /* we need this to avoid issues with insight */
     /* but suppressing fruit details leads to "bad fruit #0"
        [perhaps we should force "slime mold" rather than use xname?] */
     if (obj->otyp == SLIME_MOLD)
@@ -1140,6 +1147,46 @@ the_unique_pm(struct permonst *ptr)
     if (ptr == &mons[PM_WIZARD_OF_YENDOR])
         uniq = TRUE;
     return uniq;
+}
+
+static struct boostnam boostnams[] = {
+   { BST_GRASS, "Grass" },
+   { BST_DIRT, "Dirt" },
+   { BST_ROCK, "Rock" },
+   { BST_WATER, "Water" },
+   { BST_ASHES, "Ashes" },
+   { BST_FUNGI, "Fungi" },
+   { BST_BLOOD, "Blood" },
+   { BST_SAND, "Sand" },
+   { BST_POTION, "Tonic" },
+   { BST_HONEY, "Honey" }
+};
+
+staticfn void
+add_boost_words(struct obj *obj, char *prefix)
+{
+    if (!obj->booster) return;
+    Strcat(prefix, "{");
+    for (int i = 0; i < SIZE(boostnams); i++) {
+        if (obj->booster & boostnams[i].boost_short) {
+            Sprintf(eos(prefix), "%c", boostnams[i].nam[0]);
+        }
+    }
+    Strcat(prefix, "} ");
+}
+
+void
+boost_object(struct obj *obj, short force)
+{
+    if (force) {
+        obj->booster = force;
+    } else {
+        obj->booster = 0;
+        while (1) {
+            obj->booster |= (ROLL_FROM(boostnams)).boost_short;
+            if (rn2(10)) break;
+        }
+    }
 }
 
 staticfn void
@@ -1287,7 +1334,7 @@ doname_base(
             Sprintf(prefix, "%ld ", obj->quan);
         else
             Strcpy(prefix, "some ");
-    } else if (obj->otyp == CORPSE) {
+    } else if (obj->otyp == CORPSE || obj->otyp == SKULL || obj->otyp == SKULL_HELM) {
         /* skip article prefix for corpses [else corpse_xname()
            would have to be taught how to strip it off again] */
         ;
@@ -1423,6 +1470,9 @@ doname_base(
         add_erosion_words(obj, prefix);
         if (known) {
             Sprintf(eos(prefix), "%+d ", obj->spe); /* sitoa(obj->spe)+" " */
+            add_boost_words(obj, prefix);
+        } else if (obj->booster) {
+            Strcat(prefix, "harmonic ");
         }
         break;
     case TOOL_CLASS:
@@ -1548,7 +1598,8 @@ doname_base(
         break;
     }
 
-    if ((obj->otyp == STATUE || obj->otyp == CORPSE || obj->otyp == FIGURINE)
+    if ((obj->otyp == STATUE || obj->otyp == CORPSE || obj->otyp == FIGURINE 
+        || obj->otyp == SKULL || obj->otyp == SKULL_HELM)
         && wizard && iflags.wizmgender) {
         int cgend = (obj->spe & CORPSTAT_GENDER),
             mgend = ((cgend == CORPSTAT_MALE) ? MALE
@@ -1690,9 +1741,13 @@ doname_base(
     if (iflags.invweight) {
         /* wizard mode user has asked to see object weights */
         if (with_price && bp_eos[-1] == ')')
-            ConcatF1(bp, 1, ", %u aum)", obj->owt);
+            ConcatF1(bp, 1, 
+                     wizard ? ", %u aum)" : ", {%u})",
+                     (obj->otyp == LOADSTONE && !obj->bknown) ? 10 : obj->owt);
         else
-            ConcatF1(bp, 0, " (%u aum)", obj->owt);
+            ConcatF1(bp, 0,
+                     wizard ? " (%u aum)" : " {%u}", 
+                     (obj->otyp == LOADSTONE && !obj->bknown) ? 10 : obj->owt);
 
         /* ConcatF1(bp) updates bp_eos and bpspaceleft but we're done
            with them now; add a fake use so compiler won't complain
@@ -2506,13 +2561,15 @@ bare_artifactname(struct obj *obj)
 }
 
 static const char *const wrp[] = {
-    "wand",   "ring",      "potion",     "scroll", "gem",
+    "wand",   "ring",      "tonic",
+    "potion", "scroll",    "gem",
     "amulet", "spellbook", "spell book",
     /* for non-specific wishes */
     "weapon", "armor",     "tool",       "food",   "comestible",
 };
 static const char wrpsym[] = { WAND_CLASS,   RING_CLASS,   POTION_CLASS,
-                               SCROLL_CLASS, GEM_CLASS,    AMULET_CLASS,
+                               POTION_CLASS, SCROLL_CLASS, GEM_CLASS,
+                               AMULET_CLASS,
                                SPBOOK_CLASS, SPBOOK_CLASS, WEAPON_CLASS,
                                ARMOR_CLASS,  TOOL_CLASS,   FOOD_CLASS,
                                FOOD_CLASS };
@@ -3340,7 +3397,7 @@ static NEARDATA const struct o_range o_ranges[] = {
     { "lamp", TOOL_CLASS, OIL_LAMP, MAGIC_LAMP },
     { "candle", TOOL_CLASS, TALLOW_CANDLE, WAX_CANDLE },
     { "horn", TOOL_CLASS, TOOLED_HORN, HORN_OF_PLENTY },
-    { "shield", ARMOR_CLASS, SMALL_SHIELD, SHIELD_OF_REFLECTION },
+    { "shield", ARMOR_CLASS, ROUNDSHIELD, SHIELD_OF_REFLECTION },
     { "hat", ARMOR_CLASS, FEDORA, DUNCE_CAP },
     { "helm", ARMOR_CLASS, ELVEN_LEATHER_HELM, HELM_OF_TELEPATHY },
     { "gloves", ARMOR_CLASS, LEATHER_GLOVES, GAUNTLETS_OF_DEXTERITY },
@@ -3385,7 +3442,7 @@ static const struct alt_spellings {
     { "gauntlets of giant strength", GAUNTLETS_OF_POWER },
     { "elven chain mail", ELVEN_MITHRIL_COAT },
     { "silver shield", SHIELD_OF_REFLECTION },
-    { "potion of sleep", POT_SLEEPING },
+    { "tonic of sleep", POT_SLEEPING },
     { "scroll of recharging", SCR_CHARGING },
     { "recharging", SCR_CHARGING },
     { "stone", ROCK },
@@ -3776,10 +3833,9 @@ wizterrainwish(struct _readobjnam_data *d)
                 lev->wall_info |= (old_wall_info & WM_MASK);
             /* set up trapped flag; open door states aren't eligible */
             if (d->trapped == 2 /* 2: wish includes explicit "untrapped" */
-                || secret /* secret doors can't be trapped due to their use
-                           * of both doormask and wall_info; those both
-                           * overlay rm->flags and partially conflict */
-                || (lev->doormask & (D_LOCKED | D_CLOSED)) == 0)
+                || ((lev->doormask & (D_LOCKED | D_CLOSED)) == 0
+                    /* D_CLOSED is implicit for secret doors */
+                    && !secret))
                 d->trapped = 0;
             if (d->trapped)
                 lev->doormask |= D_TRAPPED;
@@ -3935,7 +3991,7 @@ readobjnam_init(char *bp, struct _readobjnam_data *d)
         = d->trapped = d->locked = d->unlocked = d->broken
         = d->open = d->closed = d->doorless /* wizard mode door */
         = d->looted /* wizard mode fountain/sink/throne/tree and grave */
-        = d->real = d->fake = 0; /* Amulet */
+        = d->real = d->fake = d->booster = 0; /* Amulet */
     d->tvariety = RANDOM_TIN;
     d->mgend = -1; /* not specified, aka random */
     d->mntmp = NON_PM;
@@ -4078,6 +4134,8 @@ readobjnam_preparse(struct _readobjnam_data *d)
                    || !strncmpi(d->bp, "cracked ", l = 8)) {
             d->eroded = 1 + d->very;
             d->very = 0;
+        } else if (!strncmpi(d->bp, "harmonic ", l = 9)) {
+            d->booster = 1;
         } else if (!strncmpi(d->bp, "corroded ", l = 9)
                    || !strncmpi(d->bp, "rotted ", l = 7)) {
             d->eroded2 = 1 + d->very;
@@ -4148,6 +4206,7 @@ readobjnam_preparse(struct _readobjnam_data *d)
          * viable but silly "female statue of a gnome ruler".
          */
         } else if ((!strncmpi(d->bp, "corpse ", l = 7)
+                    || !strncmpi(d->bp, "skull ", l = 6)
                     || !strncmpi(d->bp, "statue ", l = 7)
                     || !strncmpi(d->bp, "figurine ", l = 9))
                    && !strncmpi(d->bp + l, "of ", more_l = 3)) {
@@ -5126,6 +5185,8 @@ readobjnam(char *bp, struct obj *no_wish)
         break;
     case STATUE: /* otmp->cobj already done in mksobj() */
     case FIGURINE:
+    case SKULL:
+    case SKULL_HELM:
     case CORPSE: {
         struct permonst *P = (ismnum(d.mntmp)) ? &mons[d.mntmp] : 0;
 
@@ -5209,6 +5270,11 @@ readobjnam(char *bp, struct obj *no_wish)
             d.mntmp = can_be_hatched(d.mntmp);
             /* this also sets hatch timer if appropriate */
             set_corpsenm(d.otmp, d.mntmp);
+            break;
+        case SKULL:
+        case SKULL_HELM:
+            if (has_skull(&mons[d.mntmp]))
+                set_corpsenm(d.otmp, d.mntmp);
             break;
         case FIGURINE:
             if (!(mons[d.mntmp].geno & G_UNIQ)
@@ -5346,6 +5412,9 @@ readobjnam(char *bp, struct obj *no_wish)
         }
     }
 
+    if (permapoisoned(d.otmp))
+        d.otmp->opoisoned = 1;
+
     /* more wishing abuse: don't allow wishing for certain artifacts */
     /* and make them pay; charge them for the wish anyway! */
     if ((is_quest_artifact(d.otmp)
@@ -5370,7 +5439,14 @@ readobjnam(char *bp, struct obj *no_wish)
             consume_oeaten(d.otmp, 1);
         }
     }
-    d.otmp->owt = weight(d.otmp);
+    if (d.booster && (d.otmp->oclass == WEAPON_CLASS || d.otmp->oclass == ARMOR_CLASS)) {
+        boost_object(d.otmp, 0);
+    }
+    /* These items should have had their weights fuzzed - don't reset it. */
+    if (d.otmp->oclass != WEAPON_CLASS && d.otmp->oclass != ARMOR_CLASS
+        && !is_weptool(d.otmp))
+        d.otmp->owt = weight(d.otmp);
+
     if (d.very && d.otmp->otyp == HEAVY_IRON_BALL)
         d.otmp->owt += WT_IRON_BALL_INCR;
 
@@ -5502,7 +5578,7 @@ helm_simple_name(struct obj *helmet)
      *      fedora, cornuthaum, dunce cap       -> hat
      *      all other types of helmets          -> helm
      */
-    return !hard_helmet(helmet) ? "hat" : "helm";
+    return (helmet && helmet->otyp == SKULL) ? "skull" : !hard_helmet(helmet) ? "hat" : "helm";
 }
 
 /* gloves vs gauntlets; depends upon discovery state */
@@ -5565,7 +5641,7 @@ shield_simple_name(struct obj *shield)
          */
 #if 0
         /* spellcasting uses a division like this */
-        return (weight(shield) > (int) objects[SMALL_SHIELD].oc_weight)
+        return (weight(shield) > (int) objects[ROUNDSHIELD].oc_weight)
                ? "heavy shield"
                : "light shield";
 #endif

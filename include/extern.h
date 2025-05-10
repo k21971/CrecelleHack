@@ -67,6 +67,10 @@
  *
  */
 
+#ifndef ARTIFACT_H
+#include "artifact.h"
+#endif
+
 /* ### alloc.c ### */
 
 #if 0
@@ -184,6 +188,7 @@ extern void mkot_trap_warn(void);
 extern boolean is_magic_key(struct monst *, struct obj *);
 extern struct obj *has_magic_key(struct monst *);
 extern boolean is_art(struct obj *, int);
+extern boolean permapoisoned(struct obj *);
 
 /* ### attrib.c ### */
 
@@ -305,7 +310,19 @@ extern time_t time_from_yyyymmddhhmmss(char *);
 extern int phase_of_the_moon(void);
 extern boolean friday_13th(void);
 extern int night(void);
+extern int rt_night(void);
 extern int midnight(void);
+extern int midday(void);
+extern int rt_midnight(void);
+extern int calc_dt_vis(void);
+extern void doenvirons(void);
+extern struct weather *roll_precip(void);
+extern struct weather *roll_wind(void);
+extern void init_environs(void);
+extern const char *tod_string(void);
+extern void weatherchange_message(boolean);
+extern void timechange_message(boolean);
+extern void harassment_weather(void);
 
 /* ### coloratt.c ### */
 
@@ -779,6 +796,8 @@ extern void quickmimic(struct monst *) NONNULLARG1;
 extern boolean ghitm(struct monst *, struct obj *) NONNULLPTRS;
 extern void container_impact_dmg(struct obj *, coordxy, coordxy) NONNULLARG1;
 extern int dotrip(void);
+extern int dograpple(void);
+extern int grapple_move(struct monst *) NONNULLPTRS;
 extern int trip_monster(struct monst *, struct monst *, struct obj *);
 extern void make_prone(void);
 extern int dokick(void);
@@ -848,6 +867,7 @@ extern boolean Is_botlevel(d_level *) NONNULLARG1;
 extern boolean Can_fall_thru(d_level *) NONNULLARG1;
 extern boolean Can_dig_down(d_level *) NONNULLARG1;
 extern boolean Can_rise_up(coordxy, coordxy, d_level *) NONNULLARG3;
+extern boolean has_no_tod_cycles(d_level *) NONNULLARG1;
 extern boolean has_ceiling(d_level *) NONNULLARG1;
 extern boolean avoid_ceiling(d_level *) NONNULLARG1;
 extern const char *surface(coordxy, coordxy);
@@ -1638,6 +1658,8 @@ extern void costly_alteration(struct obj *, int) NONNULLARG1;
 extern void clear_dknown(struct obj *);
 extern void unknow_object(struct obj *);
 extern struct obj *mksobj(int, boolean, boolean) NONNULL;
+extern boolean stone_object_type(unsigned);
+extern boolean stone_furniture_type(unsigned);
 extern int bcsign(struct obj *) NONNULLARG1;
 extern int weight(struct obj *) NONNULLARG1;
 extern struct obj *mkgold(long, coordxy, coordxy);
@@ -1817,6 +1839,9 @@ extern void see_monster_closeup(struct monst *) NONNULLARG1;
 extern void see_nearby_monsters(void);
 extern void shieldeff_mon(struct monst *) NONNULLARG1;
 extern void flash_mon(struct monst *) NONNULLARG1;
+extern boolean is_boosted(int, int, short);
+extern boolean u_boosted(short);
+extern boolean mon_boosted(struct monst *, short);
 
 /* ### mondata.c ### */
 
@@ -2184,6 +2209,7 @@ extern boolean erosion_matters(struct obj *) NONNULLARG1;
 extern char *doname(struct obj *) NONNULLARG1;
 extern char *doname_with_price(struct obj *) NONNULLARG1;
 extern char *doname_vague_quan(struct obj *) NONNULLARG1;
+extern void boost_object(struct obj *, short) NONNULLARG1;
 extern boolean not_fully_identified(struct obj *) NONNULLARG1;
 extern char *corpse_xname(struct obj *, const char *, unsigned) NONNULLARG1;
 extern char *cxname(struct obj *) NONNULLARG1;
@@ -2307,6 +2333,7 @@ extern void mhidden_description(struct monst *, unsigned, char *) NONNULLPTRS;
 extern boolean object_from_map(int, coordxy, coordxy,
                                struct obj **) NONNULLPTRS;
 extern const char *waterbody_name(coordxy, coordxy) NONNULL;
+extern char *potion_coating_text(char *, int);
 extern char *ice_descr(coordxy, coordxy, char *) NONNULL NONNULLARG3;
 extern boolean ia_checkfile(struct obj *) NONNULLARG1;
 extern int do_screen_description(coord, boolean, int, char *, const char **,
@@ -2526,6 +2553,7 @@ extern void desecrate_altar(boolean, aligntyp);
 extern int dosacrifice(void);
 extern boolean can_pray(boolean);
 extern int dopray(void);
+extern int wiz_crown(void);
 extern const char *u_gname(void);
 extern int doturn(void);
 extern int altarmask_at(coordxy, coordxy);
@@ -2691,12 +2719,11 @@ extern int dorecover(NHFILE *) NONNULLARG1;
 extern void restcemetery(NHFILE *, struct cemetery **) NONNULLARG12;
 extern void trickery(char *) NO_NNARGS;
 extern void getlev(NHFILE *, int, xint8) NONNULLARG1;
-extern void grow_dungeon(long);
+extern void grow_dungeon(void);
 extern void get_plname_from_file(NHFILE *, char *, boolean) NONNULLARG12;
 #ifdef SELECTSAVED
 extern int restore_menu(winid);
 #endif
-extern void minit(void);
 extern boolean lookup_id_mapping(unsigned, unsigned *) NONNULLARG2;
 extern int validate(NHFILE *, const char *, boolean) NONNULLARG1;
 /* extern void reset_restpref(void); */
@@ -2847,11 +2874,7 @@ extern void bufoff(int);
 extern void bflush(int);
 extern void bwrite(int, const genericptr_t, unsigned) NONNULLARG2;
 extern void mread(int, genericptr_t, unsigned) NONNULLARG2;
-extern void minit(void);
 extern void bclose(int);
-#if defined(ZEROCOMP)
-extern void zerocomp_bclose(int);
-#endif
 
 /* ### shk.c ### */
 
@@ -3163,6 +3186,7 @@ extern int collect_coords(coord *, coordxy, coordxy, int, unsigned,
                           boolean (*)(coordxy, coordxy)) NONNULLARG1;
 extern boolean safe_teleds(int);
 extern boolean teleport_pet(struct monst *, boolean) NONNULLARG1;
+extern void tele_to_rnd_pet(void);
 extern void tele(void);
 extern void scrolltele(struct obj *) NO_NNARGS;
 extern int dotelecmd(void);
@@ -3429,7 +3453,7 @@ extern boolean mhitm_knockback(struct monst *, struct monst *,struct attack *,
 extern int passive(struct monst *, struct obj *, boolean, boolean, uchar,
                    boolean) NONNULLARG1;
 extern void passive_obj(struct monst *, struct obj *, struct attack *) NONNULLARG1;
-extern void that_is_a_mimic(struct monst *, boolean) NONNULLARG1;
+extern void that_is_a_mimic(struct monst *, unsigned) NONNULLARG1;
 extern void stumble_onto_mimic(struct monst *) NONNULLARG1;
 extern int flash_hits_mon(struct monst *, struct obj *) NONNULLARG12;
 extern void light_hits_gremlin(struct monst *, int) NONNULLARG1;
@@ -3538,6 +3562,9 @@ extern unsigned long get_current_feature_ver(void);
 extern const char *copyright_banner_line(int) NONNULL;
 extern void early_version_info(boolean);
 extern void dump_version_info(void);
+extern void store_critical_bytes(NHFILE *) NONNULLARG1;
+extern int compare_critical_bytes(NHFILE *);
+extern int get_critical_size_count(void);
 
 /* ### video.c ### */
 
@@ -3842,6 +3869,7 @@ extern int wiz_show_vision(void);
 extern int wiz_show_wmodes(void);
 extern int wiz_smell(void);
 extern int wiz_telekinesis(void);
+extern int wiz_weather(void);
 extern int wiz_where(void);
 extern int wiz_wish(void);
 extern void makemap_remove_mons(void);

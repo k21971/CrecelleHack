@@ -194,21 +194,41 @@ enum ms_sounds {
 #define MH_GNOME        M2_GNOME
 #define MH_ORC          M2_ORC
 
+/* Boosts */
+#define BST_GRASS 0x0001
+#define BST_DIRT  0x0002
+#define BST_ROCK  0x0004
+#define BST_WATER 0x0008
+#define BST_ICE   0x0010
+#define BST_ASHES 0x0020
+#define BST_FUNGI 0x0040
+#define BST_BLOOD 0x0080
+#define BST_SAND 0x0100
+#define BST_POTION 0x0200
+#define BST_HONEY  0x0400
+
+struct boostnam {
+   short boost_short;
+   const char *nam;
+};
+
 /* for mons[].geno (constant during game) */
-#define G_SQUAD         0x4000 /* rather than generating identical mons, generate similar squad */
-#define G_MIDBOSS       0x2000 /* generated as a wandering unique */
-#define G_UNIQ          0x1000 /* generated only once */
-#define G_NOHELL        0x0800 /* not generated in "hell" */
-#define G_HELL          0x0400 /* generated only in "hell" */
-#define G_NOGEN         0x0200 /* generated only specially */
-#define G_SGROUP        0x0080 /* appear in small groups normally */
-#define G_LGROUP        0x0040 /* appear in large groups normally */
-#define G_GENO          0x0020 /* can be genocided */
-#define G_NOCORPSE      0x0010 /* no corpse left ever */
-#define G_FREQ          0x0007 /* creation frequency mask */
+#define G_DAY           0x00010000 /* generated only in day */
+#define G_NIGHT         0x00008000 /* generated only in night */
+#define G_SQUAD         0x00004000 /* rather than generating identical mons, generate similar squad */
+#define G_MIDBOSS       0x00002000 /* generated as a wandering unique */
+#define G_UNIQ          0x00001000 /* generated only once */
+#define G_NOHELL        0x00000800 /* not generated in "hell" */
+#define G_HELL          0x00000400 /* generated only in "hell" */
+#define G_NOGEN         0x00000200 /* generated only specially */
+#define G_SGROUP        0x00000080 /* appear in small groups normally */
+#define G_LGROUP        0x00000040 /* appear in large groups normally */
+#define G_GENO          0x00000020 /* can be genocided */
+#define G_NOCORPSE      0x00000010 /* no corpse left ever */
+#define G_FREQ          0x00000007 /* creation frequency mask */
 /* note: G_IGNORE controls handling of mvitals[].mvflags bits but is
    passed to mkclass() as if it dealt with mons[].geno bits */
-#define G_IGNORE        0x8000 /* for mkclass(), ignore G_GENOD|G_EXTINCT */
+#define G_IGNORE        0x00008000 /* for mkclass(), ignore G_GENOD|G_EXTINCT */
 
 /* for svm.mvitals[].mvflags (variant during game), along with G_NOCORPSE */
 #define G_KNOWN         0x04 /* have been encountered */

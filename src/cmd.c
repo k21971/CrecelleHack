@@ -1713,6 +1713,8 @@ struct ext_func_tab extcmdlist[] = {
               IFBURIED | AUTOCOMPLETE | GENERALCMD | CMD_M_PREFIX, NULL },
     { ';',    "glance", "show what type of thing a map symbol corresponds to",
               doquickwhatis, IFBURIED | GENERALCMD, NULL },
+    { '\0',   "grapple", "grapple a nearby monster",
+              dograpple,  AUTOCOMPLETE, NULL },
     { '?',    "help", "give a help message",
               dohelp, IFBURIED | GENERALCMD, NULL },
     { '\0',   "herecmdmenu", "show menu of commands you can do here",
@@ -1932,6 +1934,8 @@ struct ext_func_tab extcmdlist[] = {
 #endif
     { '\0',   "wizcast", "cast any spell",
               dowizcast, IFBURIED | WIZMODECMD, NULL },
+    { '\0',   "wizcrown", "become crowned",
+              wiz_crown, IFBURIED | AUTOCOMPLETE | WIZMODECMD, NULL },
     { '\0',   "wizcustom", "show customized glyphs",
               wiz_custom, IFBURIED | WIZMODECMD | NOFUZZERCMD, NULL },
     { C('e'), "wizdetect", "reveal hidden things within a small radius",
@@ -1973,6 +1977,8 @@ struct ext_func_tab extcmdlist[] = {
               wiz_smell, IFBURIED | AUTOCOMPLETE | WIZMODECMD, NULL },
     { '\0',   "wiztelekinesis", "telekinesis",
               wiz_telekinesis, IFBURIED | AUTOCOMPLETE | WIZMODECMD, NULL },
+    { '\0',   "wizweather", "show locations of special levels",
+              wiz_weather, IFBURIED | AUTOCOMPLETE | WIZMODECMD, NULL },
     { '\0',   "wizwhere", "show locations of special levels",
               wiz_where, IFBURIED | AUTOCOMPLETE | WIZMODECMD, NULL },
     { C('w'), "wizwish", "wish for something",
@@ -2333,6 +2339,8 @@ handler_change_autocompletions(void)
                 parseautocomplete(buf, FALSE);
             }
         }
+        if (n > 0)
+            free((genericptr_t) picks);
     }
 
     destroy_nhwindow(win);
@@ -3287,11 +3295,19 @@ accept_menu_prefix(const struct ext_func_tab *ec)
     return (ec && ((ec->flags & CMD_M_PREFIX) != 0));
 }
 
+/* choose a random character, biased towards movement commands, primarily
+   for debug-fuzzer testing */
 char
 randomkey(void)
 {
     static unsigned i = 0;
+    static char last_c = '\0';
     char c;
+
+    /* give ^A and ^P a high probability of being repeated */
+    if ((last_c == C('a') || last_c == C('p'))
+        && program_state.input_state == commandInp && rn2(5))
+        return last_c;
 
     switch (rn2(16)) {
     default:
@@ -3340,6 +3356,8 @@ randomkey(void)
         break;
     }
 
+    if (program_state.input_state == commandInp)
+        last_c = c;
     return c;
 }
 
@@ -3743,16 +3761,36 @@ getdir(const char *s)
 
  retry:
     program_state.input_state = getdirInp;
-    if (gi.in_doagain || *readchar_queue)
+    if (gi.in_doagain || *readchar_queue) {
         dirsym = readchar();
-    else
+    } else {
         dirsym = yn_function((s && *s != '^') ? s : "In what direction?",
                              (char *) 0, '\0', FALSE);
+
+        /* for the fuzzer, usually force the result to be a valid direction,
+           but sometimes let it exercise the invalid direction code; we
+           don't try to enforce no-diagonal for hero in grid bug form since
+           things like '^' to look at adjacent trap shouldn't be bound by
+           that (caller is expected to handle situations where it matters) */
+        if (iflags.debug_fuzzer && rn2(20)) {
+            switch (rn2(20)) {
+            case 0:
+                dirsym = gc.Cmd.spkeys[rn2(2) ? NHKF_GETDIR_SELF : NHKF_ESC];
+                break;
+            case 1:
+                dirsym = gc.Cmd.dirchars[rn2(2) ? DIR_DOWN : DIR_UP];
+                break;
+            default:
+                dirsym = gc.Cmd.dirchars[rn2(N_DIRS)];
+                break;
+            }
+        }
+    }
     /* remove the prompt string so caller won't have to */
     clear_nhwindow(WIN_MESSAGE);
 
     if (redraw_cmd(dirsym)) { /* ^R */
-        docrt();              /* redraw */
+        docrt_flags(docrtRefresh); /* redraw */
         goto retry;
     }
     if (!gi.in_doagain)
@@ -5257,6 +5295,28 @@ yn_function(
             res = cq.key;
         else
             cmdq_clear(CQ_CANNED); /* 'res' is ESC */
+        addcmdq = FALSE;
+
+    /* for the fuzzer, usually force a valid response, but sometimes let
+       it exercise windowport yn_function and invalid response handling */
+    } else if (iflags.debug_fuzzer && resp && *resp && rn2(20)) {
+        int ln = (int) strlen(resp), ridx = rn2(ln);
+
+        res = resp[ridx];
+        /* if valid-responses includes ESC followed by unshown candidates
+           and we randomly picked the ESC, try again with only whatever is
+           before it; be careful to avoid rn2(0) */
+        if (res == '\033') {
+            if (ln > 1) {
+                /* if ESC is at start (ridx==0), pick something after it */
+                ridx = (ridx == 0) ? (1 + rn2(ln - 1)) : rn2(ridx);
+                res = resp[ridx];
+            } else {
+                /* ESC is the only thing (ln==1); something is strange... */
+                res = def; /* might be '\0' */
+            }
+        }
+
     } else {
 #ifdef SND_SPEECH
         if ((gp.pline_flags & PLINE_SPEECH) != 0) {
@@ -5267,9 +5327,9 @@ yn_function(
         if (!yn_function_menu(query, resp, def, &res)) {
             res = (*windowprocs.win_yn_function)(query, resp, def);
         }
-        if (addcmdq)
-            cmdq_add_key(CQ_REPEAT, res);
     }
+    if (addcmdq)
+        cmdq_add_key(CQ_REPEAT, res);
 
 #if defined(DUMPLOG) || defined(DUMPHTML) || defined(DUMPLOG_CORE)
     if (idx == gs.saved_pline_index) {
@@ -5282,15 +5342,28 @@ yn_function(
     }
 #endif
     /* should not happen but cq.key has been observed to not obey 'resp';
-       do this after dumplog has recorded the potentially bad value */
+       it is most likely caused by saving a keystroke that was just used
+       to answer a context-sensitive prompt, then using the do-again
+       command with context that has changed */
     if (resp && res && !strchr(resp, res)) {
         /* this probably needs refinement since caller is expecting something
            within 'resp' and ESC won't be (it could be present, but as a flag
            for unshown possibilities rather than as acceptable input) */
         int altres = def ? def : '\033';
 
-        impossible("yn_function() returned '%s'; using '%s' instead",
-                   visctrl(res), visctrl(altres));
+        if (!gi.in_doagain || wizard) {
+/*TEMP*/    xint8 fuzzing = iflags.debug_fuzzer;
+            char dbg_buf[BUFSZ];
+
+            Snprintf(dbg_buf, sizeof dbg_buf, "%s [%s] (%s)",
+                     query, resp ? resp : "", def ? visctrl(def) : "");
+            paniclog("yn debug", dbg_buf);
+/*TEMP*/    /* don't let this known problem kill the fuzzer */
+/*TEMP*/    iflags.debug_fuzzer = fuzzer_impossible_continue;
+            impossible("yn_function() returned '%s'; using '%s' instead",
+                       visctrl(res), visctrl(altres));
+/*TEMP*/    iflags.debug_fuzzer = fuzzing;
+        }
         res = altres;
     }
     /* in case we're called via getdir() which sets input_state */

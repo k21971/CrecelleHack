@@ -1110,7 +1110,7 @@ staticfn boolean
 u_stuck_cannot_go(const char *updn)
 {
     if (u.ustuck) {
-        if (u.uswallow || !sticks(gy.youmonst.data)) {
+        if (u.uswallow || !u.usticker) {
             You("are %s, and cannot go %s.",
                 !u.uswallow ? "being held"
                 : digests(u.ustuck->data) ? "swallowed"
@@ -1712,7 +1712,6 @@ goto_level(
         }
         reseed_random(rn2);
         reseed_random(rn2_on_display_rng);
-        minit(); /* ZEROCOMP */
         getlev(nhfp, svh.hackpid, new_ledger);
         close_nhfile(nhfp);
         oinit(); /* reassign level dependent obj probabilities */
@@ -1760,7 +1759,7 @@ goto_level(
                 u_on_dnstairs();
             /* you climb up the {stairs|ladder};
                fly up the stairs; fly up along the ladder */
-            great_effort = (Punished && !Levitation);
+            great_effort = ((Punished && !Levitation) || Prone);
             if (flags.verbose || great_effort)
                 pline("%s %s up%s the %s.",
                       great_effort ? "With great effort, you" : "You",

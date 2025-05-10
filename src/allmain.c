@@ -1,4 +1,4 @@
-/* NetHack 3.7	allmain.c	$NHDT-Date: 1742207239 2025/03/17 02:27:19 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.275 $ */
+/* NetHack 3.7	allmain.c	$NHDT-Date: 1744860497 2025/04/16 19:28:17 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.276 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2012. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -106,6 +106,11 @@ moveloop_preamble(boolean resuming)
 #ifdef WHEREIS_FILE
     touch_whereis();
 #endif
+    /* finish processing "--debug:fuzzer" from the command line */
+    if (iflags.fuzzerpending) {
+        iflags.debug_fuzzer = fuzzer_impossible_panic;
+        iflags.fuzzerpending = FALSE;
+    }
 
     program_state.in_moveloop = 1;
     /* for perm_invent preset at startup, display persistent inventory after
@@ -228,8 +233,8 @@ moveloop_core(void)
                                    NO_MM_FLAGS);
 
                 /* Occasionally grow dungeon coatings */
-                if ((svm.moves % DUN_GROWTH_FREQ) == 0)
-                    grow_dungeon(DUN_GROWTH_FREQ);
+                if (!rn2(50))
+                    grow_dungeon();
 
                 u_calc_moveamt(mvl_wtcap);
                 settrack();
@@ -349,6 +354,7 @@ moveloop_core(void)
                     set_uasmon();
                 }
                 mkot_trap_warn();
+                doenvirons();
                 dosounds();
                 do_storms();
                 gethungry();
@@ -805,7 +811,7 @@ newgame(void)
 
     if (flags.legacy) {
         flush_screen(1);
-        com_pager(u.uroleplay.pauper ? "pauper_legacy" : "legacy");
+        com_pager("crecelle");
     }
     
     adj_midbosses();
@@ -866,9 +872,10 @@ welcome(boolean new_game) /* false => restoring an old game */
             (currentgend && gu.urole.name.f) ? gu.urole.name.f
                                              : gu.urole.name.m);
 
-    pline(new_game ? "%s %s, welcome to CrecelleHack!  You are a%s."
-                   : "%s %s, the%s, welcome back to CrecelleHack!",
+    pline(new_game ? "%s %s, welcome to CrecelleHack.  You are a%s."
+                   : "%s %s, the%s, welcome back to CrecelleHack.",
           Hello((struct monst *) 0), svp.plname, buf);
+    timechange_message(new_game);
 
     if (new_game) {
         /* guarantee that 'major' event category is never empty */
@@ -1099,6 +1106,7 @@ argcheck(int argc, char *argv[], enum earlyarg e_arg)
  * immediateflips   - WIN32: turn off display performance
  *                    optimization so that display output
  *                    can be debugged without buffering.
+ * fuzzer           - enable fuzzer without debugger intervention.
  */
 staticfn void
 debug_fields(const char *opts)
@@ -1143,6 +1151,8 @@ debug_fields(const char *opts)
     if (match_optname(opts, "immediateflips", 14, FALSE))
         iflags.debug.immediateflips = negated ? FALSE : TRUE;
 #endif
+    if (match_optname(opts, "fuzzer", 4, FALSE))
+        iflags.fuzzerpending = TRUE;
     return;
 }
 

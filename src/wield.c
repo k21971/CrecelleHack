@@ -1022,7 +1022,10 @@ chwepon(struct obj *otmp, int amount)
     }
     if (amount < 0)
         costly_alteration(uwep, COST_DECHNT);
-    uwep->spe += amount;
+    if (amount > 0)
+        boost_object(uwep, 0);
+    else
+        uwep->spe += amount;
     if (amount > 0) {
         if (uwep->cursed)
             uncurse(uwep);

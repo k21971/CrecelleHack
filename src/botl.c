@@ -427,7 +427,7 @@ max_rank_sz(void)
 long
 botl_score(void)
 {
-    long deepest = deepest_lev_reached(FALSE);
+    long deepest = (long) deepest_lev_reached(FALSE);
     long umoney, depthbonus;
 
     /* hidden_gold(False): only gold in containers whose contents are known */
@@ -435,10 +435,10 @@ botl_score(void)
     /* don't include initial gold; don't impose penalty if it's all gone */
     if ((umoney -= u.umoney0) < 0L)
         umoney = 0L;
-    depthbonus = 50 * (deepest - 1)
-                 + (deepest > 30) ? 10000
-                   : (deepest > 20) ? 1000 * (deepest - 20)
-                     : 0;
+    depthbonus = (50L * (deepest - 1L))
+                 + ((deepest > 30L) ? 10000L
+                    : (deepest > 20L) ? (1000L * (deepest - 20L))
+                      : 0L);
     /* neither umoney nor depthbonus can grow unusually big (gold due to
        weight); u.urexp might */
     return nowrap_add(u.urexp, umoney + depthbonus);
@@ -460,6 +460,12 @@ describe_level(
         addbranch = FALSE;
     } else if (In_quest(&u.uz)) {
         Sprintf(buf, "Home %d", dunlev(&u.uz));
+    } else if (In_sokoban(&u.uz)) {
+        Sprintf(buf, "Sokoban %d", dunlev(&u.uz));
+    } else if (In_tower(&u.uz)) {
+        Sprintf(buf, "Tower %d", dunlev(&u.uz));
+    } else if (In_mines(&u.uz)) {
+        Sprintf(buf, "Mines %d", dunlev(&u.uz));
     } else if (In_endgame(&u.uz)) {
         /* [3.6.2: this used to be "Astral Plane" or generic "End Game"] */
         (void) endgamelevelname(buf, depth(&u.uz));
@@ -593,6 +599,8 @@ static struct istat_s initblstats[MAXBLSTATS] = {
        available mostly for screenshots or someone looking over shoulder;
        blstat[][BL_VERS] is actually an int copy of flags.versinfo (0...7) */
     INIT_BLSTAT("version", " %s", ANY_STR, MAXVALWIDTH, BL_VERS),
+    INIT_BLSTAT("timeofday", " %s", ANY_STR, 20, BL_TOD),
+    INIT_BLSTAT("harmony", " %s", ANY_STR, 20, BL_BOOST),
 };
 
 #undef INIT_BLSTATP
@@ -755,7 +763,7 @@ bot_via_windowport(void)
     char buf[BUFSZ];
     const char *titl;
     char *nb;
-    int i, idx, cap;
+    int i, idx, cap, hm;
     long money;
 
     if (!gb.blinit)
@@ -816,6 +824,21 @@ bot_via_windowport(void)
                                           : (u.ualign.type == A_NEUTRAL)
                                                ? "Neutral"
                                                : "Lawful");
+
+    /* Weather */
+    Strcpy(gb.blstats[idx][BL_TOD].val, tod_string());
+
+    /* Harmony */
+    hm = 0;
+    if (u_boosted(gy.youmonst.data->mboost))
+        hm++;
+    if (uwep && uwep->known && u_boosted(uwep->booster))
+        hm++;
+
+    if (hm)
+        Sprintf(gb.blstats[idx][BL_BOOST].val, "Hmny%s", (hm == 2) ? "+" : "");
+    else
+        Sprintf(gb.blstats[idx][BL_BOOST].val, "Normal");
 
     /* Score */
     gb.blstats[idx][BL_SCORE].a.a_long =
@@ -973,7 +996,7 @@ bot_via_windowport(void)
 #else
             test_if_enabled(bl_held) = TRUE;
 #endif
-        } else if (Upolyd && sticks(gy.youmonst.data)) {
+        } else if (Upolyd && u.usticker) {
             test_if_enabled(bl_holding) = TRUE;
         } else {
             /* grab == hero is held by sea monster and about to be drowned;
@@ -3880,6 +3903,8 @@ status_hilite_menu_add(int origfld)
         Sprintf(qry_buf, "%s %s text value to match:",
                 (fld == BL_CAP
                  || fld == BL_ALIGN
+                 || fld == BL_TOD
+                 || fld == BL_BOOST
                  || fld == BL_HUNGER
                  || fld == BL_TITLE) ? "Choose" : "Enter",
                 initblstats[fld].fldname);
@@ -3905,6 +3930,31 @@ status_hilite_menu_add(int origfld)
 
             hilite.rel = TXT_VALUE;
             Strcpy(hilite.textmatch, aligntxt[rv]);
+        } else if (fld == BL_TOD) {
+            static const char *const todtxt[] = {
+                "Morning", "Midday", "Evening",
+                "Night", "Midnight"
+            };
+            int rv = query_arrayvalue(qry_buf,
+                                      todtxt, 0, 5);
+
+            if (rv < 0)
+                goto choose_behavior;
+
+            hilite.rel = TXT_VALUE;
+            Strcpy(hilite.textmatch, todtxt[rv]);
+        } else if (fld == BL_BOOST) {
+            static const char *const boost_txt[] = {
+                "Normal", "Hmny", "Hmny+"
+            };
+            int rv = query_arrayvalue(qry_buf,
+                                      boost_txt, 0, 3);
+
+            if (rv < 0)
+                goto choose_behavior;
+
+            hilite.rel = TXT_VALUE;
+            Strcpy(hilite.textmatch, boost_txt[rv]);
         } else if (fld == BL_HUNGER) {
             static const char *const hutxt[] = {
                 "Satiated", (char *) 0, "Hungry", "Weak",

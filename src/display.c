@@ -1,4 +1,4 @@
-/* NetHack 3.7	display.c	$NHDT-Date: 1723834773 2024/08/16 18:59:33 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.244 $ */
+/* NetHack 3.7	display.c	$NHDT-Date: 1745114235 2025/04/19 17:57:15 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.260 $ */
 /* Copyright (c) Dean Luick, with acknowledgements to Kevin Darcy */
 /* and Dave Cohrs, 1990.                                          */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -601,6 +601,11 @@ display_monster(
                 num = petnum_to_glyph(PM_LONG_WORM_TAIL, mgendercode);
             else
                 num = pet_to_glyph(mon, rn2_on_display_rng);
+        } else if (!Hallucination && mon_boosted(mon, mon->data->mboost)) {
+            if (worm_tail)
+                num = boosted_monnum_to_glyph(PM_LONG_WORM_TAIL, mgendercode);
+            else
+                num = boosted_to_glyph(mon, rn2_on_display_rng);
         } else if (sightflags == DETECTED) {
             if (worm_tail)
                 num = detected_monnum_to_glyph(what_mon(PM_LONG_WORM_TAIL,
@@ -1976,6 +1981,10 @@ show_glyph(coordxy x, coordxy y, int glyph)
             text = "female pet";
         } else if ((offset = (glyph - GLYPH_PET_MALE_OFF)) >= 0) {
             text = "male pet";
+        } else if ((offset = (glyph - GLYPH_BOOSTED_FEM_OFF)) >= 0) {
+            text = "boosted female monster";
+        } else if ((offset = (glyph - GLYPH_BOOSTED_MALE_OFF)) >= 0) {
+            text = "boosted male monster";
         } else if ((offset = (glyph - GLYPH_MON_FEM_OFF)) >= 0) {
             text = "female monster";
         } else if ((offset = (glyph - GLYPH_MON_MALE_OFF)) >= 0) {
@@ -2000,8 +2009,9 @@ show_glyph(coordxy x, coordxy y, int glyph)
     oldglyph = gg.gbuf[y][x].glyphinfo.glyph;
 
     if (a11y.glyph_updates && !a11y.mon_notices_blocked
-        && !program_state.in_docrt
-        && !program_state.in_getlev
+        && !program_state.in_docrt && !program_state.gameover
+        && !program_state.in_getlev && !program_state.stopprint
+        && !_suppress_map_output()
         && (oldglyph != glyph || gg.gbuf[y][x].gnew)) {
         int c = glyph_to_cmap(glyph);
 
@@ -2291,6 +2301,13 @@ back_to_glyph(coordxy x, coordxy y)
     case CORR:
         idx = (ptr->waslit || flags.lit_corridor) ? S_litcorr : S_corr;
         break;
+    case SDOOR:
+        if (ptr->arboreal_sdoor) {
+            idx = S_tree;
+            break;
+        }
+        FALLTHROUGH;
+        /*FALLTHRU*/
     case HWALL:
     case VWALL:
     case TLCORNER:
@@ -2302,7 +2319,6 @@ back_to_glyph(coordxy x, coordxy y)
     case TDWALL:
     case TLWALL:
     case TRWALL:
-    case SDOOR:
         idx = ptr->seenv ? wall_angle(ptr) : S_stone;
         break;
     case DOOR:
@@ -2634,10 +2650,15 @@ map_glyphinfo(
         && levl[x][y].coat_info) {
         /* Order matters here. Generally the more important the coating, the higher
             priority it gets. Potions are the highest because they could kill the player. */
-        if ((levl[x][y].coat_info & COAT_POTION) != 0)
-            glyphinfo->gm.sym.color = objects[levl[x][y].pindex].oc_color;
-        else if ((levl[x][y].coat_info & COAT_SHARDS) != 0)
+        if ((levl[x][y].coat_info & COAT_POTION) != 0) {
+            if (levl[x][y].pindex == POT_WATER)
+                glyphinfo->gm.sym.color = CLR_BLUE;
+            else
+                glyphinfo->gm.sym.color = objects[levl[x][y].pindex].oc_color;
+        } else if ((levl[x][y].coat_info & COAT_SHARDS) != 0)
             glyphinfo->gm.sym.color = CLR_BRIGHT_CYAN;
+        else if ((levl[x][y].coat_info & COAT_HONEY) != 0)
+            glyphinfo->gm.sym.color = CLR_YELLOW;
         else if ((levl[x][y].coat_info & COAT_FUNGUS) != 0)
             glyphinfo->gm.sym.color = CLR_CYAN;
         else if ((levl[x][y].coat_info & COAT_BLOOD) != 0)
@@ -2649,9 +2670,11 @@ map_glyphinfo(
         /* indicator for colorless games */
         if (!iflags.use_color)
             glyphinfo->gm.glyphflags |= MG_SURFACE;
-    } else if (levl[x][y].typ == ROOM && levl[x][y].submask == SM_DIRT
-                && glyph_is_cmap_main(glyph) && cansee(x, y))  {
-        glyphinfo->gm.sym.color = CLR_BROWN;
+    } else if (IS_SUBMASKABLE(levl[x][y].typ) && glyph_is_cmap_a(glyph) && cansee(x, y))  {
+        if (levl[x][y].submask == SM_DIRT)
+            glyphinfo->gm.sym.color = CLR_BROWN;
+        if (levl[x][y].submask == SM_SAND)
+            glyphinfo->gm.sym.color = CLR_YELLOW;
     }
     if (sysopt.accessibility == 1
         && (mgflags & MG_FLAG_NOOVERRIDE) && glyph_is_pet(glyph)) {
@@ -3049,6 +3072,20 @@ reset_glyphmap(enum glyphmap_change_triggers trigger)
             else
                 invis_color(offset);
             gmap->glyphflags |= MG_INVIS;
+        } else if ((offset = (glyph - GLYPH_BOOSTED_FEM_OFF)) >= 0) {
+            gmap->sym.symidx = mons[offset].mlet + SYM_OFF_M;
+            if (has_rogue_color)
+                color = NO_COLOR;
+            else
+                pet_color(offset);
+            gmap->glyphflags |= (MG_BOOST | MG_FEMALE);
+        } else if ((offset = (glyph - GLYPH_BOOSTED_MALE_OFF)) >= 0) {
+            gmap->sym.symidx = mons[offset].mlet + SYM_OFF_M;
+            if (has_rogue_color)
+                color = NO_COLOR;
+            else
+                pet_color(offset);
+            gmap->glyphflags |= (MG_BOOST | MG_MALE);
         } else if ((offset = (glyph - GLYPH_PET_FEM_OFF)) >= 0) {
             gmap->sym.symidx = mons[offset].mlet + SYM_OFF_M;
             if (has_rogue_color)
@@ -3613,6 +3650,10 @@ wall_angle(struct rm *lev)
         break;
 
     case SDOOR:
+        if (lev->arboreal_sdoor) {
+            idx = S_tree;
+            break;
+        }
         if (lev->horizontal)
             goto horiz;
         FALLTHROUGH;

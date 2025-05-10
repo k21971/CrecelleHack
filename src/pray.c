@@ -801,6 +801,14 @@ at_your_feet(const char *str)
     }
 }
 
+int
+wiz_crown(void)
+{
+    Your("crown, my %s.", flags.female ? "queen" : "king");
+    gcrownu();
+    return 0;
+}
+
 staticfn void
 gcrownu(void)
 {
@@ -1401,7 +1409,7 @@ water_prayer(boolean bless_water)
             other = TRUE;
     }
     if (!Blind && changed) {
-        pline("%s potion%s on the altar glow%s %s for a moment.",
+        pline("%s tonic%s on the altar glow%s %s for a moment.",
               ((other && changed > 1L) ? "Some of the"
                                        : (other ? "One of the" : "The")),
               ((other || changed > 1L) ? "s" : ""), (changed > 1L ? "" : "s"),
@@ -1729,6 +1737,7 @@ sacrifice_your_race(
             pline(
             "The blood floods the altar, which vanishes in %s cloud!",
                     an(hcolor(NH_BLACK)));
+            potion_splatter(u.ux, u.uy, POT_BLOOD, gu.urace.mnum);
             levl[u.ux][u.uy].typ = ROOM;
             levl[u.ux][u.uy].altarmask = 0;
             newsym(u.ux, u.uy);
@@ -2178,14 +2187,19 @@ pray_revive(void)
     struct obj *otmp;
 
     for (otmp = svl.level.objects[u.ux][u.uy]; otmp; otmp = otmp->nexthere)
-        if (otmp->otyp == CORPSE && has_omonst(otmp)
+        if ((otmp->otyp == CORPSE || otmp->otyp == STATUE)
+            && has_omonst(otmp)
             && OMONST(otmp)->mtame && !OMONST(otmp)->isminion)
             break;
 
     if (!otmp)
         return FALSE;
 
-    return (revive(otmp, TRUE) != NULL);
+    if (otmp->otyp == CORPSE)
+        return (revive(otmp, TRUE) != NULL);
+    else {
+        return (animate_statue(otmp, u.ux, u.uy, ANIMATE_SPELL, NULL) != NULL);
+    }
 }
 
 /* #pray command */

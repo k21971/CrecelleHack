@@ -1728,22 +1728,25 @@ notice_all_mons(boolean reset)
         struct monst **arr = NULL;
         int j, i = 0, cnt = 0;
 
-        for (mtmp = fmon; mtmp; mtmp = mtmp->nmon)
+        for (mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+            if (DEADMONSTER(mtmp))
+                continue;
             if (canspotmon(mtmp))
                 cnt++;
             else if (reset)
                 mtmp->mspotted = FALSE;
-
+        }
         if (!cnt)
             return;
 
-        arr = (struct monst **) alloc(cnt * sizeof(struct monst *));
-
+        arr = (struct monst **) alloc(cnt * sizeof (struct monst *));
 
         for (mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+            if (DEADMONSTER(mtmp))
+                continue;
             if (!canspotmon(mtmp))
                 mtmp->mspotted = FALSE;
-            else if (!DEADMONSTER(mtmp) && i < cnt)
+            else if (i < cnt)
                 arr[i++] = mtmp;
         }
 
@@ -1802,6 +1805,7 @@ u_locomotion(const char *def)
        or boots/ring/spell of levitation */
     return Levitation ? (capitalize ? "Float" : "float")
            : Flying ? (capitalize ? "Fly" : "fly")
+             : Prone ? "crawl"
              : locomotion(gy.youmonst.data, def);
 }
 
@@ -2629,7 +2633,7 @@ escape_from_sticky_mon(coordxy x, coordxy y)
         if (!m_next2u(u.ustuck)) {
             /* perhaps it fled (or was teleported or ... ) */
             set_ustuck((struct monst *) 0);
-        } else if (sticks(gy.youmonst.data)) {
+        } else if (u.usticker) {
             /* When polymorphed into a sticking monster,
              * u.ustuck means it's stuck to you, not you to it.
              */
@@ -2646,15 +2650,9 @@ escape_from_sticky_mon(coordxy x, coordxy y)
              * If holder is tame and there is no conflict,
              * guaranteed escape.
              */
-            switch (rn2(!u.ustuck->mcanmove ? 8 : 40)) {
-            case 0:
-            case 1:
-            case 2:
- pull_free:
-                mtmp = u.ustuck;
-                set_ustuck((struct monst *) 0);
-                You("pull free from %s.", y_monnam(mtmp));
-                break;
+            switch (rn2(!u.ustuck->mcanmove ? 
+                        (P_SKILL(P_GRAPPLING) >= P_BASIC ? 2 : 8) 
+                        : min(2, 40 - 12 * max(0, P_SKILL(P_GRAPPLING) - 1)))) {
             case 3:
                 if (!u.ustuck->mcanmove) {
                     /* it's free to move on next turn */
@@ -2664,11 +2662,20 @@ escape_from_sticky_mon(coordxy x, coordxy y)
                 FALLTHROUGH;
                 /*FALLTHRU*/
             default:
-                if (u.ustuck->mtame && !Conflict && !u.ustuck->mconf)
-                    goto pull_free;
-                You("cannot escape from %s!", y_monnam(u.ustuck));
-                nomul(0);
-                return TRUE;
+                if (Conflict || u.ustuck->mconf || !u.ustuck->mtame) {
+                    You("cannot escape from %s!", y_monnam(u.ustuck));
+                    nomul(0);
+                    return TRUE;
+                }
+                FALLTHROUGH;
+                /*FALLTHRU*/
+            case 0:
+            case 1:
+            case 2:
+                mtmp = u.ustuck;
+                set_ustuck((struct monst *) 0);
+                You("pull free from %s.", y_monnam(mtmp));
+                break;
             }
         }
     }

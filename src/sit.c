@@ -279,7 +279,7 @@ dosit(void)
         return ECMD_OK;
     }
     if (u.uundetected && is_hider(gy.youmonst.data)
-        && u.umonnum != PM_TRAPPER) /* trapper can stay hidden on floor */
+        && u.umonnum != PM_TRAPPER && u.umonnum != PM_SPANNER) /* trapper can stay hidden on floor */
         u.uundetected = 0; /* no longer on the ceiling */
 
     if (!can_reach_floor(FALSE)) {
@@ -290,7 +290,7 @@ dosit(void)
         else
             You("are sitting on air.");
         return ECMD_OK;
-    } else if (u.ustuck && !sticks(gy.youmonst.data)) {
+    } else if (u.ustuck && u.usticker) {
         /* holding monster is next to hero rather than beneath, but
            hero is in no condition to actually sit at has/her own spot */
         if (humanoid(u.ustuck->data))
@@ -453,7 +453,13 @@ dosit(void)
         }
         
     } else if (has_coating(u.ux, u.uy, COAT_POTION)) {
-        You("sit in %s liquid.", OBJ_DESCR(objects[levl[u.ux][u.uy].pindex]));
+        char liqbuf[BUFSZ];
+        if (levl[u.ux][u.uy].pindex == POT_WATER)
+            You("sit in some water."); /* goto in_water? */
+        else {
+            potion_coating_text(liqbuf, levl[u.ux][u.uy].pindex);
+            You("sit in %s.", liqbuf);
+        }
         struct obj fakeobj = cg.zeroobj;
         fakeobj.cursed = TRUE;
         fakeobj.otyp = levl[u.ux][u.uy].pindex;

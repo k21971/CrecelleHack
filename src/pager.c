@@ -431,7 +431,7 @@ look_at_monster(
             Strcat(buf, digests(mtmp->data) ? ", swallowing you"
                                             : ", engulfing you");
         else
-            Strcat(buf, (Upolyd && sticks(gy.youmonst.data))
+            Strcat(buf, (u.usticker)
                           ? ", being held" : ", holding you");
     }
     /* if mtmp isn't able to move (other than because it is a type of
@@ -448,6 +448,8 @@ look_at_monster(
         /* arbitrary reason why it isn't moving */
         Strcat(buf, ", meditating");
 
+    if (mon_boosted(mtmp, mtmp->data->mboost))
+        Strcat(buf, ", harmonizing");
     if (mtmp->mleashed)
         Strcat(buf, ", leashed to you");
     if (mtmp->mprone)
@@ -600,9 +602,11 @@ waterbody_name(coordxy x, coordxy y)
 /* describe the floor itself */
 staticfn const char *
 floor_descr(coordxy x, coordxy y, short symidx) {
-    if (levl[x][y].typ == ROOM) {
+    if (IS_SUBMASKABLE(levl[x][y].typ)) {
         if (levl[x][y].submask == SM_DIRT) {
             return "dirt";
+        } else if (levl[x][y].submask == SM_SAND) {
+            return "sand";
         } else {
             return defsyms[symidx].explanation;
         }
@@ -615,23 +619,31 @@ floor_descr(coordxy x, coordxy y, short symidx) {
 staticfn char *
 coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
     char buf[BUFSZ];
+    int pindex;
     if (!levl[x][y].coat_info) {
         Strcpy(outbuf, floor_descr(x, y, symidx));
         return outbuf;
     }
 
+    pindex = levl[x][y].pindex;
     if ((levl[x][y].coat_info & COAT_SHARDS) != 0)
         Strcat(outbuf, "glass-strewn ");
+    if ((levl[x][y].coat_info & COAT_HONEY) != 0)
+        Strcat(outbuf, "sticky ");
     if ((levl[x][y].coat_info & COAT_GRASS) != 0)
         Strcat(outbuf, "grassy ");
     if ((levl[x][y].coat_info & COAT_ASHES) != 0)
         Strcat(outbuf, "ashy ");
     if ((levl[x][y].coat_info & COAT_FUNGUS) != 0)
         Strcat(outbuf, "fungus-encrusted ");
-
-    if ((levl[x][y].coat_info & COAT_POTION) != 0)
-        Sprintf(buf, "%s covered in %s liquid", floor_descr(x, y, symidx), OBJ_DESCR(objects[levl[x][y].pindex]));
-    else if ((levl[x][y].coat_info & COAT_BLOOD) != 0) {
+    if ((levl[x][y].coat_info & COAT_POTION) != 0
+         && pindex == POT_WATER)
+            Strcat(outbuf, "wet ");
+    
+    if ((levl[x][y].coat_info & COAT_POTION) != 0 && pindex != POT_WATER) {
+        Sprintf(buf, "%s covered in ", floor_descr(x, y, symidx));
+        potion_coating_text(eos(buf), pindex);
+    } else if ((levl[x][y].coat_info & COAT_BLOOD) != 0) {
         if (ismnum(levl[x][y].pindex))
             Sprintf(buf, "%s covered in %s blood", floor_descr(x, y, symidx),  mons[levl[x][y].pindex].pmnames[NEUTRAL]);
         else
@@ -640,6 +652,16 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
         Sprintf(buf, "%s", floor_descr(x, y, symidx));
     Strcat(outbuf, buf);
     
+    return outbuf;
+}
+
+/* describe the tonic depending on if it is known or unknown */
+char *
+potion_coating_text(char *outbuf, int pindex) {
+    Sprintf(outbuf, "%s %s",
+                objects[pindex].oc_name_known ? OBJ_NAME(objects[pindex]) 
+                                              : OBJ_DESCR(objects[pindex]),
+                objects[pindex].oc_name_known ? "tonic" : "liquid");
     return outbuf;
 }
 
@@ -1156,7 +1178,7 @@ checkfile(
                     destroy_nhwindow(datawin), datawin = WIN_ERR;
                 }
             } else if (user_typed_name && pass == 0 && !pass1found_in_file) {
-                pline("You don't have any information on those things.");
+                You("don't have any information on those things.");
             }
         }
     }

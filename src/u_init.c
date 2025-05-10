@@ -85,7 +85,7 @@ static struct trobj Knight[] = {
     { LANCE, 1, WEAPON_CLASS, 1, UNDEF_BLESS },
     { RING_MAIL, 1, ARMOR_CLASS, 1, UNDEF_BLESS },
     { HELMET, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
-    { SMALL_SHIELD, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
+    { ROUNDSHIELD, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
     { LEATHER_GLOVES, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
     { 0, 0, 0, 0, 0 }
 };
@@ -108,7 +108,7 @@ static struct trobj Monk[] = {
 static struct trobj Priest[] = {
     { MACE, 1, WEAPON_CLASS, 1, 1 },
     { ROBE, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
-    { SMALL_SHIELD, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
+    { ROUNDSHIELD, 0, ARMOR_CLASS, 1, UNDEF_BLESS },
     { POT_WATER, 0, POTION_CLASS, 4, 1 }, /* holy water */
     { CLOVE_OF_GARLIC, 0, FOOD_CLASS, 1, 0 },
     { SPRIG_OF_WOLFSBANE, 0, FOOD_CLASS, 1, 0 },
@@ -160,7 +160,7 @@ static struct trobj Tourist[] = {
 static struct trobj Valkyrie[] = {
     { SPEAR, 1, WEAPON_CLASS, 1, UNDEF_BLESS },
     { DAGGER, 0, WEAPON_CLASS, 1, UNDEF_BLESS },
-    { SMALL_SHIELD, 3, ARMOR_CLASS, 1, UNDEF_BLESS },
+    { ROUNDSHIELD, 3, ARMOR_CLASS, 1, UNDEF_BLESS },
     { FOOD_RATION, 0, FOOD_CLASS, 1, 0 },
     { 0, 0, 0, 0, 0 }
 };
@@ -174,6 +174,14 @@ static struct trobj Wizard[] = {
     { SPE_FORCE_BOLT, 0, SPBOOK_CLASS, 1, 1 },
     { UNDEF_TYP, UNDEF_SPE, SPBOOK_CLASS, 1, UNDEF_BLESS },
     { MAGIC_MARKER, 19, TOOL_CLASS, 1, 0 }, /* actually spe = 18 + d4 */
+    { 0, 0, 0, 0, 0 }
+};
+static struct trobj Wrestler[] = {
+    { UNDEF_TYP, UNDEF_SPE, POTION_CLASS, 3, UNDEF_BLESS },
+    { FOOD_RATION, 0, FOOD_CLASS, 3, 0 },
+    { APPLE, 0, FOOD_CLASS, 5, UNDEF_BLESS },
+    { SACK, 0, TOOL_CLASS, 1, 0 },
+    { SUNGLASSES, 0, TOOL_CLASS, 1, 0 },
     { 0, 0, 0, 0, 0 }
 };
 
@@ -218,7 +226,7 @@ static struct inv_sub {
     { PM_ELF, BOW, ELVEN_BOW },
     { PM_ELF, ARROW, ELVEN_ARROW },
     { PM_ELF, HELMET, ELVEN_LEATHER_HELM },
-    /* { PM_ELF, SMALL_SHIELD, ELVEN_SHIELD }, */
+    /* { PM_ELF, ROUNDSHIELD, ELVEN_SHIELD }, */
     { PM_ELF, CLOAK_OF_DISPLACEMENT, ELVEN_CLOAK },
     { PM_ELF, CRAM_RATION, LEMBAS_WAFER },
     { PM_ORC, DAGGER, ORCISH_DAGGER },
@@ -227,7 +235,7 @@ static struct inv_sub {
     { PM_ORC, BOW, ORCISH_BOW },
     { PM_ORC, ARROW, ORCISH_ARROW },
     { PM_ORC, HELMET, ORCISH_HELM },
-    { PM_ORC, SMALL_SHIELD, ORCISH_SHIELD },
+    { PM_ORC, ROUNDSHIELD, ORCISH_SHIELD },
     { PM_ORC, RING_MAIL, ORCISH_RING_MAIL },
     { PM_ORC, CHAIN_MAIL, ORCISH_CHAIN_MAIL },
     { PM_ORC, CRAM_RATION, TRIPE_RATION },
@@ -235,7 +243,7 @@ static struct inv_sub {
     { PM_DWARF, SPEAR, DWARVISH_SPEAR },
     { PM_DWARF, SHORT_SWORD, DWARVISH_SHORT_SWORD },
     { PM_DWARF, HELMET, DWARVISH_IRON_HELM },
-    /* { PM_DWARF, SMALL_SHIELD, DWARVISH_ROUNDSHIELD }, */
+    /* { PM_DWARF, ROUNDSHIELD, DWARVISH_ROUNDSHIELD }, */
     /* { PM_DWARF, PICK_AXE, DWARVISH_MATTOCK }, */
     { PM_DWARF, LEMBAS_WAFER, CRAM_RATION },
     { PM_GNOME, BOW, CROSSBOW },
@@ -264,6 +272,7 @@ static const struct def_skill Skill_A[] = {
     { P_TWO_WEAPON_COMBAT, P_BASIC },
     { P_BARE_HANDED_COMBAT, P_EXPERT },
     { P_TRIPPING, P_EXPERT },
+    { P_GRAPPLING, P_BASIC },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_B[] = {
@@ -290,6 +299,7 @@ static const struct def_skill Skill_B[] = {
     { P_TWO_WEAPON_COMBAT, P_BASIC },
     { P_BARE_HANDED_COMBAT, P_MASTER },
     { P_TRIPPING, P_SKILLED },
+    { P_GRAPPLING, P_SKILLED },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_C[] = {
@@ -314,6 +324,7 @@ static const struct def_skill Skill_C[] = {
     { P_UNICORN_HORN, P_BASIC },
     { P_BARE_HANDED_COMBAT, P_MASTER },
     { P_TRIPPING, P_SKILLED },
+    { P_GRAPPLING, P_BASIC },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_H[] = {
@@ -334,6 +345,7 @@ static const struct def_skill Skill_H[] = {
     { P_HEALING_SPELL, P_EXPERT },
     { P_BARE_HANDED_COMBAT, P_BASIC },
     { P_TRIPPING, P_BASIC },
+    { P_GRAPPLING, P_SKILLED },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_K[] = {
@@ -379,6 +391,7 @@ static const struct def_skill Skill_Mon[] = {
     { P_MATTER_SPELL, P_BASIC },
     { P_MARTIAL_ARTS, P_GRAND_MASTER },
     { P_TRIPPING, P_EXPERT },
+    { P_GRAPPLING, P_EXPERT },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_P[] = {
@@ -431,6 +444,7 @@ static const struct def_skill Skill_R[] = {
     { P_TWO_WEAPON_COMBAT, P_EXPERT },
     { P_BARE_HANDED_COMBAT, P_EXPERT },
     { P_TRIPPING, P_EXPERT },
+    { P_GRAPPLING, P_BASIC },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_Ran[] = {
@@ -459,6 +473,7 @@ static const struct def_skill Skill_Ran[] = {
     { P_RIDING, P_BASIC },
     { P_BARE_HANDED_COMBAT, P_BASIC },
     { P_TRIPPING, P_SKILLED },
+    { P_GRAPPLING, P_BASIC },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_S[] = {
@@ -518,6 +533,7 @@ static const struct def_skill Skill_T[] = {
     { P_TWO_WEAPON_COMBAT, P_SKILLED },
     { P_BARE_HANDED_COMBAT, P_SKILLED },
     { P_TRIPPING, P_SKILLED },
+    { P_GRAPPLING, P_SKILLED },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_V[] = {
@@ -542,8 +558,30 @@ static const struct def_skill Skill_V[] = {
     { P_TWO_WEAPON_COMBAT, P_SKILLED },
     { P_BARE_HANDED_COMBAT, P_EXPERT },
     { P_TRIPPING, P_BASIC },
+    { P_GRAPPLING, P_BASIC },
     { P_NONE, 0 }
 };
+static const struct def_skill Skill_Wre[] = {
+    { P_DAGGER, P_BASIC },
+    { P_KNIFE, P_BASIC },
+    { P_PICK_AXE, P_BASIC },
+    { P_CLUB, P_BASIC },
+    { P_MACE, P_BASIC },
+    { P_MORNING_STAR, P_BASIC },
+    { P_FLAIL, P_BASIC },
+    { P_HAMMER, P_BASIC },
+    { P_QUARTERSTAFF, P_BASIC },
+    { P_POLEARMS, P_BASIC },
+    { P_SPEAR, P_BASIC },
+    { P_TRIDENT, P_SKILLED },
+    { P_BOOMERANG, P_EXPERT },
+    { P_UNICORN_HORN, P_BASIC },
+    { P_MARTIAL_ARTS, P_MASTER },
+    { P_TRIPPING, P_EXPERT },
+    { P_GRAPPLING, P_GRAND_MASTER },
+    { P_NONE, 0 }
+};
+
 static const struct def_skill Skill_W[] = {
     { P_DAGGER, P_EXPERT },
     { P_KNIFE, P_SKILLED },
@@ -787,6 +825,10 @@ u_init_role(void)
         knows_class(ARMOR_CLASS);
         skill_init(Skill_V);
         break;
+    case PM_WRESTLER:
+        ini_inv(Wrestler);
+        skill_init(Skill_Wre);
+        break;
     case PM_WIZARD:
         ini_inv(Wizard);
         if (!rn2(5))
@@ -863,7 +905,7 @@ u_init_race(void)
         knows_object(ORCISH_RING_MAIL, FALSE);
         knows_object(ORCISH_HELM, FALSE);
         knows_object(ORCISH_SHIELD, FALSE);
-        knows_object(URUK_HAI_SHIELD, FALSE);
+        knows_object(FELL_ORC_SHIELD, FALSE);
         knows_object(ORCISH_CLOAK, FALSE);
         knows_object(DUAL_AXE, FALSE);
         break;
@@ -928,6 +970,7 @@ pauper_reinit(void)
     case PM_BARBARIAN:
     case PM_RANGER:
     case PM_VALKYRIE:
+    case PM_WRESTLER:
         break;
     }
     if (preknown != STRANGE_OBJECT)
@@ -987,6 +1030,7 @@ u_init(void)
     u.uz.dnum = u.uz0.dnum = 0;
     u.utotype = UTOTYPE_NONE;
 #endif /* 0 */
+    init_environs();
 
     u.uz.dlevel = 1;
     u.uz0.dlevel = 0;
@@ -1114,6 +1158,9 @@ restricted_spell_discipline(int otyp)
     case PM_WIZARD:
         skills = Skill_W;
         break;
+    case PM_WRESTLER:
+        skills = Skill_Wre;
+        break;
     default:
         skills = 0; /* lint suppression */
         break;
@@ -1163,7 +1210,7 @@ ini_inv_mkobj_filter(int oclass, boolean got_level1_spellbook)
            /* orcs start with poison resistance */
            || (otyp == RIN_POISON_RESISTANCE && Race_if(PM_ORC))
            /* Monks don't use weapons */
-           || (otyp == SCR_ENCHANT_WEAPON && Role_if(PM_MONK))
+           || (otyp == SCR_ENCHANT_WEAPON && (Role_if(PM_MONK) || Role_if(PM_WRESTLER)))
            /* wizard patch -- they already have one */
            || (otyp == SPE_FORCE_BOLT && Role_if(PM_WIZARD))
            /* powerful spells are either useless to

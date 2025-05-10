@@ -804,6 +804,28 @@ teleport_pet(struct monst *mtmp, boolean force_it)
     return TRUE;
 }
 
+/* teleport to random pet, if valid location next to it */
+void
+tele_to_rnd_pet(void)
+{
+    struct monst *mtmp, *pet = (struct monst *) 0;
+    int cnt = 0;
+
+    for (mtmp = fmon; mtmp; mtmp = mtmp->nmon)
+        if (!DEADMONSTER(mtmp) && mtmp->mtame && !mon_offmap(mtmp)) {
+            cnt++;
+            if (!rn2(cnt))
+                pet = mtmp;
+        }
+    if (pet && !m_next2u(pet)) {
+        coordxy tx = pet->mx + rn2(3) - 1,
+                ty = pet->my + rn2(3) - 1;
+
+        if (isok(tx, ty) && teleok(tx, ty, FALSE))
+            teleds(tx, ty, TELEDS_TELEPORT);
+    }
+}
+
 /* teleport the hero via some method other than scroll of teleport */
 void
 tele(void)
@@ -1630,7 +1652,7 @@ rloc_to_core(
             if (couldsee(x, y) || sensemon(mtmp)) {
                 telemsg = TRUE;
             } else {
-                pline("%s vanishes!", Monnam(mtmp));
+                pline("%s %s!", Monnam(mtmp), mtmp->data == &mons[PM_NIGHTCRAWLER] ? "bamfs" : "vanishes");
             }
             /* avoid "It suddenly appears!" for a STRAT_APPEARMSG monster
                that has just teleported away if we won't see it after this
@@ -1677,8 +1699,9 @@ rloc_to_core(
         if (mtmp == u.ustuck && !u_at(u.ux0, u.uy0)) {
             You("and %s teleport together.", mon_nam(mtmp));
         } else if (telemsg && (couldsee(x, y) || sensemon(mtmp))) {
-            pline("%s vanishes and reappears%s.",
+            pline("%s %s and reappears%s.",
                   Monnam(mtmp),
+                  mtmp->data == &mons[PM_NIGHTCRAWLER] ? "bamfs" : "vanishes",
                   next ? next
                   : nearu ? nearu
                     : ((olddu = distu(oldx, oldy)) == du) ? ""
@@ -1958,6 +1981,8 @@ mtele_trap(struct monst *mtmp, struct trap *trap, int in_sight)
         if (in_sight) {
             if (canseemon(mtmp))
                 pline("%s seems disoriented.", monname);
+            else if (mtmp->data == &mons[PM_NIGHTCRAWLER])
+                pline("%s bamfs away!", monname);
             else
                 pline("%s suddenly disappears!", monname);
             seetrap(trap);

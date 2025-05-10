@@ -632,6 +632,12 @@ background_enlightenment(int unused_mode UNUSED, int final)
         enl_msg("It ", "is ", "was ", "the midnight hour", "");
     } else if (final ? iflags.at_night : night()) {
         enl_msg("It ", "is ", "was ", "nighttime", "");
+    } else {
+        enl_msg("It ", "is ", "was  ", "daytime", "");
+    }
+    /* Weather */
+    if (!has_no_tod_cycles(&u.uz) && IS_RAINING) {
+        enl_msg("It ", "is ", "was ", "raining", "");
     }
     /* other environmental factors */
     if (flags.moonphase == FULL_MOON || flags.moonphase == NEW_MOON) {
@@ -759,6 +765,26 @@ basics_enlightenment(int mode UNUSED, int final)
         Sprintf(eos(buf), ", the %s possible",
                 (u.uac < 0) ? "best" : "worst");
     enl_msg("Your armor class ", "is ", "was ", buf, "");
+
+    /* Are ya boostin', son? */
+    if (u_boosted(gy.youmonst.data->mboost))
+        you_are("harmonizing with your environment", "");
+    if (uwep && uwep->known && u_boosted(uwep->booster))
+        enl_msg("Your weapon ", "is ", "was ", "harmonizing with the environment", "");
+    if (uarm && uarm->known && u_boosted(uarm->booster))
+        enl_msg("Your armor ", "is ", "was ", "harmonizing with the environment", "");
+    if (uarmc && uarmc->known && u_boosted(uarmc->booster))
+        enl_msg("Your cloak ", "is ", "was ", "harmonizing with the environment", "");
+    if (uarmh && uarmh->known && u_boosted(uarmh->booster))
+        enl_msg("Your helmet ", "is ", "was ", "harmonizing with the environment", "");
+    if (uarmf && uarmf->known && u_boosted(uarmf->booster))
+        enl_msg("Your boots ", "are ", "were ", "harmonizing with the environment", "");
+    if (uarmu && uarmu->known && u_boosted(uarmu->booster))
+        enl_msg("Your undergarments ", "are ", "were ", "harmonizing with the environment", "");
+    if (uarmg && uarmg->known && u_boosted(uarmg->booster))
+        enl_msg("Your gloves ", "are ", "were ", "harmonizing with the environment", "");
+    if (uarms && uarms->known && u_boosted(uarms->booster))
+        enl_msg("Your shield ", "is ", "was ", "harmonizing with the environment", "");
 
     /* gold; similar to doprgold (#showgold) but without shop billing info;
        includes container contents, unlike status line but like doprgold */
@@ -2612,7 +2638,7 @@ show_gamelog(int final)
             continue;
         if (!eventcnt++)
             putstr(win, ATR_SUBHEAD, " Turn");
-        Sprintf(buf, "%5ld: %s", llmsg->turn, llmsg->text);
+        Snprintf(buf, sizeof buf, "%5ld: %s", llmsg->turn, llmsg->text);
         putstr(win, 0, buf);
     }
     /* since start of game is logged as a major event, 'eventcnt' should
@@ -3078,12 +3104,14 @@ list_genocided(char defquery, boolean ask)
     ngone = num_gone(mvflags, mindx);
 
     /* genocided or extinct species list */
-    if (ngenocided != 0 || nextinct != 0) {
+    if (ngone > 0) {
         Sprintf(buf, "Do you want a list of %sspecies%s%s?",
                 (nextinct && !ngenocided) ? "extinct " : "",
                 (ngenocided) ? " genocided" : "",
                 (nextinct && ngenocided) ? " and extinct" : "");
-        c = ask ? yn_function(buf, ynaqchars, defquery, TRUE) : defquery;
+        c = ask ? yn_function(buf, (ngone > 1) ? "ynaq" : "ynq\033a",
+                              defquery, TRUE)
+                : defquery;
         if (c == 'q')
             done_stopprint++;
         if (c == 'y' || c == 'a') {
@@ -3411,7 +3439,7 @@ mstatusline(struct monst *mtmp)
                                      : ", engulfing you")
                      /* !u.uswallow; if both youmonst and ustuck are holders,
                         youmonst wins */
-                     : (!sticks(gy.youmonst.data) ? ", holding you"
+                     : (!u.usticker ? ", holding you"
                                                  : ", held by you"));
     }
     if (mtmp == u.usteed) {

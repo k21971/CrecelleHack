@@ -140,7 +140,7 @@ experience(struct monst *mtmp, int nk)
         tmp = 1;
 #endif
     if (mtmp->data == &mons[PM_ILLUSION]
-        || mtmp->data == &mons[PM_LIGHTCRUST])
+        || mtmp->data == &mons[PM_NIGHTCRUST])
         tmp = 0;
 
     if (mtmp->mrevived || mtmp->mcloned) {

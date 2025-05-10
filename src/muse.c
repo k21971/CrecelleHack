@@ -64,7 +64,7 @@ precheck(struct monst *mon, struct obj *obj)
 
     if (obj->oclass == POTION_CLASS) {
         coord cc;
-        static const char *const empty = "The potion turns out to be empty.";
+        static const char *const empty = "The tonic turns out to be empty.";
         struct monst *mtmp;
 
         if (objdescr_is(obj, "milky")) {
@@ -591,8 +591,8 @@ find_defensive(struct monst *mtmp, boolean tryescape)
                 gm.m.has_defense = MUSE_SSTAIRS;
         }
     } else if (has_coating(x, y, COAT_ASHES) && !nolimbs(mtmp->data)
-                && !is_floater(mtmp->data) && haseyes(gy.youmonst.data) 
-                && !Blind) {
+                && !is_floater(mtmp->data) && haseyes(gy.youmonst.data)
+                && !Blind && m_next2u(mtmp)) {
         gm.m.has_defense = MUSE_COAT_ASHES;
     } else if (has_coating(x, y, COAT_BLOOD) && is_vampire(mtmp->data)) {
         gm.m.has_defense = MUSE_COAT_BLOOD;
@@ -1171,7 +1171,8 @@ use_defensive(struct monst *mtmp)
             pline_mon(mtmp, "%s absorbs the blood on the floor!", Monnam(mtmp));
         }
         if (touch_petrifies(&mons[levl[mtmp->mx][mtmp->my].pindex])) {
-            if (canseemon(mtmp)) pline_mon(mtmp, "%s turns to stone!", Monnam(mtmp));
+            if (canseemon(mtmp))
+                pline_mon(mtmp, "%s turns to stone!", Monnam(mtmp));
             monstone(mtmp);
         } else {
             mtmp->mhp += d(6, 4); /* inconsistent number, but 4d4 is too small. */
@@ -1207,7 +1208,7 @@ use_defensive(struct monst *mtmp)
     case MUSE_POT_HEALING:
     case MUSE_POT_BLOOD:
         if (!otmp)
-            panic(MissingDefensiveItem, "potion of healing / blood");
+            panic(MissingDefensiveItem, "tonic of healing / blood");
         mquaffmsg(mtmp, otmp);
         i = d(6 + 2 * bcsign(otmp), 4);
         healmon(mtmp, i, 1);
@@ -1219,7 +1220,8 @@ use_defensive(struct monst *mtmp)
             makeknown(otmp->otyp);
         m_useup(mtmp, otmp);
         if (otmp->otyp == POT_BLOOD && touch_petrifies(&mons[otmp->corpsenm])) {
-            if (canseemon(mtmp)) pline_mon(mtmp, "%s turns to stone!", Monnam(mtmp));
+            if (canseemon(mtmp))
+                pline_mon(mtmp, "%s turns to stone!", Monnam(mtmp));
             monstone(mtmp);
         }
         return 2;
@@ -2424,7 +2426,7 @@ use_misc(struct monst *mtmp)
     switch (gm.m.has_misc) {
     case MUSE_POT_GAIN_LEVEL:
         if (!otmp)
-            panic(MissingMiscellaneousItem, "potion of gain level");
+            panic(MissingMiscellaneousItem, "tonic of gain level");
         mquaffmsg(mtmp, otmp);
         if (otmp->cursed) {
             if (Can_rise_up(mtmp->mx, mtmp->my, &u.uz)) {
@@ -2467,7 +2469,7 @@ use_misc(struct monst *mtmp)
     case MUSE_WAN_MAKE_INVISIBLE:
     case MUSE_POT_INVISIBILITY:
         if (!otmp)
-            panic(MissingMiscellaneousItem, "potion of invisibility");
+            panic(MissingMiscellaneousItem, "tonic of invisibility");
         if (otmp->otyp == WAN_MAKE_INVISIBLE) {
             mzapwand(mtmp, otmp, TRUE);
         } else
@@ -2502,7 +2504,7 @@ use_misc(struct monst *mtmp)
         return 2;
     case MUSE_POT_SPEED:
         if (!otmp)
-            panic(MissingMiscellaneousItem, "potion of speed");
+            panic(MissingMiscellaneousItem, "tonic of speed");
         mquaffmsg(mtmp, otmp);
         /* note difference in potion effect due to substantially
            different methods of maintaining speed ratings:
@@ -2522,7 +2524,7 @@ use_misc(struct monst *mtmp)
         return 2;
     case MUSE_POT_POLYMORPH:
         if (!otmp)
-            panic(MissingMiscellaneousItem, "potion of polymorph");
+            panic(MissingMiscellaneousItem, "tonic of polymorph");
         mquaffmsg(mtmp, otmp);
         m_useup(mtmp, otmp);
         if (vismon)
@@ -2565,7 +2567,7 @@ use_misc(struct monst *mtmp)
         for (otmp2 = mtmp->minvent; otmp2; otmp2 = otmp2->nobj) {
             if ((otmp2->owornmask & mtmp->misc_worn_check) && !otmp2->greased) {
                 if (canseemon(mtmp))
-                    pline("%s slathers %s with %s.", Monnam(mtmp), 
+                    pline_mon(mtmp, "%s slathers %s with %s.", Monnam(mtmp),
                           an(xname(otmp2)), an(xname(otmp)));
                 otmp->spe--;
                 otmp2->greased = 1;

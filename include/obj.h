@@ -167,6 +167,7 @@ struct obj {
 #define spestudied usecount /* # of times a spellbook has been studied */
 #define wishedfor usecount  /* flag for hold_another_object() if from wish */
     unsigned oeaten;        /* nutrition left in food, if partly eaten */
+    short booster;          /* What terrain the object boosts on */
     long age;               /* creation date */
     long owornmask;        /* bit mask indicating which equipment slot(s) an
                             * item is worn in [by hero or by monster; could
@@ -254,10 +255,11 @@ struct obj {
     (otmp->oclass == WEAPON_CLASS                   \
      && objects[otmp->otyp].oc_skill >= -P_SHURIKEN \
      && objects[otmp->otyp].oc_skill <= -P_BOW)
-#define is_poisonable(otmp)                         \
-    (otmp->oclass == WEAPON_CLASS                   \
-     && objects[otmp->otyp].oc_skill >= -P_SHURIKEN \
-     && objects[otmp->otyp].oc_skill <= -P_BOW)
+#define is_poisonable(otmp)                          \
+    ((otmp->oclass == WEAPON_CLASS                   \
+      && objects[otmp->otyp].oc_skill >= -P_SHURIKEN \
+      && objects[otmp->otyp].oc_skill <= -P_BOW)     \
+     || permapoisoned(otmp))
 #define uslinging() (uwep && objects[uwep->otyp].oc_skill == P_SLING)
 /* 'is_quest_artifact()' only applies to the current role's artifact */
 #define any_quest_artifact(o) ((o)->oartifact >= ART_ORB_OF_DETECTION)
@@ -305,7 +307,7 @@ struct obj {
 #define is_orcish_armor(otmp)                                            \
     ((otmp)->otyp == ORCISH_HELM || (otmp)->otyp == ORCISH_CHAIN_MAIL    \
      || (otmp)->otyp == ORCISH_RING_MAIL || (otmp)->otyp == ORCISH_CLOAK \
-     || (otmp)->otyp == URUK_HAI_SHIELD || (otmp)->otyp == ORCISH_SHIELD)
+     || (otmp)->otyp == FELL_ORC_SHIELD || (otmp)->otyp == ORCISH_SHIELD)
 #define is_dwarvish_armor(otmp)               \
     ((otmp)->otyp == DWARVISH_IRON_HELM       \
      || (otmp)->otyp == DWARVISH_MITHRIL_COAT \

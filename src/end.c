@@ -114,6 +114,8 @@ done2(void)
         if (abandon_tutorial)
             schedule_goto(&u.ucamefrom, UTOTYPE_ATSTAIRS,
                           "Resuming regular play.", (char *) 0);
+        disp.botl = TRUE;
+        init_environs();
         return ECMD_OK;
     }
 
@@ -323,6 +325,8 @@ done_in_by(struct monst *mtmp, int how)
         u.ugrave_arise = PM_VAMPIRE;
     else if (mptr == &mons[PM_GHOUL])
         u.ugrave_arise = PM_GHOUL;
+    else if (how == DROWNING && rn2(2))
+        u.ugrave_arise = PM_SODDEN_ONE;
     /* this could happen if a high-end vampire kills the hero
        when ordinary vampires are genocided; ditto for wraiths */
     if (u.ugrave_arise >= LOW_PM
@@ -628,6 +632,7 @@ disclose(int how, boolean taken)
         if (c == 'y') {
             /* caller has already ID'd everything; we pass 'want_reply=True'
                to force display_pickinv() to avoid using WIN_INVENT */
+            iflags.force_invmenu = FALSE;
             (void) display_inventory((char *) 0, TRUE);
             container_contents(gi.invent, TRUE, TRUE, FALSE);
         }
@@ -740,7 +745,7 @@ savelife(int how)
         /* might drop hero onto a trap that kills her all over again */
         expels(u.ustuck, u.ustuck->data, TRUE);
     } else if (u.ustuck) {
-        if (Upolyd && sticks(gy.youmonst.data))
+        if (u.usticker)
             You("release %s.", mon_nam(u.ustuck));
         else
             pline("%s releases you.", Monnam(u.ustuck));
@@ -1764,8 +1769,9 @@ save_killers(NHFILE *nhfp)
 
     if (perform_bwrite(nhfp)) {
         for (kptr = &svk.killer; kptr; kptr = kptr->next) {
-            if (nhfp->structlevel)
+            if (nhfp->structlevel) {
                 bwrite(nhfp->fd, (genericptr_t) kptr, sizeof (struct kinfo));
+            }
         }
     }
     if (release_data(nhfp)) {
@@ -1783,8 +1789,9 @@ restore_killers(NHFILE *nhfp)
     struct kinfo *kptr;
 
     for (kptr = &svk.killer; kptr != (struct kinfo *) 0; kptr = kptr->next) {
-        if (nhfp->structlevel)
-            mread(nhfp->fd, (genericptr_t) kptr, sizeof(struct kinfo));
+        if (nhfp->structlevel) {
+            mread(nhfp->fd, (genericptr_t) kptr, sizeof (struct kinfo));
+        }
         if (kptr->next) {
             kptr->next = (struct kinfo *) alloc(sizeof (struct kinfo));
         }

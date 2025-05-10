@@ -29,6 +29,7 @@ staticfn int Helmet_on(void);
 staticfn int Gloves_on(void);
 staticfn int Shield_on(void);
 staticfn int Shirt_on(void);
+staticfn void mon_product_handling(struct obj *, boolean, boolean);
 staticfn void dragon_armor_handling(struct obj *, boolean, boolean);
 staticfn void Amulet_on(struct obj *) NONNULLARG1;
 staticfn void learnring(struct obj *, boolean);
@@ -443,6 +444,10 @@ Helmet_on(void)
     case DWARVISH_IRON_HELM:
     case ORCISH_HELM:
     case HELM_OF_TELEPATHY:
+    case SKULL:
+        break;
+    case SKULL_HELM:
+        mon_product_handling(uarmh, TRUE, TRUE);
         break;
     case HELM_OF_CAUTION:
         see_monsters();
@@ -528,6 +533,10 @@ Helmet_off(void)
     case ELVEN_LEATHER_HELM:
     case DWARVISH_IRON_HELM:
     case ORCISH_HELM:
+    case SKULL:
+        break;
+    case SKULL_HELM:
+        mon_product_handling(uarmh, FALSE, TRUE);
         break;
     case DUNCE_CAP:
         disp.botl = TRUE;
@@ -708,12 +717,13 @@ Shield_on(void)
        [reflection is handled by setting u.uprops[REFLECTION].extrinsic
        in setworn() called by armor_or_accessory_on() before Shield_on()] */
     switch (uarms->otyp) {
-    case SMALL_SHIELD:
+    case ROUNDSHIELD:
     case ELVEN_SHIELD:
-    case URUK_HAI_SHIELD:
+    case FELL_ORC_SHIELD:
     case ORCISH_SHIELD:
     case DWARVISH_ROUNDSHIELD:
-    case LARGE_SHIELD:
+    case KITE_SHIELD:
+    case HEATER_SHIELD:
     case SHIELD_OF_REFLECTION:
         break;
     default:
@@ -734,12 +744,13 @@ Shield_off(void)
     /* no shield currently requires special handling when taken off, but we
        keep this uncommented in case somebody adds a new one which does */
     switch (uarms->otyp) {
-    case SMALL_SHIELD:
+    case ROUNDSHIELD:
     case ELVEN_SHIELD:
-    case URUK_HAI_SHIELD:
+    case FELL_ORC_SHIELD:
     case ORCISH_SHIELD:
     case DWARVISH_ROUNDSHIELD:
-    case LARGE_SHIELD:
+    case KITE_SHIELD:
+    case HEATER_SHIELD:
     case SHIELD_OF_REFLECTION:
         break;
     default:
@@ -786,6 +797,33 @@ Shirt_off(void)
 
     setworn((struct obj *) 0, W_ARMU);
     return 0;
+}
+
+/* handle abilities granted by monster bones and meat */
+staticfn void
+mon_product_handling(
+    struct obj *otmp,
+    boolean puton,
+    boolean on_purpose)
+{
+    struct permonst *mdat = &mons[otmp->corpsenm];
+    short mr;
+    if (!otmp)
+        return;
+    for (int i = FIRE_RES; i <= STONE_RES; i++) {
+        mr = res_to_mr(i);
+        if (pm_resistance(mdat, mr)) {
+            if (puton) {
+                u.uprops[i].extrinsic |= W_ARMH;
+            } else {
+                u.uprops[i].extrinsic &= ~W_ARMH;
+                if (i == STONE_RES) {
+                    wielding_corpse(uwep, otmp, on_purpose);
+                    wielding_corpse(uswapwep, otmp, on_purpose);
+                }
+            }
+        }
+    }
 }
 
 /* handle extra abilities for hero wearing dragon scale armor */
@@ -2218,6 +2256,10 @@ accessory_or_armor_on(struct obj *obj)
             makeknown(obj->otyp);
             disp.botl = TRUE; /* for AC after zeroing u.ublessed */
             return ECMD_TIME;
+        } else if (obj->otyp == SKULL 
+                    && mons[obj->corpsenm].msize < gy.youmonst.data->msize) {
+            pline("The skull is too small to wear on your %s.", body_part(HEAD));
+            return ECMD_OK;
         }
     } else {
         /*
@@ -2459,20 +2501,34 @@ find_ac(void)
     int uac = mons[u.umonnum].ac; /* base armor class for current form */
 
     /* armor class from worn gear */
-    if (uarm)
+    if (uarm) {
         uac -= ARM_BONUS(uarm);
-    if (uarmc)
+        uac -= (!Prone && u_boosted(uarm->booster) ? 3 : 0);
+    }
+    if (uarmc) {
         uac -= ARM_BONUS(uarmc);
-    if (uarmh)
+        uac -= (!Prone && u_boosted(uarmc->booster) ? 3 : 0);
+    }
+    if (uarmh) {
         uac -= ARM_BONUS(uarmh);
-    if (uarmf)
+        uac -= (!Prone && u_boosted(uarmh->booster) ? 3 : 0);
+    }
+    if (uarmf) {
         uac -= ARM_BONUS(uarmf);
-    if (uarms)
+        uac -= (!Prone && u_boosted(uarmf->booster) ? 3 : 0);
+    }
+    if (uarms) {
         uac -= ARM_BONUS(uarms);
-    if (uarmg)
+        uac -= (!Prone && u_boosted(uarms->booster) ? 3 : 0);
+    }
+    if (uarmg) {
         uac -= ARM_BONUS(uarmg);
-    if (uarmu)
+        uac -= (!Prone && u_boosted(uarmg->booster) ? 3 : 0);
+    }
+    if (uarmu) {
         uac -= ARM_BONUS(uarmu);
+        uac -= (!Prone && u_boosted(uarmu->booster) ? 3 : 0);
+    }
     if (uleft && uleft->otyp == RIN_PROTECTION)
         uac -= uleft->spe;
     if (uright && uright->otyp == RIN_PROTECTION)

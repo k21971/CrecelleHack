@@ -1206,6 +1206,22 @@ seffect_enchant_armor(struct obj **sobjp)
         if (old_light)
             maybe_adjust_light(otmp, old_light);
         return;
+    } else if (s >= 0 && otmp->otyp == SKULL) {
+        pline("%s morphs into a fearsome helmet!", Yname2(otmp));
+        setworn((struct obj *) 0, W_ARMH);
+        otmp->otyp = SKULL_HELM;
+        if (sblessed) {
+            otmp->spe++;
+            cap_spe(otmp);
+            if (!otmp->blessed)
+                bless(otmp);
+        } else if (otmp->cursed)
+            uncurse(otmp);
+        otmp->known = 1;
+        setworn(otmp, W_ARMH);
+        if (otmp->unpaid)
+            alter_cost(otmp, 0L);
+        return;
     }
     pline("%s %s%s%s%s for a %s.", Yname2(otmp),
           (s == 0) ? "violently " : "",
@@ -1229,7 +1245,10 @@ seffect_enchant_armor(struct obj **sobjp)
         /* despite being schar, it shouldn't be possible for spe to wrap
            here because it has been capped at 99 and s is quite small;
            however, might need to change s if it takes spe past 99 */
-        otmp->spe += s;
+        if (s < 0)
+            otmp->spe += s;
+        else
+            boost_object(otmp, 0);
         cap_spe(otmp); /* make sure that it doesn't exceed SPE_LIM */
         s = otmp->spe - oldspe; /* cap_spe() might have throttled 's' */
         if (s) /* skip if it got changed to 0 */
@@ -2008,6 +2027,7 @@ seffect_identify(struct obj **sobjp)
         pline("You're not carrying anything%s to be identified.",
               (is_scroll) ? " else" : "");
     }
+    disp.botl = TRUE;
 }
 
 staticfn void
@@ -3040,7 +3060,7 @@ cant_revive(
     if (*mtype == PM_GUARD || (*mtype == PM_SHOPKEEPER && !revival)
         || *mtype == PM_HIGH_CLERIC || *mtype == PM_ALIGNED_CLERIC
         || *mtype == PM_ANGEL) {
-        *mtype = PM_HUMAN_ZOMBIE;
+        *mtype = rn2(3) ? PM_HUMAN_ZOMBIE : PM_CRAWLING_ZOMBIE;
         return TRUE;
     } else if (*mtype == PM_LONG_WORM_TAIL) { /* for create_particular() */
         *mtype = PM_LONG_WORM;

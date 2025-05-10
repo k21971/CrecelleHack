@@ -258,7 +258,8 @@ kick_monster(struct monst *mon, coordxy x, coordxy y)
         remove_coating(u.ux, u.uy, COAT_ASHES);
         mon->mblinded = rn1(5, 5);
         if (canseemon(mon))
-            pline("You kick ashes in the %s of %s.", mbodypart(mon, FACE), mon_nam(mon));
+            pline_mon(mon, "You kick ashes in the %s of %s.",
+                mbodypart(mon, FACE), mon_nam(mon));
     }
     You("kick %s.", mon_nam(mon));
     if (!rn2(clumsy ? 3 : 4) && (clumsy || !bigmonst(mon->data))
@@ -1265,7 +1266,7 @@ dotrip(void)
 {
     coordxy x, y;
     boolean no_trip = FALSE;
-    boolean trip_wep = uwep && is_tripweapon(uwep);
+    struct obj *trip_wep = (uwep && is_tripweapon(uwep)) ? uwep : NULL;
     struct monst *target;
 
     if (Hallucination) {
@@ -1287,9 +1288,8 @@ dotrip(void)
         no_trip = TRUE;
     } else if (u.utrap  && !trip_wep 
                 && (u.utraptype == TT_BEARTRAP || u.utraptype == TT_PIT)) {
-        pline("Your leg is in no position to trip anyone.");
+        Your("leg is in no position to trip anyone.");
     }
-
 
     if (no_trip) {
         display_nhwindow(WIN_MESSAGE, TRUE); /* --More-- */
@@ -1322,7 +1322,7 @@ dotrip(void)
         pline("%s is already prone.", Monnam(target));
         return ECMD_CANCEL;
     }
-    trip_monster(&gy.youmonst, target, uwep);
+    trip_monster(&gy.youmonst, target, trip_wep);
     return ECMD_TIME;
 }
 
@@ -1339,20 +1339,7 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
         trip_diff += 100;
     }
 
-    switch (P_SKILL(P_RIDING)) {
-        case P_BASIC:
-            tmp = 1;
-            break;
-        case P_SKILLED:
-            tmp = 2;
-            break;
-        case P_EXPERT:
-            tmp = 3;
-            break;
-        default:
-            tmp = 0;
-            break;
-    }
+    tmp = P_SKILL(P_TRIPPING) - 1;
 
     if (magr == &gy.youmonst) {
         You("attempt to trip %s.", Monnam(mdef));
@@ -1363,17 +1350,24 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
             trip_diff += 5;
         /* Make trip */
         if (trip_roll > trip_diff) {
-            pline("%s is knocked to the %s!", 
+            newsym(mdef->mx, mdef->my);
+            pline_mon(mdef, "%s is knocked to the %s!",
                     Monnam(mdef), surface(mdef->mx, mdef->my));
             mdef->mprone = 1;
             setmangry(mdef, TRUE);
             if (mdef->mtame) abuse_dog(mdef);
             mselftouch(mdef, "Falling, ", TRUE);
             use_skill(P_TRIPPING, 1);
+            if (!DEADMONSTER(mdef)) {
+                if (t_at(mdef->mx, mdef->my))
+                    (void) mintrap(mdef, FORCEBUNGLE);
+                /* TODO: TRIPPING DOWN STAIRS */
+            }
         } else if (wep) {
-            pline("%s avoids the sweep of %s.", Monnam(mdef), the(xname(wep)));
+            pline_mon(mdef, "%s avoids the sweep of %s.",
+                Monnam(mdef), the(xname(wep)));
         } else {
-            pline("%s avoids your %s.", Monnam(mdef), body_part(LEG));
+            pline_mon(mdef, "%s avoids your %s.", Monnam(mdef), body_part(LEG));
         }
     } else {
         if (Wounded_legs)
@@ -1382,10 +1376,10 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
         trip_diff += tmp;
         /* Make trip */
         if (wep) {
-            pline("%s attempts to trip you with %s %s.",
+            pline_mon(magr, "%s attempts to trip you with %s %s.",
                   Monnam(magr), mhis(magr), xname(wep));
         } else {
-            pline("%s attempts to trip you.", Monnam(magr));
+            pline_mon(magr, "%s attempts to trip you.", Monnam(magr));
         }
         display_nhwindow(WIN_MESSAGE, TRUE);
         if (trip_roll > trip_diff) {
@@ -2133,6 +2127,242 @@ down_gate(coordxy x, coordxy y)
         return MIGR_RANDOM;
     }
     return MIGR_NOWHERE;
+}
+
+/* the #grapple command */
+int
+dograpple(void)
+{
+    coordxy x, y;
+    struct monst *target;
+    boolean touched = FALSE;
+    char kbuf[BUFSZ];
+    if (u.usticker && P_SKILL(P_GRAPPLING) >= P_BASIC) {
+        return grapple_move(u.ustuck);
+    } else if (u.usticker) {
+        You("do not know any special moves.");
+        return ECMD_CANCEL;
+    } else if (u.ustuck) {
+        You("are already engaged in a grapple.");
+        return ECMD_CANCEL;
+    } else if (!can_grapple(gy.youmonst.data)) {
+        You("cannot grapple with anyone in your current form.");
+        return ECMD_CANCEL;
+    } else if (u.uswallow) {
+        You("have clearly already lost this grappling match.");
+        return ECMD_CANCEL;
+    }
+
+    if (!getdir((char *) 0))
+        return ECMD_CANCEL;
+    if (u.dz < 0) {
+        pline("Calm down, Atlas.");
+        return ECMD_CANCEL;
+    }
+    if (!u.dx && !u.dy) {
+        You("grapple with some ideas.");
+        return ECMD_TIME;
+    }
+
+    x = u.ux + u.dx;
+    y = u.uy + u.dy;
+    if (!isok(x, y))
+        return ECMD_CANCEL;
+    target = m_at(x, y);
+    if (!target || (target && target->mundetected)) {
+        You("shadowbox.");
+        return ECMD_OK;
+    }
+    /* Ok let's actually grapple! */
+    if (target->mpeaceful && !target->mtame) {
+        pline_mon(target, "%s does not want to roll with you!", Monnam(target));
+        setmangry(target, TRUE);
+    }
+    if (target->mtame && canseemon(target)) {
+        You("hug %s.", mon_nam(target));
+        touched = TRUE;
+    } else if (!unsolid(target->data) && rn2(3 + P_SKILL(P_GRAPPLING))) {
+        You("grapple %s!", mon_nam(target));
+        setmangry(target, TRUE);
+        set_ustuck(target);
+        u.usticker = 1;
+        touched = TRUE;
+    } else {
+        You("fail to grapple %s.", mon_nam(target));
+    }
+    /* uh oh */
+    if (touched) {
+        use_skill(P_GRAPPLING, 1);
+        if (touch_petrifies(target->data)) {
+            Sprintf(kbuf, "hugging %s", mon_nam(target));
+            instapetrify(kbuf);
+        }
+    }
+    return ECMD_TIME;
+}
+
+/* Display a menu and use some kind of grappling move */
+int grapple_move(struct monst *mon) {
+    winid menuwin;
+    anything any;
+    menu_item *selected;
+    int res, n, cost;
+    struct obj *otmp;
+
+    menuwin = create_nhwindow(NHW_MENU);
+    any = cg.zeroany;
+    start_menu(menuwin, MENU_BEHAVE_STANDARD);
+    add_menu_str(menuwin, "Which technique do you want to use?");
+    if (P_SKILL(P_GRAPPLING) >= P_BASIC) {
+        if (Role_if(PM_WRESTLER)) {
+            any.a_int = 1;
+            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Pummel", MENU_ITEMFLAGS_NONE);
+        }
+        any.a_int = 2;
+        add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Heel Hook", MENU_ITEMFLAGS_NONE);
+    }
+    if (P_SKILL(P_GRAPPLING) >= P_SKILLED) {
+        if (Role_if(PM_WRESTLER)) {
+            any.a_int = 3;
+            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Limb Lock", MENU_ITEMFLAGS_NONE);
+        }
+        any.a_int = 4;
+        add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Eye Gouge", MENU_ITEMFLAGS_NONE);
+    }
+    if (P_SKILL(P_GRAPPLING) >= P_EXPERT) {
+        any.a_int = 5;
+        add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Throw", MENU_ITEMFLAGS_NONE);
+    }
+    if (P_SKILL(P_GRAPPLING) >= P_MASTER) {
+        if (Role_if(PM_ELF)) {
+            any.a_int = 6;
+            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Sleeper Lock", MENU_ITEMFLAGS_NONE);
+        }
+        if (Role_if(PM_DWARF)) {
+            any.a_int = 7;
+            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Boat Murder", MENU_ITEMFLAGS_NONE);
+        }
+        if (Role_if(PM_ORC)) {
+            any.a_int = 8;
+            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Crimson Cradle", MENU_ITEMFLAGS_NONE);
+        }
+        if (Role_if(PM_GNOME)) {
+            any.a_int = 9;
+            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Tinker Trap", MENU_ITEMFLAGS_NONE);
+        }
+        if (Role_if(PM_HUMAN)) {
+            any.a_int = 10;
+            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Power Slam", MENU_ITEMFLAGS_NONE);
+        }
+    }
+    if (P_SKILL(P_GRAPPLING) >= P_GRAND_MASTER) {
+        if (u.ualign.type == A_CHAOTIC) {
+            any.a_int = 11;
+            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Soko Stunner", MENU_ITEMFLAGS_NONE);
+        } else if (u.ualign.type == A_NEUTRAL) {
+            any.a_int = 12;
+            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Yendorian's Elbow", MENU_ITEMFLAGS_NONE);
+        } else {
+            any.a_int = 13;
+            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Heartless Angel", MENU_ITEMFLAGS_NONE);
+        }
+    }
+    end_menu(menuwin, "Special Techniques");
+    res = select_menu(menuwin, PICK_ONE, &selected);
+    destroy_nhwindow(menuwin);
+    if (res <= 0) return ECMD_CANCEL;
+    n = selected[res - 1].item.a_int;
+    if (n <= 2) cost = 5;
+    else if (n <=  4) cost = 10;
+    else if (n <= 5) cost = 15;
+    else if (n <= 10) cost = 20;
+    else cost = 30;
+    if (cost > u.uen) {
+        pline("Not enough energy!");
+        return ECMD_CANCEL;
+    } else {
+        u.uen -= cost;
+        disp.botl = TRUE;
+    }
+    switch (n) {
+        case 1:
+            You("pummel %s!", mon_nam(mon));
+            if (canseemon(mon))
+                pline("%s looks confused.", Monnam(mon));
+            mon->mconf = 1;
+            unstuck(mon);
+            break;
+        case 2:
+            You("take %s down!", mon_nam(mon));
+            mon->mprone = 1;
+            break;
+        case 3:
+            otmp = MON_WEP(mon);
+            if (otmp) {
+                You("force %s to drop %s weapon!", mon_nam(mon), mhis(mon));
+                obj_extract_self(otmp);
+                possibly_unwield(mon, FALSE);
+                setmnotwielded(mon, otmp);
+                obj_no_longer_held(otmp);
+                place_object(otmp, mon->mx, mon->my);
+                stackobj(otmp);
+            } else {
+                You("put pressure on %s.", mon_nam(mon));
+            }
+            break;
+        case 4:
+            if (haseyes(mon->data)) {
+                You("blind %s!", mon_nam(mon));
+                mon->mblinded = rn1(10, 10);
+            } else {
+                You("try to blind %s, but you can't find anything to gouge.", mon_nam(mon));
+            }
+            break;
+        case 5: {
+            int dx = sgn(mon->mx - u.ux);
+            int dy = sgn(mon->my - u.uy);
+            unstuck(mon);
+            You("throw %s!", mon_nam(mon));
+            mhurtle(mon, dx, dy, rn1(2, 3));
+            break;
+        } case 6:
+            if (resists_sleep(mon)) {
+                pline("%s resists the hold!", Monnam(mon));
+            } else {
+                You("put %s to sleep.", mon_nam(mon));
+                mon->msleeping = 1;
+            }
+            unstuck(mon);
+            break;
+        case 7:
+        case 8:
+        case 9:
+        case 10:
+            You("suplex %s!", mon_nam(mon));
+            maketrap(mon->mx, mon->my, PIT);
+            if (t_at(mon->mx, mon->my))
+                (void) mintrap(mon, FORCEBUNGLE);
+            break;
+        case 11:
+            You("hit %s with the Soko Stunner! %s is stunned!", mon_nam(mon), Monnam(mon));
+            mon->mstun = 1;
+            mon->mconf = 1;
+            mon->msleeping = 1;
+            break;
+        case 12:
+            urgent_pline("It's the most shocking move in the dungeon...");
+            urgent_pline("The Yendorian's Elbow!");
+            explode(u.ux, u.uy, -(WAN_LIGHTNING), d(30, 4), WAND_CLASS, EXPL_MAGICAL);
+            break;
+        case 13:
+            You("execute a brutal submission!");
+            pline("%s is about to die.", Monnam(mon));
+            mon->mhp = 1;
+            break;
+        default:
+            return ECMD_CANCEL;
+    }
+    return ECMD_OK;
 }
 
 /*dokick.c*/

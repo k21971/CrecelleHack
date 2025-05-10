@@ -499,6 +499,8 @@ use_magic_whistle(struct obj *obj)
         You("produce a %shigh-%s.", Underwater ? "very " : "",
             Deaf ? "frequency vibration" : "pitched humming noise");
         wake_nearby(TRUE);
+        if (!rn2(2))
+            tele_to_rnd_pet();
     } else {
         /* it's magic!  it works underwater too (at a higher pitch) */
         You(Deaf ? alt_whistle_str : whistle_str,
@@ -1728,7 +1730,7 @@ light_cocktail(struct obj **optr)
     if (split1off)
         obj = splitobj(obj, 1L);
 
-    You("light %spotion.%s", shk_your(buf, obj),
+    You("light %stonic.%s", shk_your(buf, obj),
         Blind ? "" : "  It gives off a dim light.");
 
     if (obj->unpaid && costly_spot(u.ux, u.uy)) {
@@ -1767,7 +1769,8 @@ rub_ok(struct obj *obj)
 
     if (obj->otyp == OIL_LAMP || obj->otyp == MAGIC_LAMP
         || obj->otyp == BRASS_LANTERN || is_graystone(obj)
-        || obj->otyp == LUMP_OF_ROYAL_JELLY)
+        || obj->otyp == LUMP_OF_ROYAL_JELLY
+        || obj->otyp == TOWEL)
         return GETOBJ_SUGGEST;
 
     return GETOBJ_EXCLUDE;
@@ -1830,6 +1833,16 @@ dorub(void)
         /* message from Adventure */
         pline("Rubbing the electric lamp is not particularly rewarding.");
         pline("Anyway, nothing exciting happens.");
+    } else if (obj->otyp == TOWEL) {
+        if (Levitation) You("cannot reach the %s.", surface(u.ux, u.uy));
+        else if (has_coating(u.ux, u.uy, COAT_POTION) || has_coating(u.ux, u.uy, COAT_BLOOD)) {
+            You("sop up the liquid on the floor.");
+            remove_coating(u.ux, u.uy, COAT_POTION);
+            remove_coating(u.ux, u.uy, COAT_BLOOD);
+            wet_a_towel(obj, -1, TRUE);
+        } else {
+            pline("There is nothing here to clean up.");
+        }
     } else
         pline1(nothing_happens);
     return ECMD_TIME;
@@ -3948,6 +3961,7 @@ do_break_wand(struct obj *obj)
     case WAN_WISHING:
     case WAN_NOTHING:
     case WAN_LOCKING:
+    case WAN_FECUNDITY:
     case WAN_PROBING:
     case WAN_ENLIGHTENMENT:
     case WAN_SECRET_DOOR_DETECTION:
@@ -4014,6 +4028,8 @@ do_break_wand(struct obj *obj)
                     if (*in_rooms(x, y, SHOPBASE))
                         shop_damage = TRUE;
                 }
+                if (levl[x][y].typ == ICE)
+                    spot_stop_timers(x, y, MELT_ICE_AWAY);
                 /*
                  * Let liquid flow into the newly created pits.
                  * Adjust corresponding code in music.c for

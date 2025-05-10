@@ -751,7 +751,7 @@ peffect_water(struct obj *otmp)
                     you_unwere(FALSE);
                 set_ulycn(NON_PM); /* cure lycanthropy */
             }
-            losehp(Maybe_Half_Phys(d(2, 6)), "potion of holy water",
+            losehp(Maybe_Half_Phys(d(2, 6)), "tonic of holy water",
                    KILLED_BY_AN);
         } else if (otmp->cursed) {
             You_feel("quite proud of yourself.");
@@ -772,7 +772,7 @@ peffect_water(struct obj *otmp)
         } else {
             if (u.ualign.type == A_LAWFUL) {
                 pline("This burns like %s!", hliquid("acid"));
-                losehp(Maybe_Half_Phys(d(2, 6)), "potion of unholy water",
+                losehp(Maybe_Half_Phys(d(2, 6)), "tonic of unholy water",
                        KILLED_BY_AN);
             } else
                 You_feel("full of dread.");
@@ -904,7 +904,7 @@ peffect_paralysis(struct obj *otmp)
             Your("%s are frozen to the %s!", makeplural(body_part(FOOT)),
                  surface(u.ux, u.uy));
         nomul(-(rn1(10, 25 - 12 * bcsign(otmp))));
-        gm.multi_reason = "frozen by a potion";
+        gm.multi_reason = "frozen by a tonic";
         gn.nomovemsg = You_can_move_again;
         exercise(A_DEX, FALSE);
     }
@@ -981,7 +981,7 @@ peffect_sickness(struct obj *otmp)
         pline("(But in fact it was mildly stale %s.)", fruitname(TRUE));
         if (!Role_if(PM_HEALER)) {
             /* NB: blessed otmp->fromsink is not possible */
-            losehp(1, "mildly contaminated potion", KILLED_BY_AN);
+            losehp(1, "mildly contaminated tonic", KILLED_BY_AN);
         }
     } else {
         if (Poison_resistance)
@@ -996,7 +996,7 @@ peffect_sickness(struct obj *otmp)
             Sprintf(contaminant, "%s%s",
                     (Poison_resistance) ? "mildly " : "",
                     (otmp->fromsink) ? "contaminated tap water"
-                    : "contaminated potion");
+                    : "contaminated tonic");
             if (!Fixed_abil) {
                 poisontell(typ, FALSE);
                 (void) adjattrib(typ, Poison_resistance ? -1 : -rn1(4, 3),
@@ -1043,7 +1043,7 @@ staticfn void
 peffect_gain_ability(struct obj *otmp)
 {
     if (otmp->cursed) {
-        pline("Ulch!  That potion tasted foul!");
+        pline("Ulch!  That tonic tasted foul!");
         gp.potion_unkn++;
     } else if (Fixed_abil) {
         gp.potion_nothing++;
@@ -1288,7 +1288,7 @@ peffect_oil(struct obj *otmp)
             /* fire damage */
             vulnerable = !Fire_resistance || Cold_resistance;
             losehp(d(vulnerable ? 4 : 2, 4),
-                   "quaffing a burning potion of oil",
+                   "quaffing a burning tonic of oil",
                    KILLED_BY);
         }
         /*
@@ -1319,7 +1319,7 @@ peffect_acid(struct obj *otmp)
               otmp->blessed ? " a little" : otmp->cursed ? " a lot"
                                                          : " like acid");
         dmg = d(otmp->cursed ? 2 : 1, otmp->blessed ? 4 : 8);
-        losehp(Maybe_Half_Phys(dmg), "potion of acid", KILLED_BY_AN);
+        losehp(Maybe_Half_Phys(dmg), "tonic of acid", KILLED_BY_AN);
         exercise(A_CON, FALSE);
     }
     if (Stoned)
@@ -1351,7 +1351,7 @@ peffect_waste(struct obj *otmp)
         int dmg;
         dmg = d(otmp->cursed ? 1 : 2, otmp->blessed ? 8 : 4);
         pline("You're drinking toxic waste!");
-        losehp(Maybe_Half_Phys(dmg), "potion of volatile chemicals", KILLED_BY_AN);
+        losehp(Maybe_Half_Phys(dmg), "tonic of volatile chemicals", KILLED_BY_AN);
         exercise(A_CHA, FALSE);
     }
 }
@@ -1451,7 +1451,7 @@ peffects(struct obj *otmp)
         peffect_waste(otmp);
         break;
     default:
-        impossible("What a funny potion! (%u)", otmp->otyp);
+        impossible("What a comic tonic! (%u)", otmp->otyp);
         return 0;
     }
     return -1;
@@ -1677,7 +1677,9 @@ add_coating(coordxy x, coordxy y, unsigned char coatflags, int pindex) {
         if ((coatflags & COAT_POTION) != 0) {
             remove_coating(x, y, COAT_BLOOD);
             levl[x][y].pindex = pindex;
-            if (pindex < POT_GAIN_ABILITY || pindex > POT_WATER) {
+            if (pindex == POT_ACID) {
+                remove_coating(x, y, COAT_GRASS | COAT_ASHES | COAT_HONEY);
+            } else if (pindex < POT_GAIN_ABILITY || pindex > POT_WATER) {
                 impossible("coating floor with invalid object index %d?", pindex);
             }
         } else if ((coatflags & COAT_BLOOD) != 0) {
@@ -1685,7 +1687,7 @@ add_coating(coordxy x, coordxy y, unsigned char coatflags, int pindex) {
             levl[x][y].pindex = pindex;
             if (!ismnum(pindex)) impossible("coating floor with invalid blood %d?", pindex);
         } else if (pindex) {
-            impossible("non-potion pindex coating?");
+            impossible("non-tonic pindex coating?");
         }
         newsym(x, y);
     }
@@ -1728,7 +1730,7 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
             gn.nomovemsg = "You regain your footing.";
         } else {
             if (canseemon(mon)) {
-                pline("%s slips on a patch of oil!", Monnam(mon));
+                pline_mon(mon, "%s slips on a patch of oil!", Monnam(mon));
             }
             mon->mfrozen = 2;
             mon->mcanmove = 0;
@@ -1738,19 +1740,20 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
     if (has_coating(x, y, COAT_SHARDS)) {
         if (isyou) {
             if (uarmf) {
-                pline("Shards of glass crunch under your %s.", xname(uarmf));
+                pline("Shards of glass crunch under %s.",
+                    yobjnam(uarmf, (const char *) 0));
             } else if (thick_skinned(mon->data)) {
-                pline("Shards of glass crunch under you.");
+                pline("Shards of glass crunch under your %s.", makeplural(body_part(FOOT)));
             } else {
                 if (u.uhp > 1) u.uhp--;
-                pline("Your %s are cut by shards of glass!", makeplural(body_part(FOOT)));
+                Your("%s are cut by shards of glass!", makeplural(body_part(FOOT)));
                 add_coating(x, y, COAT_BLOOD, gy.youmonst.mnum);
                 disp.botl = TRUE;
             }
         } else {
             if (!which_armor(mon, W_ARMF) && !thick_skinned(mon->data)) {
                 if (canseemon(mon))
-                    pline("%s steps on some broken glass.", Monnam(mon));
+                    pline_mon(mon, "%s steps on some broken glass.", Monnam(mon));
                 if (mon->mtame)
                     yelp(mon);
                 else
@@ -1761,11 +1764,27 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
                 You_hear("a soft tinkling.");
             }
         }
-        remove_coating(x, y, COAT_SHARDS);
+        if (!rn2(3))
+            remove_coating(x, y, COAT_SHARDS);
+    }
+    if (isyou && has_coating(x, y, COAT_HONEY)) {
+        if ((!Levitation && !Flying) && !rn2(3)) {
+            if (uarmf) {
+                struct obj *otmp;
+                pline("%s in some honey and yanked from your %s!",
+                        Yobjnam2(uarmf, "stick"),
+                        makeplural(body_part(FOOT)));
+                otmp = uarmf;
+                remove_worn_item(otmp, TRUE);
+                dropx(otmp);
+            } else {
+                pline("Some honey sticks to your %s.", body_part(FOOT));
+            }
+        }
     }
     if (has_coating(x, y, COAT_BLOOD) && touch_petrifies(&mons[levl[x][y].pindex])) {
         if (isyou && !uarmf && !Stone_resistance) {
-            pline("You touch %s blood with your %s.",
+            You("touch %s blood with your %s.",
                 pmname(&mons[levl[x][y].pindex], MALE), body_part(FOOT));
             Sprintf(buf, "stepping in %s blood", pmname(&mons[levl[x][y].pindex], MALE));
             instapetrify(buf);
@@ -1797,10 +1816,15 @@ evaporate_potion_puddles(coordxy x, coordxy y) {
 void
 floor_alchemy(int x, int y, int otyp, int corpsenm) {
     struct obj fakeobj1, fakeobj2 = cg.zeroobj;
-    struct obj *otmp;
+    struct obj *otmp, *objchain;
     fakeobj1.otyp = otyp;
     fakeobj1.oclass = POTION_CLASS;
     
+    if (otyp == POT_WATER) {
+        if ((objchain = svl.level.objects[x][y]) != 0) {
+            water_damage_chain(objchain, TRUE);
+        }
+    }
     if (has_coating(x, y, COAT_POTION)) {
         if (otyp == levl[x][y].pindex)
             return;
@@ -1835,8 +1859,8 @@ void
 potion_splatter(coordxy x, coordxy y, int otyp, int corpsenm) {
     int startx = max(x - 1, 0);
     int starty = max(y - 1, 0);
-    int stopx = min(x + 1, COLNO);
-    int stopy = min(y + 1, ROWNO);
+    int stopx = min(x + 1, COLNO - 1);
+    int stopy = min(y + 1, ROWNO - 1);
 
     for (int i = startx; i <= stopx; i++) {
         for (int j = starty; j <= stopy; j++) {
@@ -2053,8 +2077,8 @@ potionhit(struct monst *mon, struct obj *obj, int how)
         pline_The("%s crashes on your %s and breaks into shards.", botlnam,
                   body_part(HEAD));
         losehp(Maybe_Half_Phys(rnd(2)),
-               (how == POTHIT_OTHER_THROW) ? "propelled potion" /* scatter */
-                                           : "thrown potion",
+               (how == POTHIT_OTHER_THROW) ? "propelled tonic" /* scatter */
+                                           : "thrown tonic",
                KILLED_BY_AN);
     } else {
         tx = mon->mx, ty = mon->my;
@@ -2116,7 +2140,7 @@ potionhit(struct monst *mon, struct obj *obj, int how)
                       obj->blessed ? " a little"
                                    : obj->cursed ? " a lot" : "");
                 dmg = d(obj->cursed ? 2 : 1, obj->blessed ? 4 : 8);
-                losehp(Maybe_Half_Phys(dmg), "potion of acid", KILLED_BY_AN);
+                losehp(Maybe_Half_Phys(dmg), "tonic of acid", KILLED_BY_AN);
             }
             break;
         case POT_BLOOD: {
@@ -2269,7 +2293,7 @@ potionbreathe(struct obj *obj)
                 else
                     u.uhp -= 5;
             }
-            You("feel sick.");
+            You_feel("sick.");
             disp.botl = TRUE;
             exercise(A_CON, FALSE);
         } else {
@@ -2298,7 +2322,7 @@ potionbreathe(struct obj *obj)
         if (!Free_action) {
             pline("%s seems to be holding you.", Something);
             nomul(-rnd(5));
-            gm.multi_reason = "frozen by a potion";
+            gm.multi_reason = "frozen by a tonic";
             gn.nomovemsg = You_can_move_again;
             exercise(A_DEX, FALSE);
         } else
@@ -2333,10 +2357,12 @@ potionbreathe(struct obj *obj)
             Your1(vision_clears);
         break;
     case POT_BLOOD:
-        You("catch a whiff of iron.");
+        if (olfaction(gy.youmonst.data))
+            You("catch a whiff of iron.");
         break;
     case POT_HAZARDOUS_WASTE:
-        pline("It smells like gas.");
+        if (olfaction(gy.youmonst.data))
+            pline("It smells like gas.");
         break;
     case POT_WATER:
         if (u.umonnum == PM_GREMLIN) {
@@ -2352,15 +2378,18 @@ potionbreathe(struct obj *obj)
         break;
     case POT_ACID:
     case POT_POLYMORPH:
-        pline("Your nose burns.");
+        /* Not all forms have noses, maybe check if humanoid? */
+        Your("nose burns.");
         exercise(A_CON, FALSE);
         break;
     case POT_FRUIT_JUICE:
     case POT_SEE_INVISIBLE:
-        pline("It smells like %s.", makeplural(fruitname(FALSE)));
+        if (olfaction(gy.youmonst.data))
+            pline("It smells like %s.", makeplural(fruitname(FALSE)));
         break;
     case POT_OIL:
-        pline("It smells like machinery.");
+        if (olfaction(gy.youmonst.data))
+            pline("It smells like machinery.");
         break;
     /*
     case POT_GAIN_LEVEL:
@@ -2885,9 +2914,10 @@ potion_dip(struct obj *obj, struct obj *potion)
             obj->opoisoned = TRUE;
             poof(potion);
             return ECMD_TIME;
-        } else if (obj->opoisoned && (potion->otyp == POT_HEALING
-                                      || potion->otyp == POT_EXTRA_HEALING
-                                      || potion->otyp == POT_FULL_HEALING)) {
+        } else if (obj->opoisoned && !permapoisoned(obj)
+                   && (potion->otyp == POT_HEALING
+                       || potion->otyp == POT_EXTRA_HEALING
+                       || potion->otyp == POT_FULL_HEALING)) {
             pline("A coating wears off %s.", the(xname(obj)));
             obj->opoisoned = 0;
             poof(potion);
@@ -2908,7 +2938,7 @@ potion_dip(struct obj *obj, struct obj *potion)
         if (potion->lamplit) { /* burning */
             fire_damage(obj, TRUE, u.ux, u.uy);
         } else if (potion->cursed) {
-            pline_The("potion spills and covers your %s with oil.",
+            pline_The("tonic spills and covers your %s with oil.",
                       fingers_or_gloves(TRUE));
             make_glib((int) (Glib & TIMEOUT) + d(2, 10));
         } else if (obj->oclass != WEAPON_CLASS && !is_weptool(obj)) {
@@ -3022,7 +3052,7 @@ potion_dip(struct obj *obj, struct obj *potion)
                 Sprintf(newbuf, "turns %s",
                         hcolor(OBJ_DESCR(objects[mixture])));
             if (*newbuf)
-                pline_The("%spotion%s %s.", oldbuf,
+                pline_The("%stonic%s %s.", oldbuf,
                           more_than_one ? " that you dipped into" : "",
                           newbuf);
             else

@@ -216,13 +216,22 @@ dosounds(void)
             "bubbling water.", "water falling on coins.",
             "the splashing of a naiad.", "a soda fountain!",
         };
-        You_hear1(fountain_msg[rn2(3) + hallu]);
+        static const char *const rainy_fountain_msg[4] = {
+            "splashing water.", "rain falling on coins.",
+            "the laughter of a naiad.", "a waterfall!",
+        };
+        You_hear1(IS_RAINING ? rainy_fountain_msg[rn2(3) + hallu]
+                             : fountain_msg[rn2(3) + hallu]);
     }
     if (svl.level.flags.nsinks && !rn2(300)) {
         static const char *const sink_msg[3] = {
             "a slow drip.", "a gurgling noise.", "dishes being washed!",
         };
-        You_hear1(sink_msg[rn2(2) + hallu]);
+        static const char *const rainy_sink_msg[3] = {
+            "water spattering.", "liquid burbling.", "sinking in the rain!",
+        };
+        You_hear1(IS_RAINING ? rainy_sink_msg[rn2(2) + hallu]
+                             : sink_msg[rn2(2) + hallu]);
     }
     if (svl.level.flags.has_court && !rn2(200)) {
         if (get_iter_mons(throne_mon_sound))
@@ -289,6 +298,10 @@ dosounds(void)
             "blades being honed.", "loud snoring.", "dice being thrown.",
             "General MacArthur!",
         };
+        static const char *const rainy_barracks_msg[4] = {
+            "rusty blades clinking.", "grumbling about the weather.",
+            "boots squelching.", "Yossarian!",
+        };
         int count = 0;
 
         for (mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
@@ -302,7 +315,8 @@ dosounds(void)
                 && mon_in_room(mtmp, BARRACKS)
                 /* sleeping implies not-yet-disturbed (usually) */
                 && (mtmp->msleeping || ++count > 5)) {
-                You_hear1(barracks_msg[rn2(3) + hallu]);
+                You_hear1(IS_RAINING ? rainy_barracks_msg[rn2(3) + hallu] 
+                                     : barracks_msg[rn2(3) + hallu]);
                 return;
             }
         }
@@ -323,7 +337,12 @@ dosounds(void)
                 "someone cursing shoplifters.",
                 "the chime of a cash register.", "Neiman and Marcus arguing!",
             };
-            You_hear1(shop_msg[rn2(2) + hallu]);
+            static const char *const rainy_shop_msg[3] = {
+                "someone cursing the rain.",
+                "a tarp being aired out.", "a rainy day sale!",
+            };
+            You_hear1(IS_RAINING ? rainy_shop_msg[rn2(2) + hallu]
+                                 : shop_msg[rn2(2) + hallu]);
         }
         return;
     }
@@ -1046,7 +1065,7 @@ domonnoise(struct monst *mtmp)
                 t->tseen = 1;
             verbl_msg = "I'm trapped!";
         } else if (mtmp->mhp < mtmp->mhpmax / 2)
-            pline_msg = "asks for a potion of healing.";
+            pline_msg = "asks for a tonic of healing.";
         else if (mtmp->mtame && !mtmp->isminion
                  && svm.moves > EDOG(mtmp)->hungrytime)
             verbl_msg = "I'm hungry.";
@@ -1447,6 +1466,10 @@ tiphat(void)
        'multi' to account for that, but we'll pretend that no extra time
        beyond the current move is necessary */
     You("briefly doff your %s.", helm_simple_name(uarmh));
+
+    if (IS_RAINING && !has_no_tod_cycles(&u.uz)) {
+        Your("%s gets wet.", body_part(HEAD));
+    }
 
     if (!u.dx && !u.dy) {
         if (u.usteed && u.dz > 0) {

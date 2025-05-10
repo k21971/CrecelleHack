@@ -975,10 +975,10 @@ betrayed(struct monst *mtmp)
 		    && rn2(22) > mtmp->mtame	/* Roll against tameness */
 		    && rn2(edog->abuse + 2)) {
         /* Treason */
-        if (canseemon(mtmp))
-            pline("%s turns on you!", Monnam(mtmp));
+        if (canspotmon(mtmp))
+            pline_mon(mtmp, "%s turns on you!", Monnam(mtmp));
         else
-            pline("You feel uneasy about %s.", y_monnam(mtmp));
+            You_feel("uneasy about %s.", y_monnam(mtmp));
         mtmp->mpeaceful = 0;
         mtmp->mtame = 0;
         mtmp->mtraitor = TRUE;
@@ -1157,7 +1157,7 @@ dog_move(
                  && (!mtmp2->minvis || perceives(mtmp->data))
                  && !mon_reflects(mtmp, (char *) NULL))
                 || (mtmp2->data == &mons[PM_GELATINOUS_CUBE] && rn2(10))
-                || mtmp2->data == &mons[PM_LIGHTCRUST]
+                || mtmp2->data == &mons[PM_NIGHTCRUST]
                 || (touch_petrifies(mtmp2->data) && !resists_ston(mtmp))) {
                 /* only skip this foe if a ranged attack isn't viable */
                 if (dist2(mtmp->mx, mtmp->my, mtmp2->mx, mtmp2->my) <= 2
@@ -1323,7 +1323,8 @@ dog_move(
         place_monster(mtmp, nix, niy);
         if (mtmp->mprone) {
             mtmp->mprone = 0;
-            if (wasseen) pline("%s regains %s footing.", Monnam(mtmp), mhis(mtmp));
+            if (wasseen)
+                pline_mon(mtmp, "%s regains %s footing.", Monnam(mtmp), mhis(mtmp));
         }
         if (cursemsg[chi] && (wasseen || canseemon(mtmp))) {
             /* describe top item of pile, not necessarily cursed item itself;

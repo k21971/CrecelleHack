@@ -528,6 +528,7 @@ vision_recalc(int control)
     struct rm *flev;   /* pointer to position in "front" of current pos */
     const seenV *sv;   /* ptr to seen angle bits */
     int oldseenv;      /* previous seenv value */
+    int visrange;      /* range of night vision or daytime vision. */
 
     gv.vision_full_recalc = 0; /* reset flag */
     if (gi.in_mklev || program_state.in_getlev || !iflags.vision_inited)
@@ -537,6 +538,9 @@ vision_recalc(int control)
      * Either the light sources have been taken care of, or we must
      * recalculate them here.
      */
+    
+    /* Recalculate vision during daytime */
+    u.uenvirons.dt_vis = calc_dt_vis();
 
     /* Get the unused could see, row min, and row max arrays. */
     get_unused_cs(&next_array, &next_rmin, &next_rmax);
@@ -667,16 +671,18 @@ vision_recalc(int control)
             }
         }
 
-        if (has_night_vision && u.xray_range < u.nv_range) {
-            if (!u.nv_range) { /* range is 0 */
+        visrange = (!night() && !has_no_tod_cycles(&u.uz)) ? u.uenvirons.dt_vis : u.nv_range;
+
+        if ((has_night_vision && u.xray_range < visrange) || (!night() && !has_no_tod_cycles(&u.uz))) {
+            if (!visrange) { /* range is 0 */
                 next_array[u.uy][u.ux] |= IN_SIGHT;
                 levl[u.ux][u.uy].seenv = SVALL;
                 next_rmin[u.uy] = min(u.ux, next_rmin[u.uy]);
                 next_rmax[u.uy] = max(u.ux, next_rmax[u.uy]);
-            } else if (u.nv_range > 0) {
-                ranges = circle_ptr(u.nv_range);
+            } else if (visrange > 0 || (!night() && !has_no_tod_cycles(&u.uz))) {
+                ranges = circle_ptr(visrange);
 
-                for (row = u.uy - u.nv_range; row <= u.uy + u.nv_range;
+                for (row = u.uy - visrange; row <= u.uy + visrange;
                      row++) {
                     if (row < 0)
                         continue;

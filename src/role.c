@@ -535,6 +535,47 @@ const struct Role roles[NUM_ROLES+1] = {
       A_WIS,
       SPE_CONE_OF_COLD,
       -4 },
+    { { "Wrestler", 0 },
+      { { "Jobber", 0 },
+        { "Tin Can", 0 },
+        { "Deadlifter", 0 },
+        { "Wrestler", 0 },
+        { "Worker", 0 },
+        { "High Flyer", 0 },
+        { "Face", 0 },
+        { "Babyface", 0 },
+        { "Champ", 0 } },
+      "Sportsmanship", "The Audience", "The Glory", /* TODO: Replace these */
+      "Wre",
+      "the Training Centre",
+      "the Great Ring",
+      PM_WRESTLER,
+      PM_LITTLE_DOG,
+      PM_MASKED_MUMMY,
+      PM_TRAINEE,
+      PM_HEEL,
+      PM_OWLBEAR,
+      PM_ROPE_GOLEM,
+      S_YETI,
+      S_ELEMENTAL,
+      ART_BELT_OF_CHAMPIONS,
+      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC
+        | ROLE_MALE | ROLE_FEMALE | ROLE_LAWFUL | ROLE_NEUTRAL | ROLE_CHAOTIC,
+      /* Str Int Wis Dex Con Cha */
+      { 10, 7, 6, 7, 8, 8 },
+      { 10, 30, 10, 20, 20, 10 },
+      /* Init   Lower  Higher */
+      { 10, 0, 0, 8, 1, 0 }, /* Hit points */
+      { 4, 3, 0, 2, 0, 3 },
+      12, /* Energy */
+      0,
+      1,
+      0,
+      3,
+      10,
+      A_WIS,
+      SPE_CHAIN_LIGHTNING,
+      -4 },
     { { "Wizard", 0 },
       { { "Evoker", 0 },
         { "Conjurer", 0 },
@@ -2882,9 +2923,17 @@ setup_rolemenu(
             any.a_int = i + 1;
         else
             any.a_string = roles[i].name.m;
-        thisch = lowc(*roles[i].name.m);
-        if (thisch == lastch)
-            thisch = highc(thisch);
+        /* Kludge: We want to keep wizard as the final role in the array, but
+           also preserve its capitalization. */
+        if (roles[i].mnum == PM_WRESTLER)
+            thisch = 'W';
+        else if (roles[i].mnum == PM_WIZARD)
+            thisch = 'w';
+        else {
+            thisch = lowc(*roles[i].name.m);
+            if (thisch == lastch)
+                thisch = highc(thisch);
+        }
         Strcpy(rolenamebuf, roles[i].name.m);
         if (roles[i].name.f) {
             /* role has distinct name for female (C,P) */

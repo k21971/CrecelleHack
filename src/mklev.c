@@ -247,13 +247,16 @@ do_room_or_subroom(struct mkroom *croom,
         hiy = ROWNO - 2;
 
     if (lit) {
-        if (croom->rtype > THEMEROOM && croom->rtype != SWAMP) {
+        #if 0
+        if (depth(&u.uz) < NIGHTCRUST_SPAWN_DEPTH || 
+            (croom->rtype > THEMEROOM && croom->rtype != SWAMP)) {
             for (x = lowx - 1; x <= hix + 1; x++) {
                 lev = &levl[x][max(lowy - 1, 0)];
                 for (y = lowy - 1; y <= hiy + 1; y++)
                     lev++->lit = 1;
             }
         }
+        #endif
         croom->rlit = 1;
     } else
         croom->rlit = 0;
@@ -730,7 +733,7 @@ static NEARDATA const char *trap_engravings[TRAPNUM] = {
     (char *) 0,      (char *) 0,    (char *) 0,    (char *) 0, (char *) 0,
     (char *) 0,      (char *) 0,    (char *) 0,    (char *) 0,
     /* 14..16: trap door, teleport, level-teleport */
-    "Vlad was here", "ad aerarium", "ad aerarium", (char *) 0, (char *) 0,
+    "Here! - Elaisa", "Watch out! - E.", "Take a closer look. - E.", (char *) 0, (char *) 0,
     (char *) 0,      (char *) 0,    (char *) 0,    (char *) 0, (char *) 0,
     /* 24..25 */
     (char *) 0, (char *) 0,
@@ -776,9 +779,9 @@ makeniche(int trap_type)
             dosdoor(xx, yy, aroom, SDOOR);
         } else {
             rm->typ = CORR;
-            if (rn2(7))
+            if (rn2(7)) {
                 dosdoor(xx, yy, aroom, rn2(5) ? SDOOR : DOOR);
-            else {
+            } else {
                 /* inaccessible niches occasionally have iron bars */
                 if (!rn2(5) && IS_WALL(levl[xx][yy].typ)) {
                     (void) set_levltyp(xx, yy, IRONBARS);
@@ -979,7 +982,7 @@ fill_ordinary_room(
     }
     if (croom->rlit) {
         somexyspace(croom, &pos);
-        makemon(&mons[PM_LIGHTCRUST], pos.x, pos.y, MM_NOCOUNTBIRTH);
+        makemon(&mons[PM_NIGHTCRUST], pos.x, pos.y, MM_NOCOUNTBIRTH);
     }
     /* put traps and mimics inside */
     x = 8 - (level_difficulty() / 6);
@@ -1191,15 +1194,20 @@ coat_room(struct mkroom *croom, unsigned char coat_type) {
     
     for (x = lx - 1; x <= hx + 1; x++) {
         for (y = ly - 1; y <= hy + 1; y++) {
+            if (croom->irregular && 
+                (IS_STWALL(levl[x][y].typ) || levl[x][y].typ == CORR))
+                continue;
             if ((coat_type & COAT_GRASS) != 0 &&
                 x >= lx && x <= hx && y >= ly && y <= hy) {
                 if (grass_chance ? rn2(4) : !rn2(u.uz.dlevel)) {
                     add_coating(x, y, COAT_GRASS, 0);
-                    if (levl[x][y].typ == ROOM) {
+                    if (IS_SUBMASKABLE(levl[x][y].typ)) {
                         levl[x][y].submask = SM_DIRT;
                     }
+                } else if (rn2(2) && IS_SUBMASKABLE(levl[x][y].typ)) {
+                    levl[x][y].submask = SM_SAND;
                 }
-                if (levl[x][y].typ == ROOM &&
+                if (IS_SUBMASKABLE(levl[x][y].typ) &&
                     (!rn2(u.uz.dlevel) || croom->rtype == MORGUE)) {
                     levl[x][y].submask = SM_DIRT;
                 }
@@ -1207,6 +1215,10 @@ coat_room(struct mkroom *croom, unsigned char coat_type) {
             if ((coat_type & COAT_FUNGUS) != 0) {
                 if (!rn2(max(2, abs(13 - u.uz.dlevel)))) add_coating(x, y, COAT_FUNGUS, 0);
             }
+            if (svl.level.flags.temperature == 1)
+                if (rn2(4)) add_coating(x, y, COAT_ASHES, 0);
+            if (svl.level.flags.has_swamp)
+                if (rn2(5)) add_coating(x, y, COAT_POTION, POT_WATER);
         }
     }
 }
@@ -1229,8 +1241,8 @@ themerooms_post_level_generate(void)
     iflags.in_lua = gi.in_mk_themerooms = FALSE;
 
     wallification(1, 0, COLNO - 1, ROWNO - 1);
-    free(gc.coder);
-    gc.coder = NULL;
+    if (gc.coder)
+        free(gc.coder), gc.coder = NULL;
     lua_gc(themes, LUA_GCCOLLECT);
 }
 
@@ -1575,10 +1587,29 @@ coat_floors(void)
 {
     for (int x = 0; x < COLNO; x++) {
         for (int y = 0; y < ROWNO; y++) {
-            if (!IS_ROOM(levl[x][y].typ))
+            if (!IS_COATABLE(levl[x][y].typ) || IS_STWALL(levl[x][y].typ))
                 continue;
-            if (svl.level.flags.arboreal) add_coating(x, y, COAT_GRASS, 0);
-            else if (Is_firelevel(&u.uz)) add_coating(x, y, COAT_ASHES, 0);
+            if (Is_juiblex_level(&u.uz) && !rn2(3))
+                add_coating(x, y, COAT_FUNGUS, 0);
+            if (svl.level.flags.arboreal) {
+                if (rn2(4)) {
+                    if (IS_SUBMASKABLE(levl[x][y].typ)) {
+                        levl[x][y].submask = SM_DIRT;
+                    }
+                    add_coating(x, y, COAT_GRASS, 0);
+                }
+            } else if (svl.level.flags.temperature == 1) {
+                if (rn2(3))
+                    add_coating(x, y, COAT_ASHES, 0);
+            } else if (IS_SUBMASKABLE(levl[x][y].typ)) {
+                if (rn2(3)) {
+                    levl[x][y].submask = SM_DIRT;
+                } else if (rn2(2)) {
+                    levl[x][y].submask = SM_SAND;
+                }
+                if (!Is_valley(&u.uz) && !Inhell && !rn2(7))
+                    add_coating(x, y,  COAT_GRASS, 0);
+            }
         }
     }
 }
@@ -1591,7 +1622,8 @@ level_finalize_topology(void)
 
     bound_digging();
     mineralize(-1, -1, -1, -1, FALSE);
-    coat_floors();
+    if (svl.level.flags.is_maze_lev)
+        coat_floors();
     gi.in_mklev = FALSE;
     /* avoid coordinates in future lua-loads for this level being thrown off
      * because xstart and ystart aren't saved with the level and will be 0
@@ -1603,12 +1635,14 @@ level_finalize_topology(void)
     if (svl.level.flags.has_morgue)
         svl.level.flags.graveyard = 1;
     if (!svl.level.flags.is_maze_lev) {
-        for (croom = &svr.rooms[0]; croom != &svr.rooms[svn.nroom]; croom++)
+        for (croom = &svr.rooms[0]; croom != &svr.rooms[svn.nroom]; croom++) {
 #ifdef SPECIALIZATION
             topologize(croom, FALSE);
 #else
             topologize(croom);
 #endif
+            coat_room(croom, COAT_GRASS);
+        }
     }
     set_wall_state();
     /* for many room types, svr.rooms[].rtype is zeroed once the room has been

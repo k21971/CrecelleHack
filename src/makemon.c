@@ -347,6 +347,7 @@ m_initweap(struct monst *mtmp)
                 m_initthrow(mtmp, ARROW, 12);
                 break;
             case PM_THUG:
+            case PM_TRAINEE:
                 (void) mongets(mtmp, CLUB);
                 (void) mongets(mtmp, rn2(3) ? DAGGER : KNIFE);
                 if (rn2(2))
@@ -391,7 +392,7 @@ m_initweap(struct monst *mtmp)
             (void) mpickobj(mtmp, otmp);
 
             otmp = mksobj(!rn2(4) || is_lord(ptr) ? SHIELD_OF_REFLECTION
-                                                  : LARGE_SHIELD,
+                                                  : KITE_SHIELD,
                           FALSE, FALSE);
             /* uncurse(otmp); -- mksobj(,FALSE,) item is always uncursed */
             otmp->oerodeproof = TRUE;
@@ -452,8 +453,8 @@ m_initweap(struct monst *mtmp)
         if (rn2(2))
             (void) mongets(mtmp, ORCISH_HELM);
         switch ((mm != PM_ORC_CAPTAIN) ? mm
-                : rn2(2) ? PM_MORDOR_ORC : PM_URUK_HAI) {
-        case PM_MORDOR_ORC:
+                : rn2(2) ? PM_FEN_ORC : PM_FELL_ORC) {
+        case PM_FEN_ORC:
             if (!rn2(3))
                 (void) mongets(mtmp, SCIMITAR);
             if (!rn2(3))
@@ -465,7 +466,7 @@ m_initweap(struct monst *mtmp)
             if (!rn2(3))
                 (void) mongets(mtmp, ORCISH_CHAIN_MAIL);
             break;
-        case PM_URUK_HAI:
+        case PM_FELL_ORC:
             if (!rn2(3))
                 (void) mongets(mtmp, ORCISH_CLOAK);
             if (!rn2(3))
@@ -477,7 +478,7 @@ m_initweap(struct monst *mtmp)
                 m_initthrow(mtmp, ORCISH_ARROW, 12);
             }
             if (!rn2(3))
-                (void) mongets(mtmp, URUK_HAI_SHIELD);
+                (void) mongets(mtmp, FELL_ORC_SHIELD);
             break;
         default:
             if (mm != PM_ORC_SHAMAN && rn2(2))
@@ -700,9 +701,9 @@ m_initinv(struct monst *mtmp)
 
             /* round 3: shields */
             if (mac < 10 && rn2(3))
-                otmp = mongets(mtmp, SMALL_SHIELD);
+                otmp = mongets(mtmp, ROUNDSHIELD);
             else if (mac < 10 && rn2(2))
-                otmp = mongets(mtmp, LARGE_SHIELD);
+                otmp = mongets(mtmp, KITE_SHIELD);
             add_ac(otmp);
 
             /* round 4: boots */
@@ -766,7 +767,7 @@ m_initinv(struct monst *mtmp)
             (void) mongets(mtmp, rn2(7) ? ROBE
                                         : rn2(3) ? CLOAK_OF_PROTECTION
                                                  : CLOAK_OF_MAGIC_RESISTANCE);
-            (void) mongets(mtmp, SMALL_SHIELD);
+            (void) mongets(mtmp, ROUNDSHIELD);
             mkmonmoney(mtmp, (long) rn1(10, 20));
         } else if (quest_mon_represents_role(ptr, PM_MONK)) {
             (void) mongets(mtmp, rn2(11) ? ROBE : CLOAK_OF_MAGIC_RESISTANCE);
@@ -1079,6 +1080,8 @@ newmonhp(struct monst *mon, int mndx)
         mon->mhpmax = mon->mhp = golemhp(mndx);
     } else if (mon->data == &mons[PM_ILLUSION]) {
         mon->mhpmax = mon->mhp = 1;
+    } else if (mon->data == &mons[PM_TORNADO]){
+        mon->mhpmax = mon->mhp = rn1(30, 10);
     } else if (is_rider(ptr)) {
         /* we want low HP, but a high mlevel so they can attack well */
         basehp = 10; /* minimum is 1 per false (weaker) level */
@@ -1356,6 +1359,10 @@ makemon(
     mtmp->mtraitor = 0;
     if ((mmflags & MM_MINVIS) != 0) /* for ^G */
         mon_set_minvis(mtmp); /* call after place_monster() */
+        
+    /* monsters spawned during the wrong time will sleep*/
+    if ((night() && (ptr->geno & G_DAY))
+        || (!night() && (ptr->geno & G_NIGHT))) mtmp->msleeping = 1;
 
     switch (ptr->mlet) {
     case S_MIMIC:
@@ -1390,10 +1397,6 @@ makemon(
         if (gi.in_mklev) {
             (void) hideunder(mtmp);
         }
-        break;
-    case S_GREMLIN:
-        if (mndx == PM_MASCARON && u.ualign.abuse > 5)
-            mtmp->mpeaceful = 0;
         break;
     case S_LEPRECHAUN:
         mtmp->msleeping = 1;
@@ -1472,6 +1475,11 @@ makemon(
         mtmp->mavenge = 0;
         if (u_wield_art(ART_EXCALIBUR) || u_wield_art(ART_DEMONBANE))
             mtmp->mpeaceful = mtmp->mtame = FALSE;
+    }
+    if (uarmh && (uarmh->otyp == SKULL || uarmh->otyp == SKULL_HELM)) {
+        if (mons[uarmh->corpsenm].mlet == mtmp->data->mlet) {
+            mtmp->mpeaceful = mtmp->mtame = FALSE;
+        }
     }
     if (mndx == PM_RAVEN && uwep && uwep->otyp == BEC_DE_CORBIN)
         mtmp->mpeaceful = TRUE;
@@ -1770,6 +1778,10 @@ rndmonst_adj(int minadj, int maxadj)
             continue;
         if (Inhell && (ptr->geno & G_NOHELL))
             continue;
+        if (night() && (ptr->geno & G_DAY))
+            continue;
+        if (!night() && (ptr->geno & G_NIGHT))
+            continue;
 
         /*
          * Weighted reservoir sampling:  select ptr with a
@@ -2011,7 +2023,7 @@ mkclass_aligned(char class, int spc, /* special mons[].geno handling */
            lesser liches might grow up into them elsewhere) */
         gn_mask = (G_NOGEN | G_UNIQ);
         if (rn2(9) || class == S_LICH)
-            gn_mask |= (gehennom ? G_NOHELL : G_HELL);
+            gn_mask |= ((gehennom ? G_NOHELL : G_HELL) | (night() ? G_DAY : G_NIGHT));
         gn_mask &= ~spc;
 
         if (mk_gen_ok(MONSi(last), mv_mask, gn_mask)) {
@@ -2074,7 +2086,7 @@ mkclass_poly(int class)
     /* mkclass() does this on a per monster type basis, but doing that here
        would make the two loops inconsistent with each other for non L */
     if (rn2(9) || class == S_LICH)
-        gmask |= (Inhell ? G_NOHELL : G_HELL);
+        gmask |= ((Inhell ? G_NOHELL : G_HELL) | (night() ? G_DAY : G_NIGHT));
 
     for (last = first; last < SPECIAL_PM && mons[last].mlet == class; last++)
         if (mk_gen_ok(last, G_GENOD, gmask))

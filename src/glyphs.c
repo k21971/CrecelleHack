@@ -905,6 +905,10 @@ parse_id(
                         buf2 = "pet_male_";
                     } else if (glyph_is_female_pet(glyph)) {
                         buf2 = "pet_female_";
+                    } else if (glyph_is_boosted_male(glyph)) {
+                        buf2 = "boosted_male_";
+                    } else if (glyph_is_boosted_female(glyph)) {
+                        buf2 = "boosted_female_";
                     }
                     Strcpy(buf[0], "G_");
                     Strcat(buf[0], buf2);
@@ -952,7 +956,7 @@ parse_id(
                             buf2 = "scroll of ";
                         else if ((i >= POT_GAIN_ABILITY) && (i <= POT_WATER))
                             buf2 = (i == POT_WATER) ? "flask of n"
-                                                    : "potion of ";
+                                                    : "tonic of ";
                         else if ((i >= RIN_ADORNMENT)
                                  && (i <= RIN_PROTECTION_FROM_SHAPE_CHAN))
                             buf2 = "ring of ";

@@ -364,8 +364,10 @@ dig(void)
 
     svc.context.digging.effort +=
         10 + rn2(5) + abon(uwep) + uwep->spe - greatest_erosion(uwep) + u.udaminc;
-    if (levl[dpx][dpy].typ == ROOM && levl[dpx][dpy].submask == SM_DIRT)
+    if (IS_SUBMASKABLE(levl[dpx][dpy].typ) && levl[dpx][dpy].submask == SM_DIRT)
         svc.context.digging.effort += 10;
+    if (IS_SUBMASKABLE(levl[dpx][dpy].typ) && levl[dpx][dpy].submask == SM_SAND)
+        svc.context.digging.effort -= 10;
     if (Race_if(PM_DWARF))
         svc.context.digging.effort *= 2;
     if (svc.context.digging.down) {

@@ -762,7 +762,7 @@ static const char *const ghostnames[] = {
     "John",    "Jon",           "Karnov",      "Kay",     "Kenny",  "Kevin",
     "Maud",    "Michiel",       "Mike",        "Peter",   "Robert", "Ron",
     "Tom",     "Wilmar",        "Nick Danger", "Phoenix", "Jiro",   "Mizue",
-    "Stephan", "Lance Braccus", "Shadowhawk"
+    "Stephan", "Lance Braccus", "Shadowhawk",  "Murphy"
 };
 
 /* ghost names formerly set by x_monnam(), now by makemon() instead */
@@ -1340,7 +1340,8 @@ obj_pmname(struct obj *obj)
             return pmname(&mons[m->mnum], Mgender(m));
     }
 #endif
-    if ((obj->otyp == CORPSE || obj->otyp == STATUE || obj->otyp == FIGURINE)
+    if ((obj->otyp == CORPSE || obj->otyp == STATUE || obj->otyp == FIGURINE
+        || obj->otyp == SKULL || obj->otyp == SKULL_HELM)
         && ismnum(obj->corpsenm)) {
         int cgend = (obj->spe & CORPSTAT_GENDER),
             mgend = ((cgend == CORPSTAT_MALE) ? MALE

@@ -498,7 +498,8 @@ gain_guardian_angel(void)
 
     Hear_again(); /* attempt to cure any deafness now (divine
                      message will be heard even if that fails) */
-    if (Conflict) {
+    if (Conflict || (uarmh && (uarmh->otyp == SKULL || uarmh->otyp == SKULL_HELM) 
+                            && mons[uarmh->corpsenm].mlet == S_ANGEL)) {
        if (!Deaf)
             pline("A voice booms:");
         else

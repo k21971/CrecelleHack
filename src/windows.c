@@ -1536,6 +1536,8 @@ mg_hl_attr(unsigned special)
         hl |= HL_INVERSE;
     if ((special & MG_BW_LAVA) && iflags.use_inverse)
         hl |= HL_INVERSE;
+    if ((special & MG_BOOST) && iflags.use_inverse)
+        hl |= HL_INVERSE;
     return hl;
 }
 
@@ -1588,7 +1590,7 @@ html_print_glyph(
 static const enum statusfields
     twolineorder[3][MAX_PER_ROW] = {
     { BL_TITLE, BL_STR, BL_DX, BL_CO, BL_IN, BL_WI, BL_CH, BL_ALIGN,
-      BL_SCORE, BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD },
+      BL_SCORE, BL_TOD, BL_BOOST, BL_FLUSH, blPAD, blPAD, blPAD },
     { BL_LEVELDESC, BL_GOLD, BL_HP, BL_HPMAX, BL_ENE, BL_ENEMAX,
       BL_AC, BL_XP, BL_EXP, BL_HD, BL_TIME, BL_HUNGER,
       BL_CAP, BL_CONDITION, BL_FLUSH },
@@ -1601,7 +1603,7 @@ static const enum statusfields
     { BL_ALIGN, BL_GOLD, BL_HP, BL_HPMAX, BL_ENE, BL_ENEMAX,
       BL_AC, BL_XP, BL_EXP, BL_HD, BL_HUNGER,
       BL_CAP, BL_FLUSH, blPAD, blPAD },
-    { BL_LEVELDESC, BL_TIME, BL_CONDITION, BL_FLUSH, blPAD, blPAD,
+    { BL_LEVELDESC, BL_TOD, BL_BOOST, BL_TIME, BL_CONDITION, BL_FLUSH,
       blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD }
 };
 static const enum statusfields (*fieldorder)[MAX_PER_ROW];
@@ -1937,9 +1939,9 @@ dump_headers(void)
 
     fprintf(dumphtml_file, "<!DOCTYPE html>\n");
     fprintf(dumphtml_file, "<head>\n");
-    fprintf(dumphtml_file, "<title>NetHack %s (%s)</title>\n",  version_string(vers, sizeof vers), svp.plname);
+    fprintf(dumphtml_file, "<title>CrecelleHack %s (%s)</title>\n",  version_string(vers, sizeof vers), svp.plname);
     fprintf(dumphtml_file, "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\" />\n");
-    fprintf(dumphtml_file, "<meta name=\"generator\" content=\"NetHack %s (%s)\" />\n", vers, svp.plname);
+    fprintf(dumphtml_file, "<meta name=\"generator\" content=\"CrecelleHack %s (%s)\" />\n", vers, svp.plname);
     fprintf(dumphtml_file, "<meta name=\"date\" content=\"%s\" />\n", iso8601);
     fprintf(dumphtml_file, "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n");
     fprintf(dumphtml_file, "<link href=\"https://cdn.jsdelivr.net/gh/maxwell-k/dejavu-sans-mono-web-font@2.37/index.css\" title=\"Default\" rel=\"stylesheet\" type=\"text/css\" media=\"all\" />\n");

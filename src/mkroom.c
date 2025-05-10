@@ -393,6 +393,8 @@ fill_zoo(struct mkroom *sroom)
                 if (!rn2(3))
                     (void) mksobj_at(LUMP_OF_ROYAL_JELLY, sx, sy, TRUE,
                                      FALSE);
+                add_coating(sx, sy, COAT_HONEY, 0);
+                remove_coating(sx, sy, COAT_ALL);
                 break;
             case BARRACKS:
                 if (!rn2(20)) /* the payroll and some loot */
@@ -856,8 +858,9 @@ save_room(NHFILE *nhfp, struct mkroom *r)
      * of writing the whole structure. That is I should not write
      * the gs.subrooms pointers, but who cares ?
      */
-    if (nhfp->structlevel)
+    if (nhfp->structlevel) {
         bwrite(nhfp->fd, (genericptr_t) r, sizeof (struct mkroom));
+    }
     for (i = 0; i < r->nsubrooms; i++) {
         save_room(nhfp, r->sbrooms[i]);
     }
@@ -872,8 +875,9 @@ save_rooms(NHFILE *nhfp)
     short i;
 
     /* First, write the number of rooms */
-    if (nhfp->structlevel)
-        bwrite(nhfp->fd, (genericptr_t) &svn.nroom, sizeof(svn.nroom));
+    if (nhfp->structlevel) {
+        bwrite(nhfp->fd, (genericptr_t) &svn.nroom, sizeof svn.nroom);
+    }
     for (i = 0; i < svn.nroom; i++)
         save_room(nhfp, &svr.rooms[i]);
 }
@@ -883,8 +887,9 @@ rest_room(NHFILE *nhfp, struct mkroom *r)
 {
     short i;
 
-    if (nhfp->structlevel)
-        mread(nhfp->fd, (genericptr_t) r, sizeof(struct mkroom));
+    if (nhfp->structlevel) {
+        mread(nhfp->fd, (genericptr_t) r, sizeof (struct mkroom));
+    }
 
     for (i = 0; i < r->nsubrooms; i++) {
         r->sbrooms[i] = &gs.subrooms[gn.nsubroom];
@@ -902,8 +907,9 @@ rest_rooms(NHFILE *nhfp)
 {
     short i;
 
-    if (nhfp->structlevel)
-        mread(nhfp->fd, (genericptr_t) &svn.nroom, sizeof(svn.nroom));
+    if (nhfp->structlevel) {
+        mread(nhfp->fd, (genericptr_t) &svn.nroom, sizeof svn.nroom);
+    }
 
     gn.nsubroom = 0;
     for (i = 0; i < svn.nroom; i++) {

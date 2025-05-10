@@ -20,6 +20,7 @@ staticfn void set_mon_min_mhpmax(struct monst *, int);
 staticfn void lifesaved_monster(struct monst *);
 staticfn boolean vamprises(struct monst *);
 staticfn void logdeadmon(struct monst *, int);
+staticfn void anger_quest_guardians(struct monst *);
 staticfn boolean ok_to_obliterate(struct monst *);
 staticfn void qst_guardians_respond(void);
 staticfn void peacefuls_respond(struct monst *);
@@ -151,7 +152,7 @@ sanity_check_single_mon(
             mx = my = 0;
         if (mtmp == u.ustuck)
             impossible("hiding monster stuck to you (%s)", msg);
-        if (m_at(mx, my) == mtmp && hides_under(mptr) && !OBJ_AT(mx, my))
+        if (m_at(mx, my) == mtmp && (hides_under(mptr) && !is_hider(mptr)) && !OBJ_AT(mx, my))
             impossible("mon hiding under nonexistent obj (%s)", msg);
         if (mptr->mlet == S_EEL
             && !(is_pool(mx, my) && !Is_waterlevel(&u.uz)))
@@ -394,7 +395,7 @@ zombie_form(struct permonst *pm)
     case S_KOP:
         if (is_elf(pm))
             return PM_ELF_ZOMBIE;
-        return PM_HUMAN_ZOMBIE;
+        return rn2(4) ? PM_HUMAN_ZOMBIE : PM_CRAWLING_ZOMBIE;
     case S_HUMANOID:
         if (is_dwarf(pm))
             return PM_DWARF_ZOMBIE;
@@ -438,6 +439,8 @@ undead_to_corpse(int mndx)
 #endif
     case PM_HUMAN_ZOMBIE:
     case PM_HUMAN_MUMMY:
+    case PM_SODDEN_ONE:
+    case PM_CRAWLING_ZOMBIE:
         mndx = PM_HUMAN;
         break;
     case PM_GIANT_ZOMBIE:
@@ -634,6 +637,8 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_ORC_ZOMBIE:
     case PM_ELF_ZOMBIE:
     case PM_HUMAN_ZOMBIE:
+    case PM_CRAWLING_ZOMBIE:
+    case PM_SODDEN_ONE:
     case PM_GIANT_ZOMBIE:
     case PM_ETTIN_ZOMBIE:
         num = undead_to_corpse(mndx);
@@ -652,6 +657,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
         while (num--)
             obj = mksobj_at(FIRST_GLASS_GEM + rn2(NUM_GLASS_GEMS),
                             x, y, TRUE, FALSE);
+        add_coating(x, y, COAT_SHARDS, 0);
         free_mgivenname(mtmp);
         break;
     case PM_CLAY_GOLEM:
@@ -676,7 +682,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
         while (num--) {
             obj = mksobj_at(
                             rn2(2) ? QUARTERSTAFF
-                            : rn2(3) ? SMALL_SHIELD
+                            : rn2(3) ? ROUNDSHIELD
                             : rn2(3) ? CLUB
                             : rn2(3) ? ELVEN_SPEAR
                             : rn2(3) ? SHEPHERD_S_CROOK : BOOMERANG,
@@ -752,7 +758,6 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
 
     case PM_DISPLACER_BEAST: case PM_GREMLIN:
     case PM_GARGOYLE: case PM_WINGED_GARGOYLE:
-    case PM_GROTESQUE: case PM_MASCARON:
 
     case PM_HOBBIT: case PM_DWARF: case PM_BUGBEAR: case PM_DWARF_LEADER:
     case PM_DWARF_RULER:
@@ -765,7 +770,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_BOULDERER:
     case PM_WOOD_NYMPH: case PM_WATER_NYMPH: case PM_MOUNTAIN_NYMPH:
     case PM_GOBLIN: case PM_HOBGOBLIN: case PM_ORC: case PM_HILL_ORC:
-    case PM_MORDOR_ORC: case PM_URUK_HAI: case PM_ORC_SHAMAN:
+    case PM_FEN_ORC: case PM_FELL_ORC: case PM_ORC_SHAMAN:
     case PM_ORC_CAPTAIN:
     case PM_ROCK_PIERCER: case PM_IRON_PIERCER: case PM_GLASS_PIERCER:
     case PM_ROTHE: case PM_SQUONK: case PM_MUMAK: case PM_LEOCROTTA: case PM_WUMPUS:
@@ -776,13 +781,13 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_ROCK_MOLE: case PM_WOODCHUCK: case PM_RAT_RULER:
     case PM_CAVE_SPIDER: case PM_CENTIPEDE: case PM_GIANT_SPIDER:
     case PM_SCORPION:
-    case PM_LURKER_ABOVE: case PM_TRAPPER:
+    case PM_LURKER_ABOVE: case PM_TRAPPER: case PM_SPANNER:
     case PM_PONY: case PM_HORSE: case PM_WARHORSE:
     case PM_FOG_CLOUD: case PM_DUST_VORTEX: case PM_ICE_VORTEX:
     case PM_ENERGY_VORTEX: case PM_STEAM_VORTEX: case PM_FIRE_VORTEX:
-    case PM_BLACK_HOLE: case PM_CRIMSON_DEATH:
+    case PM_BLACK_HOLE: case PM_CRIMSON_DEATH: case PM_TORNADO:
 
-    case PM_BABY_LONG_WORM: case PM_BABY_PURPLE_WORM:
+    case PM_NIGHTCRAWLER: case PM_BABY_LONG_WORM: case PM_BABY_PURPLE_WORM:
     case PM_MAIL_WORM:
     case PM_FROSTWURM: case PM_PURPLE_WORM:
 
@@ -790,7 +795,9 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_ZRUTY: case PM_COUATL: case PM_ALEAX: case PM_ANGEL:
     case PM_KI_RIN: case PM_ARCHON:
 
-    case PM_BAT: case PM_GIANT_BAT: case PM_RAVEN: case PM_VAMPIRE_BAT:
+    case PM_BAT: case PM_KESTREL: case PM_GIANT_BAT: case PM_FALCON:
+    case PM_RAVEN: case PM_VAMPIRE_BAT: case PM_GIANT_EAGLE:
+    case PM_HELLBAT:
     case PM_PLAINS_CENTAUR: case PM_FOREST_CENTAUR: case PM_MOUNTAIN_CENTAUR:
 
     case PM_BABY_GRAY_DRAGON: case PM_BABY_GOLD_DRAGON:
@@ -802,7 +809,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_STALKER: case PM_AIR_ELEMENTAL: case PM_FIRE_ELEMENTAL:
     case PM_EARTH_ELEMENTAL: case PM_WATER_ELEMENTAL:
 
-    case PM_LIGHTCRUST: case PM_LICHEN: case PM_BROWN_MOLD: case PM_YELLOW_MOLD:
+    case PM_NIGHTCRUST: case PM_LICHEN: case PM_BROWN_MOLD: case PM_YELLOW_MOLD:
     case PM_GREEN_MOLD: case PM_RED_MOLD: case PM_SHRIEKER:
     case PM_VIOLET_FUNGUS:
 
@@ -858,7 +865,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_ILLUSION: case PM_POLTERGEIST: case PM_GHOST: case PM_SHADE: case PM_WATER_DEMON:
     case PM_AMOROUS_DEMON: case PM_HORNED_DEVIL:
     case PM_ERINYS: case PM_BARBED_DEVIL: case PM_MARILITH: case PM_VROCK:
-    case PM_HEZROU: case PM_BONE_DEVIL: case PM_ICE_DEVIL: case PM_NALFESHNEE:
+    case PM_HEZROU: case PM_BONE_DEVIL: case PM_ICE_DEVIL: case PM_SHADOW_FIEND: case PM_NALFESHNEE:
     case PM_PIT_FIEND: case PM_SANDESTIN: case PM_BALROG: case PM_JUIBLEX:
     case PM_YEENOGHU: case PM_ORCUS: case PM_GERYON: case PM_DISPATER:
     case PM_BAALZEBUB: case PM_ASMODEUS: case PM_DEMOGORGON:
@@ -868,27 +875,27 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_JELLYFISH: case PM_PIRANHA: case PM_SHARK: case PM_GIANT_EEL:
     case PM_ELECTRIC_EEL: case PM_KRAKEN:
     case PM_NEWT: case PM_GECKO: case PM_IGUANA: case PM_BABY_CROCODILE:
-    case PM_LIZARD: case PM_CHAMELEON: case PM_CROCODILE:
-    case PM_SALAMANDER: case PM_LONG_WORM_TAIL:
+    case PM_LIZARD: case PM_CHAMELEON: case PM_CROCODILE: case PM_BABY_GATOR:
+    case PM_SALAMANDER: case PM_GATOR: case PM_LONG_WORM_TAIL:
 
     case PM_ARCHEOLOGIST: case PM_BARBARIAN: case PM_CAVE_DWELLER:
     case PM_HEALER: case PM_KNIGHT: case PM_MONK: case PM_CLERIC:
     case PM_RANGER: case PM_ROGUE: case PM_SAMURAI: case PM_TOURIST:
-    case PM_VALKYRIE: case PM_WIZARD:
+    case PM_VALKYRIE: case PM_WIZARD: case PM_WRESTLER:
 
     case PM_LORD_CARNARVON: case PM_PELIAS: case PM_SHAMAN_KARNOV:
     case PM_HIPPOCRATES: case PM_KING_ARTHUR: case PM_GRAND_MASTER:
     case PM_ARCH_PRIEST: case PM_ORION: case PM_MASTER_OF_THIEVES:
     case PM_LORD_SATO: case PM_TWOFLOWER: case PM_NORN:
-    case PM_NEFERET_THE_GREEN: case PM_MINION_OF_HUHETOTL:
+    case PM_NEFERET_THE_GREEN: case PM_MASKED_MUMMY: case PM_MINION_OF_HUHETOTL:
     case PM_THOTH_AMON: case PM_CHROMATIC_DRAGON: case PM_CYCLOPS:
     case PM_IXOTH: case PM_MASTER_KAEN: case PM_NALZOK:
     case PM_SCORPIUS: case PM_MASTER_ASSASSIN: case PM_ASHIKAGA_TAKAUJI:
-    case PM_LORD_SURTUR: case PM_DARK_ONE: case PM_STUDENT:
+    case PM_LORD_SURTUR: case PM_HEEL: case PM_DARK_ONE: case PM_STUDENT:
     case PM_CHIEFTAIN: case PM_NEANDERTHAL: case PM_ATTENDANT:
     case PM_PAGE: case PM_ABBOT: case PM_ACOLYTE: case PM_HUNTER:
     case PM_THUG: case PM_NINJA: case PM_ROSHI: case PM_GUIDE:
-    case PM_WARRIOR: case PM_APPRENTICE:
+    case PM_WARRIOR: case PM_TRAINEE: case PM_APPRENTICE:
 #else
     default:
 #endif
@@ -1008,6 +1015,13 @@ minliquid_core(struct monst *mtmp)
         }
         water_damage_chain(mtmp->minvent, FALSE);
         return 0;
+    } else if (mtmp->data == &mons[PM_TORNADO]) {
+        mtmp->mhp--;
+        if (DEADMONSTER(mtmp)) {
+            mondied(mtmp);
+            if (DEADMONSTER(mtmp))
+                return 1;
+        }
     }
 
     if (inlava) {
@@ -1860,6 +1874,7 @@ mpickstuff(struct monst *mtmp)
 
             if (otmp->otyp == CORPSE && mtmp->data->mlet != S_NYMPH 
                 && mtmp->data != &mons[PM_BLACK_HOLE]
+                && mtmp->data != &mons[PM_TORNADO]
                 /* let a handful of corpse types thru to can_carry() */
                 && !touch_petrifies(&mons[otmp->corpsenm])
                 && otmp->corpsenm != PM_LIZARD
@@ -2456,6 +2471,8 @@ mm_aggression(
        like to eat shriekers, so attack the latter when feasible */
     if ((mndx == PM_PURPLE_WORM || mndx == PM_BABY_PURPLE_WORM)
         && mdef->data == &mons[PM_SHRIEKER])
+        return ALLOW_M | ALLOW_TM;
+    if (mndx == PM_TORNADO)
         return ALLOW_M | ALLOW_TM;
     /* Various other combinations such as dog vs cat, cat vs rat, and
        elf vs orc have been suggested.  For the time being we don't
@@ -3084,6 +3101,14 @@ logdeadmon(struct monst *mtmp, int mndx)
     }
 }
 
+/* anger all the quest guards on the level */
+staticfn void
+anger_quest_guardians(struct monst *mtmp)
+{
+    if (mtmp->data == &mons[gu.urole.guardnum])
+        setmangry(mtmp, TRUE);
+}
+
 /* monster 'mtmp' has died; maybe life-save, otherwise unshapeshift and
    update vanquished stats and update map */
 void
@@ -3224,7 +3249,7 @@ corpse_chance(
         return FALSE;
     }
 
-    if (mdat == &mons[PM_LIGHTCRUST]) {
+    if (mdat == &mons[PM_NIGHTCRUST]) {
         add_coating(mon->mx, mon->my, COAT_FUNGUS, 0);
         return FALSE;
     }
@@ -3464,6 +3489,7 @@ set_ustuck(struct monst *mtmp)
     if (!u.ustuck) {
         u.uswallow = 0;
         u.uswldtim = 0;
+        u.usticker = 0;
     }
 }
 
@@ -3712,6 +3738,8 @@ xkilled(
         change_luck(-20);
         pline("That was %sa bad idea...",
               u.uevent.qcompleted ? "probably " : "");
+        if (!svc.context.mon_moving)
+            iter_mons(anger_quest_guardians);
     } else if (mdat->msound == MS_NEMESIS) { /* Real good! */
         if (!svq.quest_status.killed_leader)
             adjalign((int) (ALIGNLIM / 4));
@@ -4141,14 +4169,10 @@ m_respond(struct monst *mtmp)
     }
     if (mtmp->data == &mons[PM_CATERWAUL]) {
         if (!Deaf) {
-            pline("%s caterwails.", Monnam(mtmp));
+            pline_mon(mtmp, "%s caterwails.", Monnam(mtmp));
             stop_occupation();
         }
         wake_nearto(mtmp->mx, mtmp->my, 25);
-    }
-    if (mtmp->data == &mons[PM_MASCARON] && u.ualign.abuse > 5) {
-        if (mtmp->mtame) betrayed(mtmp);
-        else if (mtmp->mpeaceful) mtmp->mpeaceful = 0;
     }
     if (does_callouts(mtmp->data)) {
         mcallout(mtmp);
@@ -4198,12 +4222,10 @@ peacefuls_respond(struct monst *mtmp)
 
         if (is_traitor(mon->data) && mon->data->msound != MS_SILENT && !Deaf) {
             if (mon->mtame && !betrayed(mon))
-                pline("%s laughs at you.", Monnam(mon));
+                pline_mon(mon, "%s laughs at you.", Monnam(mon));
             else if (!mon->mpeaceful && mon->mtraitor && canseemon(mon))
-                pline("%s seems to approve.", Monnam(mon));
+                pline_mon(mon, "%s seems to approve.", Monnam(mon));
         }
-        if (mon->data == &mons[PM_MASCARON])
-            betrayed(mon);
 
         if (!mindless(mon->data) && mon->mpeaceful
             && couldsee(mon->mx, mon->my) && !mon->msleeping
@@ -5983,7 +6005,6 @@ adj_midbosses(void)
             pm->geno |= G_MIDBOSS;
         }
     }
-
 }
 
 /* make erinyes more dangerous based on your alignment abuse */
@@ -6089,4 +6110,54 @@ flash_mon(struct monst *mtmp)
     gv.viz_array[my][mx] = saveviz;
     newsym(mx, my);
 }
+
+boolean 
+is_boosted(int x, int y, short boost) {
+    if ((boost & BST_BLOOD)
+        && has_coating(x, y, COAT_BLOOD)) {
+        return TRUE;
+    } else if ((boost & (BST_POTION | BST_WATER))
+        && has_coating(x, y, COAT_POTION)) {
+        if (boost & BST_WATER) return levl[x][y].pindex == POT_WATER;
+        if (boost & BST_POTION) return levl[x][y].pindex != POT_WATER;
+    } else if ((boost & BST_GRASS)
+        && has_coating(x, y, COAT_GRASS)) {
+        return TRUE;
+    } else if ((boost & BST_ASHES)
+        && has_coating(x, y, COAT_ASHES)) {
+        return TRUE;
+    } else if ((boost & BST_FUNGI)
+        && has_coating(x, y, COAT_FUNGUS)) {
+        return TRUE;
+    } else if ((boost & BST_HONEY) && has_coating(x, y, COAT_HONEY)) {
+        return TRUE;
+    } else if ((boost & BST_DIRT) && IS_SUBMASKABLE(levl[x][y].typ)
+        && !levl[x][y].coat_info
+        && levl[x][y].submask == SM_DIRT) {
+        return TRUE;
+    } else if ((boost & BST_SAND) && IS_SUBMASKABLE(levl[x][y].typ)
+        && !levl[x][y].coat_info
+        && levl[x][y].submask == SM_SAND) {
+        return TRUE;
+    } else if (((boost & BST_ROCK)
+                && !levl[x][y].submask
+                && !levl[x][y].coat_info
+                && IS_SUBMASKABLE(levl[x][y].typ)) || levl[x][y].typ == STONE) {
+        return TRUE;
+    } else if ((boost & BST_ICE) && levl[x][y].typ == ICE && !levl[x][y].coat_info) {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+boolean
+u_boosted(short boost) {
+    return is_boosted(u.ux, u.uy, boost);
+}
+
+boolean
+mon_boosted(struct monst *mtmp, short boost) {
+    return is_boosted(mtmp->mx, mtmp->my, boost);
+}
+
 /*mon.c*/

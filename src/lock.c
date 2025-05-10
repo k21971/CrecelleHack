@@ -67,6 +67,7 @@ lock_action(void)
 staticfn int
 picklock(void)
 {
+    int break_chance = 50;
     if (gx.xlock.box) {
         if (gx.xlock.box->where != OBJ_FLOOR
             || gx.xlock.box->ox != u.ux || gx.xlock.box->oy != u.uy) {
@@ -154,9 +155,12 @@ picklock(void)
         if (gx.xlock.box->otrapped)
             (void) chest_trap(gx.xlock.box, FINGER, FALSE);
     }
-    if (gx.xlock.pick && !gx.xlock.magic_key) {
-        You("discard %syour %s.", 
-                gx.xlock.pick->quan > 1L ? "one of " : "", xname(gx.xlock.pick));
+    /* Chance to use up picks */
+    if (gx.xlock.picktyp == CREDIT_CARD) break_chance = 3;
+    else if (gx.xlock.picktyp == LOCK_PICK) break_chance = 5; 
+    if (gx.xlock.pick && !gx.xlock.magic_key && !rn2(break_chance)) {
+        pline("%s %s breaks!", gx.xlock.pick->quan > 1L ? "One of you" : "Your", 
+                                xname(gx.xlock.pick));
         useup(gx.xlock.pick);
     }
     exercise(A_DEX, TRUE);

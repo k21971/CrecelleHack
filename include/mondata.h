@@ -190,7 +190,7 @@
          ? 1                                                      \
          : ((ptr) == &mons[PM_FIRE_ELEMENTAL]                     \
             || (ptr) == &mons[PM_GOLD_DRAGON]) ? 1 : \
-            ((ptr) == &mons[PM_LIGHTCRUST]) ? 3 : 0)
+            ((ptr) == &mons[PM_NIGHTCRUST]) ? 2 : 0)
     /* [Note: the light ranges above were reduced to 1 for performance,
      *  otherwise screen updating on the plane of fire slowed to a crawl.
      *  Note too: that was with 1990s hardware and before fumarole smoke
@@ -220,7 +220,7 @@
 
 #define is_vampire(ptr) ((ptr)->mlet == S_VAMPIRE || (ptr) == &mons[PM_CRIMSON_DEATH])
 
-#define hates_light(ptr) ((ptr) == &mons[PM_GREMLIN])
+#define hates_light(ptr) ((ptr) == &mons[PM_GREMLIN] || (ptr) == &mons[PM_SHADOW_FIEND])
 
 /* used to vary a few messages */
 #define weirdnonliving(ptr) (is_golem(ptr) || (ptr)->mlet == S_VORTEX \
@@ -258,6 +258,17 @@
 
 #define has_blood(ptr) \
     (!(nonliving(ptr) || unsolid(ptr) || mindless(ptr)))
+
+#define has_skull(ptr) \
+    (has_head(ptr) && !vegan(ptr) && !unsolid(ptr))
+
+#define can_grapple(ptr) \
+    ((humanoid(ptr) || (ptr)->mlet == S_NAGA || (ptr)->mlet == S_DRAGON \
+        || ptr == &mons[PM_COUATL]) && (ptr)->msize > MZ_SMALL)
+
+#define likes_grappling(ptr) \
+    ((ptr)->mlet == S_NAGA || (ptr)->mlet == S_ZOMBIE \
+        || ptr == &mons[PM_WRESTLER])
 
 /* monkeys are tamable via bananas but not pacifiable via food,
    otherwise their theft attack could be nullified too easily;

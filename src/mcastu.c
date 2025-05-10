@@ -33,7 +33,7 @@
     MSPEL("raise dead", 9, RAISE_DEAD), \
     MSPEL("gravity wave", 9, GRAVITY), \
     MSPEL("geyser", 9, GEYSER), \
-    MSPEL("simalacrum", 10, CLONE_WIZ), \
+    MSPEL("simulacrum", 10, CLONE_WIZ), \
     MSPEL("a forbidden spell", 11, DEATH_TOUCH), 
 #define MSPEL(nam, lev, id) MCU_##id
 enum mcastu_spells { MSPEL_LIST };
@@ -85,7 +85,18 @@ staticfn void
 cursetxt(struct monst *mtmp, boolean undirected)
 {
     if (canseemon(mtmp) && couldsee(mtmp->mx, mtmp->my)) {
+        const char *pointer_msg; /* how do they point? */
         const char *point_msg; /* spellcasting monsters are impolite */
+
+        if (nohands(mtmp->data)) {
+            if (haseyes(mtmp->data)) {
+                pointer_msg = "looks";
+            } else {
+                pointer_msg = "wiggles";
+            }
+        } else {
+            pointer_msg = "points";
+        }
 
         if (undirected)
             point_msg = "all around, then curses";
@@ -99,7 +110,7 @@ cursetxt(struct monst *mtmp, boolean undirected)
         else
             point_msg = "at you, then curses";
 
-        pline_mon(mtmp, "%s points %s.", Monnam(mtmp), point_msg);
+        pline_mon(mtmp, "%s %s %s.", Monnam(mtmp), pointer_msg, point_msg);
     } else if ((!(svm.moves % 4) || !rn2(4))) {
         if (!Deaf)
             Norep("You hear a mumbled curse.");   /* Deaf-aware */
@@ -587,7 +598,7 @@ cast_monster_spell(struct monst *mtmp, int dmg, int spellnum)
             SetVoice(mtmp, 0, 80, 0);
             verbalize("Ah, but which of us is the real one, fool?");
         } else if (mtmp && canseemon(mtmp)) {
-            pline("%s image splinters!", s_suffix(Monnam(mtmp)));
+            pline_mon(mtmp, "%s image splinters!", s_suffix(Monnam(mtmp)));
         }
         dmg = 0;
         break;
@@ -739,7 +750,7 @@ cast_monster_spell(struct monst *mtmp, int dmg, int spellnum)
     case MCU_GRAVITY: {
         int quan = rnd(2);
         coord bypos;
-        pline("The air quavers.");
+        pline_The("air quavers.");
         for (int i = 0; i < quan; i++) {
             if (!enexto(&bypos, mtmp->mx, mtmp->my, mtmp->data))
                 break;
@@ -773,7 +784,7 @@ cast_monster_spell(struct monst *mtmp, int dmg, int spellnum)
             choose_stairs(&sx, &sy, (mtmp->m_id % 2));
             mnearto(mtmp, sx, sy, TRUE, RLOC_NOMSG);
             /* Leave behind an illusory duplicate (maybe) */
-            if (rn2(mtmp->m_lev) < 20) {
+            if (!Protection_from_shape_changers && rn2(mtmp->m_lev) < 20) {
                 spawn_mirror_image(mtmp, ox, oy);
             }
         }
@@ -987,17 +998,13 @@ cast_monster_spell(struct monst *mtmp, int dmg, int spellnum)
         dmg = 0;
         break;
     case MCU_DISGUISE:
-        if (Protection_from_shape_changers) {
-            pline("Nothing happens.");
-        } else {
-            if (canseemon(mtmp))
-                pline("%s %s.", Monnam(mtmp), 
-                    Role_if(PM_ROGUE) ? "magically disguises itself" : "transforms");
-            mtmp->m_ap_type = M_AP_MONSTER;
-            mtmp->mappearance = rndmonnum();
-            newsym(mtmp->mx, mtmp->my);
-            dmg = 0;
-        }
+        if (canseemon(mtmp))
+            pline_mon(mtmp, "%s %s.", Monnam(mtmp),
+                Role_if(PM_ROGUE) ? "magically disguises itself" : "transforms");
+        mtmp->m_ap_type = M_AP_MONSTER;
+        mtmp->mappearance = rndmonnum();
+        newsym(mtmp->mx, mtmp->my);
+        dmg = 0;
         break;
     case MCU_CURE_SELF:
         dmg = m_cure_self(mtmp, dmg);
@@ -1110,6 +1117,10 @@ spell_would_be_useless(struct monst *mtmp, int spellnum)
         if (!has_aggravatables(mtmp))
             return rn2(100) ? TRUE : FALSE;
     }
+    /* Cannot disguise if protected */
+    if (Protection_from_shape_changers
+        && (spellnum == MCU_DISGUISE || spellnum == MCU_MIRROR_IMAGE))
+        return TRUE;
     if (mtmp->mpeaceful && spellnum == MCU_INSECTS)
         return TRUE;
     /* healing when already healed */
@@ -1158,7 +1169,7 @@ spawn_mirror_image(struct monst *mtmp, int x, int y) {
         makemon(&mons[PM_ILLUSION], 
         x, y, MM_NOCOUNTBIRTH | MM_ANGRY | MM_NOMSG);
     if (illusion) {
-        if (mtmp->mappearance)
+        if (mtmp->mappearance && !Protection_from_shape_changers)
             illusion->mappearance = mtmp->mappearance;
         else
             illusion->mappearance = mtmp->mnum;

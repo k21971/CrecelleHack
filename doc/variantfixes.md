@@ -11,13 +11,20 @@
 
 ## Commands
 
+### \#grapple: Grapple a monster
+- Grappling a monster holds that monster in place.
+- Trains the grappling skill, which allows you to escape
+  and execute grabs more easily.
+- Use special techniques by using #grapple when you are
+  already grappling an opponent.
+
 ### \#trip: Trip a monster.
 - Tripping traditionally uses one's lower body, but polearms,
   whips, and flails can be used to trip as well.
 - Being tripped puts one into a downed state. Until one moves
   to a different location, AC and to-hit are reduced.
-- Select monsters or monsters wielding tripping weapons will
-  sometimes attempt to trip the player.
+- While in a prone state, all harmonic bonuses are negated. This
+  applies to both players and monsters.
 
 ### \#taunt: Taunt nearby monsters.
 - Wastes a few turns and wakes up nearby monsters.
@@ -32,11 +39,25 @@
 - Room floors can be dirt or stone. 
 - Floors can be coated with various substances, such as potions, grass,
   blood, and more.
+- These coatings interface with the harmony system.
 - All of these coatings can be interacted with in various ways, to
   various effects. Have fun!
 
+## Day-Night Cycle
+- Exactly what it sounds like! Watch your vision wax and
+  wane over time!
+
 ## GUI
 - MC is displayed on the status line as a percentage.
+- Display level names on status line.
+
+## Harmony System
+- Most monsters harmonize on a specific type of terrain. While
+  harmonizing, a monster deals double damage.
+- Harmonic weapons and armor provide massive bonuses while standing
+  on terrain that they harmonize with.
+  - Armor grants 3 bonus points of AC while harmonized.
+  - Weapons deal double damage when harmonized.
 
 ## Monsters
 
@@ -46,6 +67,9 @@
   out of sight are disguised as standard creatures of their type.
 - Horses and ponies have altered names.
 - Tigers are orange.
+- Monsters can grapple and trip the player.
+- Bats and vampires only spawn at night.
+- Renamed mordor orcs to fen orcs and uruk-hai to fell orcs.
 
 ### Unique Monsters
 - Dispater uses the trickster monster spell list, making him likely
@@ -57,6 +81,7 @@
 
 ### Mounts
 - The following monster classes are now valid mounts: f, d
+- Many monsters now do not spawn in Gehennom.
 
 ### Monster Spells
 - Different monsters have different spell lists.
@@ -65,58 +90,9 @@
 - See variantspells.md for a full list of new spells.
 
 ### New Monsters
-- Poltergeist ( )
-  - Does not approach, collects objects like a nymph. Throws any and
-    all objects it gets its hands on. Permanently invisible.
-  - Can generate in morgues or via raising the dead.
-- Grotesque (g)
-  - Slow, hard to hit, and very high damage. Spawns in groups.
-- Mascaron (g)
-  - Stunning gaze. Spawns in groups.
-  - Peaceful, but turns hostile if alignment is abused.
-- Gravitric Sphere (e)
-  - Explosion reduces HP by 1/2.
-  - Does not generate randomly.
-- Illusion ( )
-  - Does not generate randomly, unpolymorphable.
-  - Appears as another monster.
-  - Only appears when summoned by monsters.
-- Snow Ant (a)
-  - Hails from numerous variants.  Provenance unclear, but likely originated
-    with Slash'Em?
-- Squonk (q)
-  - Leaves a trail of water.
-- Skunk Ape (Y)
-  - Periodically releases clouds of poison gas.
-- Blood Golem (')
-  - Leaves behind a trail of blood.
-  - Explodes into blood when destroyed.
-- Scrolem (')
-  - Unique type of golem associated with scrolls.
-- Black Hole (v)
-  - Teleports upon engulfing.
-  - Teleports items when picking them up
-- Smilodon (f)
-  - Originally from SLASH'EM (sabre-toothed cat).
-- Lightcrust (F)
-  - Sheds light in a large radius.
-  - Generates throughout the dungeon.
-- Boulderer (m)
-  - Pretend to be boulders, spawn in groups.
-  - Very low birth limit.
-- Caterwaul (f)
-  - Originally from SLASH'EM.
-  - Some changes, including ability to caterwail.
-- Crimson Death (v)
-  - Vampiric mist.
-  - Invisible until sucked blood.
-- Frostwurm (w)
-  - Cold-associated worm.
-- Hellcat (f)
-  - From SLASH'EM, but stats have been altered.
-  - Like Dnethack, is visible in darkness but invisible in light.
-- Mail worm (w)
-  - Fills your inventory with spam mail.
+- 20 new monsters.
+- See variantmonsters.md for a full list of these monsters and mild
+  spoilers.
 
 ## Monster AI
 
@@ -132,10 +108,16 @@
 - Monsters do not track the player across the entire level, as in
   vanilla.
 
+## New Role: Wrestler
+- Use your special wrestling moves and the #grapple command to
+  obtain the amulet!
+
 ## Objects
 
 ### General
 - Renamed Scroll of Genocide to Scroll of Erasure.
+- Renamed large shield to kite shield and small shield
+  to roundshield.
 - Quarterstaves can be wielded in dual weapon mode.
 - Potions leave behind empty bottles when drunk. These bottles
   can be refilled with water at fountains, sinks, and other
@@ -143,6 +125,11 @@
 - Potions of water are considered inert and do not polymorph.
 - Potions of holy water deal much more damage to demons.
 - Bags have distinct appearances.
+- Non-stacking weapons, armor, and weapon-tools have their
+  weight mildly fuzzed.
+- All gems shatter when thrown, regardless of their material.
+  This opens up an additional route for getting glass onto
+  the floor.
 
 ### Armor
 - MC: Chance of cancelling a special effect.
@@ -159,6 +146,17 @@
     and dwarvish weapons deal more damage but are slower.
 
 ### New Objects
+- Wand of Fecundity
+  - Causes grass to grow when zapped.
+  - Zapped monsters grow up.
+  - Zapped eggs instantly start hatching.
+- Skull
+  - Derived from a monster.
+- Skull Helm
+  - Can be obtained by using a non-cursed scroll of enchant armor
+    to enchant a worn skull.
+  - Provide the same type of resistances possessed by the original
+    monster. 
 - Potion of blood
   - Function similarly to potions of blood from dnethack, although
     the implementation is different.
@@ -171,14 +169,21 @@
 - Bolas
   - Thrown weapon.
   - Players struck by a bolas are made prone.
+- Heater Shield
 - Two-Bladed Sword
 - Dual Axe
 
-### Door and Chest Keys
-- Unlocking tools now stack and are destroyed after use.
-- Lock picks stack.
+### Locks and Picks
+- Unlocking tools now stack.
+- Unlocking tools have a small chance of being destroyed upon use.
+  The chance is dependent upon the type of unlocking tool.
 
 ## Roles and Races
+
+### New Role: The Wrestler
+- Can you wrestle the dungeon into submission?
+- TODO: Overwrite placeholder racial wrestling attacks.
+- TODO: Improvised weapon usage.
 
 ### General
 - Roles are not restricted by race, with the exception of
@@ -211,3 +216,8 @@
 ### Misc
 - Ported Hardfought's HTML Dumps and other tweaks.
 - Ported xNetHack's invweight patch. Thanks to aosdict.
+
+## Weather System
+- Experience wind, rain, hail, and more.
+- Weather changes dynamically over time, and may impact the gameplay
+  in various ways.

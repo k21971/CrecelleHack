@@ -1458,7 +1458,8 @@ throwit_return(boolean clear_thrownobj)
 }
 
 staticfn void
-swallowit(struct obj *obj){
+swallowit(struct obj *obj)
+{
     if (obj != uball) {
         (void) mpickobj(u.ustuck, obj); /* clears 'gt.thrownobj' */
         throwit_return(FALSE);
@@ -1468,7 +1469,8 @@ swallowit(struct obj *obj){
 
 /* throw an object, NB: obj may be consumed in the process */
 void
-throwit(struct obj *obj,
+throwit(
+    struct obj *obj,
     long wep_mask,       /* used to re-equip returning boomerang */
     boolean twoweap,     /* used to restore twoweapon mode if
                           * wielded weapon returns */
@@ -2464,6 +2466,9 @@ breakobj(
                           EF_DESTROY | EF_VERBOSE) == ER_DESTROYED);
 
     switch (obj->oclass == POTION_CLASS ? POT_WATER : obj->otyp) {
+    case LUMP_OF_ROYAL_JELLY:
+        add_coating(x, y, COAT_HONEY, 0);
+        break;
     case MIRROR:
         if (hero_caused)
             change_luck(-2);
@@ -2568,8 +2573,9 @@ breaktest(struct obj *obj)
 
     if (obj_resists(obj, nonbreakchance, 99))
         return FALSE;
-    if (objects[obj->otyp].oc_material == GLASS && !obj->oartifact
-        && obj->oclass != GEM_CLASS)
+    if (objects[obj->otyp].oc_material == GLASS && !obj->oartifact)
+        return TRUE;
+    if (obj->oclass == GEM_CLASS && objects[obj->otyp].oc_material != MINERAL)
         return TRUE;
     switch (obj->oclass == POTION_CLASS ? POT_WATER : obj->otyp) {
     case EXPENSIVE_CAMERA:
@@ -2580,6 +2586,7 @@ breaktest(struct obj *obj)
     case MELON:
     case ACID_VENOM:
     case BLINDING_VENOM:
+    case LUMP_OF_ROYAL_JELLY:
         return TRUE;
     default:
         return FALSE;
@@ -2595,7 +2602,8 @@ breakmsg(struct obj *obj, boolean in_view)
         return;
 
     to_pieces = "";
-    switch (obj->oclass == POTION_CLASS ? POT_WATER : obj->otyp) {
+    switch (obj->oclass == POTION_CLASS ? POT_WATER :
+            obj->oclass == GEM_CLASS ? WORTHLESS_VIOLET_GLASS : obj->otyp) {
     default: /* glass or crystal wand */
         if (obj->oclass != WAND_CLASS)
             impossible("breaking odd object (%d)?", obj->otyp);
@@ -2610,6 +2618,7 @@ breakmsg(struct obj *obj, boolean in_view)
         FALLTHROUGH;
     /*FALLTHRU*/
     case BOTTLE:
+    case WORTHLESS_VIOLET_GLASS:
     case POT_WATER: /* really, all potions */
         if (!in_view)
             You_hear("%s shatter!", something);
@@ -2619,6 +2628,7 @@ breakmsg(struct obj *obj, boolean in_view)
         break;
     case EGG:
     case MELON:
+    case LUMP_OF_ROYAL_JELLY:
         pline("Splat!");
         break;
     case CREAM_PIE:

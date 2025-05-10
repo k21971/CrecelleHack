@@ -365,7 +365,7 @@ bhitm(struct monst *mtmp, struct obj *otmp)
     case WAN_LOCKING:
     case SPE_WIZARD_LOCK:
         if (disguised_mimic && box_or_door(mtmp))
-            that_is_a_mimic(mtmp, TRUE); /*seemimic()*/
+            that_is_a_mimic(mtmp, MIM_REVEAL); /*seemimic()*/
         wake = closeholdingtrap(mtmp, &learn_it);
         break;
     case WAN_PROBING:
@@ -374,10 +374,18 @@ bhitm(struct monst *mtmp, struct obj *otmp)
         probe_monster(mtmp);
         learn_it = TRUE;
         break;
+    case WAN_FECUNDITY:
+        if (!mtmp->mtame || !rn2(8)) {
+            grow_up(mtmp, (struct monst *) 0);
+        }
+        wake = FALSE;
+        reveal_invis = FALSE;
+        helpful_gesture = TRUE;
+        break;
     case WAN_OPENING:
     case SPE_KNOCK:
         if (disguised_mimic && box_or_door(mtmp))
-            that_is_a_mimic(mtmp, TRUE); /*seemimic()*/
+            that_is_a_mimic(mtmp, MIM_REVEAL); /*seemimic()*/
         wake = FALSE; /* don't want immediate counterattack */
         if (mtmp == u.ustuck) {
             /* zapping either holder/holdee or self [zapyourself()] will
@@ -483,21 +491,35 @@ bhitm(struct monst *mtmp, struct obj *otmp)
             learn_it = TRUE;
         break;
     case SPE_STONE_TO_FLESH:
-        /* FIXME: mimics disguished as stone furniture or stone object
-           should be taken out of concealment. */
-        if (monsndx(mtmp->data) == PM_STONE_GOLEM) {
-            char *name = Monnam(mtmp);
+        if (mtmp->data->mlet == S_GOLEM) {
+            const char *mesg;
+            char *name = Monnam(mtmp); /* before possible polymorph */
 
-            /* turn into flesh golem */
-            if (newcham(mtmp, &mons[PM_FLESH_GOLEM], NO_NC_FLAGS)) {
-                if (canseemon(mtmp))
-                    pline("%s turns to flesh!", name);
-            } else {
-                if (canseemon(mtmp))
-                    pline("%s looks rather fleshy for a moment.", name);
+            /* turn stone golem into flesh golem */
+            if (monsndx(mtmp->data) == PM_STONE_GOLEM
+                && newcham(mtmp, &mons[PM_FLESH_GOLEM], NO_NC_FLAGS))
+                mesg = "turns to flesh!";
+            else if (monsndx(mtmp->data) == PM_FLESH_GOLEM)
+                mesg = "seems fleshier...";
+            else
+                mesg = "looks rather fleshy for a moment.";
+
+            if (canseemon(mtmp))
+                pline("%s %s", name, mesg);
+        } else if (mtmp->data->mlet == S_MIMIC
+                   && ((M_AP_TYPE(mtmp) == M_AP_FURNITURE
+                        && stone_furniture_type(mtmp->mappearance))
+                       || (M_AP_TYPE(mtmp) == M_AP_OBJECT
+                           && stone_object_type(mtmp->mappearance)))) {
+            /* note: if that_is_a_mimic() doesn't get called to reveal the
+               mimic, wakeup() below will call seemimic() */
+            if (cansee(mtmp->mx, mtmp->my)) {
+                set_msg_xy(mtmp->mx, mtmp->my);
+                that_is_a_mimic(mtmp, MIM_REVEAL | MIM_OMIT_WAIT);
             }
-        } else
+        } else {
             wake = FALSE;
+        }
         break;
     case SPE_DRAIN_LIFE:
         if (disguised_mimic)
@@ -530,22 +552,19 @@ bhitm(struct monst *mtmp, struct obj *otmp)
         impossible("What an interesting effect (%d)", otyp);
         break;
     }
-    if (wake) {
-        if (!DEADMONSTER(mtmp)) {
-            wakeup(mtmp, helpful_gesture ? FALSE : TRUE);
-            m_respond(mtmp);
-            if (mtmp->isshk && !*u.ushops)
-                hot_pursuit(mtmp);
-        } else if (M_AP_TYPE(mtmp))
-            seemimic(mtmp); /* might unblock if mimicking a boulder/door */
+    if (wake && !DEADMONSTER(mtmp)) {
+        /* seemimic() is done by wakeup() and might unblock vision */
+        wakeup(mtmp, helpful_gesture ? FALSE : TRUE);
+        m_respond(mtmp);
+        if (mtmp->isshk && !*u.ushops)
+            hot_pursuit(mtmp);
     }
     /* note: gb.bhitpos won't be set if swallowed, but that's okay since
      * reveal_invis will be false.  We can't use mtmp->mx, my since it
      * might be an invisible worm hit on the tail.
      */
-    if (reveal_invis) {
-        if (!DEADMONSTER(mtmp) && cansee(gb.bhitpos.x, gb.bhitpos.y)
-            && !canspotmon(mtmp))
+    if (reveal_invis && !DEADMONSTER(mtmp)) {
+        if (cansee(gb.bhitpos.x, gb.bhitpos.y) && !canspotmon(mtmp))
             map_invisible(gb.bhitpos.x, gb.bhitpos.y);
     }
     /* if effect was observable then discover the wand type provided
@@ -574,7 +593,7 @@ release_hold(void)
         }
         /* gives "you get regurgitated" or "you get expelled from <mon>" */
         expels(mtmp, mtmp->data, TRUE);
-    } else if (sticks(gy.youmonst.data)) {
+    } else if (u.usticker) {
         /* order matters if 'holding' status condition is enabled;
            set_ustuck() will set flag for botl update, You() pline will
            trigger a status update with "UHold" removed */
@@ -1296,6 +1315,10 @@ cancel_item(struct obj *obj)
             costly_alteration(obj, COST_CANCEL);
             obj->spe = cancelled_spe;
         }
+        if (obj->booster) {
+            costly_alteration(obj, COST_UNHARMONIZE);
+            obj->booster = 0;
+        }
         switch (obj->oclass) {
         case SCROLL_CLASS:
             costly_alteration(obj, COST_CANCEL);
@@ -1448,6 +1471,10 @@ obj_resists(struct obj *obj,
         || obj->otyp == CANDELABRUM_OF_INVOCATION
         || obj->otyp == BELL_OF_OPENING
         || (obj->otyp == CORPSE && is_rider(&mons[obj->corpsenm]))) {
+        return TRUE;
+    } else if (obj->otyp == SKULL 
+                && (obj->corpsenm == PM_BLACK_DRAGON 
+                    || obj->corpsenm == PM_BABY_BLACK_DRAGON)) {
         return TRUE;
     } else {
         int chance = rn2(100);
@@ -2159,9 +2186,10 @@ bhito(struct obj *obj, struct obj *otmp)
     /*
      * Some parts of this function expect the object to be on the floor
      * obj->{ox,oy} to be valid.  The exception to this (so far) is
-     * for the STONE_TO_FLESH spell.
+     * for the STONE_TO_FLESH spell and the wand of fecundity.
      */
-    if (!(obj->where == OBJ_FLOOR || otmp->otyp == SPE_STONE_TO_FLESH))
+    if (!(obj->where == OBJ_FLOOR || otmp->otyp == SPE_STONE_TO_FLESH
+         || otmp->otyp == WAN_FECUNDITY))
         impossible("bhito: obj is not floor or Stone To Flesh spell");
 
     if (obj == uball) {
@@ -2386,6 +2414,12 @@ bhito(struct obj *obj, struct obj *otmp)
                 res = 0;
             if (res)
                 learn_it = TRUE;
+            break;
+        case WAN_FECUNDITY:
+            /* kludge */
+            if (obj->otyp == EGG)
+                revive_egg(obj);
+            res = 0;
             break;
         case WAN_SLOW_MONSTER: /* no effect on objects */
         case SPE_SLOW_MONSTER:
@@ -2928,6 +2962,15 @@ zapyourself(struct obj *obj, boolean ordinary)
             boxlock_invent(obj);
         }
         break;
+    case WAN_FECUNDITY: {
+        struct obj *otmp, *onxt;
+        for (otmp = gi.invent; otmp; otmp = onxt) {
+            onxt = otmp->nobj;
+            if (bhito(otmp, obj))
+                learn_it = TRUE;
+        }
+        break;
+    }
     case WAN_DIGGING:
     case SPE_DIG:
     case SPE_DETECT_UNSEEN:
@@ -3275,6 +3318,15 @@ zap_updown(struct obj *obj) /* wand or spell, nonnull */
             /* down will trigger trapdoor, hole, or [spiked-] pit */
         } else if (u.dz > 0 && !u.utrap) {
             (void) openfallingtrap(&gy.youmonst, FALSE, &disclose);
+        }
+        break;
+    case WAN_FECUNDITY:
+        if (u.dz > 0) {
+            if (Blind && !uarmf)
+                You_feel("some grass tickle your %s.", body_part(FOOT));
+            else if (!Blind)
+                pline("Some grass grows.");
+            add_coating(x, y, COAT_GRASS, 0);
         }
         break;
     case WAN_STRIKING:
@@ -3704,6 +3756,13 @@ zap_map(
                 break;
             }
         } /* find_drawbridge */
+        if (obj->otyp == WAN_FECUNDITY) {
+            if (cansee(x, y) && !has_coating(x, y, COAT_GRASS)
+                && add_coating(x, y, COAT_GRASS, 0)) {
+                You_see("some grass grow.");
+                learn_it = TRUE;
+            }
+        }
     } /* !u.uz */
 
     if (obj->otyp == WAN_PROBING) {
@@ -5210,11 +5269,11 @@ zap_over_floor(
             if (has_coating(x, y, COAT_GRASS)) {
                 remove_coating(x, y, COAT_GRASS);
                 add_coating(x, y, COAT_ASHES, 0);
-                create_bonfire(x, y, rnd(10), d(2, 4));
+                create_bonfire(x, y, rnd(IS_RAINING ? 2 : 10), d(2, 4));
             } else if (has_coating(x, y, COAT_FUNGUS)) {
                 remove_coating(x, y, COAT_FUNGUS);
                 add_coating(x, y, COAT_ASHES, 0);
-                create_bonfire(x, y, rnd(4), d(4, 4));
+                create_bonfire(x, y, rnd(IS_RAINING ? 2 : 4), d(4, 4));
             } 
             if (has_coating(x, y, COAT_POTION)
                         && levl[x][y].pindex == POT_OIL) {
@@ -5224,6 +5283,9 @@ zap_over_floor(
                         && levl[x][y].pindex == POT_HAZARDOUS_WASTE) {
                 remove_coating(x, y, COAT_POTION);
                 explode(x, y, 11, d(4, 6), 0, EXPL_NOXIOUS);
+            }
+            if (IS_SUBMASKABLE(levl[x][y].typ) && levl[x][y].submask == SM_SAND) {
+                add_coating(x, y, COAT_SHARDS, 0);
             }
             evaporate_potion_puddles(x, y);
         }
@@ -5344,7 +5406,8 @@ zap_over_floor(
         int k = (int) dirs_ord[rn2(N_DIRS)];
         int dx = xdir[k];
         int dy = ydir[k];
-        boolean potion = has_coating(x, y, COAT_POTION);
+        char cond_buf[BUFSZ];
+        boolean potion = has_coating(x, y, COAT_POTION) && levl[x][y].pindex != POT_WATER;
         boolean blood = has_coating(x, y, COAT_BLOOD);
         if (has_coating(x, y, COAT_GRASS) || has_coating(x, y, COAT_FUNGUS)) {
             remove_coating(x, y, COAT_GRASS);
@@ -5353,11 +5416,12 @@ zap_over_floor(
         if (potion || blood || IS_POOL(levl[x][y].typ)) {
             if (!rn2(6)) {
                 if (cansee(x, y)) {
-                    if (potion)
-                        pline_The("%s liquid conducts the %s!", 
-                                    OBJ_DESCR(objects[levl[x][y].pindex]),
-                                    flash_str(zaptype(type), FALSE));
-                    else if (blood)
+                    if (potion) {
+                        potion_coating_text(cond_buf, levl[x][y].pindex);
+                        pline_The("%s conducts the %s!", 
+                                    cond_buf, flash_str(zaptype(type), FALSE));
+
+                    } else if (blood)
                         pline_The("%s blood conducts the %s!",
                                     mons[levl[x][y].pindex].pmnames[NEUTRAL],
                                     flash_str(zaptype(type), FALSE));
@@ -5398,6 +5462,8 @@ zap_over_floor(
                     && levl[x][y].pindex == POT_HAZARDOUS_WASTE) {
             remove_coating(x, y, COAT_POTION);
             explode(x, y, 11, d(4, 6), 0, EXPL_NOXIOUS);
+        } else {
+            add_coating(x, y, COAT_POTION, POT_ACID);
         }
         break; /* ZT_ACID */
 
@@ -5780,7 +5846,7 @@ item_what(int dmgtyp)
             what = simpleonames((xtrinsic & W_AMUL) ? uamul : ublindf);
         } else if (xtrinsic & W_RING) {
             if ((xtrinsic & W_RING) == W_RING) /* both */
-                what = "rings";
+                what = "bands";
             else
                 what = simpleonames((xtrinsic & W_RINGL) ? uleft : uright);
         } else if (xtrinsic & W_WEP) {
@@ -5809,9 +5875,9 @@ item_what(int dmgtyp)
  */
 const char *const destroy_strings[][3] = {
     /* also used in trap.c */
-    { "freezes and shatters", "freeze and shatter", "shattered potion" },
-    { "boils and explodes", "boil and explode", "boiling potion" },
-    { "ignites and explodes", "ignite and explode", "exploding potion" },
+    { "freezes and shatters", "freeze and shatter", "shattered tonic" },
+    { "boils and explodes", "boil and explode", "boiling tonic" },
+    { "ignites and explodes", "ignite and explode", "exploding tonic" },
     { "catches fire and burns", "catch fire and burn", "burning scroll" },
     { "catches fire and burns", "", "burning book" },
     { "turns to dust and vanishes", "", "" },
@@ -6200,12 +6266,12 @@ wishcmdassist(int triesleft)
         wishinfo[] = {
   "Wish details:",
   "",
-  "Enter the name of an object, such as \"potion of monster detection\",",
+  "Enter the name of an object, such as \"tonic of monster detection\",",
   "\"scroll labeled README\", \"elven mithril-coat\", or \"Grimtooth\"",
   "(without the quotes).",
   "",
   "For object types which come in stacks, you may specify a plural name",
-  "such as \"potions of healing\", or specify a count, such as \"1000 gold",
+  "such as \"tonics of healing\", or specify a count, such as \"1000 gold",
   "pieces\", although that aspect of your wish might not be granted.",
   "",
   "You may also specify various prefix values which might be used to",
