@@ -151,7 +151,7 @@ enum levl_typ_types {
 #define COAT_FUNGUS 0x10 /* luminescent fungus */
 #define COAT_SHARDS 0x20 /* shards of glass */
 #define COAT_HONEY  0x40 /* honey */
-#define COAT_ALL 0xffff
+#define COAT_ALL 0xfff
 
 /*
  * The structure describing a coordinate position.
