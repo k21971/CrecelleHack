@@ -1674,14 +1674,17 @@ add_coating(coordxy x, coordxy y, short coatflags, int pindex) {
             levl[x][y].lit = 1;
             newsym(x, y);
         }
+        if ((coatflags & COAT_FROST) != 0) {
+            remove_coating(x, y, COAT_POTION | COAT_BLOOD | COAT_ASHES | COAT_FUNGUS | COAT_GRASS);
+        }
         if ((coatflags & COAT_POTION) != 0) {
-            remove_coating(x, y, COAT_BLOOD);
+            remove_coating(x, y, COAT_BLOOD | COAT_FROST);
             levl[x][y].pindex = pindex;
             if (pindex < POT_GAIN_ABILITY || pindex > POT_WATER) {
                 impossible("coating floor with invalid object index %d?", pindex);
             }
         } else if ((coatflags & COAT_BLOOD) != 0) {
-            remove_coating(x, y, COAT_POTION);
+            remove_coating(x, y, COAT_POTION | COAT_FROST);
             levl[x][y].pindex = pindex;
             if (!ismnum(pindex)) impossible("coating floor with invalid blood %d?", pindex);
         } else if (pindex) {

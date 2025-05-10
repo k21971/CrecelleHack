@@ -1,7 +1,10 @@
 # 1.1
 
-# New Monsters
+## New Monsters
 - Salt Golem
+
+## Floor Coating System
+- Added ice as a floor coating.
 
 # 1.0
 

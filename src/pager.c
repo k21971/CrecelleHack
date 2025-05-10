@@ -626,6 +626,8 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
     pindex = levl[x][y].pindex;
     if ((levl[x][y].coat_info & COAT_SHARDS) != 0)
         Strcat(outbuf, "glass-strewn ");
+    if ((levl[x][y].coat_info & COAT_FROST) != 0)
+        Strcat(outbuf, "icy ");
     if ((levl[x][y].coat_info & COAT_HONEY) != 0)
         Strcat(outbuf, "sticky ");
     if ((levl[x][y].coat_info & COAT_GRASS) != 0)

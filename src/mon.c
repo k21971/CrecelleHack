@@ -6144,7 +6144,9 @@ is_boosted(int x, int y, short boost) {
                 && !levl[x][y].coat_info
                 && IS_SUBMASKABLE(levl[x][y].typ)) || levl[x][y].typ == STONE) {
         return TRUE;
-    } else if ((boost & BST_ICE) && levl[x][y].typ == ICE && !levl[x][y].coat_info) {
+    } else if ((boost & BST_ICE)
+                && ((levl[x][y].typ == ICE && !levl[x][y].coat_info) 
+                    || has_coating(x, y, COAT_FROST))) {
         return TRUE;
     }
     return FALSE;

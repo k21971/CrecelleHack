@@ -498,6 +498,7 @@ spread_bonfire(NhRegion *reg) {
     int stopy = min(ROWNO - 1, reg->bounding_box.hy + 1);
     for (int x = startx; x <= stopx; x++) {
         for (int y = starty; y <= stopy; y++) {
+            remove_coating(x, y, COAT_FROST);
             if (has_coating(x, y, COAT_GRASS) && !rn2(10)) {
                 remove_coating(x, y, COAT_GRASS);
                 add_coating(x, y, COAT_ASHES, 0);
