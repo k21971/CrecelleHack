@@ -848,7 +848,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
 
     case PM_GHOUL: case PM_SKELETON:
 
-    case PM_STRAW_GOLEM: case PM_FLESH_GOLEM:
+    case PM_STRAW_GOLEM: case PM_FLESH_GOLEM: case PM_SALT_GOLEM:
 
     case PM_HUMAN: case PM_HUMAN_WERERAT: case PM_HUMAN_WEREJACKAL:
     case PM_HUMAN_WEREWOLF: case PM_ELF: case PM_WOODLAND_ELF:
@@ -1089,7 +1089,8 @@ minliquid_core(struct monst *mtmp)
             }
             if (cansee(mtmp->mx, mtmp->my)) {
                 if (svc.context.mon_moving)
-                    pline_mon(mtmp, "%s drowns.", Monnam(mtmp));
+                    pline_mon(mtmp, "%s %s.", Monnam(mtmp),
+                                mtmp->data == &mons[PM_SALT_GOLEM] ? "dissolves" : "drowns");
                 else
                     /* hero used fire to melt ice that monster was on */
                     You("drown %s.", mon_nam(mtmp));

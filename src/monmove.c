@@ -703,6 +703,9 @@ m_postmove_effect(struct monst *mtmp)
         if (touch_petrifies(&mons[pm]))
             pm = PM_ELF;
         add_coating(x, y, COAT_BLOOD, has_blood(&mons[pm]) ? pm : PM_HUMAN);
+    } else if (mtmp->data == &mons[PM_SALT_GOLEM]) {
+        remove_coating(x, y, COAT_BLOOD);
+        remove_coating(x, y, COAT_POTION);
     } else if (mtmp->data == &mons[PM_TORNADO]) {
         /* tornados suck up everything */
         remove_coating(x, y, COAT_ALL);

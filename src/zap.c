@@ -1593,7 +1593,7 @@ create_polymon(struct obj *obj, int okind)
     case 0:
     case FLESH:
         /* there is no flesh type, but all food is type 0, so we use it */
-        pm_index = PM_FLESH_GOLEM;
+        pm_index = rn2(2) ? PM_FLESH_GOLEM : PM_SALT_GOLEM;
         material = "organic ";
         break;
     case WOOD:

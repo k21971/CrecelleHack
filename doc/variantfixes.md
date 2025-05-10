@@ -1,3 +1,8 @@
+# 1.1
+
+# New Monsters
+- Salt Golem
+
 # 1.0
 
 ## Artifacts
