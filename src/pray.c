@@ -1724,6 +1724,7 @@ sacrifice_your_race(
     } else if (altaralign != A_CHAOTIC && altaralign != A_NONE) {
         /* curse the lawful/neutral altar */
         pline_The("altar is stained with %s blood.", gu.urace.adj);
+        potion_splatter(u.ux, u.uy, POT_BLOOD, gu.urace.mnum);
         levl[u.ux][u.uy].altarmask = AM_CHAOTIC;
         newsym(u.ux, u.uy); /* in case Invisible to self */
         angry_priest();
