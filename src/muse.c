@@ -1171,7 +1171,8 @@ use_defensive(struct monst *mtmp)
             pline_mon(mtmp, "%s absorbs the blood on the floor!", Monnam(mtmp));
         }
         if (touch_petrifies(&mons[levl[mtmp->mx][mtmp->my].pindex])) {
-            if (canseemon(mtmp)) pline_mon(mtmp, "%s turns to stone!", Monnam(mtmp));
+            if (canseemon(mtmp))
+                pline_mon(mtmp, "%s turns to stone!", Monnam(mtmp));
             monstone(mtmp);
         } else {
             mtmp->mhp += d(6, 4); /* inconsistent number, but 4d4 is too small. */
@@ -1219,7 +1220,8 @@ use_defensive(struct monst *mtmp)
             makeknown(otmp->otyp);
         m_useup(mtmp, otmp);
         if (otmp->otyp == POT_BLOOD && touch_petrifies(&mons[otmp->corpsenm])) {
-            if (canseemon(mtmp)) pline_mon(mtmp, "%s turns to stone!", Monnam(mtmp));
+            if (canseemon(mtmp))
+                pline_mon(mtmp, "%s turns to stone!", Monnam(mtmp));
             monstone(mtmp);
         }
         return 2;
@@ -2565,7 +2567,7 @@ use_misc(struct monst *mtmp)
         for (otmp2 = mtmp->minvent; otmp2; otmp2 = otmp2->nobj) {
             if ((otmp2->owornmask & mtmp->misc_worn_check) && !otmp2->greased) {
                 if (canseemon(mtmp))
-                    pline("%s slathers %s with %s.", Monnam(mtmp), 
+                    pline_mon(mtmp, "%s slathers %s with %s.", Monnam(mtmp),
                           an(xname(otmp2)), an(xname(otmp)));
                 otmp->spe--;
                 otmp2->greased = 1;
