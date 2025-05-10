@@ -2132,7 +2132,8 @@ m_move(struct monst *mtmp, int after)
         /* Reset prone */
         if (mtmp->mprone) {
             if (canseemon(mtmp)) 
-                pline("%s regains %s footing.", Monnam(mtmp), mhis(mtmp));
+                pline_mon(mtmp, "%s regains %s footing.",
+                    Monnam(mtmp), mhis(mtmp));
             mtmp->mprone = 0;
         }
 

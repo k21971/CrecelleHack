@@ -1728,7 +1728,7 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
             gn.nomovemsg = "You regain your footing.";
         } else {
             if (canseemon(mon)) {
-                pline("%s slips on a patch of oil!", Monnam(mon));
+                pline_mon(mon, "%s slips on a patch of oil!", Monnam(mon));
             }
             mon->mfrozen = 2;
             mon->mcanmove = 0;
@@ -1744,14 +1744,14 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
                 pline("Shards of glass crunch under your %s.", makeplural(body_part(FOOT)));
             } else {
                 if (u.uhp > 1) u.uhp--;
-                pline("Your %s are cut by shards of glass!", makeplural(body_part(FOOT)));
+                Your("%s are cut by shards of glass!", makeplural(body_part(FOOT)));
                 add_coating(x, y, COAT_BLOOD, gy.youmonst.mnum);
                 disp.botl = TRUE;
             }
         } else {
             if (!which_armor(mon, W_ARMF) && !thick_skinned(mon->data)) {
                 if (canseemon(mon))
-                    pline("%s steps on some broken glass.", Monnam(mon));
+                    pline_mon(mon, "%s steps on some broken glass.", Monnam(mon));
                 if (mon->mtame)
                     yelp(mon);
                 else
@@ -1782,7 +1782,7 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
     }
     if (has_coating(x, y, COAT_BLOOD) && touch_petrifies(&mons[levl[x][y].pindex])) {
         if (isyou && !uarmf && !Stone_resistance) {
-            pline("You touch %s blood with your %s.",
+            You("touch %s blood with your %s.",
                 pmname(&mons[levl[x][y].pindex], MALE), body_part(FOOT));
             Sprintf(buf, "stepping in %s blood", pmname(&mons[levl[x][y].pindex], MALE));
             instapetrify(buf);
@@ -2278,7 +2278,7 @@ potionbreathe(struct obj *obj)
                 else
                     u.uhp -= 5;
             }
-            You("feel sick.");
+            You_feel("sick.");
             disp.botl = TRUE;
             exercise(A_CON, FALSE);
         }
@@ -2362,7 +2362,7 @@ potionbreathe(struct obj *obj)
     case POT_ACID:
     case POT_POLYMORPH:
         /* Not all forms have noses, maybe check if humanoid? */
-        pline("Your nose burns.");
+        Your("nose burns.");
         exercise(A_CON, FALSE);
         break;
     case POT_FRUIT_JUICE:

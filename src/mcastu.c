@@ -598,7 +598,7 @@ cast_monster_spell(struct monst *mtmp, int dmg, int spellnum)
             SetVoice(mtmp, 0, 80, 0);
             verbalize("Ah, but which of us is the real one, fool?");
         } else if (mtmp && canseemon(mtmp)) {
-            pline("%s image splinters!", s_suffix(Monnam(mtmp)));
+            pline_mon(mtmp, "%s image splinters!", s_suffix(Monnam(mtmp)));
         }
         dmg = 0;
         break;
@@ -750,7 +750,7 @@ cast_monster_spell(struct monst *mtmp, int dmg, int spellnum)
     case MCU_GRAVITY: {
         int quan = rnd(2);
         coord bypos;
-        pline("The air quavers.");
+        pline_The("air quavers.");
         for (int i = 0; i < quan; i++) {
             if (!enexto(&bypos, mtmp->mx, mtmp->my, mtmp->data))
                 break;
@@ -999,7 +999,7 @@ cast_monster_spell(struct monst *mtmp, int dmg, int spellnum)
         break;
     case MCU_DISGUISE:
         if (canseemon(mtmp))
-            pline("%s %s.", Monnam(mtmp), 
+            pline_mon(mtmp, "%s %s.", Monnam(mtmp),
                 Role_if(PM_ROGUE) ? "magically disguises itself" : "transforms");
         mtmp->m_ap_type = M_AP_MONSTER;
         mtmp->mappearance = rndmonnum();

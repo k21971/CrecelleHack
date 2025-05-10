@@ -202,9 +202,8 @@ erode_obj(
 
     switch (type) {
     case ERODE_BURN:
-        if (uvictim && otmp && otmp->otyp == HEATER_SHIELD) {
-            pline("Your %s heats up.", cxname(otmp));
-        }
+        if (uvictim && otmp && otmp->otyp == HEATER_SHIELD)
+            pline("%s up.", Yobjnam2(otmp, "heat"));
         if (uvictim && inventory_resistance_check(AD_FIRE))
             return ER_NOTHING;
         vulnerable = is_flammable(otmp);

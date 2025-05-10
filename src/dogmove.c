@@ -975,10 +975,10 @@ betrayed(struct monst *mtmp)
 		    && rn2(22) > mtmp->mtame	/* Roll against tameness */
 		    && rn2(edog->abuse + 2)) {
         /* Treason */
-        if (canseemon(mtmp))
-            pline("%s turns on you!", Monnam(mtmp));
+        if (canspotmon(mtmp))
+            pline_mon(mtmp, "%s turns on you!", Monnam(mtmp));
         else
-            pline("You feel uneasy about %s.", y_monnam(mtmp));
+            You_feel("uneasy about %s.", y_monnam(mtmp));
         mtmp->mpeaceful = 0;
         mtmp->mtame = 0;
         mtmp->mtraitor = TRUE;
@@ -1323,7 +1323,8 @@ dog_move(
         place_monster(mtmp, nix, niy);
         if (mtmp->mprone) {
             mtmp->mprone = 0;
-            if (wasseen) pline("%s regains %s footing.", Monnam(mtmp), mhis(mtmp));
+            if (wasseen)
+                pline_mon(mtmp, "%s regains %s footing.", Monnam(mtmp), mhis(mtmp));
         }
         if (cursemsg[chi] && (wasseen || canseemon(mtmp))) {
             /* describe top item of pile, not necessarily cursed item itself;

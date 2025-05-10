@@ -1468,7 +1468,7 @@ tiphat(void)
     You("briefly doff your %s.", helm_simple_name(uarmh));
 
     if (IS_RAINING && !has_no_tod_cycles(&u.uz)) {
-        pline("Your %s gets wet.", body_part(HEAD));
+        Your("%s gets wet.", body_part(HEAD));
     }
 
     if (!u.dx && !u.dy) {

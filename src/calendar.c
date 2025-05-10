@@ -411,7 +411,7 @@ weather_messages(void)
     int hallu = Hallucination ? 1 : 0;
     /* Windy winds */
     if (CURR_WEATHER(WTH_BREEZE) && !rn2(200))
-        pline("You feel a %s breeze.",
+        You("feel a %s breeze.",
                 (svl.level.flags.temperature == 1) ? "hot"
                 : Is_oracle_level(&u.uz) ? "strange"
                 : (svl.level.flags.temperature == -1) ? "chill" : "cool");
@@ -525,8 +525,8 @@ timechange_message(boolean new_game)
     if (has_no_tod_cycles(&u.uz)) return;
     if (u.uenvirons.tod == TOD_MORNING) {
         if (Blind)
-            pline("You feel the warmth of the sun on your %s.", body_part(FACE));
-        pline("%s%s", new_game ? "" 
+            You_feel("the warmth of the sun on your %s.", body_part(FACE));
+        pline("%s%s", new_game ? ""
                              : Hallucination
                                 ? "The morning sun has vanquished the horrible night."
                                 : "The sun crests the edge of the dungeon.",

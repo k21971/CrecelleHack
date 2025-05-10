@@ -3322,8 +3322,10 @@ zap_updown(struct obj *obj) /* wand or spell, nonnull */
         break;
     case WAN_FECUNDITY:
         if (u.dz > 0) {
-            if (Blind && !uarmf) You_feel("some grass tickle your %s.", body_part(FOOT));
-            else if (!Blind) pline("Some grass grows.");
+            if (Blind && !uarmf)
+                You_feel("some grass tickle your %s.", body_part(FOOT));
+            else if (!Blind)
+                pline("Some grass grows.");
             add_coating(x, y, COAT_GRASS, 0);
         }
         break;
@@ -3757,7 +3759,7 @@ zap_map(
         if (obj->otyp == WAN_FECUNDITY) {
             if (cansee(x, y) && !has_coating(x, y, COAT_GRASS)
                 && add_coating(x, y, COAT_GRASS, 0)) {
-                pline("You see some grass grow.");
+                You_see("some grass grow.");
                 learn_it = TRUE;
             }
         }

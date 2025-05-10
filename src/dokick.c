@@ -258,7 +258,8 @@ kick_monster(struct monst *mon, coordxy x, coordxy y)
         remove_coating(u.ux, u.uy, COAT_ASHES);
         mon->mblinded = rn1(5, 5);
         if (canseemon(mon))
-            pline("You kick ashes in the %s of %s.", mbodypart(mon, FACE), mon_nam(mon));
+            pline_mon(mon, "You kick ashes in the %s of %s.",
+                mbodypart(mon, FACE), mon_nam(mon));
     }
     You("kick %s.", mon_nam(mon));
     if (!rn2(clumsy ? 3 : 4) && (clumsy || !bigmonst(mon->data))
@@ -1287,9 +1288,8 @@ dotrip(void)
         no_trip = TRUE;
     } else if (u.utrap  && !trip_wep 
                 && (u.utraptype == TT_BEARTRAP || u.utraptype == TT_PIT)) {
-        pline("Your leg is in no position to trip anyone.");
+        Your("leg is in no position to trip anyone.");
     }
-
 
     if (no_trip) {
         display_nhwindow(WIN_MESSAGE, TRUE); /* --More-- */
@@ -1351,7 +1351,7 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
         /* Make trip */
         if (trip_roll > trip_diff) {
             newsym(mdef->mx, mdef->my);
-            pline("%s is knocked to the %s!", 
+            pline_mon(mdef, "%s is knocked to the %s!",
                     Monnam(mdef), surface(mdef->mx, mdef->my));
             mdef->mprone = 1;
             setmangry(mdef, TRUE);
@@ -1364,9 +1364,10 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
                 /* TODO: TRIPPING DOWN STAIRS */
             }
         } else if (wep) {
-            pline("%s avoids the sweep of %s.", Monnam(mdef), the(xname(wep)));
+            pline_mon(mdef, "%s avoids the sweep of %s.",
+                Monnam(mdef), the(xname(wep)));
         } else {
-            pline("%s avoids your %s.", Monnam(mdef), body_part(LEG));
+            pline_mon(mdef, "%s avoids your %s.", Monnam(mdef), body_part(LEG));
         }
     } else {
         if (Wounded_legs)
@@ -1375,10 +1376,10 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
         trip_diff += tmp;
         /* Make trip */
         if (wep) {
-            pline("%s attempts to trip you with %s %s.",
+            pline_mon(magr, "%s attempts to trip you with %s %s.",
                   Monnam(magr), mhis(magr), xname(wep));
         } else {
-            pline("%s attempts to trip you.", Monnam(magr));
+            pline_mon(magr, "%s attempts to trip you.", Monnam(magr));
         }
         display_nhwindow(WIN_MESSAGE, TRUE);
         if (trip_roll > trip_diff) {
@@ -2174,7 +2175,7 @@ dograpple(void)
     }
     /* Ok let's actually grapple! */
     if (target->mpeaceful && !target->mtame) {
-        pline("%s does not want to roll with you!", Monnam(target));
+        pline_mon(target, "%s does not want to roll with you!", Monnam(target));
         setmangry(target, TRUE);
     }
     if (target->mtame && canseemon(target)) {
