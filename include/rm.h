@@ -173,8 +173,8 @@ struct rm {
 
     /* HORRIBLE HACK INCOMING DANGER DANGER */
     Bitfield(pindex, 10);    /* This puts a hard upper limit on monster and potion types of 1024.*/
-    Bitfield(coat_info, 14);  /* Stores the info about the floor's coating. */
-    /* 0 free bits (can steal from coat_info, however) */
+    /* 6 free  bits */
+    Bitfield(coat_info, 8);  /* Stores the info about the floor's coating. */
 
     Bitfield(roomno, 6); /* room # for special rooms */
     Bitfield(edge, 1);   /* marks boundaries for special rooms*/
@@ -195,7 +195,7 @@ struct rm {
  * sink    |             |             | S_LRING    | S_LDWASHER | S_LPUDDING |
  * tree    |             |             |            | TREE_SWARM | TREE_LOOTED|
  * throne  |             |             |            |            | T_LOOTED   |
- * fountain|             |             |            | F_WARNED   | F_LOOTED   |
+ * fountain|             |             | F_FROZEN   | F_WARNED   | F_LOOTED   |
  * ladder  |             |             |            | LA_DOWN    | LA_UP      |
  * pool    |ICED_MOAT    | ICED_POOL   |            |            |            |
  * grave   |             |             |            |            | emptygrave |
@@ -273,10 +273,14 @@ struct rm {
  */
 #define F_LOOTED 1
 #define F_WARNED 2
+#define F_FROZEN 4
+#define FOUNTAIN_IS_FROZEN(x, y) (levl[x][y].looted & F_FROZEN)
 #define FOUNTAIN_IS_WARNED(x, y) (levl[x][y].looted & F_WARNED)
 #define FOUNTAIN_IS_LOOTED(x, y) (levl[x][y].looted & F_LOOTED)
+#define SET_FOUNTAIN_FROZEN(x, y) levl[x][y].looted |= F_FROZEN;
 #define SET_FOUNTAIN_WARNED(x, y) levl[x][y].looted |= F_WARNED;
 #define SET_FOUNTAIN_LOOTED(x, y) levl[x][y].looted |= F_LOOTED;
+#define CLEAR_FOUNTAIN_FROZEN(x, y) levl[x][y].looted &= ~F_FROZEN;
 #define CLEAR_FOUNTAIN_WARNED(x, y) levl[x][y].looted &= ~F_WARNED;
 #define CLEAR_FOUNTAIN_LOOTED(x, y) levl[x][y].looted &= ~F_LOOTED;
 

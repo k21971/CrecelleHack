@@ -5263,11 +5263,17 @@ zap_over_floor(
                 }
             }
         } else if (IS_FOUNTAIN(lev->typ)) {
-            create_gas_cloud(x, y, rnd(3), 0); /* 1..3, no damage */
-            if (see_it)
-                pline("Steam billows from the fountain.");
-            rangemod -= 1;
-            dryup(x, y, type > 0);
+            if (FOUNTAIN_IS_FROZEN(x, y)) {
+                CLEAR_FOUNTAIN_FROZEN(x, y);
+                if (see_it)
+                    pline("The frozen fountain thaws.");
+            } else {
+                create_gas_cloud(x, y, rnd(3), 0); /* 1..3, no damage */
+                if (see_it)
+                    pline("Steam billows from the fountain.");
+                rangemod -= 1;
+                dryup(x, y, type > 0);
+            }
         } else {
             if (has_coating(x, y, COAT_GRASS)) {
                 remove_coating(x, y, COAT_GRASS);
@@ -5393,6 +5399,11 @@ zap_over_floor(
             }
         } else {
             add_coating(x, y, COAT_FROST, 0);
+        }
+        if (IS_FOUNTAIN(lev->typ) && !FOUNTAIN_IS_FROZEN(x, y)) {
+                SET_FOUNTAIN_FROZEN(x, y);
+                if (see_it)
+                    pline("The fountain freezes over.");
         }
         break; /* ZT_COLD */
 

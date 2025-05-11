@@ -820,6 +820,9 @@ lookat(coordxy x, coordxy y, char *buf, char *monbuf)
             Strcpy(buf,
                    Is_airlevel(&u.uz) ? "cloudy area" : "fog/vapor cloud");
             break;
+        case S_fountain:
+            Strcpy(buf, FOUNTAIN_IS_FROZEN(x, y) ? "frozen fountain" : "fountain");
+            break;
         case S_pool:
         case S_water: /* was Plane of Water, now that or "wall of water" */
         case S_lava:

@@ -4626,7 +4626,10 @@ dfeature_at(coordxy x, coordxy y, char *buf)
         if (is_drawbridge_wall(x, y) >= 0)
             dfeature = "open drawbridge portcullis", cmap = -1;
     } else if (IS_FOUNTAIN(ltyp))
-        cmap = S_fountain; /* "fountain" */
+        if (FOUNTAIN_IS_FROZEN(x, y))
+            dfeature = "frozen fountain";
+        else
+            cmap = S_fountain; /* "fountain" */
     else if (IS_THRONE(ltyp))
         cmap = S_throne; /* "opulent throne" */
     else if (is_lava(x, y))

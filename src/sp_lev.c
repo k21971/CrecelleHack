@@ -4895,6 +4895,7 @@ lspo_feature(lua_State *L)
     default:
         break;
     case FOUNTAIN:
+        l_table_getset_feature_flag(L, x, y, "frozen", F_FROZEN);
         l_table_getset_feature_flag(L, x, y, "looted", F_LOOTED);
         l_table_getset_feature_flag(L, x, y, "warned", F_WARNED);
         break;

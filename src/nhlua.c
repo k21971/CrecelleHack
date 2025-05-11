@@ -588,6 +588,8 @@ nhl_getmap(lua_State *L)
                                      (levl[x][y].flags & F_LOOTED));
             nhl_add_table_entry_bool(L, "warned",
                                      (levl[x][y].flags & F_WARNED));
+            nhl_add_table_entry_bool(L, "frozen",
+                                     (levl[x][y].flags & F_FROZEN));
         } else if (IS_SINK(levl[x][y].typ)) {
             nhl_add_table_entry_bool(L, "pudding",
                                      (levl[x][y].flags & S_LPUDDING));

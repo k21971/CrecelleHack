@@ -11,6 +11,10 @@
 ## Floor Coating System
 - Added ice as a floor coating.
 
+## Dungeon Changes
+- Allow fountains to become frozen. Frozen fountains cannot be
+  dipped into or quaffed from.
+
 # 1.0
 
 ## Artifacts
