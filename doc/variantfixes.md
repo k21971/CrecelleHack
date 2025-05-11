@@ -8,6 +8,9 @@
 - The deferred Goblin King boss is now a potential unique
   monster spawn.
 
+## Items
+- Dented pots have been renamed to Yendorian Bascinets.
+
 ## Floor Coating System
 - Added ice as a floor coating.
 

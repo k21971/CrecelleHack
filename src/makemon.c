@@ -696,7 +696,7 @@ m_initinv(struct monst *mtmp)
             if (mac < 10 && rn2(3))
                 otmp = mongets(mtmp, HELMET);
             else if (mac < 10 && rn2(2))
-                otmp = mongets(mtmp, DENTED_POT);
+                otmp = mongets(mtmp, YENDORIAN_BASCINET);
             add_ac(otmp);
 
             /* round 3: shields */

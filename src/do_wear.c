@@ -439,7 +439,7 @@ Helmet_on(void)
             change_luck(1);
         break;
     case HELMET:
-    case DENTED_POT:
+    case YENDORIAN_BASCINET:
     case ELVEN_LEATHER_HELM:
     case DWARVISH_IRON_HELM:
     case ORCISH_HELM:
@@ -529,7 +529,7 @@ Helmet_off(void)
             change_luck(-1);
         break;
     case HELMET:
-    case DENTED_POT:
+    case YENDORIAN_BASCINET:
     case ELVEN_LEATHER_HELM:
     case DWARVISH_IRON_HELM:
     case ORCISH_HELM:
