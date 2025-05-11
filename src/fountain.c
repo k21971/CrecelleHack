@@ -472,7 +472,7 @@ dipfountain(struct obj *obj)
         er = water_damage(obj, NULL, TRUE);
     }
 
-    if (obj && is_art(obj, ART_FROST_BRAND)) {
+    if (is_art(obj, ART_FROST_BRAND)) {
         SET_FOUNTAIN_FROZEN(u.ux, u.uy);
         pline("Frost spreads across the surface of the water.");
         return;
