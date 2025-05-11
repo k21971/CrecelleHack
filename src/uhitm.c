@@ -652,10 +652,6 @@ known_hitum(
                 cutworm(mon, gb.bhitpos.x, gb.bhitpos.y, slice_or_chop);
         }
     }
-    /* Weapon speed factor adjustments. */
-    if (weapon) {
-        u.umovement += objects[weapon->otyp].oc_hspeed;
-    }
     return malive;
 }
 
