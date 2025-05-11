@@ -456,7 +456,7 @@ m_initweap(struct monst *mtmp)
                 : rn2(2) ? PM_FEN_ORC : PM_FELL_ORC) {
         case PM_FEN_ORC:
             if (!rn2(3))
-                (void) mongets(mtmp, SCIMITAR);
+                (void) mongets(mtmp, rn2(4)? SCIMITAR : DUAL_AXE);
             if (!rn2(3))
                 (void) mongets(mtmp, ORCISH_SHIELD);
             if (!rn2(5))

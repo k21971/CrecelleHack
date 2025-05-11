@@ -1,5 +1,8 @@
 # 1.1
 
+## Monsters
+- Orcs have a chance to spawn with a dual axe.
+
 ## New Monsters
 - Salt Golem
 
