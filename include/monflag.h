@@ -210,6 +210,7 @@ enum ms_sounds {
 struct boostnam {
    short boost_short;
    const char *nam;
+   const char *abbr;
 };
 
 /* for mons[].geno (constant during game) */
