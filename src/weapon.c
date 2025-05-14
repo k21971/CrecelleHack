@@ -1329,10 +1329,10 @@ enhance_weapon_skill(void)
                                 practice_needed_to_advance(P_SKILL(i)));
                 } else {
                     if (!iflags.menu_tab_sep)
-                        Snprintf(buf, sizeof(buf), " %s %-*s [%s/%s]%s", prefix, longest,
+                        Snprintf(buf, sizeof(buf), " %s %-*s %-15s%s%-14s", prefix, longest,
                                 P_NAME(i), sklnambuf, sklmaxnambuf, maxed ? " MAX" : !percent ? " " : percentbuf);
                     else
-                        Snprintf(buf, sizeof(buf), " %s%s\t[%s/%s]\t%s", prefix, P_NAME(i),
+                        Snprintf(buf, sizeof(buf), " %s%s\t%s\t%s\t%s", prefix, P_NAME(i),
                                     sklnambuf,
                                     sklmaxnambuf,
                                     maxed ? "   MAX" :
