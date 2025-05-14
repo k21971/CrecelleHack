@@ -933,7 +933,7 @@ gcrownu(void)
             Your("%s goes snicker-snack!", xname(obj));
             obj->dknown = 1;
         } else if (!already_exists) {
-            obj = mksobj(get_artifact_otyp(ART_VORPAL_BLADE), FALSE, FALSE);
+            obj = mksobj(otyp_from_artifact_index(ART_VORPAL_BLADE), FALSE, FALSE);
             obj = oname(obj, artiname(ART_VORPAL_BLADE),
                         ONAME_GIFT | ONAME_KNOW_ARTI);
             obj->spe = 1;
@@ -941,9 +941,9 @@ gcrownu(void)
             dropy(obj);
             u.ugifts++;
             livelog_printf(LL_DIVINEGIFT | LL_ARTIFACT,
-                           "was bestowed with %s (%s)",
+                           "was bestowed with %s, %s",
                            artiname(ART_VORPAL_BLADE),
-                           OBJ_NAME(objects[obj->otyp]));
+                           an(OBJ_NAME(objects[obj->otyp])));
         }
         /* acquire Vorpal Blade's skill regardless of weapon or gift */
         unrestrict_weapon_skill(P_LONG_SWORD);
