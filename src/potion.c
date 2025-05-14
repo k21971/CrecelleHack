@@ -1771,7 +1771,7 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
         if ((!Levitation && !Flying) && !rn2(3)) {
             if (uarmf) {
                 struct obj *otmp;
-                pline("%s in some honey and yanked from your %s!",
+                pline("%s in some honey and are yanked from your %s!",
                         Yobjnam2(uarmf, "stick"),
                         makeplural(body_part(FOOT)));
                 otmp = uarmf;
