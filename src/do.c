@@ -387,6 +387,61 @@ doaltarobj(struct obj *obj)
         if (obj->oclass != COIN_CLASS)
             obj->bknown = 1; /* ok to bypass set_bknown() */
     }
+
+    /* From NetHack4: colored flashes one level deep inside containers. */
+	if (Has_contents(obj) && !obj->olocked) { /* && obj->cknown */
+		int blessed = 0;
+		int cursed = 0;
+		struct obj * otmp;
+		struct obj * nxto;
+		for (otmp = obj->cobj; otmp; otmp = nxto) {
+			nxto = otmp->nobj;
+			if (otmp->oclass == COIN_CLASS) continue;
+			if (otmp->blessed)
+				blessed++;
+			if (otmp->cursed)
+				cursed++;
+			if (!Hallucination && !otmp->bknown) {
+				otmp->bknown = 1;
+				obj_extract_self(otmp);
+				add_to_container(obj, otmp);
+			}
+		}
+		/* even when hallucinating, if you get no flashes at all, you know
+		* everything's uncursed, so save the player the trouble of manually
+		* naming them all */
+		if (Hallucination && blessed + cursed == 0) {
+			for (otmp = obj->cobj; otmp; otmp = nxto) {
+				nxto = otmp->nobj;
+				if (otmp->oclass == COIN_CLASS) continue;
+				if (!otmp->bknown) {
+					otmp->bknown = 1;
+					obj_extract_self(otmp);
+					add_to_container(obj, otmp);
+				}
+			}
+		}
+		if (blessed + cursed > 0) {
+			const char* color;
+			if (Hallucination) {
+				color = "pretty multichromatic";
+			}
+			else if (blessed == 0) {
+				color = hcolor(NH_BLACK);
+			}
+			else if (cursed == 0) {
+				color = hcolor(NH_AMBER);
+			}
+			else {
+				color = "colored";
+			}
+
+			pline("From inside %s, you see %s flash%s.",
+				the(xname(obj)),
+				(blessed + cursed == 1 ? an(color) : color),
+				(blessed + cursed == 1 ? "" : "es"));
+		}
+	}
 }
 
 /* If obj is neither formally identified nor informally called something
