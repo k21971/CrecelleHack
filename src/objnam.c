@@ -1150,16 +1150,16 @@ the_unique_pm(struct permonst *ptr)
 }
 
 static struct boostnam boostnams[] = {
-   { BST_GRASS, "Grass" },
-   { BST_DIRT, "Dirt" },
-   { BST_ROCK, "Rock" },
-   { BST_WATER, "Water" },
-   { BST_ASHES, "Ashes" },
-   { BST_FUNGI, "Fungi" },
-   { BST_BLOOD, "Blood" },
-   { BST_SAND, "Sand" },
-   { BST_POTION, "Tonic" },
-   { BST_HONEY, "Honey" }
+   { BST_GRASS, "Grass", "Grs" },
+   { BST_DIRT, "Dirt", "Drt" },
+   { BST_ROCK, "Rock", "Rck" },
+   { BST_WATER, "Water", "Wtr" },
+   { BST_ASHES, "Ashes", "Ash" },
+   { BST_FUNGI, "Fungi", "Fng" },
+   { BST_BLOOD, "Blood", "Bld" },
+   { BST_SAND, "Sand", "Snd" },
+   { BST_POTION, "Tonic", "Tnc" },
+   { BST_HONEY, "Honey", "Hny" }
 };
 
 staticfn void
@@ -1169,7 +1169,7 @@ add_boost_words(struct obj *obj, char *prefix)
     Strcat(prefix, "{");
     for (int i = 0; i < SIZE(boostnams); i++) {
         if (obj->booster & boostnams[i].boost_short) {
-            Sprintf(eos(prefix), "%c", boostnams[i].nam[0]);
+            Sprintf(eos(prefix), "%s", boostnams[i].abbr);
         }
     }
     Strcat(prefix, "} ");

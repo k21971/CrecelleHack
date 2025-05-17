@@ -712,7 +712,7 @@ mattacku(struct monst *mtmp)
     /* monster might attempt a trip to gain an advantage */
     if (!ranged && (is_tripper(mtmp->data) 
           || (MON_WEP(mtmp) && is_tripweapon(MON_WEP(mtmp))))
-        && !Prone && !Flying && !Levitation 
+        && !Prone && !Flying && !Levitation && !u.usteed
         && is_trippable(gy.youmonst.data) && (u.uhp > mtmp->m_lev)
         && !rn2((10 - u.uac > mtmp->m_lev) ? 8 : 100)) {
         trip_monster(mtmp, &gy.youmonst, MON_WEP(mtmp));

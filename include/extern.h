@@ -137,8 +137,7 @@ extern void fig_transform(union any *, long) NONNULLARG1;
 extern int unfixable_trouble_count(boolean);
 
 /* ### artifact.c ### */
-
-extern int get_artifact_otyp(int);
+extern int get_artifact_otyp(const struct artifact *);
 extern void init_artifacts(void);
 extern void save_artifacts(NHFILE *);
 extern void restore_artifacts(NHFILE *);
@@ -188,6 +187,7 @@ extern void mkot_trap_warn(void);
 extern boolean is_magic_key(struct monst *, struct obj *);
 extern struct obj *has_magic_key(struct monst *);
 extern boolean is_art(struct obj *, int);
+extern int otyp_from_artifact_index(int);
 extern boolean permapoisoned(struct obj *);
 
 /* ### attrib.c ### */
@@ -3700,7 +3700,7 @@ extern int abon(struct obj *);
 extern int dbon(void);
 extern void wet_a_towel(struct obj *, int, boolean) NONNULLARG1;
 extern void dry_a_towel(struct obj *, int, boolean) NONNULLARG1;
-extern char *skill_level_name(int, char *) NONNULLARG2;
+extern char *skill_level_name(int, char *, boolean) NONNULLARG2;
 extern const char *skill_name(int);
 extern boolean can_advance(int, boolean);
 extern int enhance_weapon_skill(void);

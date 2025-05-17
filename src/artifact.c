@@ -36,6 +36,7 @@ staticfn int glow_strength(int);
 staticfn boolean untouchable(struct obj *, boolean);
 staticfn int count_surround_traps(coordxy, coordxy);
 staticfn void dispose_of_orig_obj(struct obj *);
+staticfn struct artifact *artifact_from_index(int);
 
 /* The amount added to the victim's total hit points to insure that the
    victim will be killed even after damage bonus/penalty adjustments.
@@ -126,8 +127,8 @@ hack_artifact_otyps(void)
 /* Obtain the otyp of a given artifact. Used for artifacts with semi-randomized
    otyps. */
 int
-get_artifact_otyp(int art) {
-    return artilist[art].otyp;
+get_artifact_otyp(const struct artifact *art) {
+    return art->otyp;
 }
 
 /* zero out the artifact existence list */
@@ -399,7 +400,8 @@ exist_artifact(int otyp, const char *name)
 
     if (otyp && *name)
         for (a = artilist + 1, arex = artiexist + 1; a->otyp; a++, arex++)
-            if ((int) a->otyp == otyp && !strcmp(a->name, name))
+            /* Hack: Don't check otyp so that the player can't name items to spoil artifact otyps - K */
+            if (!strcmp(a->name, name))
                 return arex->exists ? TRUE : FALSE;
     return FALSE;
 }
@@ -417,7 +419,7 @@ artifact_exists(
 
     if (otmp && *name)
         for (a = artilist + 1; a->otyp; a++)
-            if (a->otyp == otmp->otyp && !strcmp(a->name, name)) {
+            if (get_artifact_otyp(a) == otmp->otyp && !strcmp(a->name, name)) {
                 int m = (int) (a - artilist);
 
                 otmp->oartifact = (char) (mod ? m : 0);
@@ -492,8 +494,8 @@ find_artifact(struct obj *otmp)
                         blind but now seen; there's no previous_where to
                         figure out how it got here */
                      : "");
-        livelog_printf(LL_ARTIFACT, "found %s%s",
-                       bare_artifactname(otmp), where);
+        livelog_printf(LL_ARTIFACT, "found %s as a %s%s",
+                       bare_artifactname(otmp), OBJ_NAME(objects[otmp->otyp]), where);
     }
 }
 
@@ -2781,14 +2783,29 @@ get_artifact(struct obj *obj)
 {
     if (obj) {
         int artidx = (int) obj->oartifact;
-
-        /* skip 0, 1st artifact at 1 */
-        /* SIZE(artilist) would include the terminator,
-           so use AFTER_LAST_ARTIFACT instead */
-        if (artidx > 0 && artidx < AFTER_LAST_ARTIFACT)
-            return &artilist[artidx];
+        artifact_from_index(artidx);
     }
     return &artilist[ART_NONARTIFACT];
+}
+
+staticfn struct artifact *
+artifact_from_index(int artidx)
+{
+    /* skip 0, 1st artifact at 1 */
+    /* SIZE(artilist) would include the terminator,
+        so use AFTER_LAST_ARTIFACT instead */
+    if (artidx > 0 && artidx < AFTER_LAST_ARTIFACT)
+        return &artilist[artidx];
+    return &artilist[ART_NONARTIFACT];
+}
+
+int
+otyp_from_artifact_index(int artidx)
+{
+    struct artifact *art = artifact_from_index(artidx);
+    if (art == &artilist[ART_NONARTIFACT])
+        panic("Fetching invalid otyp from artifact index %d", artidx);
+    return get_artifact_otyp(art);
 }
 
 /* is object permanently poisoned? (currently only Grimtooth) */
