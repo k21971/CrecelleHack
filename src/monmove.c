@@ -780,31 +780,8 @@ dochug(struct monst *mtmp)
         return 0;
     }
 
-    /* Erinyes will inform surrounding monsters of your crimes */
-    if (mdat == &mons[PM_ERINYS] && !mtmp->mpeaceful && m_canseeu(mtmp))
-        aggravate();
-
-    /* Illusions may disappear in order to prevent flooding the level */
-    if (mdat == &mons[PM_ILLUSION] && !rn2(10))
-        mongone(mtmp);
-
-    /* Tornados make noise */
-    if (mdat == &mons[PM_TORNADO] && !Deaf && !rn2(30))
-        You_hear("a horrible sucking noise.");
-
-    /* Shriekers and Medusa have irregular abilities which must be
-       checked every turn. These abilities do not cost a turn when
-       used. */
-    if (mdat->msound == MS_SHRIEK && !um_dist(mtmp->mx, mtmp->my, 1))
-        m_respond(mtmp);
-    if (mtmp->data == &mons[PM_CATERWAUL] && !um_dist(mtmp->mx, mtmp->my, 1))
-        m_respond(mtmp);
-    if (mdat == &mons[PM_MEDUSA] && couldsee(mtmp->mx, mtmp->my))
-        m_respond(mtmp);
-    if (does_callouts(mdat) && !mtmp->mpeaceful && couldsee(mtmp->mx, mtmp->my)
-        && !rn2(10) 
-        && !um_dist(mtmp->mx, mtmp->my, 5))
-        m_respond(mtmp);
+    /* some monsters have special abilities */
+    m_respond(mtmp);
     if (DEADMONSTER(mtmp))
         return 1; /* m_respond gaze can kill medusa */
 

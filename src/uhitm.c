@@ -1746,6 +1746,7 @@ hmon_hitmon(
     int dieroll)
 {
     struct _hitmon_data hmd;
+    boolean maybe_knockback = FALSE;
 
     hmd.dmg = 0;
     hmd.thrown = thrown;
@@ -1812,6 +1813,9 @@ hmon_hitmon(
         hmon_hitmon_jousting(&hmd, mon, obj);
     } else if (hmd.unarmed && hmd.dmg > 1 && !thrown && !obj && !Upolyd) {
         hmon_hitmon_stagger(&hmd, mon, obj);
+    } else if (!hmd.unarmed && hmd.dmg > 1 && !thrown && !Upolyd
+               && !u.twoweap && uwep) {
+        maybe_knockback = TRUE;
     }
 
     if (!hmd.already_killed) {
@@ -1891,9 +1895,17 @@ hmon_hitmon(
         Your("%s %s no longer poisoned.", hmd.saved_oname,
              vtense(hmd.saved_oname, "are"));
 
-    if (!hmd.destroyed)
-        wakeup(mon, TRUE);
+    if (!hmd.destroyed) {
+        int hitflags = M_ATTK_HIT;
 
+        wakeup(mon, TRUE);
+        if (maybe_knockback
+            && mhitm_knockback(&gy.youmonst, mon, gy.youmonst.data->mattk,
+                               &hitflags, TRUE)) {
+            if ((hitflags & M_ATTK_DEF_DIED) != 0)
+                hmd.destroyed = TRUE;
+        }
+    }
     return hmd.destroyed ? FALSE : TRUE;
 }
 
@@ -5260,12 +5272,17 @@ mhitm_knockback(
     const char *knockedhow;
     coordxy dx, dy, defx, defy;
     int knockdistance = rn2(3) ? 1 : 2; /* 67%: 1 step, 33%: 2 steps */
+    int chance = 6; /* 1/6 chance of attack knocking back a monster */
     boolean u_agr = (magr == &gy.youmonst);
     boolean u_def = (mdef == &gy.youmonst);
     boolean was_u = FALSE, dismount = FALSE;
+    struct obj *wep = weapon_used ? (u_agr ? uwep : MON_WEP(magr))
+                                  : (struct obj *)0;
 
-    /* 1/6 chance of attack knocking back a monster */
-    if (rn2(6))
+    if (wep && is_art(wep, ART_OGRESMASHER))
+        chance = 2;
+
+    if (rn2(chance))
         return FALSE;
 
     /* decide where the first step will place the target; not accurate
@@ -5310,12 +5327,16 @@ mhitm_knockback(
     if (!(magr->data->msize > (mdef->data->msize + 1)))
         return FALSE;
 
+    /* no knockback with a flimsy or non-blunt weapon */
+    if (wep && (is_flimsy(wep) || !is_blunt_weapon(wep)))
+        return FALSE;
+
     /* only certain attacks qualify for knockback */
     if (!((mattk->adtyp == AD_PHYS)
           && (mattk->aatyp == AT_CLAW
               || mattk->aatyp == AT_KICK
               || mattk->aatyp == AT_BUTT
-              || (mattk->aatyp == AT_WEAP && !weapon_used))))
+              || mattk->aatyp == AT_WEAP)))
         return FALSE;
 
     /* needs a solid physical hit */
