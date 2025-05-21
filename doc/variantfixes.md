@@ -239,6 +239,10 @@
 ### Misc
 - Ported Hardfought's HTML Dumps and other tweaks.
 - Ported xNetHack's invweight patch. Thanks to aosdict.
+- Ported NetHack4's altar identification of items in bags. The code
+  is pulled from dNetHack, but is likely identical to NetHack4's.
+- Ported DynaHack's Enhanced Enhance menu. Code is pulled from
+  some SpliceHack-Rewrite code I wrote a long time ago.
 
 ## Weather System
 - Experience wind, rain, hail, and more.

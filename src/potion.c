@@ -1680,7 +1680,9 @@ add_coating(coordxy x, coordxy y, short coatflags, int pindex) {
         if ((coatflags & COAT_POTION) != 0) {
             remove_coating(x, y, COAT_BLOOD | COAT_FROST);
             levl[x][y].pindex = pindex;
-            if (pindex < POT_GAIN_ABILITY || pindex > POT_WATER) {
+            if (pindex == POT_ACID) {
+                remove_coating(x, y, COAT_GRASS | COAT_ASHES | COAT_HONEY);
+            } else if (pindex < POT_GAIN_ABILITY || pindex > POT_WATER) {
                 impossible("coating floor with invalid object index %d?", pindex);
             }
         } else if ((coatflags & COAT_BLOOD) != 0) {
@@ -1772,7 +1774,7 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
         if ((!Levitation && !Flying) && !rn2(3)) {
             if (uarmf) {
                 struct obj *otmp;
-                pline("%s in some honey and yanked from your %s!",
+                pline("%s in some honey and are yanked from your %s!",
                         Yobjnam2(uarmf, "stick"),
                         makeplural(body_part(FOOT)));
                 otmp = uarmf;

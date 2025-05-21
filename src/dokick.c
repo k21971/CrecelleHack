@@ -1289,6 +1289,7 @@ dotrip(void)
     } else if (u.utrap  && !trip_wep 
                 && (u.utraptype == TT_BEARTRAP || u.utraptype == TT_PIT)) {
         Your("leg is in no position to trip anyone.");
+        no_trip = TRUE;
     }
 
     if (no_trip) {
@@ -1383,8 +1384,15 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
         }
         display_nhwindow(WIN_MESSAGE, TRUE);
         if (trip_roll > trip_diff) {
-            You("are knocked to the %s!", surface(u.ux, u.uy));
-            make_prone();
+            if (u.usteed) {
+                pline("%s is knocked to the %s!", Monnam(u.usteed), surface(u.ux, u.uy));
+                u.usteed->mprone = 1;
+                if (t_at(u.ux, u.uy))
+                    (void) mintrap(u.usteed, FORCEBUNGLE);
+            } else {
+                You("are knocked to the %s!", surface(u.ux, u.uy));
+                make_prone();
+            }
         } else {
             You("avoid the trip.");
             use_skill(P_TRIPPING, 1);

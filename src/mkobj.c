@@ -427,6 +427,8 @@ rndmidboss(void)
         i = rn1(PM_STUDENT, LOW_PM);
         ptr = &mons[i];
         
+        if (tryct++ > 300)
+            return NON_PM;
         if ((ptr->geno & excludeflags) != 0)
             continue;
         if ((svm.mvitals[i].mvflags & G_GONE) != 0)
@@ -435,8 +437,6 @@ rndmidboss(void)
             continue;
         if (!montoostrong(i, monmax_difficulty(level_difficulty() + 4)))
             break;
-        if (tryct++ > 200)
-            return NON_PM;
     }
     return i;
 }

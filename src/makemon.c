@@ -368,13 +368,13 @@ m_initweap(struct monst *mtmp)
             int typ;
             const char *nam;
             if (rn2(3)) {
-                typ = get_artifact_otyp(ART_SUNSWORD);
+                typ = otyp_from_artifact_index(ART_SUNSWORD);
                 nam = "Sunsword";
             } else {
-                typ = get_artifact_otyp(ART_DEMONBANE);
+                typ = otyp_from_artifact_index(ART_DEMONBANE);
                 nam = "Demonbane";
             }
-            otmp = mksobj(get_artifact_otyp(rn2(3) ? ART_SUNSWORD : ART_DEMONBANE), FALSE, FALSE);
+            otmp = mksobj(typ, FALSE, FALSE);
 
             /* maybe make it special */
             if ((!rn2(20) || is_lord(ptr))

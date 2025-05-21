@@ -894,7 +894,7 @@ gcrownu(void)
         /* not an artifact, but treat like one for this situation;
            classify as a spoiler in case player hasn't IDed the book yet */
         livelog_printf(LL_DIVINEGIFT | LL_ARTIFACT | LL_SPOILER,
-                       "was bestowed with %s", bbuf);
+                       "was bestowed with %s (%s)", bbuf, OBJ_NAME(objects[obj->otyp]));
 
         /* when getting a new book for known spell, enhance
            currently wielded weapon rather than the book */
@@ -933,7 +933,7 @@ gcrownu(void)
             Your("%s goes snicker-snack!", xname(obj));
             obj->dknown = 1;
         } else if (!already_exists) {
-            obj = mksobj(get_artifact_otyp(ART_VORPAL_BLADE), FALSE, FALSE);
+            obj = mksobj(otyp_from_artifact_index(ART_VORPAL_BLADE), FALSE, FALSE);
             obj = oname(obj, artiname(ART_VORPAL_BLADE),
                         ONAME_GIFT | ONAME_KNOW_ARTI);
             obj->spe = 1;
@@ -941,8 +941,9 @@ gcrownu(void)
             dropy(obj);
             u.ugifts++;
             livelog_printf(LL_DIVINEGIFT | LL_ARTIFACT,
-                           "was bestowed with %s",
-                           artiname(ART_VORPAL_BLADE));
+                           "was bestowed with %s, %s",
+                           artiname(ART_VORPAL_BLADE),
+                           an(OBJ_NAME(objects[obj->otyp])));
         }
         /* acquire Vorpal Blade's skill regardless of weapon or gift */
         unrestrict_weapon_skill(P_LONG_SWORD);
@@ -967,8 +968,9 @@ gcrownu(void)
             dropy(obj);
             u.ugifts++;
             livelog_printf(LL_DIVINEGIFT | LL_ARTIFACT,
-                           "was bestowed with %s",
-                           artiname(ART_STORMBRINGER));
+                           "was bestowed with %s (%s)",
+                           artiname(ART_STORMBRINGER),
+                           OBJ_NAME(objects[obj->otyp]));
         }
         /* acquire Stormbringer's skill regardless of weapon or gift */
         unrestrict_weapon_skill(P_BROAD_SWORD);
@@ -1827,8 +1829,9 @@ bestow_artifact(uchar max_giftvalue)
             u.ublesscnt = rnz(300 + (50 * nartifacts));
             exercise(A_WIS, TRUE);
             livelog_printf (LL_DIVINEGIFT | LL_ARTIFACT,
-                            "was bestowed with %s by %s",
+                            "was bestowed with %s (%s) by %s",
                             artiname(otmp->oartifact),
+                            OBJ_NAME(objects[otmp->otyp]),
                             align_gname(u.ualign.type));
             /* make sure we can use this weapon */
             unrestrict_weapon_skill(weapon_type(otmp));
