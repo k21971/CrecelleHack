@@ -2285,12 +2285,13 @@ dotaunt(void)
 
 static const char *generic_callouts[] = {
     "Over here!", "Take 'em down!", "I need backup!",
-    "Get 'em!",   "Over there!", "After 'em!",
-    "This way!"
+    "Get 'em!",   "Over there!",    "After 'em!",
+    "This way!",  "Cover me!",      "To me!",
 };
 
 static const char *near_callouts[] = {
-    "On the ", "Near the ", "By the "
+    "On the ",  "Near the ", "By the ",
+    "On that ",
 };
 
 staticfn char *
@@ -2305,7 +2306,7 @@ mverbal_description(coordxy x, coordxy y, char *buf)
         else
             fbuf = rn2(2) ? "stairs" : "steps";
     } else if (IS_FOUNTAIN(ltyp)) {
-        fbuf = "fountain";
+        fbuf = rn2(2) ? "fountain" : "font";
     } else if (IS_THRONE(ltyp)) {
         fbuf = rn2(2) ? "throne" : "chair";
     } else if (IS_SINK(ltyp)) {
