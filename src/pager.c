@@ -2376,7 +2376,7 @@ do_supplemental_info(
     /* Attacks */
     putstr(datawin, 0, "Attacks:");
     for (int i = 0; i < NATTK; i++) {
-        if (!pm->mattk[i].aatyp) continue;
+        if (!pm->mattk[i].aatyp && !pm->mattk[i].adtyp && !pm->mattk[i].damn && !pm->mattk[i].damd) continue;
         if (!(svm.mvitals[pm->pmidx].know_attacks & (1 << i))) {
             Sprintf(buf, "- ???");
         } else {
