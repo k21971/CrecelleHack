@@ -631,6 +631,7 @@ probe_monster(struct monst *mtmp)
     /* learn monster capabilities */
     for (int i = 0; i < NATTK; i++)
         learn_mattack(mtmp->mnum, i);
+    svm.mvitals[mtmp->mnum].know_pcorpse = 1;
 
     mstatusline(mtmp);
     if (gn.notonhead)

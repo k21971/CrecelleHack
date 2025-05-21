@@ -3352,6 +3352,7 @@ mstatusline(struct monst *mtmp)
     for (int i = 0; i < NATTK; i++) {
         if (mtmp->mtame || !rn2(3)) learn_mattack(mtmp->mnum, i);
     }
+    svm.mvitals[mtmp->mnum].know_stats = 1;
 
     info[0] = 0;
     if (mtmp->mtame) {

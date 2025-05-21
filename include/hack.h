@@ -673,7 +673,7 @@ struct mvitals {
     Bitfield(seen_close, 1);
     Bitfield(know_pcorpse, 1);
     Bitfield(know_rcorpse, 1);
-    Bitfield(know_resists, 1);
+    Bitfield(know_stats, 1);
     Bitfield(know_attacks, 6);
 };
 

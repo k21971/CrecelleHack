@@ -2348,21 +2348,32 @@ do_supplemental_info(
         putstr(datawin, 0, buf);
     }
     putstr(datawin, 0, "");
+    /* Size */
     Sprintf(buf, "%s %s", size_str(pm->msize), def_monsyms[(int) pm->mlet].explain);
     buf[0] = highc(buf[0]);
     putstr(datawin, 0, buf);
+    /* Stats */
+    if (svm.mvitals[pm->pmidx].know_stats)
+        Sprintf(buf, "Speed: %d, AC: %d, MR: %d", pm->mmove, pm->ac, pm->mr);
+    else
+        Sprintf(buf, "Speed: ???, AC: ???, MR: ???");
+    putstr(datawin, 0, buf);
+    /* Food */
     Sprintf(buf, "Edibility: %s",
             !svm.mvitals[pm->pmidx].know_pcorpse 
                 ? "???" : poisonous(pm) ? "Poisonous" : "Not poisonous");
     putstr(datawin, 0, buf);
+    /* Harmony */
     Sprintf(buf, "Harmonies: ");
     print_mon_harmonies(pm, buf);
     putstr(datawin, 0, buf);
     putstr(datawin, 0, "");
+    /* Have we seen it? */
     if (!svm.mvitals[pm->pmidx].seen_close) {
         putstr(datawin, 0, "You have never seen this monster up close.");
     }
     putstr(datawin, 0, "");
+    /* Attacks */
     putstr(datawin, 0, "Attacks:");
     for (int i = 0; i < NATTK; i++) {
         if (!pm->mattk[i].aatyp) continue;
