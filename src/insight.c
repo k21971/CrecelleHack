@@ -35,7 +35,6 @@ staticfn void show_achievements(int);
 staticfn int QSORTCALLBACK vanqsort_cmp(const genericptr, const genericptr);
 staticfn int num_extinct(void);
 staticfn int num_gone(int, int *);
-staticfn char *size_str(int);
 staticfn void item_resistance_message(int, const char *, int);
 
 extern const char *const hu_stat[];  /* hunger status from eat.c */
@@ -3271,7 +3270,7 @@ align_str(aligntyp alignment)
     return "unknown";
 }
 
-staticfn char *
+char *
 size_str(int msize)
 {
     static char outbuf[40];
@@ -3348,6 +3347,11 @@ mstatusline(struct monst *mtmp)
 {
     aligntyp alignment = mon_aligntyp(mtmp);
     char info[BUFSZ], monnambuf[BUFSZ];
+
+    /* learn something about the monster's abilities, perhaps? */
+    for (int i = 0; i < NATTK; i++) {
+        if (mtmp->mtame || !rn2(3)) learn_mattack(mtmp->mnum, i);
+    }
 
     info[0] = 0;
     if (mtmp->mtame) {

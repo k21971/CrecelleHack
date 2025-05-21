@@ -1274,6 +1274,7 @@ extern int num_genocides(void);
 extern void list_genocided(char, boolean);
 extern int dogenocided(void);
 extern const char *align_str(aligntyp);
+extern char *size_str(int);
 extern char *piousness(boolean, const char *);
 extern void mstatusline(struct monst *) NONNULLARG1;
 extern void ustatusline(void);
@@ -1540,6 +1541,7 @@ extern boolean mon_avoiding_this_attack(struct monst *, int) NONNULLARG1;
                              boolean (*assessfunct)(struct monst *, int)) NONNULLARG1;
 */
 extern boolean ranged_attk_available(struct monst *mtmp) NONNULLARG1;
+extern void learn_mattack(int, int);
 
 /* ### minion.c ### */
 
@@ -2209,6 +2211,7 @@ extern boolean erosion_matters(struct obj *) NONNULLARG1;
 extern char *doname(struct obj *) NONNULLARG1;
 extern char *doname_with_price(struct obj *) NONNULLARG1;
 extern char *doname_vague_quan(struct obj *) NONNULLARG1;
+extern void print_mon_harmonies(struct permonst *, char *) NONNULLARG1;
 extern void boost_object(struct obj *, short) NONNULLARG1;
 extern boolean not_fully_identified(struct obj *) NONNULLARG1;
 extern char *corpse_xname(struct obj *, const char *, unsigned) NONNULLARG1;

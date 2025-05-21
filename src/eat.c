@@ -1005,6 +1005,8 @@ givit(int type, struct permonst *ptr)
     if (!should_givit(type, ptr) && !temp_givit(type, ptr))
         return;
 
+    svm.mvitals[ptr->pmidx].know_rcorpse = 1;
+
     switch (type) {
     case FIRE_RES:
         debugpline0("Trying to give fire resistance");
@@ -1920,6 +1922,7 @@ eatcorpse(struct obj *otmp)
     } else if (poisonous(&mons[mnum]) && rn2(5)) {
         tp++;
         pline("Ecch - that must have been poisonous!");
+        svm.mvitals[mnum].know_pcorpse = 1;
         if (!Poison_resistance) {
             poison_strdmg(rnd(4), rnd(15),
                           !glob ? "poisonous corpse" : "poisonous glob",

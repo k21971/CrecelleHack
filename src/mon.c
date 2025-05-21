@@ -6124,8 +6124,10 @@ shieldeff_mon(struct monst *mtmp)
 {
     shieldeff(mtmp->mx, mtmp->my);
     /* does not depend on seeing the monster; the shield effect is visible */
-    if (cansee(mtmp->mx, mtmp->my))
+    if (cansee(mtmp->mx, mtmp->my)) {
         pline_mon(mtmp, "%s resists!", Monnam(mtmp));
+        svm.mvitals[mtmp->mnum].know_resists = 1;
+    }
 }
 
 void

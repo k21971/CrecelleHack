@@ -21,6 +21,12 @@
 - Allow fountains to become frozen. Frozen fountains cannot be
   dipped into or quaffed from.
 
+## GUI
+- Farlook a monster with (:) to see a summary of a monster's stats,
+  including attacks and harmonies.
+- You can learn more about monsters' attacks by getting hit by them,
+  chatting with them, using a stethoscope, or a wand of probing.
+
 # 1.0
 
 ## Artifacts

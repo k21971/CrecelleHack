@@ -5465,6 +5465,7 @@ hmonas(struct monst *mon)
         mattk = getmattk(&gy.youmonst, mon, i, sum, &alt_attk);
         if (gs.skipdrin && mattk->aatyp == AT_TENT && mattk->adtyp == AD_DRIN)
             continue;
+        learn_mattack(gy.youmonst.data->pmidx, i);
         weapon = 0;
         switch (mattk->aatyp) {
         case AT_WEAP:
@@ -5873,6 +5874,7 @@ passive(
     int i, tmp;
     int mhit = mhitb ? M_ATTK_HIT : M_ATTK_MISS;
     int malive = maliveb ? M_ATTK_HIT : M_ATTK_MISS;
+    boolean learn_it = FALSE;
 
     for (i = 0;; i++) {
         if (i >= NATTK)
@@ -5900,6 +5902,7 @@ passive(
             } else if (aatyp == AT_WEAP || aatyp == AT_CLAW
                        || aatyp == AT_MAGC || aatyp == AT_TUCH)
                 passive_obj(mon, weapon, &(ptr->mattk[i]));
+            learn_it = TRUE;
         }
         break;
     case AD_ACID:
@@ -5918,6 +5921,7 @@ passive(
             }
             if (!rn2(30))
                 erode_armor(&gy.youmonst, ERODE_CORRODE);
+            learn_it = TRUE;
         }
         if (mhitb && weapon) {
             if (aatyp == AT_KICK) {
@@ -5927,6 +5931,7 @@ passive(
             } else if (aatyp == AT_WEAP || aatyp == AT_CLAW
                        || aatyp == AT_MAGC || aatyp == AT_TUCH)
                 passive_obj(mon, weapon, &(ptr->mattk[i]));
+            learn_it = TRUE;
         }
         exercise(A_STR, FALSE);
         break;
@@ -5952,6 +5957,7 @@ passive(
                     return M_ATTK_DEF_DIED;
                 }
             }
+            learn_it = TRUE;
         }
         break;
     case AD_RUST:
@@ -5963,6 +5969,7 @@ passive(
             } else if (aatyp == AT_WEAP || aatyp == AT_CLAW
                        || aatyp == AT_MAGC || aatyp == AT_TUCH)
                 passive_obj(mon, weapon, &(ptr->mattk[i]));
+            learn_it = TRUE;
         }
         break;
     case AD_CORR:
@@ -5974,6 +5981,7 @@ passive(
             } else if (aatyp == AT_WEAP || aatyp == AT_CLAW
                        || aatyp == AT_MAGC || aatyp == AT_TUCH)
                 passive_obj(mon, weapon, &(ptr->mattk[i]));
+            learn_it = TRUE;
         }
         break;
     case AD_MAGM:
@@ -5987,6 +5995,7 @@ passive(
             mdamageu(mon, tmp);
             monstunseesu(M_SEEN_MAGR);
         }
+        learn_it = TRUE;
         break;
     case AD_ENCH: /* KMH -- remove enchantment (disenchanter) */
         if (mhitb) {
@@ -6007,6 +6016,7 @@ passive(
                 ;
             }
             passive_obj(mon, weapon, &(ptr->mattk[i]));
+            learn_it = TRUE;
         }
         break;
     default:
@@ -6061,6 +6071,7 @@ passive(
                 dynamic_multi_reason(mon, "frozen", FALSE);
                 exercise(A_DEX, FALSE);
             }
+            learn_it = TRUE;
             break;
         case AD_COLD: /* brown mold or blue jelly */
             if (monnear(mon, u.ux, u.uy)) {
@@ -6079,11 +6090,13 @@ passive(
                 /* at a certain point, the monster will reproduce! */
                 if (mon->mhpmax > (((int) mon->m_lev) + 1) * 8)
                     (void) split_mon(mon, &gy.youmonst);
+                learn_it = TRUE;
             }
             break;
         case AD_STUN: /* specifically yellow mold */
             if (!Stunned)
                 make_stunned((long) tmp, TRUE);
+            learn_it = TRUE;
             break;
         case AD_FIRE:
             if (monnear(mon, u.ux, u.uy)) {
@@ -6097,9 +6110,11 @@ passive(
                 monstunseesu(M_SEEN_FIRE);
                 You("are suddenly very hot!");
                 mdamageu(mon, tmp); /* fire damage */
+                learn_it = TRUE;
             }
             break;
         case AD_ELEC:
+            learn_it = TRUE;
             if (Shock_resistance) {
                 shieldeff(u.ux, u.uy);
                 You_feel("a mild tingle.");
@@ -6112,14 +6127,17 @@ passive(
             mdamageu(mon, tmp);
             break;
         case AD_HONY:
-            if (canseemon(mon))
+            if (canseemon(mon)) {
+                learn_it = TRUE;
                 pline_mon(mon, "Some honey drips from %s.", mon_nam(mon));
+            }
             add_coating(mon->mx, mon->my, COAT_HONEY, 0);
             break;
         default:
             break;
         }
     }
+    if (learn_it) learn_mattack(mon->mnum, i);
     return (malive | mhit);
 }
 

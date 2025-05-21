@@ -1976,7 +1976,7 @@ do_look(int mode, coord *click_cc)
                                  supplemental_name);
                 if (supplemental_pm)
                     do_supplemental_info(supplemental_name, supplemental_pm,
-                                         (boolean) (ans == LOOK_VERBOSE));
+                                         FALSE);
             }
         } else {
             pline("I've never heard of such things.");
@@ -2284,6 +2284,7 @@ do_supplemental_info(
     winid datawin = WIN_ERR;
     char *entrytext = name, *bp = (char *) 0, *bp2 = (char *) 0;
     char question[QBUFSZ];
+    char buf[BUFSZ];
     boolean yes_to_moreinfo = FALSE;
     boolean is_marauder = is_orc(pm);
 
@@ -2323,7 +2324,6 @@ do_supplemental_info(
                 }
                 datawin = create_nhwindow(NHW_MENU);
                 for (i = 0; textp[i]; i++) {
-                    char buf[BUFSZ];
                     const char *txt;
 
                     if (strstri(textp[i], "%s") != 0) {
@@ -2338,6 +2338,47 @@ do_supplemental_info(
             }
         }
     }
+    /* Display monster info */
+    datawin = create_nhwindow(NHW_MENU);
+    if (strlen(name) && strlen(name) < (BUFSZ - 1)) {
+        putstr(datawin, 0, name);
+    } else {
+        Sprintf(buf, "%s", pmname(pm, MALE));
+        buf[0] = highc(buf[0]);
+        putstr(datawin, 0, buf);
+    }
+    putstr(datawin, 0, "");
+    Sprintf(buf, "%s %s", size_str(pm->msize), def_monsyms[(int) pm->mlet].explain);
+    buf[0] = highc(buf[0]);
+    putstr(datawin, 0, buf);
+    Sprintf(buf, "Edibility: %s",
+            !svm.mvitals[pm->pmidx].know_pcorpse 
+                ? "???" : poisonous(pm) ? "Poisonous" : "Not poisonous");
+    putstr(datawin, 0, buf);
+    Sprintf(buf, "Harmonies: ");
+    print_mon_harmonies(pm, buf);
+    putstr(datawin, 0, buf);
+    putstr(datawin, 0, "");
+    if (!svm.mvitals[pm->pmidx].seen_close) {
+        putstr(datawin, 0, "You have never seen this monster up close.");
+    }
+    putstr(datawin, 0, "");
+    putstr(datawin, 0, "Attacks:");
+    for (int i = 0; i < NATTK; i++) {
+        if (!pm->mattk[i].aatyp) continue;
+        if (!(svm.mvitals[pm->pmidx].know_attacks & (1 << i))) {
+            Sprintf(buf, "- ???");
+        } else {
+            Sprintf(buf, "- %s %dd%d %s", mattk_names[pm->mattk[i].aatyp],
+                                            pm->mattk[i].damn,
+                                            pm->mattk[i].damd,
+                                            mad_names[pm->mattk[i].adtyp]);
+        }
+        buf[2] = highc(buf[2]);
+        putstr(datawin, 0, buf);
+    }
+    display_nhwindow(datawin, FALSE);
+    destroy_nhwindow(datawin), datawin = WIN_ERR;
 }
 
 RESTORE_WARNING_FORMAT_NONLITERAL

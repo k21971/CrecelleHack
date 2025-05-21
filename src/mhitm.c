@@ -562,6 +562,9 @@ mattackm(
             && distmin(magr->mx, magr->my, mdef->mx, mdef->my) <= 1)
             res[i] = passivemm(magr, mdef, strike,
                                (res[i] & M_ATTK_DEF_DIED), mwep);
+        
+        if ((res[i] & M_ATTK_HIT) && canspotmon(magr))
+            learn_mattack(magr->mnum, i);
 
         if (res[i] & M_ATTK_DEF_DIED)
             return res[i];

@@ -951,6 +951,7 @@ mattacku(struct monst *mtmp)
                 gm.multi = -1;
                 gn.nomovemsg = "The combat suddenly awakens you.";
             }
+            learn_mattack(mtmp->mnum, i);
         }
         if ((sum[i] & M_ATTK_AGR_DIED))
             return 1; /* attacker dead */
@@ -2635,6 +2636,11 @@ cloneu(void)
     u.mh -= mon->mhp;
     disp.botl = TRUE;
     return mon;
+}
+
+void
+learn_mattack(int index, int attack_index) {
+    svm.mvitals[index].know_attacks |= (1 << attack_index);
 }
 
 /*mhitu.c*/

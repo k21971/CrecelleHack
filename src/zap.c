@@ -628,6 +628,10 @@ probe_objchain(struct obj *otmp)
 void
 probe_monster(struct monst *mtmp)
 {
+    /* learn monster capabilities */
+    for (int i = 0; i < NATTK; i++)
+        learn_mattack(mtmp->mnum, i);
+
     mstatusline(mtmp);
     if (gn.notonhead)
         return; /* don't show minvent for long worm tail */

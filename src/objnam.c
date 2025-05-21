@@ -1163,6 +1163,18 @@ static struct boostnam boostnams[] = {
    { BST_ICE, "Ice", "Ice" }
 };
 
+void
+print_mon_harmonies(struct permonst *pm, char *buf)
+{
+    boolean first = TRUE;
+    for (int i = 0; i < SIZE(boostnams); i++) {
+        if (pm->mboost & boostnams[i].boost_short) {
+            Sprintf(eos(buf), "%s%s", first ? "" : ", ", boostnams[i].nam);
+            first = FALSE;
+        }
+    }
+}
+
 staticfn void
 add_boost_words(struct obj *obj, char *prefix)
 {

@@ -732,6 +732,12 @@ domonnoise(struct monst *mtmp)
     else if (Hallucination && mon_is_gecko(mtmp))
         msound = MS_SELL;
 
+    /* Chatting to a tame monster reveals its capabilities. */
+    if (mtmp->mtame) {
+        for (int i = 0; i < NATTK; i++)
+            learn_mattack(mtmp->mnum, i);
+    }
+
     /* be sure to do this before talking; the monster might teleport away, in
      * which case we want to check its pre-teleport position
      */

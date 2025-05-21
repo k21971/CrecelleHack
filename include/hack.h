@@ -671,6 +671,10 @@ struct mvitals {
     uchar died;
     uchar mvflags;
     Bitfield(seen_close, 1);
+    Bitfield(know_pcorpse, 1);
+    Bitfield(know_rcorpse, 1);
+    Bitfield(know_resists, 1);
+    Bitfield(know_attacks, 6);
 };
 
 
