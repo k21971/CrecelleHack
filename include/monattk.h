@@ -9,8 +9,7 @@
  *      Attacks > AT_BUTT are worth extra experience.
  */
 
-#define MATK_LIST MATK(AT_ANY, ""), \
-    MATK(AT_NONE, "passive"), \
+#define MATK_LIST MATK(AT_NONE, "passive"), \
     MATK(AT_CLAW, "claw"), \
     MATK(AT_BITE, "bite"), \
     MATK(AT_KICK, "kick"), \
@@ -28,7 +27,7 @@
     MATK(AT_WEAP, "weapon"), \
     MATK(AT_MAGC, "spell"),
 #define MATK(id, nam) id
-enum mattk_ids { MATK_LIST };
+enum mattk_ids { AT_ANY = -1, MATK_LIST };
 #undef MATK
 #define MATK(id, nam) nam
 static const char *const mattk_names[] = { MATK_LIST };
@@ -43,8 +42,7 @@ static const char *const mattk_names[] = { MATK_LIST };
  *      Note that 1-10 correspond to the types of attack used in buzz().
  *      Please don't disturb the order unless you rewrite the buzz() code.
  */
-#define MAD_LIST MAD(AD_ANY, ""), \
-    MAD(AD_PHYS, "physical"), \
+#define MAD_LIST MAD(AD_PHYS, "physical"), \
     MAD(AD_MAGM, "magic missiles"), \
     MAD(AD_FIRE, "fire"), \
     MAD(AD_COLD, "cold"), \
@@ -96,7 +94,7 @@ static const char *const mattk_names[] = { MATK_LIST };
     MAD(AD_SAMU, "steal amulet"), \
     MAD(AD_CURS, "curse"),
 #define MAD(id, nam) id
-enum mad_ids { MAD_LIST };
+enum mad_ids { AD_ANY = -1, MAD_LIST };
 #undef MAD
 #define MAD(id, nam) nam
 static const char *const mad_names[] = { MAD_LIST };
