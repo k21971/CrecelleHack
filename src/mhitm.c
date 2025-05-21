@@ -563,7 +563,8 @@ mattackm(
             res[i] = passivemm(magr, mdef, strike,
                                (res[i] & M_ATTK_DEF_DIED), mwep);
         
-        if ((res[i] & M_ATTK_HIT) && canspotmon(magr))
+        if (((res[i] & M_ATTK_HIT) || mattk->aatyp == AT_GAZE)
+            && canspotmon(magr))
             learn_mattack(magr->mnum, i);
 
         if (res[i] & M_ATTK_DEF_DIED)
