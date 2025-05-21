@@ -2,6 +2,7 @@
 
 ## Monsters
 - Orcs have a chance to spawn with a dual axe.
+- Slightly increase chance of random spawns of unique monsters.
 
 ## New Monsters
 - Salt Golem

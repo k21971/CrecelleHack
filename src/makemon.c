@@ -11,7 +11,7 @@
 #define quest_mon_represents_role(mptr, role_pm) \
     (mptr->mlet == S_HUMAN && Role_if(role_pm)   \
      && (mptr->msound == MS_LEADER || mptr->msound == MS_NEMESIS))
-#define MIDBOSS_CHANCE 30
+#define MIDBOSS_CHANCE 25
 
 staticfn boolean uncommon(int);
 staticfn int align_shift(struct permonst *);
@@ -1682,9 +1682,7 @@ uncommon(int mndx)
 {
     if (mons[mndx].geno & (G_NOGEN | G_UNIQ)) {
         if (mons[mndx].geno & (G_MIDBOSS)){
-            if (rn2(MIDBOSS_CHANCE)) {
-                return TRUE;
-            } else {
+            if (!rn2(MIDBOSS_CHANCE)) {
                 goto not_nogen_or_uniq;
             }
         }
