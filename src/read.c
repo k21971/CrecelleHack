@@ -559,7 +559,7 @@ doread(void)
     } else if (Blind && otyp != SPE_BOOK_OF_THE_DEAD) {
         const char *what = 0;
 
-        if (otyp == SPE_NOVEL)
+        if (otyp == SPE_NOVEL || otyp == SPE_BESTIARY)
             /* unseen novels are already distinguishable from unseen
                spellbooks so this isn't revealing any extra information */
             what = "words";

@@ -1308,7 +1308,7 @@ cancel_item(struct obj *obj)
         || otyp == POT_SICKNESS
         || (otyp == POT_WATER && (obj->blessed || obj->cursed))
         /* not magic; cancels to blank spellbook */
-        || otyp == SPE_NOVEL) {
+        || otyp == SPE_NOVEL || otyp == SPE_BESTIARY) {
         int cancelled_spe = (obj->oclass == WAND_CLASS
                              || otyp == CRYSTAL_BALL) ? -1 : 0;
 

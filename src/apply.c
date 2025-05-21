@@ -4509,7 +4509,7 @@ flip_through_book(struct obj *obj)
         makeknown(obj->otyp);
     } else if (Hallucination) {
         You("enjoy the animated initials.");
-    } else if (obj->otyp == SPE_NOVEL) {
+    } else if (obj->otyp == SPE_NOVEL || obj->otyp == SPE_BESTIARY) {
         pline("This looks like it might be interesting to read.");
     } else {
         static const char *const fadeness[] = {

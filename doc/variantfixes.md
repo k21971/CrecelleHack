@@ -11,8 +11,14 @@
 - The deferred Goblin King boss is now a potential unique
   monster spawn.
 
-## Items
+## Objects
 - Dented pots have been renamed to Yendorian Bascinets.
+
+### New Objects
+- Bestiary
+  - Reading it allows the player to learn information about
+    a monster, so that they can fully view that monster's
+    stats when using the farlook command.
 
 ## Floor Coating System
 - Added ice as a floor coating.

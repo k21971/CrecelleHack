@@ -294,7 +294,7 @@ do_oname(struct obj *obj)
     short objtyp = STRANGE_OBJECT;
 
     /* Do this now because there's no point in even asking for a name */
-    if (obj->otyp == SPE_NOVEL) {
+    if (obj->otyp == SPE_NOVEL || obj->otyp == SPE_BESTIARY) {
         pline("%s already has a published name.", Ysimple_name2(obj));
         return;
     }
@@ -469,7 +469,7 @@ name_ok(struct obj *obj)
     if (!obj || obj->oclass == COIN_CLASS)
         return GETOBJ_EXCLUDE;
 
-    if (!obj->dknown || obj->oartifact || obj->otyp == SPE_NOVEL)
+    if (!obj->dknown || obj->oartifact || obj->otyp == SPE_NOVEL || obj->otyp == SPE_BESTIARY)
         return GETOBJ_DOWNPLAY;
 
     return GETOBJ_SUGGEST;

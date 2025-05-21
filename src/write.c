@@ -129,7 +129,7 @@ dowrite(struct obj *pen)
         return ECMD_CANCEL;
     /* can't write on a novel (unless/until it's been converted into a blank
        spellbook), but we want messages saying so to avoid "spellbook" */
-    typeword = (paper->otyp == SPE_NOVEL) ? "book"
+    typeword = (paper->otyp == SPE_NOVEL || paper->otyp == SPE_BESTIARY) ? "book"
                : (paper->oclass == SPBOOK_CLASS) ? "spellbook"
                  : "scroll";
     if (Blind) {

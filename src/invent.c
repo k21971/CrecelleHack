@@ -2953,7 +2953,7 @@ item_reading_classification(struct obj *obj, char *outbuf)
 
         Sprintf(outbuf, "Read this scroll%s", magic);
     } else if (obj->oclass == SPBOOK_CLASS) {
-        boolean novel = (otyp == SPE_NOVEL),
+        boolean novel = (otyp == SPE_NOVEL || otyp == SPE_BESTIARY),
                 blank = (otyp == SPE_BLANK_PAPER
                          && objects[otyp].oc_name_known),
                 tome = (otyp == SPE_BOOK_OF_THE_DEAD

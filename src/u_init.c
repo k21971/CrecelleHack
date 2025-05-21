@@ -1219,7 +1219,8 @@ ini_inv_mkobj_filter(int oclass, boolean got_level1_spellbook)
            || (obj->oclass == SPBOOK_CLASS
                && (objects[otyp].oc_level > (got_level1_spellbook ? 3 : 1)
                    || restricted_spell_discipline(otyp)))
-           || otyp == SPE_NOVEL) {
+           || otyp == SPE_NOVEL
+           || otyp == SPE_BESTIARY) {
         dealloc_obj(obj);
         if (++trycnt > 1000) {
             /* This lonely pancake's potential will never be realized.

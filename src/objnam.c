@@ -235,6 +235,8 @@ obj_typename(int otyp)
     case SPBOOK_CLASS:
         if (otyp != SPE_NOVEL) {
             Strcpy(buf, "spellbook");
+        } else if (otyp == SPE_BESTIARY) {
+            Strcpy(buf, nn ? "bestiary" : "textbook");
         } else {
             Strcpy(buf, !nn ? "book" : "novel");
             nn = 0;
@@ -889,13 +891,13 @@ xname_flags(
             Sprintf(buf, "%s wand", dn);
         break;
     case SPBOOK_CLASS:
-        if (typ == SPE_NOVEL) { /* 3.6 tribute */
+        if (typ == SPE_NOVEL || typ == SPE_BESTIARY) { /* 3.6 tribute */
             if (!dknown)
                 Strcpy(buf, "book");
             else if (nn)
                 Strcpy(buf, actualn);
             else if (un)
-                xcalled(buf, BUFSZ - PREFIX, "novel", un);
+                xcalled(buf, BUFSZ - PREFIX, (typ == SPE_NOVEL) ? "novel" : "bestiary", un);
             else
                 Sprintf(buf, "%s book", dn);
             break;
