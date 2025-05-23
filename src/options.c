@@ -7302,7 +7302,7 @@ initoptions_init(void)
     iflags.wc_align_message = ALIGN_TOP;
     iflags.wc_align_status = ALIGN_BOTTOM;
     /* used by tty and curses */
-    iflags.wc2_statuslines = 2;
+    iflags.wc2_statuslines = 3;
     iflags.wc2_petattr = ATR_INVERSE;
     /* only used by curses */
     iflags.wc2_windowborders = 2; /* 'Auto' */

@@ -33,6 +33,7 @@
   including attacks and harmonies.
 - You can learn more about monsters' attacks by getting hit by them,
   chatting with them, using a stethoscope, or a wand of probing.
+- Default to 3 status lines.
 
 # 1.0
 
