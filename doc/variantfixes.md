@@ -35,6 +35,7 @@
   chatting with them, using a stethoscope, or a wand of probing.
 - Default to 3 status lines.
 - Add code to windowports to support botl handling of many more statuses.
+- Switch riding to opt_in on botl and being held to opt_out.
 
 # 1.0
 

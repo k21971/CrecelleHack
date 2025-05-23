@@ -695,7 +695,7 @@ struct condtests_t condtests[CONDITION_COUNT] = {
     { bl_inlava,    "lava",        opt_out, TRUE,  FALSE, FALSE },
     { bl_lev,       "levitate",    opt_out, TRUE,  FALSE, FALSE },
     { bl_parlyz,    "paralyzed",   opt_in,  FALSE, FALSE, FALSE },
-    { bl_ride,      "ride",        opt_out, TRUE,  FALSE, FALSE },
+    { bl_ride,      "ride",        opt_in, TRUE,  FALSE, FALSE },
     { bl_sleeping,  "sleep",       opt_in,  FALSE, FALSE, FALSE },
     { bl_slime,     "slime",       opt_out, TRUE,  FALSE, FALSE },
     { bl_slippery,  "slip",        opt_in,  FALSE, FALSE, FALSE },
