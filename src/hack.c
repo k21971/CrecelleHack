@@ -2651,7 +2651,7 @@ escape_from_sticky_mon(coordxy x, coordxy y)
              */
             switch (rn2(!u.ustuck->mcanmove ? 
                         (P_SKILL(P_GRAPPLING) >= P_BASIC ? 2 : 8) 
-                        : min(2, 40 - 12 * max(0, P_SKILL(P_GRAPPLING) - 1)))) {
+                        : min(40, 40 - 12 * max(0, P_SKILL(P_GRAPPLING) - 1)))) {
             case 3:
                 if (!u.ustuck->mcanmove) {
                     /* it's free to move on next turn */
