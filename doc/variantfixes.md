@@ -34,6 +34,7 @@
 - You can learn more about monsters' attacks by getting hit by them,
   chatting with them, using a stethoscope, or a wand of probing.
 - Default to 3 status lines.
+- Add code to windowports to support botl handling of many more statuses.
 
 # 1.0
 
