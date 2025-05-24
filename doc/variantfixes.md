@@ -4,6 +4,7 @@
 - Orcs have a chance to spawn with a dual axe.
 - Slightly increase chance of random spawns of unique monsters.
 - Yellow monsters leave behind a trail of acid.
+- More types of monsters spread fire when they move.
 
 ## New Monsters
 - Salt Golem

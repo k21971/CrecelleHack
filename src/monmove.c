@@ -693,7 +693,7 @@ m_postmove_effect(struct monst *mtmp)
         (void) create_gas_cloud(mtmp->mx, mtmp->my, rnd(6), 3);
     } else if (mtmp->data == &mons[PM_STEAM_VORTEX] && !mtmp->mcan)
         create_gas_cloud(x, y, 1, 0); /* harmless vapor */
-    else if (mtmp->data == &mons[PM_FIRE_ELEMENTAL] && !mtmp->mcan) {
+    else if (likes_fire(mtmp->data) && !mtmp->mcan) {
         /* Lets off smoke / vapor in the rain, otherwise starts things on fire. */
         if (IS_RAINING)
             create_gas_cloud(x, y, 1, 0);
