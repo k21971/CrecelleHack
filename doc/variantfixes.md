@@ -3,6 +3,7 @@
 ## Monsters
 - Orcs have a chance to spawn with a dual axe.
 - Slightly increase chance of random spawns of unique monsters.
+- Yellow monsters leave behind a trail of acid.
 
 ## New Monsters
 - Salt Golem
@@ -16,6 +17,8 @@
 - Dented pots have been renamed to Yendorian Bascinets.
 - Add in some additional helmet and cloak appearances to be
   shuffled into the existing ones.
+- Yellow dragon scales and yellow dragon scale mail cause you
+  to leave behind a trail of acid.
 
 ### New Objects
 - Bestiary

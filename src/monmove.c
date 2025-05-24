@@ -662,6 +662,14 @@ m_everyturn_effect(struct monst *mtmp)
             mtmp->perminvis = 0;
         }
     }
+    /* Yellow dragons do this every turn */
+    if (mtmp->data == &mons[PM_YELLOW_DRAGON] ||
+        mtmp->data == &mons[PM_BABY_YELLOW_DRAGON] ||
+        (is_u && uarm && 
+            (uarm->otyp == YELLOW_DRAGON_SCALES || 
+                uarm->otyp == YELLOW_DRAGON_SCALE_MAIL))) {
+        floor_alchemy(x, y, POT_ACID, NON_PM);
+    }
 }
 
 /* do whatever effects monster has after moving.
