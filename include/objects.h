@@ -494,6 +494,15 @@ HELM("helm of brilliance", "crystal helmet",
 HELM("helmet", "plumed helmet",
      0, 0,           0, 10, 1, 30, 10,  9, 10, IRON, HI_METAL,
                                                         HELMET),
+
+#define XTRA_HELM_APPEARANCE(text, col, hn) \
+       HELM(NoDes, text, 0, 0, 0, 0, 0, 50, 50, 9, 0, IRON, col, hn)
+XTRA_HELM_APPEARANCE("frog-mouthed helm", CLR_GREEN,    HN01),
+XTRA_HELM_APPEARANCE("close helmet",      HI_METAL,     HN02),
+XTRA_HELM_APPEARANCE("full helm",         HI_METAL,     HN03),
+XTRA_HELM_APPEARANCE("horned helmet",     CLR_YELLOW,   HN04),
+#undef XTRA_HELM_APPEARANCE
+
 HELM("helm of caution", "etched helmet",
      0, 1,     WARNING,  3, 1, 50, 50,  9, 5, IRON, CLR_GREEN,
                                                         HELM_OF_CAUTION),
@@ -655,6 +664,12 @@ CLOAK("leather cloak", NoDes,
 CLOAK("cloak of protection", "tattered cape",
       0, 1, PROTECTION,  9, 0, 10, 50,  7, 60,  CLOTH, HI_CLOTH,
                                                         CLOAK_OF_PROTECTION),
+#define XTRA_CLOAK_APPEARANCE(name, col, cn) \
+       CLOAK(NoDes, name, 0, 1, 0, 0, 0, 10, 0, 0, 0, CLOTH, col, cn)
+XTRA_CLOAK_APPEARANCE("diaphanous veil",         CLR_GRAY,     CN01),
+XTRA_CLOAK_APPEARANCE("heavy mantle",            CLR_RED,      CN02),
+XTRA_CLOAK_APPEARANCE("voluminous shroud",       CLR_BLACK,    CN03),
+#undef XTRA_CLOAK_APPEARANCE
         /* cloak of protection is now the only item conferring MC 3 */
 CLOAK("cloak of invisibility", "opera cloak",
       0, 1,      INVIS, 10, 0, 10, 60,  9,  5,  CLOTH, CLR_BRIGHT_MAGENTA,
