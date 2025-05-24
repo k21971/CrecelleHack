@@ -235,7 +235,7 @@ wiz_weather(void)
     putstr(win, 0, buf);
     display_nhwindow(win, FALSE);
     destroy_nhwindow(win);
-    if (y_n("Change the weather?")) weather_choice_menu();
+    if (y_n("Change the weather?") == 'y') weather_choice_menu();
     return ECMD_OK;
 }
 
