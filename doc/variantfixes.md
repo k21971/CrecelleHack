@@ -14,6 +14,8 @@
 
 ## Objects
 - Dented pots have been renamed to Yendorian Bascinets.
+- Add in some additional helmet and cloak appearances to be
+  shuffled into the existing ones.
 
 ### New Objects
 - Bestiary
