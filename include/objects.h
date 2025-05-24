@@ -1261,6 +1261,8 @@ SCROLL("punishment",                   "KTHXBYE",  1,  15, 300,
                                                         SCR_PUNISHMENT),
 SCROLL("charging",                   "VENVIDVIC",  1,  15, 300,
                                                         SCR_CHARGING),
+SCROLL("control weather",               "EKDMOS",  1,  15, 300,
+                                                        SCR_CONTROL_WEATHER),
 SCROLL("stinking cloud",             "FIZZ BUZZ",  1,  15, 300,
                                                         SCR_STINKING_CLOUD),
     /* Extra descriptions, shuffled into use at start of new game.

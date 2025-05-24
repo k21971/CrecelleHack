@@ -26,6 +26,11 @@
   - Reading it allows the player to learn information about
     a monster, so that they can fully view that monster's
     stats when using the farlook command.
+- Scroll of Control Weather
+  - Blessed: Direct control over the current weather.
+  - Uncursed: Swaps current weather from rain to shine.
+  - Cursed: Causes bizarre inclement weather.
+  - Confused and not cursed: Summons a tame tornado.
 
 ## Floor Coating System
 - Added ice as a floor coating.

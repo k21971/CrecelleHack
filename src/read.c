@@ -35,6 +35,7 @@ staticfn void seffect_amnesia(struct obj **);
 staticfn void seffect_fire(struct obj **);
 staticfn void seffect_earth(struct obj **);
 staticfn void seffect_punishment(struct obj **);
+staticfn void seffect_control_weather(struct obj **);
 staticfn void seffect_stinking_cloud(struct obj **);
 staticfn void seffect_blank_paper(struct obj **);
 staticfn void seffect_teleportation(struct obj **);
@@ -1919,6 +1920,37 @@ seffect_punishment(struct obj **sobjp)
 }
 
 staticfn void
+seffect_control_weather(struct obj **sobjp)
+{
+    struct obj *sobj = *sobjp;
+    boolean sblessed = sobj->blessed;
+    boolean scursed = sobj->cursed;
+    struct monst *mtmp;
+
+    gk.known = TRUE;
+    if (Confusion != 0 && !scursed) {
+        You("control some weather!");
+        mtmp = makemon(&mons[PM_TORNADO], u.ux, u.uy, MM_EDOG | NO_MINVENT | MM_NOMSG);
+        mtmp->mpeaceful = mtmp->mtame = 1;
+        return;
+    }
+
+    if (sblessed) {
+        weather_choice_menu();
+    } else if (scursed) {
+        pline("A horrible storm brews!");
+        harassment_weather();
+    } else {
+        while (IS_RAINING ? (u.uenvirons.inc_precip.def)
+                            : (u.uenvirons.inc_precip.def == 0)) {
+            roll_precip();
+        }
+    }
+    u.uenvirons.precip_cnt = 1;
+    u.uenvirons.wind_cnt = 1;
+}
+
+staticfn void
 seffect_stinking_cloud(struct obj **sobjp)
 {
     struct obj *sobj = *sobjp;
@@ -2221,6 +2253,9 @@ seffects(
         break;
     case SCR_PUNISHMENT:
         seffect_punishment(&sobj);
+        break;
+    case SCR_CONTROL_WEATHER:
+        seffect_control_weather(&sobj);
         break;
     case SCR_STINKING_CLOUD:
         seffect_stinking_cloud(&sobj);

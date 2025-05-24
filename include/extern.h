@@ -323,6 +323,7 @@ extern const char *tod_string(void);
 extern void weatherchange_message(boolean);
 extern void timechange_message(boolean);
 extern void harassment_weather(void);
+extern void weather_choice_menu(void);
 
 /* ### coloratt.c ### */
 

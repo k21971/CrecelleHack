@@ -35,6 +35,7 @@ cost(struct obj *otmp)
     case SCR_PUNISHMENT:
         return 10;
     case SCR_CONFUSE_MONSTER:
+    case SCR_CONTROL_WEATHER:
         return 12;
     case SCR_IDENTIFY:
         return 14;

@@ -30,6 +30,10 @@ staticfn struct tm *getlt(void);
 staticfn void weather_effects(void);
 staticfn void weather_messages(void);
 
+static const char *weather_strings[] = {
+    "Calm", "Drizzle", "Rain", "Downburst", "Acid Rain", "Hail"
+};
+
 static struct weather dungeon_precips[] = {
     { 0, WTHM_ALL_PRECIPS, 300, 575 },
     { WTH_DRIZZLE, WTHM_ALL_PRECIPS, 200, 200 },
@@ -574,6 +578,34 @@ init_environs(void)
     /* sometimes we start with a little breeze */
     if (!rn2(2))
         u.uenvirons.curr_weather |= WTH_BREEZE;
+}
+
+void
+weather_choice_menu(void)
+{
+    winid win;
+    anything any;
+    menu_item *pick_list = (menu_item *) 0;
+    int n, i, j;
+    any = cg.zeroany;
+    win = create_nhwindow(NHW_MENU);
+    start_menu(win, MENU_BEHAVE_STANDARD);
+    for (i = 0; i < SIZE(weather_strings); i++) {
+        any.a_int = i + 1;
+        add_menu(win, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, weather_strings[i], MENU_ITEMFLAGS_NONE);
+    }
+    end_menu(win, "Create what kind of weather?");
+    n = select_menu(win, PICK_ANY, &pick_list);
+    u.uenvirons.inc_precip.def = 0;
+    u.uenvirons.inc_precip.overwrite = WTHM_ALL_PRECIPS;
+    u.uenvirons.inc_precip.timeout = rn1(500, 500);
+    for (j = 0; j < n; ++j) {
+        i = pick_list[j].item.a_int - 1;
+        u.uenvirons.inc_precip.def |= dungeon_precips[i].def;
+    }
+    free(pick_list);
+    destroy_nhwindow(win);
+    u.uenvirons.precip_cnt = 1;
 }
 /* calendar.c */
 
