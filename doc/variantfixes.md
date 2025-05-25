@@ -34,6 +34,7 @@
   potions of invisibility.
 - Lower damage and raise volatility of potions of hazardous
   waste.
+- Allow acid spilled by acid beams to alchemize.
 
 ### New Objects
 - Bestiary

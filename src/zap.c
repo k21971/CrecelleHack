@@ -5502,7 +5502,7 @@ zap_over_floor(
             remove_coating(x, y, COAT_POTION);
             explode(x, y, 11, d(4, 6), 0, EXPL_NOXIOUS);
         } else {
-            add_coating(x, y, COAT_POTION, POT_ACID);
+            floor_alchemy(x, y, POT_ACID, 0);
         }
         break; /* ZT_ACID */
 
