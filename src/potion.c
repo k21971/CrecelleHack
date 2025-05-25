@@ -1827,6 +1827,7 @@ floor_alchemy(int x, int y, int otyp, int corpsenm) {
     struct obj *otmp, *objchain;
     fakeobj1.otyp = otyp;
     fakeobj1.oclass = POTION_CLASS;
+    boolean bomb = FALSE;
     
     if (otyp == POT_WATER) {
         if ((objchain = svl.level.objects[x][y]) != 0) {
@@ -1840,6 +1841,8 @@ floor_alchemy(int x, int y, int otyp, int corpsenm) {
             if (rn2(2)) add_coating(x, y, COAT_POTION, otyp);
             return;
         }
+        if (otyp == POT_HAZARDOUS_WASTE || levl[x][y].pindex == POT_HAZARDOUS_WASTE)
+            bomb = TRUE;
         fakeobj2.otyp = levl[x][y].pindex;
         otyp = mixtype(&fakeobj1, &fakeobj2);
         if (otyp == STRANGE_OBJECT) {
@@ -1850,7 +1853,8 @@ floor_alchemy(int x, int y, int otyp, int corpsenm) {
         if (cansee(x, y)) {
             Norep("The liquids on the ground begin to mix."); /* todo: location pline for accessability? */
         }
-        if (!rn2(10)) {
+        if (bomb || !rn2(10)) {
+            remove_coating(x, y, COAT_POTION);
             explode(x, y, 11, d(1, 10), 0, EXPL_NOXIOUS);
             return;
         }
@@ -2802,6 +2806,7 @@ potion_dip(struct obj *obj, struct obj *potion)
         /* Mixing potions is dangerous...
            KMH, balance patch -- acid is particularly unstable */
         if (obj->cursed || obj->otyp == POT_ACID || obj->otyp == POT_HAZARDOUS_WASTE
+            || potion->otyp == POT_HAZARDOUS_WASTE
             || (obj->otyp == POT_OIL && obj->lamplit) || !rn2(10)) {
             /* it would be better to use up the whole stack in advance
                of the message, but we can't because we need to keep it

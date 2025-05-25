@@ -5312,7 +5312,7 @@ zap_over_floor(
             } else if (has_coating(x, y, COAT_POTION)
                         && levl[x][y].pindex == POT_HAZARDOUS_WASTE) {
                 remove_coating(x, y, COAT_POTION);
-                explode(x, y, 11, d(4, 6), 0, EXPL_NOXIOUS);
+                explode(x, y, 11, d(1, 10), 0, EXPL_NOXIOUS);
             } else if (has_coating(x, y, COAT_FROST)) {
                 add_coating(x, y, COAT_POTION, POT_WATER);
             }
