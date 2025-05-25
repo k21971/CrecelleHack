@@ -3851,8 +3851,8 @@ zap_map(
         } /* t_at() */
     } /* probing */
     /* polymorph */
-    if (obj->otyp == WAN_POLYMORPH) {
-        remove_coating(x, y, COAT_ALL);
+    if (obj->otyp == WAN_POLYMORPH && has_coating(x, y, COAT_POTION) 
+        && levl[x][y].pindex != POT_WATER) {
         add_coating(x, y, COAT_POTION, POT_GAIN_ABILITY + rn2(POT_OIL - POT_GAIN_ABILITY));
     }
     /* cancellation */
@@ -3863,7 +3863,7 @@ zap_map(
             add_coating(x, y, COAT_POTION, POT_WATER);
     }
     /* make invisible */
-    if (has_coating(x, y, COAT_POTION)) {
+    if (obj->otyp == WAN_MAKE_INVISIBLE && has_coating(x, y, COAT_POTION)) {
         add_coating(x, y, COAT_POTION, POT_INVISIBILITY);
     }
 
