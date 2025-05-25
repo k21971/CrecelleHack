@@ -9,6 +9,9 @@
 - Slightly increase chance of random spawns of unique monsters.
 - Yellow monsters leave behind a trail of acid.
 - More types of monsters spread fire when they move.
+- Monsters can spawn with and throw potions of hazardous waste.
+- Monsters can intentionally throw potions to trigger alchemical
+  blasts.
 
 ## New Monsters
 - Salt Golem
@@ -29,6 +32,8 @@
 - Wands of cancellation cancel potion coatings.
 - Wands of make invisible change existing potion coatings into
   potions of invisibility.
+- Lower damage and raise volatility of potions of hazardous
+  waste.
 
 ### New Objects
 - Bestiary

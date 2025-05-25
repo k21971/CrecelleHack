@@ -1340,8 +1340,10 @@ rnd_defensive_item(struct monst *mtmp)
 #define MUSE_POT_SLEEPING 16
 #define MUSE_SCR_EARTH 17
 #define MUSE_CAMERA 18
+#define MUSE_POT_HAZARDOUS_WASTE 19
 /*#define MUSE_WAN_UNDEAD_TURNING 20*/ /* also a defensive item so don't
                                      * redefine; nonconsecutive value is ok */
+#define MUSE_FLOOR_ALCHEMY 21
 
 staticfn boolean
 linedup_chk_corpse(coordxy x, coordxy y)
@@ -1551,6 +1553,19 @@ find_offensive(struct monst *mtmp)
         if (obj->otyp == POT_PARALYSIS && gm.multi >= 0) {
             gm.m.offensive = obj;
             gm.m.has_offense = MUSE_POT_PARALYSIS;
+        }
+        nomore(MUSE_POT_HAZARDOUS_WASTE);
+        if (obj->otyp == POT_HAZARDOUS_WASTE) {
+            gm.m.offensive = obj;
+            gm.m.has_offense = MUSE_POT_HAZARDOUS_WASTE;
+        }
+        nomore(MUSE_FLOOR_ALCHEMY);
+        if (obj->otyp >= POT_GAIN_ABILITY && obj->otyp <= POT_OIL
+            && has_coating(u.ux, u.uy, COAT_POTION)
+            && levl[u.ux][u.uy].pindex != POT_WATER
+            && (levl[u.ux][u.uy].pindex == POT_HAZARDOUS_WASTE || !rn2(10))) {
+            gm.m.offensive = obj;
+            gm.m.has_offense = MUSE_FLOOR_ALCHEMY;
         }
         nomore(MUSE_POT_BLINDNESS);
         if (obj->otyp == POT_BLINDNESS && !attacktype(mtmp->data, AT_GAZE)) {
@@ -1847,6 +1862,7 @@ use_offensive(struct monst *mtmp)
     int i;
     struct obj *otmp = gm.m.offensive;
     boolean oseen;
+    int intentional_miss = 0;
 
     /* offensive potions are not drunk, they're thrown */
     if (otmp->oclass != POTION_CLASS && (i = precheck(mtmp, otmp)) != 0)
@@ -2011,11 +2027,16 @@ use_offensive(struct monst *mtmp)
         return 2;
     }
 #endif /* 0 */
+    case MUSE_FLOOR_ALCHEMY:
+        intentional_miss = 1;
+        FALLTHROUGH;
+        /* FALLTHRU */
     case MUSE_POT_PARALYSIS:
     case MUSE_POT_BLINDNESS:
     case MUSE_POT_CONFUSION:
     case MUSE_POT_SLEEPING:
     case MUSE_POT_ACID:
+    case MUSE_POT_HAZARDOUS_WASTE:
         /* Note: this setting of dknown doesn't suffice.  A monster
          * which is out of sight might throw and it hits something _in_
          * sight, a problem not existing with wands because wand rays
@@ -2030,7 +2051,7 @@ use_offensive(struct monst *mtmp)
             verbalize("Fire in the hole!");
         m_throw(mtmp, mtmp->mx, mtmp->my, sgn(mtmp->mux - mtmp->mx),
                 sgn(mtmp->muy - mtmp->my),
-                distmin(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy), otmp);
+                distmin(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy) - intentional_miss, otmp);
         return 2;
     case 0:
         return 0; /* i.e. an exploded wand */
@@ -2076,8 +2097,9 @@ rnd_offensive_item(struct monst *mtmp)
     case 6:
         return POT_PARALYSIS;
     case 7:
-    case 8:
         return WAN_MAGIC_MISSILE;
+    case 8:
+        return POT_HAZARDOUS_WASTE;
     case 9:
         return WAN_SLEEP;
     case 10:
@@ -2769,7 +2791,8 @@ searches_for_item(struct monst *mon, struct obj *obj)
         if (typ == POT_HEALING || typ == POT_EXTRA_HEALING
             || typ == POT_FULL_HEALING || typ == POT_POLYMORPH
             || typ == POT_GAIN_LEVEL || typ == POT_PARALYSIS
-            || typ == POT_SLEEPING || typ == POT_ACID || typ == POT_CONFUSION)
+            || typ == POT_SLEEPING || typ == POT_ACID || typ == POT_CONFUSION
+            || typ == POT_HAZARDOUS_WASTE)
             return TRUE;
         if (typ == POT_BLINDNESS && !attacktype(mon->data, AT_GAZE))
             return TRUE;
