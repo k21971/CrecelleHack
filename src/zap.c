@@ -3850,6 +3850,22 @@ zap_map(
             }
         } /* t_at() */
     } /* probing */
+    /* polymorph */
+    if (obj->otyp == WAN_POLYMORPH) {
+        remove_coating(x, y, COAT_ALL);
+        add_coating(x, y, COAT_POTION, POT_GAIN_ABILITY + rn2(POT_OIL - POT_GAIN_ABILITY));
+    }
+    /* cancellation */
+    if (obj->otyp == WAN_CANCELLATION && has_coating(x, y, COAT_POTION)) {
+        if (levl[x][y].pindex == POT_SICKNESS || levl[x][y].pindex == POT_SEE_INVISIBLE)
+            add_coating(x, y, COAT_POTION, POT_FRUIT_JUICE);
+        else
+            add_coating(x, y, COAT_POTION, POT_WATER);
+    }
+    /* make invisible */
+    if (has_coating(x, y, COAT_POTION)) {
+        add_coating(x, y, COAT_POTION, POT_INVISIBILITY);
+    }
 
     if (learn_it)
         learnwand(obj);

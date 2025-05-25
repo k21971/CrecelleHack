@@ -20,6 +20,11 @@
   shuffled into the existing ones.
 - Yellow dragon scales and yellow dragon scale mail cause you
   to leave behind a trail of acid.
+- Wands of polymorph leave behind random potion coatings when
+  zapped and remove all existing coatings.
+- Wands of cancellation cancel potion coatings.
+- Wands of make invisible change existing potion coatings into
+  potions of invisibility.
 
 ### New Objects
 - Bestiary
