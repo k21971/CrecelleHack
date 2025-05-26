@@ -196,7 +196,7 @@ extern NEARDATA struct objdescr obj_descr[NUM_OBJECTS + 1];
 #define is_rustprone(otmp) (objects[otmp->otyp].oc_material == IRON)
 #define is_crackable(otmp) \
     (objects[(otmp)->otyp].oc_material == GLASS         \
-     && (otmp)->oclass == ARMOR_CLASS) /* erosion_matters() */
+     && ((otmp)->oclass == ARMOR_CLASS || (otmp)->oclass == TOOL_CLASS)) /* erosion_matters() */
 /* secondary damage: rot/acid/acid */
 #define is_corrodeable(otmp) \
     (objects[otmp->otyp].oc_material == COPPER          \

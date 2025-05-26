@@ -35,6 +35,7 @@
 - Lower damage and raise volatility of potions of hazardous
   waste.
 - Allow acid spilled by acid beams to alchemize.
+- Tools can become eroded.
 
 ### New Objects
 - Bestiary

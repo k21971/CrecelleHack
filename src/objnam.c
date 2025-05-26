@@ -1260,13 +1260,6 @@ erosion_matters(struct obj *obj)
 {
     switch (obj->oclass) {
     case TOOL_CLASS:
-        /* it's possible for a rusty weptool to be polymorphed into some
-           non-weptool iron tool, in which case the rust implicitly goes
-           away, but it's also possible for it to be polymorphed into a
-           non-iron tool, in which case rust also implicitly goes away,
-           so there's no particular reason to try to handle the first
-           instance differently [this comment belongs in poly_obj()...] */
-        return is_weptool(obj) ? TRUE : FALSE;
     case WEAPON_CLASS:
     case ARMOR_CLASS:
     case BALL_CLASS:
@@ -1445,6 +1438,7 @@ doname_base(
 
     switch (is_weptool(obj) ? WEAPON_CLASS : obj->oclass) {
     case AMULET_CLASS:
+        add_erosion_words(obj, prefix);
         if (obj->owornmask & W_AMUL)
             Concat(bp, 0, " (being worn)");
         break;
@@ -1491,6 +1485,7 @@ doname_base(
         }
         break;
     case TOOL_CLASS:
+        add_erosion_words(obj, prefix);
         if (obj->owornmask & (W_TOOL | W_SADDLE)) { /* blindfold */
             Concat(bp, 0, " (being worn)");
             break;
@@ -5546,6 +5541,8 @@ suit_simple_name(struct obj *suit)
             return "dragon mail"; /* <color> dragon scale mail */
         else if (Is_dragon_scales(suit))
             return "dragon scales";
+        else if (suit->oclass == TOOL_CLASS)
+            return "facewear";
         suitnm = OBJ_NAME(objects[suit->otyp]);
         esuitp = eos((char *) suitnm);
         if (strlen(suitnm) > 5 && !strcmp(esuitp - 5, " mail"))
