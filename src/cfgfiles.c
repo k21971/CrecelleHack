@@ -1054,9 +1054,9 @@ cnf_line_LIVELOG(char *bufp)
        any trailing junk, including '8' or '9' for leading '0' octal */
     long L = strtol(bufp, NULL, 0);
 
-    if (L < 0L || L > 0xffffL) {
+    if (L < 0L || L > 0x11fff) {
         config_error_add("Illegal value for LIVELOG"
-                         " (must be between 0 and 0xFFFF).");
+                         " (must be between 0 and 0x11FFF).");
         return 0;
     }
     sysopt.livelog = L;
