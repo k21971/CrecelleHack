@@ -1566,6 +1566,7 @@ inside_bonfire(genericptr_t p1, genericptr_t p2)
         mtmp = (struct monst *) p2;
         if (m_bonfire_ok(mtmp) == M_BONFIRE_OK)
             return FALSE;
+        wakeup(mtmp, heros_fault(reg));
         /* Message and complete burning */
         if (completelyburns(mtmp->data)) {
             if (heros_fault(reg))
@@ -1630,6 +1631,17 @@ create_bonfire(coordxy x, coordxy y, int lifetime, int damage)
         iflags.last_msg = PLNMSG_ENVELOPED_IN_FLAMES;
     }
     return flames;
+}
+
+const char *
+region_string(NhRegion *reg) {
+    if (!is_gasregion(reg)) {
+        return "a bonfire";
+    } else if (reg_damg(reg)) {
+        return "a cloud of poison gas";
+    } else {
+        return "a cloud of vapor";
+    }
 }
 
 /*region.c*/

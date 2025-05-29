@@ -4773,8 +4773,8 @@ look_here(
 
         regbuf[0] = '\0';
         if ((reg = visible_region_at(u.ux, u.uy)) != 0)
-            Sprintf(regbuf, "a %s cloud",
-                    reg_damg(reg) ? "poison gas" : "vapor");
+            Sprintf(regbuf, "a %s",
+                    region_string(reg));
         if ((trap = t_at(u.ux, u.uy)) != 0 && !trap->tseen)
             trap = (struct trap *) NULL;
 

@@ -2703,6 +2703,7 @@ extern NhRegion *create_gas_cloud_selection(struct selectionvar *, int);
 extern boolean region_danger(void);
 extern void region_safety(void);
 extern boolean is_gasregion(NhRegion *);
+extern const char *region_string(NhRegion *);
 
 /* ### report.c ### */
 

@@ -3556,8 +3556,8 @@ ustatusline(void)
     if (!u.uswallow
         && (reg = visible_region_at(u.ux, u.uy)) != 0
         && (ln = strlen(info)) < sizeof info)
-        Snprintf(eos(info), sizeof info - ln, ", in a cloud of %s",
-                 reg_damg(reg) ? "poison gas" : "vapor");
+        Snprintf(eos(info), sizeof info - ln, ", in a %s",
+                 region_string(reg));
 
     pline("Status of %s (%s):  Level %d  HP %d(%d)  AC %d%s.", svp.plname,
           piousness(FALSE, align_str(u.ualign.type)),

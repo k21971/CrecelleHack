@@ -275,8 +275,8 @@ mhidden_description(
             boolean poison_gas = (glyph_is_cmap(rglyph)
                                   && glyph_to_cmap(rglyph) == S_poisoncloud);
 
-            Snprintf(eos(outbuf), BUFSZ - buflen, ", in a cloud of %s",
-                     poison_gas ? "poison gas" : "vapor");
+            Snprintf(eos(outbuf), BUFSZ - buflen, ", in a %s",
+                     region_string(reg));
         }
     }
 }
