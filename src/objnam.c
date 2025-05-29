@@ -39,7 +39,6 @@ staticfn void releaseobuf(char *) NONNULLARG1;
 staticfn void xcalled(char *, int, const char *, const char *);
 staticfn char *xname_flags(struct obj *, unsigned);
 staticfn char *minimal_xname(struct obj *);
-staticfn void add_boost_words(struct obj *, char *);
 staticfn void add_erosion_words(struct obj *, char *);
 staticfn char *doname_base(struct obj *obj, unsigned);
 staticfn boolean singplur_lookup(char *, char *, boolean,
@@ -1177,19 +1176,6 @@ print_mon_harmonies(struct permonst *pm, char *buf)
     }
 }
 
-staticfn void
-add_boost_words(struct obj *obj, char *prefix)
-{
-    if (!obj->booster) return;
-    Strcat(prefix, "{");
-    for (int i = 0; i < SIZE(boostnams); i++) {
-        if (obj->booster & boostnams[i].boost_short) {
-            Sprintf(eos(prefix), "%s", boostnams[i].abbr);
-        }
-    }
-    Strcat(prefix, "} ");
-}
-
 void
 boost_object(struct obj *obj, short force)
 {
@@ -1479,8 +1465,7 @@ doname_base(
         add_erosion_words(obj, prefix);
         if (known) {
             Sprintf(eos(prefix), "%+d ", obj->spe); /* sitoa(obj->spe)+" " */
-            add_boost_words(obj, prefix);
-        } else if (obj->booster) {
+        } else if (!known && obj->booster) {
             Strcat(prefix, "harmonic ");
         }
         break;
@@ -1619,6 +1604,19 @@ doname_base(
         ConcatF1(bp, 0, " (%s)",
                  (cgend != CORPSTAT_RANDOM) ? genders[mgend].adj
                                             : "unspecified gender");
+    }
+
+    if (known && obj->booster &&
+        (obj->oclass == WEAPON_CLASS || 
+            obj->oclass == ARMOR_CLASS || 
+            is_weptool(obj))) {
+        Concat(bp, 0, " {");
+        for (int i = 0; i < SIZE(boostnams); i++) {
+            if (obj->booster & boostnams[i].boost_short) {
+                ConcatF1(bp, 0, "%s", boostnams[i].abbr);
+            }
+        }
+        Concat(bp, 0, "}");
     }
 
     if ((obj->owornmask & W_WEP) && !gm.mrg_to_wielded) {
