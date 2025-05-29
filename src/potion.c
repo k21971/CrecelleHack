@@ -1743,8 +1743,8 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
     if (has_coating(x, y, COAT_SHARDS)) {
         if (isyou) {
             if (uarmf) {
-                pline("Shards of glass crunch under %s.",
-                    yobjnam(uarmf, (const char *) 0));
+                pline("Shards of glass crunch under your %s.",
+                    boots_simple_name(uarmf));
             } else if (thick_skinned(mon->data)) {
                 pline("Shards of glass crunch under your %s.", makeplural(body_part(FOOT)));
             } else {
