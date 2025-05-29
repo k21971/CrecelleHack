@@ -302,6 +302,7 @@ struct weather *roll_precip(void)
     for (i = 0; i < SIZE(dungeon_precips); i++) {
         x += dungeon_precips[i].prob;
     }
+    if (x < 0) x = 2;
     x = rn2(x);
     for (i = 0; i < SIZE(dungeon_precips); i++) {
         total_prob += dungeon_precips[i].prob;
@@ -321,6 +322,7 @@ struct weather *roll_wind(void)
     for (i = 0; i < SIZE(dungeon_winds); i++) {
         x += dungeon_winds[i].prob;
     }
+    if (x < 0) x = 2;
     x = rn2(x);
     for (i = 0; i < SIZE(dungeon_winds); i++) {
         total_prob += dungeon_winds[i].prob;
