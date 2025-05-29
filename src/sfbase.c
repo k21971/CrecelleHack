@@ -4,6 +4,7 @@
 
 #include "hack.h"
 #include "sfprocs.h"
+
 #ifdef SFCTOOL
 //#include "sfproto.h"
 #endif
@@ -65,8 +66,6 @@ void sf_log(NHFILE *, const char *, size_t, int, char *);
 #define Sfvalue_ushort(a) sfvalue_ushort(a)
 #define Sfvalue_int(a) sfvalue_int(a)
 #define Sfvalue_unsigned(a) sfvalue_unsigned(a)
-#define Sfvalue_long(a) sfvalue_long(a)
-#define Sfvalue_ulong(a) sfvalue_ulong(a)
 #define Sfvalue_xint8(a) sfvalue_xint8(a)
 #define Sfvalue_xint16(a) sfvalue_xint16(a)
 
@@ -83,8 +82,6 @@ void sf_log(NHFILE *, const char *, size_t, int, char *);
         uint16_t *: sfvalue_uint16,      \
         uint32_t *: sfvalue_uint32,      \
         uint64_t *: sfvalue_uint64,      \
-        long *: sfvalue_long,            \
-        unsigned long *: sfvalue_ulong,  \
         xint8 *: sfvalue_xint8           \
     )(x)
 
@@ -107,13 +104,13 @@ void sf_log(NHFILE *, const char *, size_t, int, char *);
 #define Sfvalue_ushort(a) sfvalue(a)
 #define Sfvalue_int(a) sfvalue(a)
 #define Sfvalue_unsigned(a) sfvalue(a)
-#define Sfvalue_long(a) sfvalue(a)
-#define Sfvalue_ulong(a) sfvalue(a)
 #define Sfvalue_xint8(a) sfvalue(a)
 #define Sfvalue_xint16(a) sfvalue(a)
 #endif
 
 /* not in _Generic */ 
+#define Sfvalue_long(a) sfvalue_long(a)
+#define Sfvalue_ulong(a) sfvalue_ulong(a)
 #define Sfvalue_char(a, d) sfvalue_char(a, d)
 #define Sfvalue_boolean(a) sfvalue_boolean(a)
 #define Sfvalue_schar(a) sfvalue_schar(a)
@@ -503,15 +500,10 @@ char *
 sfvalue_any(anything *a)
 {
     static char buf[20];
-#ifdef UNIX
+
     Snprintf(buf, sizeof buf,
-             "%ld",
+             "%" PRId64,
              a->a_int64);
-#else
-    Snprintf(buf, sizeof buf,
-             "%lld",
-             a->a_int64);
-#endif
     return buf;
 }
 
@@ -537,18 +529,14 @@ char * sfvalue_int32(int32 *a)
 {
     static char buf[20];
 
-    Snprintf(buf, sizeof buf, "%d", *a);
+    Snprintf(buf, sizeof buf, "%" PRId32, *a);
     return buf;
 }
 
 char * sfvalue_int64(int64 *a)
 {
     static char buf[20];
-#ifdef UNIX
-    Snprintf(buf, sizeof buf, "%ld", *a);
-#else
-    Snprintf(buf, sizeof buf, "%lld", *a);
-#endif
+    Snprintf(buf, sizeof buf, "%" PRId64, *a);
     return buf;
 }
 
@@ -574,7 +562,7 @@ char * sfvalue_uint32(uint32 *a)
 {
     static char buf[20];
 
-    Snprintf(buf, sizeof buf, "%u", *a);
+    Snprintf(buf, sizeof buf, "%" PRIu32, *a);
     return buf;
 }
 
@@ -582,11 +570,7 @@ char * sfvalue_uint64(uint64 *a)
 {
     static char buf[20];
 
-#ifdef UNIX
-    Snprintf(buf, sizeof buf, "%lu", *a);
-#else
-    Snprintf(buf, sizeof buf, "%llu", *a);
-#endif
+    Snprintf(buf, sizeof buf, "%" PRIu64, *a);
     return buf;
 }
 

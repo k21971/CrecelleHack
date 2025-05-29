@@ -244,14 +244,10 @@ extern void sfi_ulong(NHFILE *, ulong *, const char *);
 #define Sfo_gamelog_line(a,b,c) sfo_gamelog_line(a, b, c)
 #define Sfo_fruit(a,b,c) sfo_fruit(a, b, c)
 #define Sfo_s_level(a,b,c) sfo_s_level(a, b, c)
-#define Sfo_schar(a,b,c) sfo_schar(a, b, c);
 #define Sfo_short(a, b, c) sfo_short(a, b, c)
 #define Sfo_ushort(a, b, c) sfo_ushort(a, b, c)
 #define Sfo_int(a, b, c) sfo_int(a, b, c)
 #define Sfo_unsigned(a, b, c) sfo_unsigned(a, b, c)
-#define Sfo_long(a,b,c) sfo_long(a, b, c);
-#define Sfo_ulong(a,b,c) sfo_ulong(a, b, c);
-#define Sfo_boolean(a,b,c) sfo_boolean(a, b, c);
 #define Sfo_xint8(a, b, c) sfo_xint8(a, b, c);
 #define Sfo_xint16(a, b, c) sfo_xint16(a, b, c)
 /* sfbase.c input functions */
@@ -260,7 +256,6 @@ extern void sfi_ulong(NHFILE *, ulong *, const char *);
 #define Sfi_any(a,b,c) sfi_any(a, b, c)
 #define Sfi_genericptr(a,b,c) sfi_genericptr(a, b, c)
 #define Sfi_coordxy(a,b,c) sfi_int16(a, b, c)
-#define Sfi_char(a,b,c,d) sfi_char(a, b, c, d)
 #define Sfi_int16(a,b,c) sfi_int16(a, b, c)
 #define Sfi_int32(a,b,c) sfi_int32(a, b, c)
 #define Sfi_int64(a,b,c) sfi_int64(a, b, c)
@@ -314,14 +309,10 @@ extern void sfi_ulong(NHFILE *, ulong *, const char *);
 #define Sfi_fruit(a,b,c) sfi_fruit(a, b, c)
 #define Sfi_gamelog_line(a,b,c) sfi_gamelog_line(a, b, c)
 #define Sfi_s_level(a,b,c) sfi_s_level(a, b, c)
-#define Sfi_schar(a,b,c) sfi_schar(a, b, c);
 #define Sfi_short(a, b, c) sfi_short(a, b, c)
 #define Sfi_ushort(a, b, c) sfi_ushort(a, b, c)
 #define Sfi_int(a, b, c) sfi_int(a, b, c);
 #define Sfi_unsigned(a, b, c) sfi_unsigned(a, b, c);
-#define Sfi_long(a,b,c) sfi_long(a, b, c);
-#define Sfi_ulong(a,b,c) sfi_ulong(a, b, c);
-#define Sfi_boolean(a,b,c) sfi_boolean(a, b, c);
 #define Sfi_xint8(a, b, c) sfi_xint8(a, b, c);
 #define Sfi_xint16(a, b, c) sfi_xint16(a, b, c);
 #else
@@ -336,8 +327,6 @@ extern void sfi_ulong(NHFILE *, ulong *, const char *);
     uint16_t *            : sfo_uint16,        \
     uint32_t *            : sfo_uint32,        \
     uint64_t *            : sfo_uint64,        \
-    long *                : sfo_long,          \
-    unsigned long *       : sfo_ulong,         \
     xint8 *               : sfo_xint8,         \
     struct arti_info *    : sfo_arti_info,     \
     struct nhrect *       : sfo_nhrect,        \
@@ -400,8 +389,6 @@ extern void sfi_ulong(NHFILE *, ulong *, const char *);
     uint16_t *            : sfi_uint16,        \
     uint32_t *            : sfi_uint32,        \
     uint64_t *            : sfi_uint64,        \
-    long *                : sfi_long,          \
-    unsigned long *       : sfi_ulong,         \
     xint8 *               : sfi_xint8,         \
     struct arti_info *    : sfi_arti_info,     \
     struct nhrect *       : sfi_nhrect,        \
@@ -520,14 +507,9 @@ extern void sfi_ulong(NHFILE *, ulong *, const char *);
 #define Sfo_ushort(a, b, c) sfo(a, b, c)
 #define Sfo_int(a, b, c) sfo(a, b, c)
 #define Sfo_unsigned(a, b, c) sfo(a, b, c)
-#define Sfo_long(a,b,c) sfo(a, b, c)
-#define Sfo_ulong(a,b,c) sfo(a, b, c)
 #define Sfo_xint8(a, b, c) sfo(a, b, c)
 #define Sfo_xint16(a, b, c) sfo(a, b, c)
-/* not in _Generic */
-#define Sfo_char(a,b,c,d) sfo_char(a, b, c, d)
-#define Sfo_boolean(a,b,c) sfo_boolean(a, b, c)
-#define Sfo_schar(a,b,c) sfo_schar(a, b, c)
+
 /* sfbase.c input functions */
 #define Sfi_addinfo(a,b,c) sfi(a, b, c)
 #define Sfi_aligntyp(a,b,c) sfi(a, b, c)
@@ -591,15 +573,22 @@ extern void sfi_ulong(NHFILE *, ulong *, const char *);
 #define Sfi_ushort(a, b, c) sfi(a, b, c)
 #define Sfi_int(a,b,c) sfi(a, b, c)
 #define Sfi_unsigned(a, b, c) sfi(a, b, c)
-#define Sfi_long(a,b,c) sfi(a, b, c)
-#define Sfi_ulong(a,b,c) sfi(a, b, c)
 #define Sfi_xint8(a, b, c) sfi(a, b, c)
 #define Sfi_xint16(a, b, c) sfi(a, b, c)
+#endif
+
 /* not in _Generic */
+#define Sfo_long(a,b,c) sfo_long(a, b, c);
+#define Sfo_ulong(a,b,c) sfo_ulong(a, b, c);
+#define Sfo_char(a,b,c,d) sfo_char(a, b, c, d)
+#define Sfo_boolean(a,b,c) sfo_boolean(a, b, c)
+#define Sfo_schar(a,b,c) sfo_schar(a, b, c)
+
+#define Sfi_long(a,b,c) sfi_long(a, b, c);
+#define Sfi_ulong(a,b,c) sfi_ulong(a, b, c);
 #define Sfi_char(a,b,c,d) sfi_char(a, b, c, d)
 #define Sfi_boolean(a,b,c) sfi_boolean(a, b, c)
 #define Sfi_schar(a,b,c) sfi_schar(a, b, c)
-#endif
 
 #endif /* SAVEFILE_H */
 
