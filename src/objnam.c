@@ -1750,7 +1750,7 @@ doname_base(
         /* wizard mode user has asked to see object weights */
         if (with_price && bp_eos[-1] == ')')
             ConcatF1(bp, 1, 
-                     wizard ? ", %u aum)" : ", {%u})",
+                     wizard ? ", %u aum)" : "), {%u}",
                      (obj->otyp == LOADSTONE && !obj->bknown) ? 10 : obj->owt);
         else
             ConcatF1(bp, 0,
