@@ -5508,7 +5508,7 @@ zap_over_floor(
                     && levl[x][y].pindex == POT_HAZARDOUS_WASTE) {
             remove_coating(x, y, COAT_POTION);
             explode(x, y, 11, d(4, 6), 0, EXPL_NOXIOUS);
-        } else {
+        } else if (damgtype == ZT_ACID) {
             floor_alchemy(x, y, POT_ACID, 0);
         }
         break; /* ZT_ACID */
