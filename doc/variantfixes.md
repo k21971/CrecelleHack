@@ -15,6 +15,8 @@
 
 ## New Monsters
 - Salt Golem
+- Mustelid
+- Giant Mustelid
 
 ## Unique Monsters
 - Many new unique monsters.

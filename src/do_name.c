@@ -780,6 +780,12 @@ static const char *const dog_breeds[] = {
     "poodle",     "labrador",   "rottweiler", "basset hound",
 };
 
+static const char *const mustelid_types[] = {
+    "weasel",   "sable",    "otter",    "ferret",
+    "stoat",    "badger",   "fisher",   "polecat",
+    "wolverine",
+};
+
 /*
  * Monster naming functions:
  * x_monnam is the generic monster-naming function.
@@ -912,6 +918,9 @@ x_monnam(
     if (mtmp->data == &mons[PM_DOG] || mtmp->data == &mons[PM_LARGE_DOG]) {
         if (mtmp->data == &mons[PM_LARGE_DOG]) strcat(buf, "large ");
         pm_name = dog_breeds[mtmp->m_id % SIZE(dog_breeds)];
+    } else if (mtmp->data == &mons[PM_MUSTELID] || mtmp->data == &mons[PM_GIANT_MUSTELID]) {
+        if (mtmp->data == &mons[PM_GIANT_MUSTELID]) strcat(buf, "giant ");
+        pm_name = mustelid_types[mtmp->m_id % SIZE(mustelid_types)];
     } else if (do_mappear) {
         /*assert(ismnum(mtmp->mappearance));*/
         pm_name = pmname(&mons[mtmp->mappearance], Mgender(mtmp));
