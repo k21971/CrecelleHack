@@ -5540,7 +5540,7 @@ suit_simple_name(struct obj *suit)
         else if (Is_dragon_scales(suit))
             return "dragon scales";
         else if (suit->oclass == TOOL_CLASS)
-            return "facewear";
+            return "tool";
         suitnm = OBJ_NAME(objects[suit->otyp]);
         esuitp = eos((char *) suitnm);
         if (strlen(suitnm) > 5 && !strcmp(esuitp - 5, " mail"))
