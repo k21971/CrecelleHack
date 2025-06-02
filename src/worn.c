@@ -820,7 +820,7 @@ m_dowear_type(
                 continue;
             break;
         case W_TOOL:
-            if (obj && !is_glasses(obj->otyp))
+            if (!is_glasses(obj->otyp))
                 continue;
             break;
         }
@@ -935,7 +935,7 @@ m_dowear_type(
          *     pline("%s suddenly appears!", Amonnam(mon)); */
         }
     }
-    if (obj->otyp == AMULET_OF_CHANGE) {
+    if (best->otyp == AMULET_OF_CHANGE) {
         if (canseemon(mon)) {
             pline("%s goes through a remarkable transformation!", Monnam(mon));
             makeknown(obj->otyp);
