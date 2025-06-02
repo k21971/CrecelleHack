@@ -18,6 +18,9 @@
   their names reflect this. This has no impact on gameplay.
 - Implemented the monster max HP changes from xNetHack (originally
   from EvilHack, by way of SporkHack).
+- Monsters considered "roguish" can spawn with poisoned items or
+  potions of sickness.
+- Monsters can dip items into potions.
 
 ## New Monsters
 - Salt Golem
@@ -44,6 +47,7 @@
   waste.
 - Allow acid spilled by acid beams to alchemize.
 - Tools can become eroded.
+- All blades are considered poisonable.
 
 ### New Objects
 - Bestiary

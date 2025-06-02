@@ -2081,6 +2081,8 @@ rnd_offensive_item(struct monst *mtmp)
         if (hard_helmet(mtmp_helmet) || amorphous(pm)
             || passes_walls(pm) || noncorporeal(pm) || unsolid(pm))
             return SCR_EARTH;
+        if (is_roguish(pm))
+            return POT_SICKNESS;
     }
     FALLTHROUGH;
     /* FALLTHRU */
@@ -2124,6 +2126,7 @@ rnd_offensive_item(struct monst *mtmp)
 #define MUSE_POT_POLYMORPH 9
 #define MUSE_BAG 10
 #define MUSE_GREASE 11
+#define MUSE_DIP_WEAPON 12
 
 boolean
 find_misc(struct monst *mtmp)
@@ -2136,6 +2139,7 @@ find_misc(struct monst *mtmp)
     int pmidx = NON_PM;
     boolean immobile = (mdat->mmove == 0);
     boolean stuck = (mtmp == u.ustuck);
+    struct obj *mwep = MON_WEP(mtmp);
 
     gm.m.misc = (struct obj *) 0;
     gm.m.has_misc = 0;
@@ -2242,6 +2246,13 @@ find_misc(struct monst *mtmp)
                         }
                     }
                 }
+        }
+        nomore(MUSE_DIP_WEAPON);
+        if ((mtmp->data != &mons[PM_PESTILENCE] && obj->otyp == POT_SICKNESS
+                && mwep && !mwep->opoisoned && is_poisonable(mwep))
+            ||  (mwep && mwep->cursed && obj->otyp == POT_WATER && obj->blessed)) {
+                gm.m.misc = obj;
+                gm.m.has_misc = MUSE_DIP_WEAPON;
         }
         nomore(MUSE_WAN_MAKE_INVISIBLE);
         if (obj->otyp == WAN_MAKE_INVISIBLE && obj->spe > 0 && !mtmp->minvis
@@ -2585,6 +2596,20 @@ use_misc(struct monst *mtmp)
         if (!otmp)
             panic(MissingMiscellaneousItem, "container");
         return mloot_container(mtmp, otmp, vismon);
+    case MUSE_DIP_WEAPON:
+        otmp2 = MON_WEP(mtmp);
+        if (!MON_WEP(mtmp))
+            panic("mon attempting to poison a nonexistent weapon?");
+        if (canseemon(mtmp)) {
+            pline_mon(mtmp, "%s dips %s in %s.", Monnam(mtmp),
+                        an(xname(otmp2)), an(xname(otmp)));
+        }
+        if (otmp->otyp == POT_SICKNESS)
+            otmp2->opoisoned = 1;
+        else if (otmp->otyp == POT_WATER)
+            otmp2->cursed = 0;
+        m_useup(mtmp, otmp);
+        return 0;
     case MUSE_GREASE:
         for (otmp2 = mtmp->minvent; otmp2; otmp2 = otmp2->nobj) {
             if ((otmp2->owornmask & mtmp->misc_worn_check) && !otmp2->greased) {
@@ -2792,9 +2817,12 @@ searches_for_item(struct monst *mon, struct obj *obj)
             || typ == POT_FULL_HEALING || typ == POT_POLYMORPH
             || typ == POT_GAIN_LEVEL || typ == POT_PARALYSIS
             || typ == POT_SLEEPING || typ == POT_ACID || typ == POT_CONFUSION
+            || typ == POT_SICKNESS
             || typ == POT_HAZARDOUS_WASTE)
             return TRUE;
         if (typ == POT_BLINDNESS && !attacktype(mon->data, AT_GAZE))
+            return TRUE;
+        if (typ == POT_WATER && obj->blessed)
             return TRUE;
         if (typ == POT_BLOOD && is_vampire(mon->data))
             return TRUE;
