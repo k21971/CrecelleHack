@@ -271,9 +271,9 @@ mhidden_description(
            this monster's spot is !cansee and !couldsee [maybe we need an
            additional vision bit for "hero's side of edge of gas cloud"?] */
         if (distu(x, y) <= r * (r + 1) || force_region) {
-            int rglyph = reg->glyph;
-            boolean poison_gas = (glyph_is_cmap(rglyph)
-                                  && glyph_to_cmap(rglyph) == S_poisoncloud);
+            //int rglyph = reg->glyph;
+            //boolean poison_gas = (glyph_is_cmap(rglyph)
+             //                     && glyph_to_cmap(rglyph) == S_poisoncloud);
 
             Snprintf(eos(outbuf), BUFSZ - buflen, ", in a %s",
                      region_string(reg));
@@ -963,6 +963,16 @@ checkfile(
         dbase_str += 9;
     if (!strncmp(dbase_str, "invisible ", 10))
         dbase_str += 10;
+    if (!strncmp(dbase_str, "young ", 6))
+        dbase_str += 6;
+    if (!strncmp(dbase_str, "fledgling ", 10))
+        dbase_str += 10;
+    if (!strncmp(dbase_str, "baby ", 5))
+        dbase_str += 5;
+    if (!strncmp(dbase_str, "wyrmling ", 9))
+        dbase_str += 9;
+    if (!strncmp(dbase_str, "unhewn ", 7))
+        dbase_str += 7;
     if (!strncmp(dbase_str, "saddled ", 8))
         dbase_str += 8;
     if (!strncmp(dbase_str, "blessed ", 8))
