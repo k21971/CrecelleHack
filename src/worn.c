@@ -820,7 +820,7 @@ m_dowear_type(
                 continue;
             break;
         case W_TOOL:
-            if (!is_glasses(obj->otyp))
+            if (obj && !is_glasses(obj->otyp))
                 continue;
             break;
         }
