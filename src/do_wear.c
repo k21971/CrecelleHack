@@ -1545,7 +1545,7 @@ Blindf_off(struct obj *otmp)
         if (was_blind) {
             /* "still cannot see" makes no sense when removing lenses
                since they can't have been the cause of your blindness */
-            if (otmp->otyp != LENSES && otmp->otyp != SUNGLASSES)
+            if (!is_glasses(otmp->otyp))
                 You("still cannot see.");
         } else {
             changed = TRUE; /* !was_blind */
@@ -1917,8 +1917,7 @@ cursed(struct obj *otmp)
     /* Curses, like chickens, come home to roost. */
     if ((otmp == uwep) ? welded(otmp) : (int) otmp->cursed) {
         boolean use_plural = (is_boots(otmp) || is_gloves(otmp)
-                              || otmp->otyp == LENSES
-                              || otmp->otyp == SUNGLASSES || otmp->quan > 1L);
+                              || is_glasses(otmp->otyp) || otmp->quan > 1L);
 
         /* might be trying again after applying grease to hands */
         if (Glib && otmp->bknown
@@ -1929,6 +1928,8 @@ cursed(struct obj *otmp)
                   fingers_or_gloves(TRUE));
         else if (Hallucination && otmp->otyp == SUNGLASSES)
             You("can't. Deal with it.");
+        else if (Hallucination && otmp->otyp == MIRRORED_GLASSES)
+            pline("These glasses are far too cool to remove.");
         else
             You("can't.  %s cursed.", use_plural ? "They are" : "It is");
         set_bknown(otmp, 1);
@@ -2240,7 +2241,7 @@ accessory_or_armor_on(struct obj *obj)
     ring = (obj->oclass == RING_CLASS || obj->otyp == MEAT_RING);
     amulet = (obj->oclass == AMULET_CLASS);
     eyewear = (obj->otyp == BLINDFOLD || obj->otyp == TOWEL
-               || obj->otyp == LENSES || obj->otyp == SUNGLASSES);
+               || is_glasses(obj->otyp));
     /* checks which are performed prior to actually touching the item */
     if (armor) {
         if (!canwearobj(obj, &mask, TRUE))
@@ -2356,11 +2357,11 @@ accessory_or_armor_on(struct obj *obj)
                     Your("%s is already covered by a towel.",
                          body_part(FACE));
                 else if (ublindf->otyp == BLINDFOLD) {
-                    if (obj->otyp == LENSES || obj->otyp == SUNGLASSES)
+                    if (is_glasses(obj->otyp))
                         already_wearing2("glasses", "a blindfold");
                     else
                         already_wearing("a blindfold");
-                } else if (ublindf->otyp == LENSES || ublindf->otyp == SUNGLASSES) {
+                } else if (is_glasses(ublindf->otyp)) {
                     if (obj->otyp == BLINDFOLD)
                         already_wearing2("a blindfold", "some glasses");
                     else
@@ -2487,7 +2488,8 @@ doputon(void)
              humanoid(gy.youmonst.data) ? "ring-" : "",
              fingers_or_gloves(FALSE),
              (ublindf->otyp == LENSES) ? "some lenses" :
-             (ublindf->otyp == SUNGLASSES) ? "some shades" : "a blindfold");
+             (ublindf->otyp == SUNGLASSES) ? "some shades" :
+             (ublindf->otyp == MIRRORED_GLASSES) ? "some glasses" : "a blindfold");
         return ECMD_OK;
     }
     otmp = getobj("put on", puton_ok, GETOBJ_NOFLAGS);
@@ -3406,8 +3408,7 @@ equip_ok(struct obj *obj, boolean removing, boolean accessory)
         && obj->oclass != AMULET_CLASS) {
         /* ... except for a few wearable exceptions outside these classes */
         if (obj->otyp != MEAT_RING && obj->otyp != BLINDFOLD
-            && obj->otyp != TOWEL && obj->otyp != LENSES
-            && obj->otyp != SUNGLASSES)
+            && obj->otyp != TOWEL && !is_glasses(obj->otyp))
             return GETOBJ_EXCLUDE;
     }
 

@@ -2910,6 +2910,12 @@ ureflects(const char *fmt, const char *str)
         if (fmt && str)
             pline(fmt, str, uskin ? "luster" : "armor");
         return TRUE;
+    } else if (EReflecting & W_TOOL) {
+        if (fmt && str) {
+            pline(fmt, str, "glasses");
+            makeknown(MIRRORED_GLASSES);
+        }
+        return TRUE;
     } else if (gy.youmonst.data == &mons[PM_SILVER_DRAGON]) {
         if (fmt && str)
             pline(fmt, str, "scales");

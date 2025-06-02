@@ -1511,8 +1511,7 @@ hits_bars(
         case TOOL_CLASS:
             hits = (obj_type != SKELETON_KEY && obj_type != LOCK_PICK
                     && obj_type != CREDIT_CARD && obj_type != TALLOW_CANDLE
-                    && obj_type != WAX_CANDLE && obj_type != LENSES
-                    && obj_type != SUNGLASSES
+                    && obj_type != WAX_CANDLE && !is_glasses(obj_type)
                     && obj_type != TIN_WHISTLE && obj_type != MAGIC_WHISTLE);
             break;
         case ROCK_CLASS: /* includes boulder */

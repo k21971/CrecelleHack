@@ -49,6 +49,8 @@
   - Uncursed: Swaps current weather from rain to shine.
   - Cursed: Causes bizarre inclement weather.
   - Confused and not cursed: Summons a tame tornado.
+- Mirrored Glasses
+  - Provide reflection.
 
 ## Floor Coating System
 - Added ice as a floor coating.

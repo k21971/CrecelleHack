@@ -253,7 +253,7 @@ wearslot(struct obj *obj)
         break;
     case TOOL_CLASS:
         if (otyp == BLINDFOLD || otyp == TOWEL || otyp == LENSES
-            || otyp == SUNGLASSES)
+            || otyp == SUNGLASSES || otyp == MIRRORED_GLASSES)
             res = W_TOOL; /* WORN_BLINDF */
         else if (is_weptool(obj) || otyp == TIN_OPENER)
             res = W_WEP | W_SWAPWEP;
