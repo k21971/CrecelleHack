@@ -1545,7 +1545,7 @@ Blindf_off(struct obj *otmp)
         if (was_blind) {
             /* "still cannot see" makes no sense when removing lenses
                since they can't have been the cause of your blindness */
-            if (!is_glasses(otmp->otyp))
+            if (!is_glasses(otmp))
                 You("still cannot see.");
         } else {
             changed = TRUE; /* !was_blind */
@@ -1917,7 +1917,7 @@ cursed(struct obj *otmp)
     /* Curses, like chickens, come home to roost. */
     if ((otmp == uwep) ? welded(otmp) : (int) otmp->cursed) {
         boolean use_plural = (is_boots(otmp) || is_gloves(otmp)
-                              || is_glasses(otmp->otyp) || otmp->quan > 1L);
+                              || is_glasses(otmp) || otmp->quan > 1L);
 
         /* might be trying again after applying grease to hands */
         if (Glib && otmp->bknown
@@ -2241,7 +2241,7 @@ accessory_or_armor_on(struct obj *obj)
     ring = (obj->oclass == RING_CLASS || obj->otyp == MEAT_RING);
     amulet = (obj->oclass == AMULET_CLASS);
     eyewear = (obj->otyp == BLINDFOLD || obj->otyp == TOWEL
-               || is_glasses(obj->otyp));
+               || is_glasses(obj));
     /* checks which are performed prior to actually touching the item */
     if (armor) {
         if (!canwearobj(obj, &mask, TRUE))
@@ -2357,11 +2357,11 @@ accessory_or_armor_on(struct obj *obj)
                     Your("%s is already covered by a towel.",
                          body_part(FACE));
                 else if (ublindf->otyp == BLINDFOLD) {
-                    if (is_glasses(obj->otyp))
+                    if (is_glasses(obj))
                         already_wearing2("glasses", "a blindfold");
                     else
                         already_wearing("a blindfold");
-                } else if (is_glasses(ublindf->otyp)) {
+                } else if (is_glasses(ublindf)) {
                     if (obj->otyp == BLINDFOLD)
                         already_wearing2("a blindfold", "some glasses");
                     else
@@ -3409,7 +3409,7 @@ equip_ok(struct obj *obj, boolean removing, boolean accessory)
         && obj->oclass != AMULET_CLASS) {
         /* ... except for a few wearable exceptions outside these classes */
         if (obj->otyp != MEAT_RING && obj->otyp != BLINDFOLD
-            && obj->otyp != TOWEL && !is_glasses(obj->otyp))
+            && obj->otyp != TOWEL && !is_glasses(obj))
             return GETOBJ_EXCLUDE;
     }
 

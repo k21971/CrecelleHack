@@ -435,8 +435,9 @@ struct obj {
          && !undiscovered_artifact(ART_EYES_OF_THE_OVERWORLD)))
 #define pair_of(o) ((o)->otyp == LENSES || (o)->otyp == SUNGLASSES \
                     || (o)->otyp == MIRRORED_GLASSES || is_gloves(o) || is_boots(o))
-#define is_glasses(otyp) (otyp == LENSES || otyp == SUNGLASSES || otyp == MIRRORED_GLASSES \
-                          || otyp == TINKER_GOGGLES)
+#define is_glasses(o) ((o)->otyp && ((o)->otyp == LENSES || (o)->otyp == SUNGLASSES \
+                                    || (o)->otyp == MIRRORED_GLASSES \
+                                    || (o)->otyp == TINKER_GOGGLES))
 
 #define unpolyable(o) ((o)->otyp == WAN_POLYMORPH \
                        || (o)->otyp == SPE_POLYMORPH \

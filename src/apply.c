@@ -140,7 +140,7 @@ use_towel(struct obj *obj)
             } else {
                 const char *what;
 
-                what = is_glasses(ublindf->otyp)
+                what = is_glasses(ublindf)
                            ? "glasses"
                            : (obj->otyp == ublindf->otyp) ? "other towel"
                                                           : "blindfold";
@@ -421,7 +421,7 @@ use_stethoscope(struct obj *obj)
                     what = simple_typename(odummy->otyp);
                 }
                 use_plural = (is_boots(odummy) || is_gloves(odummy)
-                              || is_glasses(odummy->otyp));
+                              || is_glasses(odummy));
                 break;
             case M_AP_MONSTER: /* ignore Hallucination here */
                 what = pmname(&mons[mtmp->mappearance], Mgender(mtmp));

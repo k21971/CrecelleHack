@@ -3670,7 +3670,7 @@ sanity_check_worn(struct obj *obj)
                 what = "ring";
         } else if (owornmask & W_TOOL) {
             if (obj->otyp != BLINDFOLD && obj->otyp != TOWEL
-                && !is_glasses(obj->otyp))
+                && !is_glasses(obj))
                 what = "blindfold";
         } else if (owornmask & W_BALL) {
             if (obj->oclass != BALL_CLASS)

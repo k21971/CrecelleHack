@@ -2823,7 +2823,7 @@ searches_for_item(struct monst *mon, struct obj *obj)
             return TRUE;
         if (typ == EXPENSIVE_CAMERA || typ == CAN_OF_GREASE)
             return (obj->spe > 0);
-        if (is_glasses(typ) && typ != LENSES)
+        if (is_glasses(obj) && typ != LENSES)
             return TRUE;
         break;
     case FOOD_CLASS:
