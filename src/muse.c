@@ -2807,7 +2807,7 @@ searches_for_item(struct monst *mon, struct obj *obj)
     case AMULET_CLASS:
         if (typ == AMULET_OF_LIFE_SAVING)
             return (boolean) !(nonliving(mon->data) || is_vampshifter(mon));
-        if (typ == AMULET_OF_REFLECTION || typ == AMULET_OF_GUARDING)
+        if (typ == AMULET_OF_REFLECTION || typ == AMULET_OF_GUARDING || typ == AMULET_OF_CHANGE)
             return TRUE;
         break;
     case TOOL_CLASS:

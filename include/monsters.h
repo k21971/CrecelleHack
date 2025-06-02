@@ -3129,7 +3129,7 @@
         M2_NOPOLY | M2_HOSTILE | M2_STRONG | M2_PNAME | M2_FEMALE,
         M3_WAITFORU | M3_INFRAVISIBLE | M3_TRIPPER, BST_ROCK | BST_SAND,
         25, CLR_BRIGHT_GREEN, MEDUSA),
-    MON(NAM("Wizard of Yendor"), S_HUMAN,
+    MON(NAMS("Wizard of Yendor", "Witch of Yendor", "Wizard of Yendor"), S_HUMAN,
         LVL(30, 12, -8, 100, A_NONE), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_CLAW, AD_SAMU, 2, 12), ATTK(AT_MAGC, AD_SPEL, 0, 0),
           NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
@@ -3812,7 +3812,7 @@
     /*
      * quest leaders
      */
-    MON(NAM("Lord Carnarvon"), S_HUMAN,
+    MON(NAMS("Lord Carnarvon", "Lady Carnavon", "Lord Carnavon"), S_HUMAN,
         LVL(20, 15, 0, 90, 20), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_WEAP, AD_PHYS, 4, 10), ATTK(AT_MAGC, AD_SPEL, 4, 8),
           NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
@@ -3872,7 +3872,7 @@
         M2_NOPOLY | M2_HUMAN | M2_PNAME | M2_PEACEFUL | M2_STRONG | M2_MALE
             | M2_COLLECT | M2_MAGIC, M3_CLOSE | M3_INFRAVISIBLE, BST_GRASS,
         26, HI_LORD, HIPPOCRATES),
-    MON(NAM("King Arthur"), S_HUMAN,
+    MON(NAMS("King Arthur", "Queen Arthur", "Arthur"), S_HUMAN,
         LVL(20, 15, 0, 90, 20), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_WEAP, AD_PHYS, 4, 10), ATTK(AT_WEAP, AD_PHYS, 4, 10),
           NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
@@ -3881,7 +3881,7 @@
         M2_NOPOLY | M2_HUMAN | M2_PNAME | M2_PEACEFUL | M2_STRONG | M2_MALE
             | M2_COLLECT | M2_MAGIC, M3_CLOSE | M3_INFRAVISIBLE, BST_GRASS,
         24, HI_LORD, KING_ARTHUR),
-    MON(NAM("Grand Master"), S_HUMAN,
+    MON(NAMS("Grand Master", "Grand Mistress", "Grand Master"), S_HUMAN,
         LVL(25, 15, 0, 90, 0), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_CLAW, AD_PHYS, 4, 10), ATTK(AT_KICK, AD_PHYS, 2, 8),
           ATTK(AT_MAGC, AD_CLRC, 2, 8), ATTK(AT_MAGC, AD_CLRC, 2, 8),
@@ -3892,7 +3892,7 @@
         M2_NOPOLY | M2_HUMAN | M2_PEACEFUL | M2_STRONG | M2_MALE | M2_NASTY
             | M2_MAGIC, M3_CLOSE | M3_INFRAVISIBLE | M3_CALLOUT, BST_GRASS,
         30, CLR_BLACK, GRAND_MASTER),
-    MON(NAM("Arch Priest"), S_HUMAN,
+    MON(NAMS("Arch Priest", "Arch Priestess", "Arch Cleric"), S_HUMAN,
         LVL(25, 15, 7, 90, 0), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_WEAP, AD_PHYS, 4, 10), ATTK(AT_KICK, AD_PHYS, 2, 8),
           ATTK(AT_MAGC, AD_CLRC, 2, 8), ATTK(AT_MAGC, AD_CLRC, 2, 8),
@@ -3914,7 +3914,7 @@
         24, HI_LORD, ORION),
     /* Note: Master of Thieves is also the Tourist's nemesis.
      */
-    MON(NAM("Master of Thieves"), S_HUMAN,
+    MON(NAMS("Master of Thieves", "Mistress of Thieves", "Master of Thieves"), S_HUMAN,
         LVL(20, 15, 0, 90, -20), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_WEAP, AD_PHYS, 4, 10), ATTK(AT_WEAP, AD_PHYS, 2, 6),
           ATTK(AT_CLAW, AD_SAMU, 2, 4), NO_ATTK, NO_ATTK, NO_ATTK),
@@ -3925,7 +3925,8 @@
         M3_CLOSE | M3_INFRAVISIBLE | M3_AMBUSHER | M3_TRIPPER | M3_CALLOUT,
         BST_DIRT | BST_GRASS,
         24, HI_LORD, MASTER_OF_THIEVES),
-    MON(NAM("Lord Sato"), S_HUMAN, LVL(20, 15, 0, 90, 20), (G_NOGEN | G_UNIQ),
+    MON(NAMS("Lord Sato", "Lady Sato", "Lord Sato"),
+        S_HUMAN, LVL(20, 15, 0, 90, 20), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_WEAP, AD_PHYS, 4, 10), ATTK(AT_WEAP, AD_PHYS, 4, 10),
           NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
         SIZ(WT_HUMAN, 400, MS_LEADER, MZ_HUMAN), 0, 0,
@@ -4015,7 +4016,7 @@
             | M2_GREEDY | M2_JEWELS | M2_MAGIC,
         M3_WANTSARTI | M3_WAITFORU | M3_INFRAVISION | M3_INFRAVISIBLE, BST_POTION,
         23, HI_LORD, CHROMATIC_DRAGON),
-    MON(NAM("Goblin King"), S_ORC,
+    MON(NAMS("Goblin King", "Goblin Queen", "Goblin Monarch"), S_ORC,
         LVL(15, 12, 10, 0, -15), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_WEAP, AD_PHYS, 2, 6), ATTK(AT_WEAP, AD_PHYS, 2, 6),
           ATTK(AT_CLAW, AD_SAMU, 1, 6), NO_ATTK, NO_ATTK, NO_ATTK),
@@ -4047,7 +4048,7 @@
             | M2_STALK | M2_GREEDY | M2_JEWELS | M2_MAGIC,
         M3_WANTSARTI | M3_WAITFORU | M3_INFRAVISIBLE, BST_ASHES,
         22, CLR_RED, IXOTH),
-    MON(NAM("Master Kaen"), S_HUMAN,
+    MON(NAMS("Master Kaen", "Mistress Kaen", "Master Kaen"), S_HUMAN,
         LVL(25, 12, -10, 10, -20), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_CLAW, AD_PHYS, 16, 2), ATTK(AT_CLAW, AD_PHYS, 16, 2),
           ATTK(AT_MAGC, AD_CLRC, 0, 0), ATTK(AT_CLAW, AD_SAMU, 1, 4),
@@ -4105,7 +4106,7 @@
     /*
      * Note: the Master of Thieves was defined above.
      */
-    MON(NAM("Lord Surtur"), S_GIANT,
+    MON(NAMS("Lord Surtur", "Lady Surtur", "Lord Surtur"), S_GIANT,
         LVL(15, 12, 2, 50, 12), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_WEAP, AD_PHYS, 2, 10), ATTK(AT_WEAP, AD_PHYS, 2, 10),
           ATTK(AT_CLAW, AD_SAMU, 2, 6), NO_ATTK, NO_ATTK, NO_ATTK),
@@ -4149,7 +4150,7 @@
         M2_NOPOLY | M2_HUMAN | M2_PEACEFUL | M2_STRONG | M2_COLLECT,
         M3_INFRAVISIBLE, BST_GRASS,
         7, HI_DOMESTIC, STUDENT),
-    MON(NAM("chieftain"), S_HUMAN,
+    MON(NAMS("chieftain", "chieftainess", "chieftain"), S_HUMAN,
         LVL(5, 12, 10, 10, 0), G_NOGEN,
         A(ATTK(AT_WEAP, AD_PHYS, 1, 6),
           NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
@@ -4216,7 +4217,7 @@
         M2_NOPOLY | M2_HUMAN | M2_PEACEFUL | M2_STRONG | M2_COLLECT,
         M3_INFRAVISIBLE, BST_GRASS,
         8, HI_DOMESTIC, ACOLYTE),
-    MON(NAM("hunter"), S_HUMAN,
+    MON(NAMS("hunter", "huntress", "hunter"), S_HUMAN,
         LVL(5, 12, 10, 10, -7), G_NOGEN,
         A(ATTK(AT_WEAP, AD_PHYS, 1, 4),
           NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),

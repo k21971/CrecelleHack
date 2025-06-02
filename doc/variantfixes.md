@@ -13,6 +13,7 @@
 - Monsters can intentionally throw potions to trigger alchemical
   blasts.
 - Monsters can seek out and put on eyewear.
+- Monsters can wear amulets of change in order to change genders.
 
 ## New Monsters
 - Salt Golem

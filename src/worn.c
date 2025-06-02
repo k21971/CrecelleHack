@@ -760,7 +760,8 @@ m_dowear_type(
             if (obj->oclass != AMULET_CLASS
                 || (obj->otyp != AMULET_OF_LIFE_SAVING
                     && obj->otyp != AMULET_OF_REFLECTION
-                    && obj->otyp != AMULET_OF_GUARDING))
+                    && obj->otyp != AMULET_OF_GUARDING
+                    && obj->otyp != AMULET_OF_CHANGE))
                 continue;
             /* for 'best' to be non-Null, it must be an amulet of guarding;
                life-saving and reflection don't get here due to early return
@@ -933,6 +934,14 @@ m_dowear_type(
         /* } else if (!mon->minvis) {
          *     pline("%s suddenly appears!", Amonnam(mon)); */
         }
+    }
+    if (obj->otyp == AMULET_OF_CHANGE) {
+        if (canseemon(mon)) {
+            pline("%s goes through a remarkable transformation!", Monnam(mon));
+            makeknown(obj->otyp);
+        }
+        mon->female = !mon->female;
+        m_useup(mon, obj);
     }
 }
 #undef RACE_EXCEPTION
