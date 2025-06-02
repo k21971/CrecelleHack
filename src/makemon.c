@@ -2209,6 +2209,7 @@ grow_up(struct monst *mtmp, struct monst *victim)
         lev_limit = 50;   /* recalc below */
     }
 
+    mtmp->mbaby = 0;
     mtmp->mhpmax += max_increase;
     mtmp->mhp += cur_increase;
     if (mtmp->mhpmax <= hp_threshold)

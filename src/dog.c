@@ -260,6 +260,9 @@ makedog(void)
     if (!mtmp)
         return ((struct monst *) 0); /* pets were genocided [how?] */
 
+    /* chance that the pet is a baby. has no impact on gameplay */
+    if (!rn2(6)) mtmp->mbaby = 1;
+
     if (!svc.context.startingpet_mid) {
         svc.context.startingpet_mid = mtmp->m_id;
         if (!u.uroleplay.pauper) {

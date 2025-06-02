@@ -12,6 +12,7 @@ staticfn boolean alreadynamed(struct monst *, char *, char *) NONNULLPTRS;
 staticfn void do_oname(struct obj *) NONNULLARG1;
 staticfn char *docall_xname(struct obj *) NONNULLARG1;
 staticfn void namefloorobj(void);
+staticfn const char *baby_name(struct monst *) NONNULLARG1;
 
 #define NUMMBUF 5
 
@@ -786,6 +787,23 @@ static const char *const mustelid_types[] = {
     "wolverine",
 };
 
+/* Get a baby name for a young monster */
+staticfn const char *
+baby_name(struct monst *mtmp)
+{
+    if (humanoid(mtmp->data))
+        return (mtmp->data->mlet == S_GREMLIN) ? "unfinished " : "young ";
+    switch (mtmp->data->mlet) {
+        case S_DRAGON:
+            return "wyrmling ";
+        case S_BAT:
+        case S_VAMPIRE:
+            return "fledgling ";
+        default:
+            return "baby ";
+    }
+}
+
 /*
  * Monster naming functions:
  * x_monnam is the generic monster-naming function.
@@ -915,15 +933,15 @@ x_monnam(
     }
 
     /* 'pm_name' is the base part of most names */
-    if (mtmp->data == &mons[PM_DOG] || mtmp->data == &mons[PM_LARGE_DOG]) {
+    if (do_mappear) {
+        /*assert(ismnum(mtmp->mappearance));*/
+        pm_name = pmname(&mons[mtmp->mappearance], Mgender(mtmp));
+    } else if (mtmp->data == &mons[PM_DOG] || mtmp->data == &mons[PM_LARGE_DOG]) {
         if (mtmp->data == &mons[PM_LARGE_DOG]) strcat(buf, "large ");
         pm_name = dog_breeds[mtmp->m_id % SIZE(dog_breeds)];
     } else if (mtmp->data == &mons[PM_MUSTELID] || mtmp->data == &mons[PM_GIANT_MUSTELID]) {
         if (mtmp->data == &mons[PM_GIANT_MUSTELID]) strcat(buf, "giant ");
         pm_name = mustelid_types[mtmp->m_id % SIZE(mustelid_types)];
-    } else if (do_mappear) {
-        /*assert(ismnum(mtmp->mappearance));*/
-        pm_name = pmname(&mons[mtmp->mappearance], Mgender(mtmp));
     } else {
         pm_name = mon_pmname(mtmp);
     }
@@ -962,6 +980,9 @@ x_monnam(
     if (do_saddle && (mtmp->misc_worn_check & W_SADDLE) && !Blind
         && !Hallucination)
         Strcat(buf, "saddled ");
+    if (mtmp->mbaby) {
+        Strcat(buf, baby_name(mtmp));
+    }
     has_adjectives = (buf[0] != '\0');
 
     /* Put the actual monster name or type into the buffer now.

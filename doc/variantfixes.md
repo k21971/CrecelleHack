@@ -14,6 +14,8 @@
   blasts.
 - Monsters can seek out and put on eyewear.
 - Monsters can wear amulets of change in order to change genders.
+- Monsters that hatch from eggs are considered to be babies, and
+  their names reflect this. This has no impact on gameplay.
 
 ## New Monsters
 - Salt Golem
