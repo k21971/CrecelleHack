@@ -4248,6 +4248,7 @@ doapply(void)
     case BLINDFOLD:
     case LENSES:
     case SUNGLASSES:
+    case TINKER_GOGGLES:
     case MIRRORED_GLASSES:
         if (obj == ublindf) {
             if (!cursed(obj))

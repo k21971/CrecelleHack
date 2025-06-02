@@ -51,6 +51,9 @@
   - Confused and not cursed: Summons a tame tornado.
 - Mirrored Glasses
   - Provide reflection.
+- Tinker Goggles
+  - Block flash effects, as sunglasses do.
+  - Protects from alchemic blasts when performing alchemy.
 
 ## Floor Coating System
 - Added ice as a floor coating.

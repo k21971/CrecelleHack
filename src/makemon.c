@@ -869,6 +869,11 @@ m_initinv(struct monst *mtmp)
             if (!mpickobj(mtmp, otmp) && !levl[mtmp->mx][mtmp->my].lit)
                 begin_burn(otmp, FALSE);
         }
+        /* Tinkers are outlanders */
+        if (!rn2((In_mines(&u.uz) && gi.in_mklev) ? 100 : 40)) {
+            otmp = mksobj(TINKER_GOGGLES, TRUE, FALSE);
+            (void) mpickobj(mtmp, otmp);
+        }
         if (ptr == &mons[PM_GWTWOD]) {
             otmp = mksobj(WAN_DEATH, FALSE, FALSE);
             otmp->quan = 1;

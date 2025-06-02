@@ -2819,8 +2819,12 @@ potion_dip(struct obj *obj, struct obj *potion)
             if (!breathless(gy.youmonst.data) || haseyes(gy.youmonst.data))
                 potionbreathe(obj);
             useupall(obj);
-            losehp(amt + rnd(9), /* not physical damage */
-                   "alchemic blast", KILLED_BY_AN);
+            if (!(ublindf && ublindf->otyp == TINKER_GOGGLES)) {
+                losehp(amt + rnd(9), /* not physical damage */
+                    "alchemic blast", KILLED_BY_AN);
+            } else {
+                pline("Your eyewear protects you from the blast.");
+            }
             return ECMD_TIME;
         }
 

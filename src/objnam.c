@@ -2746,7 +2746,7 @@ static const char *const as_is[] = {
     /* makesingular() leaves these plural due to how they're used */
     "boots",   "shoes",     "gloves",    "lenses",   "scales",
     "eyes",    "gauntlets", "iron bars", "sunglasses", "mirrored glasses",
-    "dark glasses", "shiny glasses"
+    "dark glasses", "shiny glasses", "goggles", "tinker goggles",
     /* both singular and plural are spelled the same */
     "bison",   "deer",      "elk",       "fish",      "fowl",
     "tuna",    "yaki",      "-hai",      "krill",     "manes",

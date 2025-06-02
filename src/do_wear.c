@@ -2489,6 +2489,7 @@ doputon(void)
              fingers_or_gloves(FALSE),
              (ublindf->otyp == LENSES) ? "some lenses" :
              (ublindf->otyp == SUNGLASSES) ? "some shades" :
+             (ublindf->otyp == TINKER_GOGGLES) ? "some goggles" :
              (ublindf->otyp == MIRRORED_GLASSES) ? "some glasses" : "a blindfold");
         return ECMD_OK;
     }
