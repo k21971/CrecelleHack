@@ -314,6 +314,8 @@ erode_obj(
                   : !vismon ? "The" /* visobj */
                     : s_suffix(Monnam(victim)),
                   ostr, actbuf);
+            if (crackers && carried(otmp) && objects[otmp->otyp].oc_material == GLASS)
+                add_coating(otmp->ox, otmp->oy, COAT_SHARDS, 0);
         }
         if (ef_flags & EF_PAY)
             costly_alteration(otmp, cost_type);
