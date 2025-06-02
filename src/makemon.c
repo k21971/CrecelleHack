@@ -25,6 +25,7 @@ staticfn void m_initgrp(struct monst *, coordxy, coordxy, int, mmflags_nht);
 staticfn void m_initthrow(struct monst *, int, int);
 staticfn void m_initweap(struct monst *);
 staticfn void m_initinv(struct monst *);
+staticfn xint8 hd_size(struct permonst *);
 staticfn boolean makemon_rnd_goodpos(struct monst *, mmflags_nht, coord *);
 staticfn void init_mextra(struct mextra *);
 
@@ -1058,9 +1059,8 @@ propagate(int mndx, boolean tally, boolean ghostly)
  * calculated by rolling a die of this size for each level the monster has.)
  * It used to be 8 for all monsters, but it makes more sense for, say, a mumak
  * to be beefier than a killer bee of the same level. */
-STATIC_OVL xchar
-hd_size(ptr)
-struct permonst * ptr;
+staticfn xint8
+hd_size(struct permonst * ptr)
 {
     switch(ptr->msize) {
     case MZ_TINY:
@@ -1114,10 +1114,10 @@ monmaxhp(struct permonst *ptr,
     if (is_golem(ptr)) {
         /* golems have a fixed amount of HP, varying by golem type */
         return golemhp(monsndx(ptr));
-    } else if (mon->data == &mons[PM_ILLUSION]) {
-        mon->mhpmax = mon->mhp = 1;
-    } else if (mon->data == &mons[PM_TORNADO]){
-        mon->mhpmax = mon->mhp = rn1(30, 10);
+    } else if (ptr == &mons[PM_ILLUSION]) {
+        return 1;
+    } else if (ptr == &mons[PM_TORNADO]){
+        return rn1(30, 10);
     } else if (is_rider(ptr)) {
         /* we want low HP, but a high mlevel so they can attack well */
         /* the fake basehp (weaker level) is 10, but we guarantee at least 10 HP
