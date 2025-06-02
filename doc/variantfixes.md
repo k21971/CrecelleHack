@@ -7,11 +7,12 @@
 ## Monsters
 - Orcs have a chance to spawn with a dual axe.
 - Slightly increase chance of random spawns of unique monsters.
-- Yellow monsters leave behind a trail of acid.
+- Yellow dragons leave behind a trail of acid.
 - More types of monsters spread fire when they move.
 - Monsters can spawn with and throw potions of hazardous waste.
 - Monsters can intentionally throw potions to trigger alchemical
   blasts.
+- Monsters can seek out and put on eyewear.
 
 ## New Monsters
 - Salt Golem

@@ -2823,6 +2823,8 @@ searches_for_item(struct monst *mon, struct obj *obj)
             return TRUE;
         if (typ == EXPENSIVE_CAMERA || typ == CAN_OF_GREASE)
             return (obj->spe > 0);
+        if (is_glasses(typ) && typ != LENSES)
+            return TRUE;
         break;
     case FOOD_CLASS:
         if (typ == CORPSE)
@@ -2867,6 +2869,13 @@ mon_reflects(struct monst *mon, const char *str)
         if (str) {
             pline(str, s_suffix(mon_nam(mon)), "amulet");
             makeknown(AMULET_OF_REFLECTION);
+        }
+        return TRUE;
+    } else if ((orefl = which_armor(mon, WORN_BLINDF))
+                && orefl->otyp == MIRRORED_GLASSES) {
+        if (str) {
+            pline(str, s_suffix(mon_nam(mon)), "glasses");
+            makeknown(MIRRORED_GLASSES);
         }
         return TRUE;
     } else if ((orefl = which_armor(mon, W_ARM))

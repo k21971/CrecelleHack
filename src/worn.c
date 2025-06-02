@@ -717,6 +717,7 @@ m_dowear(struct monst *mon, boolean creation)
     if (!MON_WEP(mon) || !bimanual(MON_WEP(mon)))
         m_dowear_type(mon, W_ARMS, creation, FALSE);
     m_dowear_type(mon, W_ARMG, creation, FALSE);
+    m_dowear_type(mon, W_TOOL, creation, FALSE);
     if (!slithy(mon->data) && mon->data->mlet != S_CENTAUR)
         m_dowear_type(mon, W_ARMF, creation, FALSE);
     if (can_wear_armor)
@@ -815,6 +816,10 @@ m_dowear_type(
             if (!is_suit(obj))
                 continue;
             if (racialexception && (racial_exception(mon, obj) < 1))
+                continue;
+            break;
+        case W_TOOL:
+            if (!is_glasses(obj->otyp))
                 continue;
             break;
         }
@@ -951,6 +956,8 @@ which_armor(struct monst *mon, long flag)
             return uarmf;
         case W_ARMU:
             return uarmu;
+        case W_TOOL:
+            return ublindf;
         default:
             impossible("bad flag in which_armor");
             return 0;

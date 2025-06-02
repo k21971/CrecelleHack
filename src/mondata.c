@@ -249,6 +249,7 @@ boolean
 resists_blnd(struct monst *mon)
 {
     struct permonst *ptr = mon->data;
+    struct obj *obj;
     boolean is_you = (mon == &gy.youmonst);
 
     if (is_you ? (Blind || Unaware)
@@ -266,6 +267,10 @@ resists_blnd(struct monst *mon)
         return TRUE;
     if (is_you && ublindf && (ublindf->otyp == SUNGLASSES || ublindf->otyp == TINKER_GOGGLES))
         return TRUE;
+    if (!is_you) {
+        obj = which_armor(mon, WORN_BLINDF);
+        return (obj && (obj->otyp == SUNGLASSES || obj->otyp == TINKER_GOGGLES));
+    }
     /* catchall */
     if (is_you && Blnd_resist) {
         impossible("'Blnd_resist' but not resists_blnd()?");
