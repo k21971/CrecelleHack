@@ -1432,7 +1432,9 @@ void
 restore_msghistory(NHFILE *nhfp)
 {
     int msgsize = 0;
+#ifndef SFCTOOL
     int msgcount = 0;
+#endif
     char msg[BUFSZ];
 
     while (1) {
@@ -1445,8 +1447,8 @@ restore_msghistory(NHFILE *nhfp)
         msg[msgsize] = '\0';
 #ifndef SFCTOOL
         putmsghistory(msg, TRUE);
-#endif  /* !SFCTOOL */
         ++msgcount;
+#endif /* !SFCTOOL */
     }
 #ifndef SFCTOOL
     if (msgcount)
