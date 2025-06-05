@@ -33,6 +33,7 @@ staticfn int use_stone(struct obj *);
 staticfn int set_trap(void); /* occupation callback */
 staticfn void display_polearm_positions(boolean);
 staticfn void calc_pole_range(int *, int *);
+staticfn boolean snickersnee_used_dist_attk(struct obj *);
 staticfn int use_cream_pie(struct obj *);
 staticfn int jelly_ok(struct obj *);
 staticfn int use_royal_jelly(struct obj **);
@@ -139,7 +140,7 @@ use_towel(struct obj *obj)
             } else {
                 const char *what;
 
-                what = (ublindf->otyp == LENSES || ublindf->otyp == SUNGLASSES)
+                what = is_glasses(ublindf)
                            ? "glasses"
                            : (obj->otyp == ublindf->otyp) ? "other towel"
                                                           : "blindfold";
@@ -420,8 +421,7 @@ use_stethoscope(struct obj *obj)
                     what = simple_typename(odummy->otyp);
                 }
                 use_plural = (is_boots(odummy) || is_gloves(odummy)
-                              || odummy->otyp == LENSES
-                              || odummy->otyp == SUNGLASSES);
+                              || is_glasses(odummy));
                 break;
             case M_AP_MONSTER: /* ignore Hallucination here */
                 what = pmname(&mons[mtmp->mappearance], Mgender(mtmp));
@@ -3415,6 +3415,16 @@ could_pole_mon(void)
     return FALSE;
 }
 
+/* was Snickersnee used to attack at distance this turn already? */
+staticfn boolean
+snickersnee_used_dist_attk(struct obj *obj)
+{
+    if (obj && obj == uwep && u_wield_art(ART_SNICKERSNEE)
+        && svc.context.snickersnee_turn == svm.moves)
+        return TRUE;
+    return FALSE;
+}
+
 /* Distance attacks by pole-weapons */
 int
 use_pole(struct obj *obj, boolean autohit)
@@ -3424,6 +3434,7 @@ use_pole(struct obj *obj, boolean autohit)
     coord cc;
     struct monst *mtmp;
     struct monst *hitm = svc.context.polearm.hitmon;
+    boolean freehit = FALSE;
 
     /* Are you allowed to use the pole? */
     if (u.uswallow) {
@@ -3492,8 +3503,25 @@ use_pole(struct obj *obj, boolean autohit)
         if (overexertion())
             return ECMD_TIME; /* burn nutrition; maybe pass out */
         svc.context.polearm.hitmon = mtmp;
+
+        if (snickersnee_used_dist_attk(obj)) {
+            pline_The("blade doesn't reach there!");
+            return ECMD_FAIL;
+        }
+
         check_caitiff(mtmp);
         gn.notonhead = (gb.bhitpos.x != mtmp->mx || gb.bhitpos.y != mtmp->my);
+
+        /* Snickersnee allows one free hit from a distance per turn */
+        if (obj == uwep && u_wield_art(ART_SNICKERSNEE)) {
+            freehit = (svm.moves != svc.context.snickersnee_turn);
+            svc.context.snickersnee_turn = svm.moves;
+            if (freehit && !Deaf) {
+                Soundeffect(se_sword_blade_rings, 100);
+                pline("Shkinng!"); /* /sha-kin!/ */
+            }
+        }
+
         (void) thitmonst(mtmp, uwep);
     } else if (glyph_is_statue(glyph) /* might be hallucinatory */
                && sobj_at(STATUE, gb.bhitpos.x, gb.bhitpos.y)) {
@@ -3535,7 +3563,7 @@ use_pole(struct obj *obj, boolean autohit)
         }
     }
     u_wipe_engr(2); /* same as for melee or throwing */
-    return ECMD_TIME;
+    return freehit ? ECMD_OK : ECMD_TIME;
 }
 
 #undef glyph_is_poleable
@@ -4220,6 +4248,8 @@ doapply(void)
     case BLINDFOLD:
     case LENSES:
     case SUNGLASSES:
+    case TINKER_GOGGLES:
+    case MIRRORED_GLASSES:
         if (obj == ublindf) {
             if (!cursed(obj))
                 Blindf_off(obj);
@@ -4480,7 +4510,7 @@ flip_through_book(struct obj *obj)
         makeknown(obj->otyp);
     } else if (Hallucination) {
         You("enjoy the animated initials.");
-    } else if (obj->otyp == SPE_NOVEL) {
+    } else if (obj->otyp == SPE_NOVEL || obj->otyp == SPE_BESTIARY) {
         pline("This looks like it might be interesting to read.");
     } else {
         static const char *const fadeness[] = {

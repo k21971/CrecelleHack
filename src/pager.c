@@ -222,7 +222,7 @@ mhidden_description(
             what = (otmp && otmp->otyp != STRANGE_OBJECT)
                    ? simpleonames(otmp)
                    : obj_descr[STRANGE_OBJECT].oc_name;
-            if (incl_article)
+            if (incl_article && (!otmp || otmp->quan == 1L))
                 what = an(what);
             Strcat(outbuf, what);
 
@@ -271,14 +271,12 @@ mhidden_description(
            this monster's spot is !cansee and !couldsee [maybe we need an
            additional vision bit for "hero's side of edge of gas cloud"?] */
         if (distu(x, y) <= r * (r + 1) || force_region) {
-            int rglyph = reg->glyph;
-            int otyp = reg->arg.otyp;
-            boolean poison_gas = (glyph_is_cmap(rglyph)
-                                  && glyph_to_cmap(rglyph) == S_poisoncloud);
+            //int rglyph = reg->glyph;
+            //boolean poison_gas = (glyph_is_cmap(rglyph)
+             //                     && glyph_to_cmap(rglyph) == S_poisoncloud);
 
-            Snprintf(eos(outbuf), BUFSZ - buflen, ", in a %s cloud",
-                     otyp ? OBJ_DESCR(objects[otyp]) :
-                     poison_gas ? "poison gas" : "vapor");
+            Snprintf(eos(outbuf), BUFSZ - buflen, ", in a %s",
+                     region_string(reg));
         }
     }
 }
@@ -628,6 +626,8 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
     pindex = levl[x][y].pindex;
     if ((levl[x][y].coat_info & COAT_SHARDS) != 0)
         Strcat(outbuf, "glass-strewn ");
+    if ((levl[x][y].coat_info & COAT_FROST) != 0)
+        Strcat(outbuf, "icy ");
     if ((levl[x][y].coat_info & COAT_HONEY) != 0)
         Strcat(outbuf, "sticky ");
     if ((levl[x][y].coat_info & COAT_GRASS) != 0)
@@ -827,6 +827,9 @@ lookat(coordxy x, coordxy y, char *buf, char *monbuf)
             Strcpy(buf,
                    Is_airlevel(&u.uz) ? "cloudy area" : "fog/vapor cloud");
             break;
+        case S_fountain:
+            Strcpy(buf, FOUNTAIN_IS_FROZEN(x, y) ? "frozen fountain" : "fountain");
+            break;
         case S_pool:
         case S_water: /* was Plane of Water, now that or "wall of water" */
         case S_lava:
@@ -967,6 +970,16 @@ checkfile(
         dbase_str += 9;
     if (!strncmp(dbase_str, "invisible ", 10))
         dbase_str += 10;
+    if (!strncmp(dbase_str, "young ", 6))
+        dbase_str += 6;
+    if (!strncmp(dbase_str, "fledgling ", 10))
+        dbase_str += 10;
+    if (!strncmp(dbase_str, "baby ", 5))
+        dbase_str += 5;
+    if (!strncmp(dbase_str, "wyrmling ", 9))
+        dbase_str += 9;
+    if (!strncmp(dbase_str, "unhewn ", 7))
+        dbase_str += 7;
     if (!strncmp(dbase_str, "saddled ", 8))
         dbase_str += 8;
     if (!strncmp(dbase_str, "blessed ", 8))
@@ -1980,7 +1993,7 @@ do_look(int mode, coord *click_cc)
                                  supplemental_name);
                 if (supplemental_pm)
                     do_supplemental_info(supplemental_name, supplemental_pm,
-                                         (boolean) (ans == LOOK_VERBOSE));
+                                         FALSE);
             }
         } else {
             pline("I've never heard of such things.");
@@ -2288,6 +2301,7 @@ do_supplemental_info(
     winid datawin = WIN_ERR;
     char *entrytext = name, *bp = (char *) 0, *bp2 = (char *) 0;
     char question[QBUFSZ];
+    char buf[BUFSZ];
     boolean yes_to_moreinfo = FALSE;
     boolean is_marauder = is_orc(pm);
 
@@ -2327,7 +2341,6 @@ do_supplemental_info(
                 }
                 datawin = create_nhwindow(NHW_MENU);
                 for (i = 0; textp[i]; i++) {
-                    char buf[BUFSZ];
                     const char *txt;
 
                     if (strstri(textp[i], "%s") != 0) {
@@ -2342,6 +2355,58 @@ do_supplemental_info(
             }
         }
     }
+    /* Display monster info */
+    datawin = create_nhwindow(NHW_MENU);
+    if (strlen(name) && strlen(name) < (BUFSZ - 1)) {
+        putstr(datawin, 0, name);
+    } else {
+        Sprintf(buf, "%s", pmname(pm, MALE));
+        buf[0] = highc(buf[0]);
+        putstr(datawin, 0, buf);
+    }
+    putstr(datawin, 0, "");
+    /* Size */
+    Sprintf(buf, "%s %s", size_str(pm->msize), def_monsyms[(int) pm->mlet].explain);
+    buf[0] = highc(buf[0]);
+    putstr(datawin, 0, buf);
+    /* Stats */
+    if (svm.mvitals[pm->pmidx].know_stats)
+        Sprintf(buf, "Speed: %d, AC: %d, MR: %d", pm->mmove, pm->ac, pm->mr);
+    else
+        Sprintf(buf, "Speed: ???, AC: ???, MR: ???");
+    putstr(datawin, 0, buf);
+    /* Food */
+    Sprintf(buf, "Edibility: %s",
+            !svm.mvitals[pm->pmidx].know_pcorpse 
+                ? "???" : poisonous(pm) ? "Poisonous" : "Not poisonous");
+    putstr(datawin, 0, buf);
+    /* Harmony */
+    Sprintf(buf, "Harmonies: ");
+    print_mon_harmonies(pm, buf);
+    putstr(datawin, 0, buf);
+    putstr(datawin, 0, "");
+    /* Have we seen it? */
+    if (!svm.mvitals[pm->pmidx].seen_close) {
+        putstr(datawin, 0, "You have never seen this monster up close.");
+    }
+    putstr(datawin, 0, "");
+    /* Attacks */
+    putstr(datawin, 0, "Attacks:");
+    for (int i = 0; i < NATTK; i++) {
+        if (!pm->mattk[i].aatyp && !pm->mattk[i].adtyp && !pm->mattk[i].damn && !pm->mattk[i].damd) continue;
+        if (!(svm.mvitals[pm->pmidx].know_attacks & (1 << i))) {
+            Sprintf(buf, "- ???");
+        } else {
+            Sprintf(buf, "- %s %dd%d %s", mattk_names[pm->mattk[i].aatyp],
+                                            pm->mattk[i].damn,
+                                            pm->mattk[i].damd,
+                                            mad_names[pm->mattk[i].adtyp]);
+        }
+        buf[2] = highc(buf[2]);
+        putstr(datawin, 0, buf);
+    }
+    display_nhwindow(datawin, FALSE);
+    destroy_nhwindow(datawin), datawin = WIN_ERR;
 }
 
 RESTORE_WARNING_FORMAT_NONLITERAL

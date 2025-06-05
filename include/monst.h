@@ -165,6 +165,7 @@ struct monst {
     Bitfield(mtraitor, 1);  /* mon has turned traitor */
     Bitfield(mprone, 1);    /* mon is prone after being tripped */
     Bitfield(maware, 1);    /* mon is aware of you */
+    Bitfield(mbaby, 1);
 
     unsigned long mstrategy; /* for monsters with mflag3: current strategy */
 #ifdef NHSTDC

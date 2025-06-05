@@ -652,10 +652,6 @@ known_hitum(
                 cutworm(mon, gb.bhitpos.x, gb.bhitpos.y, slice_or_chop);
         }
     }
-    /* Weapon speed factor adjustments. */
-    if (weapon) {
-        u.umovement += objects[weapon->otyp].oc_hspeed;
-    }
     return malive;
 }
 
@@ -1597,7 +1593,8 @@ hmon_hitmon_splitmon(
 {
     if ((hmd->mdat == &mons[PM_BLACK_PUDDING]
          || hmd->mdat == &mons[PM_BROWN_PUDDING]
-         || hmd->mdat == &mons[PM_HELLBAT])
+         || hmd->mdat == &mons[PM_HELLBAT]
+         || hmd->mdat == &mons[PM_BLOB])
         /* pudding is alive and healthy enough to split */
         && mon->mhp > 1 && !mon->mcan
         /* iron weapon using melee or polearm hit [3.6.1: metal weapon too;
@@ -1749,6 +1746,7 @@ hmon_hitmon(
     int dieroll)
 {
     struct _hitmon_data hmd;
+    boolean maybe_knockback = FALSE;
 
     hmd.dmg = 0;
     hmd.thrown = thrown;
@@ -1815,6 +1813,9 @@ hmon_hitmon(
         hmon_hitmon_jousting(&hmd, mon, obj);
     } else if (hmd.unarmed && hmd.dmg > 1 && !thrown && !obj && !Upolyd) {
         hmon_hitmon_stagger(&hmd, mon, obj);
+    } else if (!hmd.unarmed && hmd.dmg > 1 && !thrown && !Upolyd
+               && !u.twoweap && uwep) {
+        maybe_knockback = TRUE;
     }
 
     if (!hmd.already_killed) {
@@ -1894,9 +1895,17 @@ hmon_hitmon(
         Your("%s %s no longer poisoned.", hmd.saved_oname,
              vtense(hmd.saved_oname, "are"));
 
-    if (!hmd.destroyed)
-        wakeup(mon, TRUE);
+    if (!hmd.destroyed) {
+        int hitflags = M_ATTK_HIT;
 
+        wakeup(mon, TRUE);
+        if (maybe_knockback
+            && mhitm_knockback(&gy.youmonst, mon, gy.youmonst.data->mattk,
+                               &hitflags, TRUE)) {
+            if ((hitflags & M_ATTK_DEF_DIED) != 0)
+                hmd.destroyed = TRUE;
+        }
+    }
     return hmd.destroyed ? FALSE : TRUE;
 }
 
@@ -5263,12 +5272,17 @@ mhitm_knockback(
     const char *knockedhow;
     coordxy dx, dy, defx, defy;
     int knockdistance = rn2(3) ? 1 : 2; /* 67%: 1 step, 33%: 2 steps */
+    int chance = 6; /* 1/6 chance of attack knocking back a monster */
     boolean u_agr = (magr == &gy.youmonst);
     boolean u_def = (mdef == &gy.youmonst);
     boolean was_u = FALSE, dismount = FALSE;
+    struct obj *wep = weapon_used ? (u_agr ? uwep : MON_WEP(magr))
+                                  : (struct obj *)0;
 
-    /* 1/6 chance of attack knocking back a monster */
-    if (rn2(6))
+    if (wep && is_art(wep, ART_OGRESMASHER))
+        chance = 2;
+
+    if (rn2(chance))
         return FALSE;
 
     /* decide where the first step will place the target; not accurate
@@ -5313,12 +5327,16 @@ mhitm_knockback(
     if (!(magr->data->msize > (mdef->data->msize + 1)))
         return FALSE;
 
+    /* no knockback with a flimsy or non-blunt weapon */
+    if (wep && (is_flimsy(wep) || !is_blunt_weapon(wep)))
+        return FALSE;
+
     /* only certain attacks qualify for knockback */
     if (!((mattk->adtyp == AD_PHYS)
           && (mattk->aatyp == AT_CLAW
               || mattk->aatyp == AT_KICK
               || mattk->aatyp == AT_BUTT
-              || (mattk->aatyp == AT_WEAP && !weapon_used))))
+              || mattk->aatyp == AT_WEAP)))
         return FALSE;
 
     /* needs a solid physical hit */
@@ -5447,6 +5465,7 @@ hmonas(struct monst *mon)
         mattk = getmattk(&gy.youmonst, mon, i, sum, &alt_attk);
         if (gs.skipdrin && mattk->aatyp == AT_TENT && mattk->adtyp == AD_DRIN)
             continue;
+        learn_mattack(gy.youmonst.data->pmidx, i);
         weapon = 0;
         switch (mattk->aatyp) {
         case AT_WEAP:
@@ -5855,6 +5874,7 @@ passive(
     int i, tmp;
     int mhit = mhitb ? M_ATTK_HIT : M_ATTK_MISS;
     int malive = maliveb ? M_ATTK_HIT : M_ATTK_MISS;
+    boolean learn_it = FALSE;
 
     for (i = 0;; i++) {
         if (i >= NATTK)
@@ -5882,6 +5902,7 @@ passive(
             } else if (aatyp == AT_WEAP || aatyp == AT_CLAW
                        || aatyp == AT_MAGC || aatyp == AT_TUCH)
                 passive_obj(mon, weapon, &(ptr->mattk[i]));
+            learn_it = TRUE;
         }
         break;
     case AD_ACID:
@@ -5900,6 +5921,7 @@ passive(
             }
             if (!rn2(30))
                 erode_armor(&gy.youmonst, ERODE_CORRODE);
+            learn_it = TRUE;
         }
         if (mhitb && weapon) {
             if (aatyp == AT_KICK) {
@@ -5909,6 +5931,7 @@ passive(
             } else if (aatyp == AT_WEAP || aatyp == AT_CLAW
                        || aatyp == AT_MAGC || aatyp == AT_TUCH)
                 passive_obj(mon, weapon, &(ptr->mattk[i]));
+            learn_it = TRUE;
         }
         exercise(A_STR, FALSE);
         break;
@@ -5934,6 +5957,7 @@ passive(
                     return M_ATTK_DEF_DIED;
                 }
             }
+            learn_it = TRUE;
         }
         break;
     case AD_RUST:
@@ -5945,6 +5969,7 @@ passive(
             } else if (aatyp == AT_WEAP || aatyp == AT_CLAW
                        || aatyp == AT_MAGC || aatyp == AT_TUCH)
                 passive_obj(mon, weapon, &(ptr->mattk[i]));
+            learn_it = TRUE;
         }
         break;
     case AD_CORR:
@@ -5956,6 +5981,7 @@ passive(
             } else if (aatyp == AT_WEAP || aatyp == AT_CLAW
                        || aatyp == AT_MAGC || aatyp == AT_TUCH)
                 passive_obj(mon, weapon, &(ptr->mattk[i]));
+            learn_it = TRUE;
         }
         break;
     case AD_MAGM:
@@ -5969,6 +5995,7 @@ passive(
             mdamageu(mon, tmp);
             monstunseesu(M_SEEN_MAGR);
         }
+        learn_it = TRUE;
         break;
     case AD_ENCH: /* KMH -- remove enchantment (disenchanter) */
         if (mhitb) {
@@ -5989,6 +6016,7 @@ passive(
                 ;
             }
             passive_obj(mon, weapon, &(ptr->mattk[i]));
+            learn_it = TRUE;
         }
         break;
     default:
@@ -6043,6 +6071,7 @@ passive(
                 dynamic_multi_reason(mon, "frozen", FALSE);
                 exercise(A_DEX, FALSE);
             }
+            learn_it = TRUE;
             break;
         case AD_COLD: /* brown mold or blue jelly */
             if (monnear(mon, u.ux, u.uy)) {
@@ -6061,11 +6090,13 @@ passive(
                 /* at a certain point, the monster will reproduce! */
                 if (mon->mhpmax > (((int) mon->m_lev) + 1) * 8)
                     (void) split_mon(mon, &gy.youmonst);
+                learn_it = TRUE;
             }
             break;
         case AD_STUN: /* specifically yellow mold */
             if (!Stunned)
                 make_stunned((long) tmp, TRUE);
+            learn_it = TRUE;
             break;
         case AD_FIRE:
             if (monnear(mon, u.ux, u.uy)) {
@@ -6079,9 +6110,11 @@ passive(
                 monstunseesu(M_SEEN_FIRE);
                 You("are suddenly very hot!");
                 mdamageu(mon, tmp); /* fire damage */
+                learn_it = TRUE;
             }
             break;
         case AD_ELEC:
+            learn_it = TRUE;
             if (Shock_resistance) {
                 shieldeff(u.ux, u.uy);
                 You_feel("a mild tingle.");
@@ -6094,14 +6127,17 @@ passive(
             mdamageu(mon, tmp);
             break;
         case AD_HONY:
-            if (canseemon(mon))
+            if (canseemon(mon)) {
+                learn_it = TRUE;
                 pline_mon(mon, "Some honey drips from %s.", mon_nam(mon));
+            }
             add_coating(mon->mx, mon->my, COAT_HONEY, 0);
             break;
         default:
             break;
         }
     }
+    if (learn_it) learn_mattack(mon->mnum, i);
     return (malive | mhit);
 }
 

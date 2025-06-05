@@ -1655,14 +1655,14 @@ impact_arti_light(
 
 /* check if a section of floor has already been coated */
 boolean
-has_coating(coordxy x, coordxy y, unsigned char coatflags) {
+has_coating(coordxy x, coordxy y, short coatflags) {
     return (IS_COATABLE(levl[x][y].typ)
             && (levl[x][y].coat_info & coatflags) != 0);
 }
 
 /* add a coating to the floor */
 boolean
-add_coating(coordxy x, coordxy y, unsigned char coatflags, int pindex) {
+add_coating(coordxy x, coordxy y, short coatflags, int pindex) {
     if (!IS_COATABLE(levl[x][y].typ))
         return FALSE;
     else {
@@ -1674,8 +1674,11 @@ add_coating(coordxy x, coordxy y, unsigned char coatflags, int pindex) {
             levl[x][y].lit = 1;
             newsym(x, y);
         }
+        if ((coatflags & COAT_FROST) != 0) {
+            remove_coating(x, y, COAT_POTION | COAT_BLOOD | COAT_ASHES | COAT_FUNGUS | COAT_GRASS);
+        }
         if ((coatflags & COAT_POTION) != 0) {
-            remove_coating(x, y, COAT_BLOOD);
+            remove_coating(x, y, COAT_BLOOD | COAT_FROST);
             levl[x][y].pindex = pindex;
             if (pindex == POT_ACID) {
                 remove_coating(x, y, COAT_GRASS | COAT_ASHES | COAT_HONEY);
@@ -1683,7 +1686,7 @@ add_coating(coordxy x, coordxy y, unsigned char coatflags, int pindex) {
                 impossible("coating floor with invalid object index %d?", pindex);
             }
         } else if ((coatflags & COAT_BLOOD) != 0) {
-            remove_coating(x, y, COAT_POTION);
+            remove_coating(x, y, COAT_POTION | COAT_FROST);
             levl[x][y].pindex = pindex;
             if (!ismnum(pindex)) impossible("coating floor with invalid blood %d?", pindex);
         } else if (pindex) {
@@ -1696,7 +1699,7 @@ add_coating(coordxy x, coordxy y, unsigned char coatflags, int pindex) {
 
 /* remove a coating from the floor */
 boolean
-remove_coating(coordxy x, coordxy y, unsigned char coatflags) {
+remove_coating(coordxy x, coordxy y, short coatflags) {
     if (!IS_COATABLE(levl[x][y].typ))
         return FALSE;
     if ((coatflags & COAT_FUNGUS) != 0) {
@@ -1740,8 +1743,8 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
     if (has_coating(x, y, COAT_SHARDS)) {
         if (isyou) {
             if (uarmf) {
-                pline("Shards of glass crunch under %s.",
-                    yobjnam(uarmf, (const char *) 0));
+                pline("Shards of glass crunch under your %s.",
+                    boots_simple_name(uarmf));
             } else if (thick_skinned(mon->data)) {
                 pline("Shards of glass crunch under your %s.", makeplural(body_part(FOOT)));
             } else {
@@ -1771,7 +1774,7 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
         if ((!Levitation && !Flying) && !rn2(3)) {
             if (uarmf) {
                 struct obj *otmp;
-                pline("%s in some honey and yanked from your %s!",
+                pline("%s in some honey and are yanked from your %s!",
                         Yobjnam2(uarmf, "stick"),
                         makeplural(body_part(FOOT)));
                 otmp = uarmf;
@@ -1819,6 +1822,7 @@ floor_alchemy(int x, int y, int otyp, int corpsenm) {
     struct obj *otmp, *objchain;
     fakeobj1.otyp = otyp;
     fakeobj1.oclass = POTION_CLASS;
+    boolean bomb = FALSE;
     
     if (otyp == POT_WATER) {
         if ((objchain = svl.level.objects[x][y]) != 0) {
@@ -1832,6 +1836,8 @@ floor_alchemy(int x, int y, int otyp, int corpsenm) {
             if (rn2(2)) add_coating(x, y, COAT_POTION, otyp);
             return;
         }
+        if (otyp == POT_HAZARDOUS_WASTE || levl[x][y].pindex == POT_HAZARDOUS_WASTE)
+            bomb = TRUE;
         fakeobj2.otyp = levl[x][y].pindex;
         otyp = mixtype(&fakeobj1, &fakeobj2);
         if (otyp == STRANGE_OBJECT) {
@@ -1842,7 +1848,8 @@ floor_alchemy(int x, int y, int otyp, int corpsenm) {
         if (cansee(x, y)) {
             Norep("The liquids on the ground begin to mix."); /* todo: location pline for accessability? */
         }
-        if (!rn2(10)) {
+        if (bomb || !rn2(10)) {
+            remove_coating(x, y, COAT_POTION);
             explode(x, y, 11, d(1, 10), 0, EXPL_NOXIOUS);
             return;
         }
@@ -2814,6 +2821,7 @@ potion_dip(struct obj *obj, struct obj *potion)
         /* Mixing potions is dangerous...
            KMH, balance patch -- acid is particularly unstable */
         if (obj->cursed || obj->otyp == POT_ACID || obj->otyp == POT_HAZARDOUS_WASTE
+            || potion->otyp == POT_HAZARDOUS_WASTE
             || (obj->otyp == POT_OIL && obj->lamplit) || !rn2(10)) {
             /* it would be better to use up the whole stack in advance
                of the message, but we can't because we need to keep it
@@ -2826,8 +2834,12 @@ potion_dip(struct obj *obj, struct obj *potion)
             if (!breathless(gy.youmonst.data) || haseyes(gy.youmonst.data))
                 potionbreathe(obj);
             useupall(obj);
-            losehp(amt + rnd(9), /* not physical damage */
-                   "alchemic blast", KILLED_BY_AN);
+            if (!(ublindf && ublindf->otyp == TINKER_GOGGLES)) {
+                losehp(amt + rnd(9), /* not physical damage */
+                    "alchemic blast", KILLED_BY_AN);
+            } else {
+                pline("Your eyewear protects you from the blast.");
+            }
             return ECMD_TIME;
         }
 

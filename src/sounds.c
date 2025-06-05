@@ -732,6 +732,12 @@ domonnoise(struct monst *mtmp)
     else if (Hallucination && mon_is_gecko(mtmp))
         msound = MS_SELL;
 
+    /* Chatting to a tame monster reveals its capabilities. */
+    if (mtmp->mtame) {
+        for (int i = 0; i < NATTK; i++)
+            learn_mattack(mtmp->mnum, i);
+    }
+
     /* be sure to do this before talking; the monster might teleport away, in
      * which case we want to check its pre-teleport position
      */
@@ -2279,12 +2285,13 @@ dotaunt(void)
 
 static const char *generic_callouts[] = {
     "Over here!", "Take 'em down!", "I need backup!",
-    "Get 'em!",   "Over there!", "After 'em!",
-    "This way!"
+    "Get 'em!",   "Over there!",    "After 'em!",
+    "This way!",  "Cover me!",      "To me!",
 };
 
 static const char *near_callouts[] = {
-    "On the ", "Near the ", "By the "
+    "On the ",  "Near the ", "By the ",
+    "On that ",
 };
 
 staticfn char *
@@ -2299,7 +2306,7 @@ mverbal_description(coordxy x, coordxy y, char *buf)
         else
             fbuf = rn2(2) ? "stairs" : "steps";
     } else if (IS_FOUNTAIN(ltyp)) {
-        fbuf = "fountain";
+        fbuf = rn2(2) ? "fountain" : "font";
     } else if (IS_THRONE(ltyp)) {
         fbuf = rn2(2) ? "throne" : "chair";
     } else if (IS_SINK(ltyp)) {

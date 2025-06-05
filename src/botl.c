@@ -690,12 +690,12 @@ struct condtests_t condtests[CONDITION_COUNT] = {
     { bl_glowhands, "glowhands",   opt_in,  FALSE, FALSE, FALSE },
     { bl_grab,      "grab",        opt_out, TRUE,  FALSE, FALSE },
     { bl_hallu,     "hallucinat",  opt_out, TRUE,  FALSE, FALSE },
-    { bl_held,      "held",        opt_in,  FALSE, FALSE, FALSE },
+    { bl_held,      "held",        opt_out,  FALSE, FALSE, FALSE },
     { bl_icy,       "ice",         opt_in,  FALSE, FALSE, FALSE },
     { bl_inlava,    "lava",        opt_out, TRUE,  FALSE, FALSE },
     { bl_lev,       "levitate",    opt_out, TRUE,  FALSE, FALSE },
     { bl_parlyz,    "paralyzed",   opt_in,  FALSE, FALSE, FALSE },
-    { bl_ride,      "ride",        opt_out, TRUE,  FALSE, FALSE },
+    { bl_ride,      "ride",        opt_in, TRUE,  FALSE, FALSE },
     { bl_sleeping,  "sleep",       opt_in,  FALSE, FALSE, FALSE },
     { bl_slime,     "slime",       opt_out, TRUE,  FALSE, FALSE },
     { bl_slippery,  "slip",        opt_in,  FALSE, FALSE, FALSE },
@@ -940,7 +940,7 @@ bot_via_windowport(void)
 
     /* Conditions */
 
-    gb.blstats[idx][BL_CONDITION].a.a_ulong = 0L;
+    gb.blstats[idx][BL_CONDITION].a.a_uint64 = 0;
 
     /*
      * Avoid anything that does string comparisons in here because this
@@ -1053,7 +1053,7 @@ bot_via_windowport(void)
     }
 
 #define cond_setbit(c) \
-        gb.blstats[idx][BL_CONDITION].a.a_ulong |= conditions[(c)].mask
+        gb.blstats[idx][BL_CONDITION].a.a_uint64 |= conditions[(c)].mask
 
     for (i = 0; i < CONDITION_COUNT; ++i) {
         if (condtests[i].enabled
@@ -1397,7 +1397,7 @@ eval_notify_windowport_field(
                           chg, pc, color, (unsigned long *) 0);
         } else {
             /* Color for conditions is done through gc.cond_hilites[] */
-            status_update(fld, (genericptr_t) &curr->a.a_ulong,
+            status_update(fld, (genericptr_t) &curr->a.a_uint64,
                           chg, pc, color, gc.cond_hilites);
         }
         curr->chg = prev->chg = TRUE;
@@ -1645,6 +1645,10 @@ compare_blstats(struct istat_s *bl1, struct istat_s *bl2)
         result = (a1->a_ulong < a2->a_ulong) ? 1
                      : (a1->a_ulong > a2->a_ulong) ? -1 : 0;
         break;
+    case ANY_UINT64:
+        result = (a1->a_uint64 < a2->a_uint64) ? 1
+                     : (a1->a_uint64 > a2->a_uint64) ? -1 : 0;
+        break;
     case ANY_ULPTR:
         result = (*a1->a_ulptr < *a2->a_ulptr) ? 1
                      : (*a1->a_ulptr > *a2->a_ulptr) ? -1 : 0;
@@ -1683,6 +1687,9 @@ anything_to_s(char *buf, anything *a, int anytype)
     case ANY_UINT:
         Sprintf(buf, "%u", a->a_uint);
         break;
+    case ANY_UINT64:
+        Sprintf(buf, "%lu", a->a_uint64);
+        break;
     case ANY_IPTR:
         Sprintf(buf, "%d", *a->a_iptr);
         break;
@@ -1720,6 +1727,9 @@ s_to_anything(anything *a, char *buf, int anytype)
         break;
     case ANY_UINT:
         a->a_uint = (unsigned) atoi(buf);
+        break;
+    case ANY_UINT64:
+        a->a_uint64 = (unsigned) atoi(buf);
         break;
     case ANY_ULONG:
         a->a_ulong = (unsigned long) atol(buf);
@@ -1791,6 +1801,10 @@ percentage(struct istat_s *bl, struct istat_s *maxbl)
         case ANY_UINT:
             uval = bl->a.a_uint;
             result = (int) ((100U * uval) / maxbl->a.a_uint);
+            break;
+        case ANY_UINT64:
+            uval = bl->a.a_uint64;
+            result = (int) ((100U * uval) / maxbl->a.a_uint64);
             break;
         case ANY_ULONG:
             ulval = bl->a.a_ulong;
@@ -2900,7 +2914,7 @@ query_conditions(void)
 
     for (i = 0; i < SIZE(conditions); i++) {
         any = cg.zeroany;
-        any.a_ulong = conditions[i].mask;
+        any.a_uint64 = conditions[i].mask;
         add_menu(tmpwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE,
                  clr, conditions[i].text[0], MENU_ITEMFLAGS_NONE);
     }
@@ -2911,7 +2925,7 @@ query_conditions(void)
     destroy_nhwindow(tmpwin);
     if (res > 0) {
         for (i = 0; i < res; i++)
-            ret |= picks[i].item.a_ulong;
+            ret |= picks[i].item.a_uint64;
         free((genericptr_t) picks);
     }
     return ret;
@@ -3420,7 +3434,7 @@ status_hilite2str(struct hilite_s *hl)
         break;
     case BL_TH_CONDITION:
         if (hl->rel == EQ_VALUE)
-            Sprintf(behavebuf, "%s", conditionbitmask2str(hl->value.a_ulong));
+            Sprintf(behavebuf, "%s", conditionbitmask2str(hl->value.a_uint64));
         else
             impossible("hl->behavior=condition, rel error");
         break;

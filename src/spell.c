@@ -469,6 +469,7 @@ study_book(struct obj *spellbook)
     int booktype = spellbook->otyp, i;
     boolean confused = (Confusion != 0);
     boolean too_hard = FALSE;
+    int mnum;
 
     /* attempting to read dull book may make hero fall asleep */
     if (!confused && !Sleep_resistance
@@ -498,7 +499,8 @@ study_book(struct obj *spellbook)
            svc.context.spbook.book become erased somehow, resume reading it */
         && booktype != SPE_BLANK_PAPER) {
         You("continue your efforts to %s.",
-            (booktype == SPE_NOVEL) ? "read the novel"
+            (booktype == SPE_NOVEL) ? "read the novel" :
+            (booktype == SPE_BESTIARY) ? "study the diagrams"
                                     : "memorize the spell");
     } else {
         /* KMH -- Simplified this code */
@@ -529,6 +531,27 @@ study_book(struct obj *spellbook)
                     newexplevel();
                     u.uevent.read_tribute = 1; /* only once */
                 }
+            }
+            return 1;
+        }
+
+        /* Let's learn about some monsters... */
+        if (booktype == SPE_BESTIARY) {
+            if (spellbook->spestudied < MAX_SPELL_STUDY) {
+                for (int j = 0; j < rnd(8); j++) {
+                    mnum = rndmonnum();
+                    pline("You read an entry on %s.",
+                            makeplural(pmname(&mons[mnum], rn2(2) ? MALE : FEMALE)));
+                    for (int k = 0; k < NATTK; k++) {
+                        learn_mattack(mnum, k);
+                    }
+                    svm.mvitals[mnum].know_pcorpse = 1;
+                    svm.mvitals[mnum].know_rcorpse = 1;
+                    svm.mvitals[mnum].know_stats = 1;
+                }
+                spellbook->spestudied = MAX_SPELL_STUDY;
+            } else {
+                You("already know all about the monsters in this book.");
             }
             return 1;
         }

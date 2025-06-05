@@ -39,7 +39,6 @@ staticfn void releaseobuf(char *) NONNULLARG1;
 staticfn void xcalled(char *, int, const char *, const char *);
 staticfn char *xname_flags(struct obj *, unsigned);
 staticfn char *minimal_xname(struct obj *);
-staticfn void add_boost_words(struct obj *, char *);
 staticfn void add_erosion_words(struct obj *, char *);
 staticfn char *doname_base(struct obj *obj, unsigned);
 staticfn boolean singplur_lookup(char *, char *, boolean,
@@ -235,6 +234,8 @@ obj_typename(int otyp)
     case SPBOOK_CLASS:
         if (otyp != SPE_NOVEL) {
             Strcpy(buf, "spellbook");
+        } else if (otyp == SPE_BESTIARY) {
+            Strcpy(buf, nn ? "bestiary" : "textbook");
         } else {
             Strcpy(buf, !nn ? "book" : "novel");
             nn = 0;
@@ -693,7 +694,7 @@ xname_flags(
     case TOOL_CLASS:
         /* note: lenses or towel prefix would overwrite poisoned weapon
            prefix if both were simultaneously possible, but they aren't */
-        if (typ == LENSES || typ == SUNGLASSES)
+        if (is_glasses(obj))
             Strcpy(buf, "pair of ");
         else if (is_wet_towel(obj))
             Strcpy(buf, (obj->spe < 3) ? "moist " : "wet ");
@@ -889,13 +890,13 @@ xname_flags(
             Sprintf(buf, "%s wand", dn);
         break;
     case SPBOOK_CLASS:
-        if (typ == SPE_NOVEL) { /* 3.6 tribute */
+        if (typ == SPE_NOVEL || typ == SPE_BESTIARY) { /* 3.6 tribute */
             if (!dknown)
                 Strcpy(buf, "book");
             else if (nn)
                 Strcpy(buf, actualn);
             else if (un)
-                xcalled(buf, BUFSZ - PREFIX, "novel", un);
+                xcalled(buf, BUFSZ - PREFIX, (typ == SPE_NOVEL) ? "novel" : "bestiary", un);
             else
                 Sprintf(buf, "%s book", dn);
             break;
@@ -1150,29 +1151,29 @@ the_unique_pm(struct permonst *ptr)
 }
 
 static struct boostnam boostnams[] = {
-   { BST_GRASS, "Grass" },
-   { BST_DIRT, "Dirt" },
-   { BST_ROCK, "Rock" },
-   { BST_WATER, "Water" },
-   { BST_ASHES, "Ashes" },
-   { BST_FUNGI, "Fungi" },
-   { BST_BLOOD, "Blood" },
-   { BST_SAND, "Sand" },
-   { BST_POTION, "Tonic" },
-   { BST_HONEY, "Honey" }
+   { BST_GRASS, "Grass", "Grs" },
+   { BST_DIRT, "Dirt", "Drt" },
+   { BST_ROCK, "Rock", "Rck" },
+   { BST_WATER, "Water", "Wtr" },
+   { BST_ASHES, "Ashes", "Ash" },
+   { BST_FUNGI, "Fungi", "Fng" },
+   { BST_BLOOD, "Blood", "Bld" },
+   { BST_SAND, "Sand", "Snd" },
+   { BST_POTION, "Tonic", "Tnc" },
+   { BST_HONEY, "Honey", "Hny" },
+   { BST_ICE, "Ice", "Ice" }
 };
 
-staticfn void
-add_boost_words(struct obj *obj, char *prefix)
+void
+print_mon_harmonies(struct permonst *pm, char *buf)
 {
-    if (!obj->booster) return;
-    Strcat(prefix, "{");
+    boolean first = TRUE;
     for (int i = 0; i < SIZE(boostnams); i++) {
-        if (obj->booster & boostnams[i].boost_short) {
-            Sprintf(eos(prefix), "%c", boostnams[i].nam[0]);
+        if (pm->mboost & boostnams[i].boost_short) {
+            Sprintf(eos(buf), "%s%s", first ? "" : ", ", boostnams[i].nam);
+            first = FALSE;
         }
     }
-    Strcat(prefix, "} ");
 }
 
 void
@@ -1245,13 +1246,6 @@ erosion_matters(struct obj *obj)
 {
     switch (obj->oclass) {
     case TOOL_CLASS:
-        /* it's possible for a rusty weptool to be polymorphed into some
-           non-weptool iron tool, in which case the rust implicitly goes
-           away, but it's also possible for it to be polymorphed into a
-           non-iron tool, in which case rust also implicitly goes away,
-           so there's no particular reason to try to handle the first
-           instance differently [this comment belongs in poly_obj()...] */
-        return is_weptool(obj) ? TRUE : FALSE;
     case WEAPON_CLASS:
     case ARMOR_CLASS:
     case BALL_CLASS:
@@ -1430,6 +1424,7 @@ doname_base(
 
     switch (is_weptool(obj) ? WEAPON_CLASS : obj->oclass) {
     case AMULET_CLASS:
+        add_erosion_words(obj, prefix);
         if (obj->owornmask & W_AMUL)
             Concat(bp, 0, " (being worn)");
         break;
@@ -1470,12 +1465,12 @@ doname_base(
         add_erosion_words(obj, prefix);
         if (known) {
             Sprintf(eos(prefix), "%+d ", obj->spe); /* sitoa(obj->spe)+" " */
-            add_boost_words(obj, prefix);
-        } else if (obj->booster) {
+        } else if (!known && obj->booster) {
             Strcat(prefix, "harmonic ");
         }
         break;
     case TOOL_CLASS:
+        add_erosion_words(obj, prefix);
         if (obj->owornmask & (W_TOOL | W_SADDLE)) { /* blindfold */
             Concat(bp, 0, " (being worn)");
             break;
@@ -1611,6 +1606,19 @@ doname_base(
                                             : "unspecified gender");
     }
 
+    if (known && obj->booster &&
+        (obj->oclass == WEAPON_CLASS || 
+            obj->oclass == ARMOR_CLASS || 
+            is_weptool(obj))) {
+        Concat(bp, 0, " {");
+        for (int i = 0; i < SIZE(boostnams); i++) {
+            if (obj->booster & boostnams[i].boost_short) {
+                ConcatF1(bp, 0, "%s", boostnams[i].abbr);
+            }
+        }
+        Concat(bp, 0, "}");
+    }
+
     if ((obj->owornmask & W_WEP) && !gm.mrg_to_wielded) {
         boolean twoweap_primary = (obj == uwep && u.twoweap),
                 tethered = (obj->otyp == AKLYS);
@@ -1742,7 +1750,7 @@ doname_base(
         /* wizard mode user has asked to see object weights */
         if (with_price && bp_eos[-1] == ')')
             ConcatF1(bp, 1, 
-                     wizard ? ", %u aum)" : ", {%u})",
+                     wizard ? ", %u aum)" : "), {%u}",
                      (obj->otyp == LOADSTONE && !obj->bknown) ? 10 : obj->owt);
         else
             ConcatF1(bp, 0,
@@ -2737,8 +2745,8 @@ static const struct sing_plur one_off[] = {
 static const char *const as_is[] = {
     /* makesingular() leaves these plural due to how they're used */
     "boots",   "shoes",     "gloves",    "lenses",   "scales",
-    "eyes",    "gauntlets", "iron bars", "sunglasses",
-    "dark glasses",
+    "eyes",    "gauntlets", "iron bars", "sunglasses", "mirrored glasses",
+    "dark glasses", "shiny glasses", "goggles", "tinker goggles",
     /* both singular and plural are spelled the same */
     "bison",   "deer",      "elk",       "fish",      "fowl",
     "tuna",    "yaki",      "-hai",      "krill",     "manes",
@@ -4605,8 +4613,8 @@ readobjnam_postparse1(struct _readobjnam_data *d)
         return 4; /*goto any;*/
     }
 
-    /* Search for class names: XXXXX potion, scroll of XXXXX.  Avoid */
-    /* false hits on, e.g., rings for "ring mail". */
+    /* Search for class names: XXXXX potion, scroll of XXXXX.
+       Avoid false hits on, e.g., rings for "ring mail". */
     if (strncmpi(d->bp, "enchant ", 8)
         && strncmpi(d->bp, "destroy ", 8)
         && strncmpi(d->bp, "detect food", 11)
@@ -4646,10 +4654,24 @@ readobjnam_postparse1(struct _readobjnam_data *d)
                     if (d->p > d->bp && d->p[-1] == ' ')
                         d->p[-1] = '\0';
                 } else {
+                    int k, l;
+                    char amubuf[BUFSZ];
+
                     /* amulet without "of"; convoluted wording but better a
                        special case that's handled than one that's missing */
                     if (!strncmpi(d->bp, "versus poison ", 14)) {
                         d->typ = AMULET_VERSUS_POISON;
+                        return 2; /*goto typfnd;*/
+                    }
+                    /* check for "<shape> amulet"; strip off trailing
+                       " amulet" for that w/o changing contents of d->bp */
+                    l = (int) strlen(d->bp) - j;
+                    if (l > 0 && d->bp[l - 1] == ' ')
+                        l -= 1;
+                    copynchars(amubuf, d->bp, min(l, (int) sizeof amubuf - 1));
+                    k = rnd_otyp_by_namedesc(amubuf, AMULET_CLASS, 0);
+                    if (k != STRANGE_OBJECT) {
+                        d->typ = k;
                         return 2; /*goto typfnd;*/
                     }
                 }
@@ -5531,6 +5553,8 @@ suit_simple_name(struct obj *suit)
             return "dragon mail"; /* <color> dragon scale mail */
         else if (Is_dragon_scales(suit))
             return "dragon scales";
+        else if (suit->oclass == TOOL_CLASS)
+            return "tool";
         suitnm = OBJ_NAME(objects[suit->otyp]);
         esuitp = eos((char *) suitnm);
         if (strlen(suitnm) > 5 && !strcmp(esuitp - 5, " mail"))

@@ -22,6 +22,8 @@ staticfn boolean vamprises(struct monst *);
 staticfn void logdeadmon(struct monst *, int);
 staticfn void anger_quest_guardians(struct monst *);
 staticfn boolean ok_to_obliterate(struct monst *);
+staticfn void m_respond_shrieker(struct monst *);
+staticfn void m_respond_medusa(struct monst *);
 staticfn void qst_guardians_respond(void);
 staticfn void peacefuls_respond(struct monst *);
 staticfn void wake_nearto_core(coordxy, coordxy, int, boolean);
@@ -646,6 +648,13 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
         obj = mkcorpstat(CORPSE, mtmp, &mons[num], x, y, corpstatflags);
         obj->age -= (TAINT_AGE + 1); /* this is an *OLD* corpse */
         break;
+    case PM_COLOSSUS:
+        num = d(2, 6);
+        while (num--)
+            obj = mksobj_at(BRONZE_PLATE_MAIL, x, y, TRUE, FALSE);
+        free_mgivenname(mtmp);
+        break;
+        /*FALLTHRU*/
     case PM_IRON_GOLEM:
         num = d(2, 6);
         while (num--)
@@ -741,6 +750,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_FIRE_ANT: case PM_SNOW_ANT: case PM_GIANT_BEETLE: case PM_QUEEN_BEE:
 
     case PM_QUIVERING_BLOB: case PM_ACID_BLOB: case PM_GELATINOUS_CUBE:
+    case PM_BLOB:
     case PM_CHICKATRICE: case PM_COCKATRICE: case PM_PYROLISK:
 
     case PM_JACKAL: case PM_FOX: case PM_COYOTE: case PM_WEREJACKAL:
@@ -753,7 +763,8 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_FLAMING_SPHERE: case PM_SHOCKING_SPHERE: case PM_GRAVIMETRIC_SPHERE:
 
     case PM_KITTEN: case PM_HOUSECAT: case PM_JAGUAR: case PM_LYNX:
-    case PM_PANTHER: case PM_LARGE_CAT:  case PM_TIGER: case PM_SMILODON:
+    case PM_PANTHER: case PM_LARGE_CAT:  case PM_TIGER:
+    case PM_PUSS_IN_BOOTS: case PM_SMILODON:
     case PM_CATERWAUL: case PM_HELLCAT:
 
     case PM_DISPLACER_BEAST: case PM_GREMLIN:
@@ -778,7 +789,8 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_SEWER_RAT: case PM_GIANT_RAT: case PM_RABID_RAT:
     case PM_WERERAT:
 
-    case PM_ROCK_MOLE: case PM_WOODCHUCK: case PM_RAT_RULER:
+    case PM_ROCK_MOLE: case PM_WOODCHUCK:
+    case PM_MUSTELID: case PM_GIANT_MUSTELID: case PM_RAT_RULER:
     case PM_CAVE_SPIDER: case PM_CENTIPEDE: case PM_GIANT_SPIDER:
     case PM_SCORPION:
     case PM_LURKER_ABOVE: case PM_TRAPPER: case PM_SPANNER:
@@ -848,7 +860,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
 
     case PM_GHOUL: case PM_SKELETON:
 
-    case PM_STRAW_GOLEM: case PM_FLESH_GOLEM:
+    case PM_STRAW_GOLEM: case PM_FLESH_GOLEM: case PM_SALT_GOLEM:
 
     case PM_HUMAN: case PM_HUMAN_WERERAT: case PM_HUMAN_WEREJACKAL:
     case PM_HUMAN_WEREWOLF: case PM_ELF: case PM_WOODLAND_ELF:
@@ -888,7 +900,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_ARCH_PRIEST: case PM_ORION: case PM_MASTER_OF_THIEVES:
     case PM_LORD_SATO: case PM_TWOFLOWER: case PM_NORN:
     case PM_NEFERET_THE_GREEN: case PM_MASKED_MUMMY: case PM_MINION_OF_HUHETOTL:
-    case PM_THOTH_AMON: case PM_CHROMATIC_DRAGON: case PM_CYCLOPS:
+    case PM_THOTH_AMON: case PM_CHROMATIC_DRAGON: case PM_GOBLIN_KING: case PM_CYCLOPS:
     case PM_IXOTH: case PM_MASTER_KAEN: case PM_NALZOK:
     case PM_SCORPIUS: case PM_MASTER_ASSASSIN: case PM_ASHIKAGA_TAKAUJI:
     case PM_LORD_SURTUR: case PM_HEEL: case PM_DARK_ONE: case PM_STUDENT:
@@ -1089,7 +1101,8 @@ minliquid_core(struct monst *mtmp)
             }
             if (cansee(mtmp->mx, mtmp->my)) {
                 if (svc.context.mon_moving)
-                    pline_mon(mtmp, "%s drowns.", Monnam(mtmp));
+                    pline_mon(mtmp, "%s %s.", Monnam(mtmp),
+                                mtmp->data == &mons[PM_SALT_GOLEM] ? "dissolves" : "drowns");
                 else
                     /* hero used fire to melt ice that monster was on */
                     You("drown %s.", mon_nam(mtmp));
@@ -2444,9 +2457,21 @@ mfndpos(
 staticfn long
 mm_2way_aggression(struct monst *magr, struct monst *mdef)
 {
-    /* zombies vs things that can be zombified */
+    /* liches/zombies vs things that can be zombified
+
+       Note: avoid this on the Castle level, partly for balance reasons
+       (the monster-versus-monster fights clear out significant portions of
+       the Castle and make it easier than it should be), partly for flavor
+       reasons (monsters who attacked other monsters to zombify them would
+       have been counterattacked to death long before the hero arried).
+
+       Also don't include unique monsters in this, otherwise it leads to
+       them waking up early (e.g. because a zombie decided to attack the
+       Wizard of Yendor). */
     if (zombie_maker(magr) && zombie_form(mdef->data) != NON_PM)
-        return (ALLOW_M | ALLOW_TM);
+        if (!Is_stronghold(&u.uz) &&
+            !unique_corpstat(magr->data) && !unique_corpstat(mdef->data))
+            return (ALLOW_M | ALLOW_TM);
 
     return 0;
 }
@@ -4137,44 +4162,65 @@ mnearto(
     return res;
 }
 
-/* monster responds to player action; not the same as a passive attack;
-   assumes reason for response has been tested, and response _must_ be made */
+/* shrieker special action: shriek, maybe summon monster, aggravate */
+staticfn void
+m_respond_shrieker(struct monst *mtmp)
+{
+    if (!Deaf) {
+        pline("%s shrieks.", Monnam(mtmp));
+        stop_occupation();
+    }
+    if (!rn2(10)) { /* 1/10 chance per shriek to create a monster */
+        /* new monster has a 1/13 chance to be a purple worm, random
+           otherwise; baby purple worm if adult is too difficult */
+        (void) makemon(rn2(13) ? (struct permonst *) 0
+                       : &mons[montoostrong(PM_PURPLE_WORM,
+                                            monmax_difficulty_lev())
+                               ? PM_BABY_PURPLE_WORM : PM_PURPLE_WORM],
+                       0, 0, NO_MM_FLAGS);
+    }
+    aggravate();
+}
+
+/* medusa special action: gaze at hero */
+staticfn void
+m_respond_medusa(struct monst *mtmp)
+{
+    int i;
+
+    for (i = 0; i < NATTK; i++)
+        if (mtmp->data->mattk[i].aatyp == AT_GAZE) {
+            (void) gazemu(mtmp, &mtmp->data->mattk[i]);
+            break;
+        }
+}
+
+/* monster responds to player action; not the same as a passive attack */
 void
 m_respond(struct monst *mtmp)
 {
-    if (mtmp->data->msound == MS_SHRIEK) {
-        if (!Deaf) {
-            pline("%s shrieks.", Monnam(mtmp));
-            stop_occupation();
-        }
-        if (!rn2(10)) { /* 1/10 chance per shriek to create a monster */
-            /* new monster has a 1/13 chance to be a purple worm, random
-               otherwise; baby purple worm if adult is too difficult */
-            (void) makemon(rn2(13) ? (struct permonst *) 0
-                           : &mons[montoostrong(PM_PURPLE_WORM,
-                                                monmax_difficulty_lev())
-                                   ? PM_BABY_PURPLE_WORM : PM_PURPLE_WORM],
-                           0, 0, NO_MM_FLAGS);
-        }
+    /* Illusions may disappear in order to prevent flooding the level */
+    if (mtmp->data == &mons[PM_ILLUSION] && !rn2(10))
+        mongone(mtmp);
+    /* Tornados make noise */
+    if (mtmp->data == &mons[PM_TORNADO] && !Deaf && !rn2(30))
+        You_hear("a horrible sucking noise.");
+    if (mtmp->data->msound == MS_SHRIEK && !um_dist(mtmp->mx, mtmp->my, 1))
+        m_respond_shrieker(mtmp);
+    if (mtmp->data == &mons[PM_MEDUSA] && couldsee(mtmp->mx, mtmp->my))
+        m_respond_medusa(mtmp);
+    /* Erinyes will inform surrounding monsters of your crimes */
+    if (mtmp->data == &mons[PM_ERINYS] && !mtmp->mpeaceful && m_canseeu(mtmp))
         aggravate();
-    }
-    if (mtmp->data == &mons[PM_MEDUSA]) {
-        int i;
-
-        for (i = 0; i < NATTK; i++)
-            if (mtmp->data->mattk[i].aatyp == AT_GAZE) {
-                (void) gazemu(mtmp, &mtmp->data->mattk[i]);
-                break;
-            }
-    }
-    if (mtmp->data == &mons[PM_CATERWAUL]) {
+    if (mtmp->data == &mons[PM_CATERWAUL] && !um_dist(mtmp->mx, mtmp->my, 1)) {
         if (!Deaf) {
             pline_mon(mtmp, "%s caterwails.", Monnam(mtmp));
             stop_occupation();
         }
         wake_nearto(mtmp->mx, mtmp->my, 25);
     }
-    if (does_callouts(mtmp->data)) {
+    if (does_callouts(mtmp->data) && !mtmp->mpeaceful && couldsee(mtmp->mx, mtmp->my)
+        && !rn2(10) && !um_dist(mtmp->mx, mtmp->my, 5)) {
         mcallout(mtmp);
     }
 }
@@ -6092,8 +6138,9 @@ shieldeff_mon(struct monst *mtmp)
 {
     shieldeff(mtmp->mx, mtmp->my);
     /* does not depend on seeing the monster; the shield effect is visible */
-    if (cansee(mtmp->mx, mtmp->my))
+    if (cansee(mtmp->mx, mtmp->my)) {
         pline_mon(mtmp, "%s resists!", Monnam(mtmp));
+    }
 }
 
 void
@@ -6144,7 +6191,9 @@ is_boosted(int x, int y, short boost) {
                 && !levl[x][y].coat_info
                 && IS_SUBMASKABLE(levl[x][y].typ)) || levl[x][y].typ == STONE) {
         return TRUE;
-    } else if ((boost & BST_ICE) && levl[x][y].typ == ICE && !levl[x][y].coat_info) {
+    } else if ((boost & BST_ICE)
+                && ((levl[x][y].typ == ICE && !levl[x][y].coat_info) 
+                    || has_coating(x, y, COAT_FROST))) {
         return TRUE;
     }
     return FALSE;

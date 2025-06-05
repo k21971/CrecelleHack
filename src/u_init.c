@@ -1025,6 +1025,7 @@ u_init(void)
     u.uevent.uheard_tune = 0;
     u.uevent.uopened_dbridge = 0;
     u.uevent.udemigod = 0;              /* not a demi-god yet... */
+    u.uevent.amulet_wish = 0;
     u.udg_cnt = 0;
     u.mh = u.mhmax = u.mtimedone = 0;
     u.uz.dnum = u.uz0.dnum = 0;
@@ -1219,7 +1220,8 @@ ini_inv_mkobj_filter(int oclass, boolean got_level1_spellbook)
            || (obj->oclass == SPBOOK_CLASS
                && (objects[otyp].oc_level > (got_level1_spellbook ? 3 : 1)
                    || restricted_spell_discipline(otyp)))
-           || otyp == SPE_NOVEL) {
+           || otyp == SPE_NOVEL
+           || otyp == SPE_BESTIARY) {
         dealloc_obj(obj);
         if (++trycnt > 1000) {
             /* This lonely pancake's potential will never be realized.

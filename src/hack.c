@@ -2382,7 +2382,7 @@ water_turbulence(coordxy *x, coordxy *y)
 staticfn void
 slippery_ice_fumbling(void)
 {
-    boolean on_ice = !Levitation && is_ice(u.ux, u.uy);
+    boolean on_ice = !Levitation && (is_ice(u.ux, u.uy) || has_coating(u.ux, u.uy, COAT_FROST));
     struct monst *iceskater = u.usteed ? u.usteed : &gy.youmonst;
 
     if (on_ice) {
@@ -2652,7 +2652,7 @@ escape_from_sticky_mon(coordxy x, coordxy y)
              */
             switch (rn2(!u.ustuck->mcanmove ? 
                         (P_SKILL(P_GRAPPLING) >= P_BASIC ? 2 : 8) 
-                        : min(2, 40 - 12 * max(0, P_SKILL(P_GRAPPLING) - 1)))) {
+                        : min(40, 40 - 12 * max(0, P_SKILL(P_GRAPPLING) - 1)))) {
             case 3:
                 if (!u.ustuck->mcanmove) {
                     /* it's free to move on next turn */

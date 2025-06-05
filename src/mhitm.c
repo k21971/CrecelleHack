@@ -405,9 +405,6 @@ mattackm(
                     mswingsm(magr, mdef, mwep);
                 tmp += hitval(mwep, mdef);
             }
-            if (mwep) {
-                magr->movement += objects[mwep->otyp].oc_hspeed;
-            }
             FALLTHROUGH;
             /*FALLTHRU*/
         case AT_CLAW:
@@ -565,6 +562,10 @@ mattackm(
             && distmin(magr->mx, magr->my, mdef->mx, mdef->my) <= 1)
             res[i] = passivemm(magr, mdef, strike,
                                (res[i] & M_ATTK_DEF_DIED), mwep);
+        
+        if (((res[i] & M_ATTK_HIT) || mattk->aatyp == AT_GAZE)
+            && canspotmon(magr))
+            learn_mattack(magr->mnum, i);
 
         if (res[i] & M_ATTK_DEF_DIED)
             return res[i];
@@ -1285,7 +1286,7 @@ mswingsm(
     struct obj *otemp)  /* attacker's weapon */
 {
     if (flags.verbose && !Blind && mon_visible(magr)) {
-        boolean bash = (is_pole(otemp)
+        boolean bash = (is_pole(otemp) && !is_art(otemp, ART_SNICKERSNEE)
                         && (dist2(magr->mx, magr->my, mdef->mx, mdef->my)
                             <= 2));
 

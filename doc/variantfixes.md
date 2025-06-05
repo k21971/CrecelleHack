@@ -1,3 +1,86 @@
+# 1.1
+
+## Commands
+- Add the #shout command. Present in many variants, but this uses
+  the 3.7-compatible code written by aosdict/Phol En Wodan
+
+## Monsters
+- Orcs have a chance to spawn with a dual axe.
+- Slightly increase chance of random spawns of unique monsters.
+- Yellow dragons leave behind a trail of acid.
+- More types of monsters spread fire when they move.
+- Monsters can spawn with and throw potions of hazardous waste.
+- Monsters can intentionally throw potions to trigger alchemical
+  blasts.
+- Monsters can seek out and put on eyewear.
+- Monsters can wear amulets of change in order to change genders.
+- Monsters that hatch from eggs are considered to be babies, and
+  their names reflect this. This has no impact on gameplay.
+- Implemented the monster max HP changes from xNetHack (originally
+  from EvilHack, by way of SporkHack).
+- Monsters considered "roguish" can spawn with poisoned items or
+  potions of sickness.
+- Monsters can dip items into potions.
+
+## New Monsters
+- Salt Golem
+- Mustelid
+- Giant Mustelid
+
+## Unique Monsters
+- Many new unique monsters.
+- The deferred Goblin King boss is now a potential unique
+  monster spawn.
+
+## Objects
+- Dented pots have been renamed to Yendorian Bascinets.
+- Add in some additional helmet and cloak appearances to be
+  shuffled into the existing ones.
+- Yellow dragon scales and yellow dragon scale mail cause you
+  to leave behind a trail of acid.
+- Wands of polymorph leave behind random potion coatings when
+  zapped and remove all existing coatings.
+- Wands of cancellation cancel potion coatings.
+- Wands of make invisible change existing potion coatings into
+  potions of invisibility.
+- Lower damage and raise volatility of potions of hazardous
+  waste.
+- Allow acid spilled by acid beams to alchemize.
+- Tools can become eroded.
+- All blades are considered poisonable.
+
+### New Objects
+- Bestiary
+  - Reading it allows the player to learn information about
+    a monster, so that they can fully view that monster's
+    stats when using the farlook command.
+- Scroll of Control Weather
+  - Blessed: Direct control over the current weather.
+  - Uncursed: Swaps current weather from rain to shine.
+  - Cursed: Causes bizarre inclement weather.
+  - Confused and not cursed: Summons a tame tornado.
+- Mirrored Glasses
+  - Provide reflection.
+- Tinker Goggles
+  - Block flash effects, as sunglasses do.
+  - Protects from alchemic blasts when performing alchemy.
+
+## Floor Coating System
+- Added ice as a floor coating.
+
+## Dungeon Changes
+- Allow fountains to become frozen. Frozen fountains cannot be
+  dipped into or quaffed from.
+
+## GUI
+- Farlook a monster with (:) to see a summary of a monster's stats,
+  including attacks and harmonies.
+- You can learn more about monsters' attacks by getting hit by them,
+  chatting with them, using a stethoscope, or a wand of probing.
+- Default to 3 status lines.
+- Add code to windowports to support botl handling of many more statuses.
+- Switch riding to opt_in on botl and being held to opt_out.
+
 # 1.0
 
 ## Artifacts
@@ -216,6 +299,10 @@
 ### Misc
 - Ported Hardfought's HTML Dumps and other tweaks.
 - Ported xNetHack's invweight patch. Thanks to aosdict.
+- Ported NetHack4's altar identification of items in bags. The code
+  is pulled from dNetHack, but is likely identical to NetHack4's.
+- Ported DynaHack's Enhanced Enhance menu. Code is pulled from
+  some SpliceHack-Rewrite code I wrote a long time ago.
 
 ## Weather System
 - Experience wind, rain, hail, and more.

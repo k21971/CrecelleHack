@@ -35,7 +35,6 @@ staticfn void show_achievements(int);
 staticfn int QSORTCALLBACK vanqsort_cmp(const genericptr, const genericptr);
 staticfn int num_extinct(void);
 staticfn int num_gone(int, int *);
-staticfn char *size_str(int);
 staticfn void item_resistance_message(int, const char *, int);
 
 extern const char *const hu_stat[];  /* hunger status from eat.c */
@@ -1339,7 +1338,7 @@ weapon_insight(int final)
         if (sklvl == P_ISRESTRICTED)
             Strcpy(sklvlbuf, "no");
         else
-            (void) lcase(skill_level_name(wtype, sklvlbuf));
+            (void) lcase(skill_level_name(wtype, sklvlbuf, FALSE));
         /* "you have no/basic/expert/master/grand-master skill with <skill>"
            or "you are unskilled/skilled in <skill>" */
         Sprintf(buf, "%s %s %s", sklvlbuf,
@@ -1377,7 +1376,7 @@ weapon_insight(int final)
                    skill_level_name() returns "Unknown" for it */
                 Strcpy(twobuf, "restricted");
             } else {
-                (void) lcase(skill_level_name(P_TWO_WEAPON_COMBAT, twobuf));
+                (void) lcase(skill_level_name(P_TWO_WEAPON_COMBAT, twobuf, FALSE));
             }
 
             /* keep buf[] from above in case skill levels match */
@@ -1412,7 +1411,7 @@ weapon_insight(int final)
                identical to the comparison between primary and twoweap */
             if (wtype2 != wtype) {
                 Strcpy(sknambuf2, skill_name(wtype2));
-                (void) lcase(skill_level_name(wtype2, sklvlbuf2));
+                (void) lcase(skill_level_name(wtype2, sklvlbuf2, FALSE));
                 verb_present = "is", verb_past = "was";
                 pfx[0] = sfx[0] = buf[0] = '\0';
                 if (twoskl < sklvl2) {
@@ -3271,7 +3270,7 @@ align_str(aligntyp alignment)
     return "unknown";
 }
 
-staticfn char *
+char *
 size_str(int msize)
 {
     static char outbuf[40];
@@ -3348,6 +3347,12 @@ mstatusline(struct monst *mtmp)
 {
     aligntyp alignment = mon_aligntyp(mtmp);
     char info[BUFSZ], monnambuf[BUFSZ];
+
+    /* learn something about the monster's abilities, perhaps? */
+    for (int i = 0; i < NATTK; i++) {
+        if (mtmp->mtame || !rn2(3)) learn_mattack(mtmp->mnum, i);
+    }
+    svm.mvitals[mtmp->mnum].know_stats = 1;
 
     info[0] = 0;
     if (mtmp->mtame) {
@@ -3551,8 +3556,8 @@ ustatusline(void)
     if (!u.uswallow
         && (reg = visible_region_at(u.ux, u.uy)) != 0
         && (ln = strlen(info)) < sizeof info)
-        Snprintf(eos(info), sizeof info - ln, ", in a cloud of %s",
-                 reg_damg(reg) ? "poison gas" : "vapor");
+        Snprintf(eos(info), sizeof info - ln, ", in a %s",
+                 region_string(reg));
 
     pline("Status of %s (%s):  Level %d  HP %d(%d)  AC %d%s.", svp.plname,
           piousness(FALSE, align_str(u.ualign.type)),

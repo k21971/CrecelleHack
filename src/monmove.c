@@ -662,6 +662,14 @@ m_everyturn_effect(struct monst *mtmp)
             mtmp->perminvis = 0;
         }
     }
+    /* Yellow dragons do this every turn */
+    if (mtmp->data == &mons[PM_YELLOW_DRAGON] ||
+        mtmp->data == &mons[PM_BABY_YELLOW_DRAGON] ||
+        (is_u && uarm && 
+            (uarm->otyp == YELLOW_DRAGON_SCALES || 
+                uarm->otyp == YELLOW_DRAGON_SCALE_MAIL))) {
+        floor_alchemy(x, y, POT_ACID, NON_PM);
+    }
 }
 
 /* do whatever effects monster has after moving.
@@ -685,7 +693,7 @@ m_postmove_effect(struct monst *mtmp)
         (void) create_gas_cloud(mtmp->mx, mtmp->my, rnd(6), 0, 3);
     } else if (mtmp->data == &mons[PM_STEAM_VORTEX] && !mtmp->mcan)
         create_gas_cloud(x, y, 1, 0, 0); /* harmless vapor */
-    else if (mtmp->data == &mons[PM_FIRE_ELEMENTAL] && !mtmp->mcan) {
+    else if (likes_fire(mtmp->data) && !mtmp->mcan) {
         /* Lets off smoke / vapor in the rain, otherwise starts things on fire. */
         if (IS_RAINING)
             create_gas_cloud(x, y, 1, 0, 0);
@@ -703,6 +711,9 @@ m_postmove_effect(struct monst *mtmp)
         if (touch_petrifies(&mons[pm]))
             pm = PM_ELF;
         add_coating(x, y, COAT_BLOOD, has_blood(&mons[pm]) ? pm : PM_HUMAN);
+    } else if (mtmp->data == &mons[PM_SALT_GOLEM]) {
+        remove_coating(x, y, COAT_BLOOD);
+        remove_coating(x, y, COAT_POTION);
     } else if (mtmp->data == &mons[PM_TORNADO]) {
         /* tornados suck up everything */
         remove_coating(x, y, COAT_ALL);
@@ -777,31 +788,8 @@ dochug(struct monst *mtmp)
         return 0;
     }
 
-    /* Erinyes will inform surrounding monsters of your crimes */
-    if (mdat == &mons[PM_ERINYS] && !mtmp->mpeaceful && m_canseeu(mtmp))
-        aggravate();
-
-    /* Illusions may disappear in order to prevent flooding the level */
-    if (mdat == &mons[PM_ILLUSION] && !rn2(10))
-        mongone(mtmp);
-
-    /* Tornados make noise */
-    if (mdat == &mons[PM_TORNADO] && !Deaf && !rn2(30))
-        You_hear("a horrible sucking noise.");
-
-    /* Shriekers and Medusa have irregular abilities which must be
-       checked every turn. These abilities do not cost a turn when
-       used. */
-    if (mdat->msound == MS_SHRIEK && !um_dist(mtmp->mx, mtmp->my, 1))
-        m_respond(mtmp);
-    if (mtmp->data == &mons[PM_CATERWAUL] && !um_dist(mtmp->mx, mtmp->my, 1))
-        m_respond(mtmp);
-    if (mdat == &mons[PM_MEDUSA] && couldsee(mtmp->mx, mtmp->my))
-        m_respond(mtmp);
-    if (does_callouts(mdat) && !mtmp->mpeaceful && couldsee(mtmp->mx, mtmp->my)
-        && !rn2(10) 
-        && !um_dist(mtmp->mx, mtmp->my, 5))
-        m_respond(mtmp);
+    /* some monsters have special abilities */
+    m_respond(mtmp);
     if (DEADMONSTER(mtmp))
         return 1; /* m_respond gaze can kill medusa */
 

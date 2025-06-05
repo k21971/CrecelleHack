@@ -151,7 +151,8 @@ enum levl_typ_types {
 #define COAT_FUNGUS 0x10 /* luminescent fungus */
 #define COAT_SHARDS 0x20 /* shards of glass */
 #define COAT_HONEY  0x40 /* honey */
-#define COAT_ALL 0xff
+#define COAT_FROST  0x80 /* frost */
+#define COAT_ALL 0xfff
 
 /*
  * The structure describing a coordinate position.
@@ -194,7 +195,7 @@ struct rm {
  * sink    |             |             | S_LRING    | S_LDWASHER | S_LPUDDING |
  * tree    |             |             |            | TREE_SWARM | TREE_LOOTED|
  * throne  |             |             |            |            | T_LOOTED   |
- * fountain|             |             |            | F_WARNED   | F_LOOTED   |
+ * fountain|             |             | F_FROZEN   | F_WARNED   | F_LOOTED   |
  * ladder  |             |             |            | LA_DOWN    | LA_UP      |
  * pool    |ICED_MOAT    | ICED_POOL   |            |            |            |
  * grave   |             |             |            |            | emptygrave |
@@ -272,10 +273,14 @@ struct rm {
  */
 #define F_LOOTED 1
 #define F_WARNED 2
+#define F_FROZEN 4
+#define FOUNTAIN_IS_FROZEN(x, y) (levl[x][y].looted & F_FROZEN)
 #define FOUNTAIN_IS_WARNED(x, y) (levl[x][y].looted & F_WARNED)
 #define FOUNTAIN_IS_LOOTED(x, y) (levl[x][y].looted & F_LOOTED)
+#define SET_FOUNTAIN_FROZEN(x, y) levl[x][y].looted |= F_FROZEN;
 #define SET_FOUNTAIN_WARNED(x, y) levl[x][y].looted |= F_WARNED;
 #define SET_FOUNTAIN_LOOTED(x, y) levl[x][y].looted |= F_LOOTED;
+#define CLEAR_FOUNTAIN_FROZEN(x, y) levl[x][y].looted &= ~F_FROZEN;
 #define CLEAR_FOUNTAIN_WARNED(x, y) levl[x][y].looted &= ~F_WARNED;
 #define CLEAR_FOUNTAIN_LOOTED(x, y) levl[x][y].looted &= ~F_LOOTED;
 

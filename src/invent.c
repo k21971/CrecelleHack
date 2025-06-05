@@ -2091,8 +2091,7 @@ silly_thing(const char *word,
             s1 = "T", s2 = "take", s3 = " off";
     } else if ((ocls == RING_CLASS || otyp == MEAT_RING)
                || ocls == AMULET_CLASS
-               || (otyp == BLINDFOLD || otyp == TOWEL || otyp == LENSES
-                   || otyp == SUNGLASSES)) {
+               || (otyp == BLINDFOLD || otyp == TOWEL || is_glasses(otmp))) {
         if (!strcmp(word, "wear"))
             s1 = "P", s2 = "put", s3 = " on";
         else if (!strcmp(word, "take off"))
@@ -2953,7 +2952,7 @@ item_reading_classification(struct obj *obj, char *outbuf)
 
         Sprintf(outbuf, "Read this scroll%s", magic);
     } else if (obj->oclass == SPBOOK_CLASS) {
-        boolean novel = (otyp == SPE_NOVEL),
+        boolean novel = (otyp == SPE_NOVEL || otyp == SPE_BESTIARY),
                 blank = (otyp == SPE_BLANK_PAPER
                          && objects[otyp].oc_name_known),
                 tome = (otyp == SPE_BOOK_OF_THE_DEAD
@@ -3341,7 +3340,7 @@ itemactions(struct obj *otmp)
         else if (otmp->otyp == TOWEL || otmp->otyp == BLINDFOLD)
             ia_addmenu(win, IA_WEAR_OBJ, 'P',
                        "Use this to blindfold yourself");
-        else if (otmp->otyp == LENSES || otmp->otyp == SUNGLASSES)
+        else if (is_glasses(otmp))
             ia_addmenu(win, IA_WEAR_OBJ, 'P', "Put these glasses on");
     }
 
@@ -3666,8 +3665,8 @@ display_pickinv(
         win = WIN_INVEN;
         menu_behavior = MENU_BEHAVE_PERMINV;
         prepare_perminvent(win);
-        show_gold = ((wri_info.fromcore.invmode & InvShowGold) != 0);
-        inuse_only = ((wri_info.fromcore.invmode & InvInUse) != 0);
+        show_gold = ((wri_info.fromcore.invmode & (enum inv_modes) InvShowGold) != 0);
+        inuse_only = ((wri_info.fromcore.invmode & (enum inv_modes) InvInUse) != 0);
         doing_perm_invent = TRUE;
     }
     /*
@@ -4626,7 +4625,10 @@ dfeature_at(coordxy x, coordxy y, char *buf)
         if (is_drawbridge_wall(x, y) >= 0)
             dfeature = "open drawbridge portcullis", cmap = -1;
     } else if (IS_FOUNTAIN(ltyp))
-        cmap = S_fountain; /* "fountain" */
+        if (FOUNTAIN_IS_FROZEN(x, y))
+            dfeature = "frozen fountain";
+        else
+            cmap = S_fountain; /* "fountain" */
     else if (IS_THRONE(ltyp))
         cmap = S_throne; /* "opulent throne" */
     else if (is_lava(x, y))
@@ -4681,6 +4683,10 @@ dfeature_at(coordxy x, coordxy y, char *buf)
         }
         if ((lev->coat_info & COAT_HONEY) != 0) {
             Sprintf(eos(altbuf), "%shoney", listing ? " and " : "");
+            listing = TRUE;
+        }
+        if ((lev->coat_info & COAT_FROST) != 0) {
+            Sprintf(eos(altbuf), "%sice", listing ? " and " : "");
             listing = TRUE;
         }
         if ((lev->coat_info & COAT_SHARDS) != 0) {
@@ -4766,9 +4772,8 @@ look_here(
 
         regbuf[0] = '\0';
         if ((reg = visible_region_at(u.ux, u.uy)) != 0)
-            Sprintf(regbuf, "a %s cloud",
-                    reg->arg.otyp ? OBJ_DESCR(objects[reg->arg.otyp])
-                    : reg_damg(reg) ? "poison gas" : "vapor");
+            Sprintf(regbuf, "a %s",
+                    region_string(reg));
         if ((trap = t_at(u.ux, u.uy)) != 0 && !trap->tseen)
             trap = (struct trap *) NULL;
 

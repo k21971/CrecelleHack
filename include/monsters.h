@@ -47,8 +47,10 @@
  *      Rule #1:        monsters of a given class are contiguous in the
  *                      mons[] array.
  *
- *      Rule #2:        monsters of a given class are presented in ascending
- *                      order of strength.
+ *      Rule #2:        monsters of a given class are generally kept in
+ *                      the same order as in previous versions of NetHack
+ *                      (they used to be presented in ascending order of
+ *                      strength, but this rule no longer applies).
  *
  *      Rule #3:        monster frequency is included in the geno mask;
  *                      the frequency can be from 0 to 7.  0's will also
@@ -97,14 +99,14 @@
         NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
         SIZ(1, 5, MS_BUZZ, MZ_TINY), MR_POISON, MR_POISON,
         M1_ANIMAL | M1_FLY | M1_NOHANDS | M1_POIS, M2_HOSTILE | M2_FEMALE,
-        M3_CALLOUT, BST_HONEY, 5, CLR_YELLOW, KILLER_BEE),
+        M3_CALLOUT, BST_HONEY, 6, CLR_YELLOW, KILLER_BEE),
     MON(NAM("soldier ant"), S_ANT,
         LVL(3, 18, 3, 0, 0), (G_GENO | G_SGROUP | 2),
         A(ATTK(AT_BITE, AD_PHYS, 2, 4), ATTK(AT_STNG, AD_DRST, 3, 4),
           NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
         SIZ(20, 5, MS_SILENT, MZ_TINY), MR_POISON, MR_POISON,
         M1_ANIMAL | M1_NOHANDS | M1_OVIPAROUS | M1_POIS | M1_CARNIVORE,
-        M2_HOSTILE, 0, BST_ICE, 6, CLR_BLUE, SOLDIER_ANT),
+        M2_HOSTILE, 0, BST_ICE, 7, CLR_BLUE, SOLDIER_ANT),
     MON(NAM("fire ant"), S_ANT,
         LVL(3, 18, 3, 10, 0), (G_GENO | G_SGROUP | 1),
         A(ATTK(AT_BITE, AD_PHYS, 2, 4), ATTK(AT_BITE, AD_FIRE, 2, 4),
@@ -168,6 +170,15 @@
             | M1_ACID,
         M2_WANDER | M2_HOSTILE | M2_NEUTER, 0, BST_POTION,
         8, CLR_CYAN, GELATINOUS_CUBE),
+    MON(NAM("Blob"), S_BLOB,
+        LVL(6, 1, 10, 0, 0), (G_NOCORPSE | G_MIDBOSS | G_SQUAD | G_LGROUP),
+        A(ATTK(AT_TUCH, AD_PHYS, 1, 8), ATTK(AT_ENGL, AD_DGST, 3, 10),
+          NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(1000, 100, MS_SILENT, MZ_LARGE),
+        MR_SLEEP | MR_POISON | MR_FIRE | MR_ELEC | MR_DISINT, MR_POISON,
+        M1_NOEYES | M1_NOLIMBS | M1_NOHEAD | M1_MINDLESS,
+        M2_WANDER | M2_HOSTILE | M2_NEUTER, 0, BST_POTION,
+        7, CLR_BRIGHT_MAGENTA, BLOB),
     /*
      * cockatrice
      */
@@ -460,6 +471,15 @@
   	    SIZ(300, 100, MS_WAIL, MZ_HUMAN), 0, 0,
   	    M1_ANIMAL | M1_NOHANDS | M1_CARNIVORE | M1_HUMANOID,
         M2_HOSTILE, M3_INFRAVISIBLE | M3_CALLOUT, BST_GRASS, 8, CLR_GRAY, CATERWAUL),
+    MON(NAM("Puss in Boots"), S_FELINE,
+        LVL(8, 20, 2, 0, -2), (G_UNIQ | G_MIDBOSS | G_SQUAD | G_SGROUP),
+        A(ATTK(AT_WEAP, AD_PHYS, 2, 4),
+          NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(250, 250, MS_MEW, MZ_SMALL), 0, 0,
+        M1_ANIMAL | M1_CARNIVORE | M1_HUMANOID,
+        M2_STRONG | M2_HOSTILE | M2_PNAME | M2_NASTY | M2_PRINCE | M2_MALE,
+        M3_INFRAVISIBLE | M3_INFRAVISION, BST_GRASS | BST_SAND | BST_ROCK,
+        10, CLR_BRIGHT_MAGENTA, PUSS_IN_BOOTS),
     MON(NAM("smilodon"), S_FELINE,
         LVL(9, 12, 6, 0, 0), (G_NOHELL | G_GENO | 1),
         A(ATTK(AT_CLAW, AD_PHYS, 4, 4), ATTK(AT_CLAW, AD_PHYS, 4, 4),
@@ -993,6 +1013,20 @@
         /* In reality, they tunnel instead of cutting lumber.  Oh, well. */
         M2_WANDER | M2_HOSTILE, M3_INFRAVISIBLE, BST_GRASS,
         4, CLR_BROWN, WOODCHUCK),
+    MON(NAM("mustelid"), S_RODENT,
+        LVL(5, 14, 6, 0, 0), (G_GENO | G_NOHELL | G_NIGHT | 2),
+        A(ATTK(AT_BITE, AD_PHYS, 3, 3),
+          NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(30, 30, MS_SQEEK, MZ_TINY), MR_STONE, 0,
+        M1_ANIMAL | M1_SWIM | M1_NOHANDS | M1_CARNIVORE, 0, M3_INFRAVISIBLE,
+        BST_GRASS | BST_WATER, 2, CLR_YELLOW, MUSTELID),
+    MON(NAM("giant mustelid"), S_RODENT,
+        LVL(9, 14, 3, 0, 0), (G_GENO | G_NOHELL | G_NIGHT | 1),
+        A(ATTK(AT_BITE, AD_PHYS, 5, 3), ATTK(AT_CLAW, AD_PHYS, 2, 3),
+          NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(200, 200, MS_SQEEK, MZ_MEDIUM), MR_STONE, 0,
+        M1_ANIMAL | M1_SWIM | M1_NOHANDS | M1_CARNIVORE, 0, M3_INFRAVISIBLE,
+        BST_GRASS | BST_WATER, 2, CLR_ORANGE, GIANT_MUSTELID),
     MON(NAMS("rat king", "rat queen", "rat ruler"), S_RODENT,
         LVL(12, 15, 7, 0, 0), (G_MIDBOSS | G_UNIQ | G_SQUAD | G_LGROUP),
         A(ATTK(AT_WEAP, AD_PHYS, 2, 4), ATTK(AT_BITE, AD_WERE, 2, 3),
@@ -2785,6 +2819,14 @@
         M1_BREATHLESS | M1_MINDLESS | M1_HUMANOID | M1_THICK_HIDE,
         M2_HOSTILE | M2_STRONG, 0,
         BST_ROCK, 12, CLR_BROWN, CLAY_GOLEM),
+    MON(NAM("salt golem"), S_GOLEM,
+        LVL(12, 8, 2, 40, 0), (G_NOCORPSE | 1),
+        A(ATTK(AT_CLAW, AD_PHYS, 4, 8),
+          NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(1550, 0, MS_SILENT, MZ_LARGE), MR_SLEEP | MR_POISON, 0,
+        M1_BREATHLESS | M1_MINDLESS | M1_HUMANOID | M1_THICK_HIDE,
+        M2_HOSTILE | M2_STRONG, 0,
+        BST_SAND | BST_ROCK, 12, CLR_WHITE, SALT_GOLEM),
     MON(NAM("blood golem"), S_GOLEM,
         LVL(13, 8, 6, 40, 0), (G_NOCORPSE | 1),
         A(ATTK(AT_CLAW, AD_PHYS, 3, 8),
@@ -2817,6 +2859,16 @@
         M1_BREATHLESS | M1_MINDLESS | M1_HUMANOID | M1_THICK_HIDE | M1_POIS,
         M2_HOSTILE | M2_STRONG | M2_COLLECT, 0, BST_ROCK,
         22, HI_METAL, IRON_GOLEM),
+    MON(NAM("colossus"), S_GOLEM,
+        LVL(26, 10, 3, 100, 0), (G_NOCORPSE | G_MIDBOSS | G_SQUAD | G_LGROUP),
+        A(ATTK(AT_WEAP, AD_PHYS, 8, 10), ATTK(AT_GAZE, AD_STUN, 1, 3),
+          NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(3000, 0, MS_SILENT, MZ_GIGANTIC),
+        MR_FIRE | MR_COLD | MR_ELEC | MR_SLEEP | MR_POISON, 0,
+        M1_BREATHLESS | M1_MINDLESS | M1_HUMANOID | M1_THICK_HIDE | M1_POIS,
+        M2_HOSTILE | M2_STRONG | M2_COLLECT | M2_NASTY | M2_ROCKTHROW | M2_JEWELS,
+        0, BST_ROCK | BST_SAND,
+        28, CLR_BRIGHT_MAGENTA, COLOSSUS),
     /*
      * humans, including elves and were-critters;
      *  the '@' class does not obey rule #2.
@@ -3077,7 +3129,7 @@
         M2_NOPOLY | M2_HOSTILE | M2_STRONG | M2_PNAME | M2_FEMALE,
         M3_WAITFORU | M3_INFRAVISIBLE | M3_TRIPPER, BST_ROCK | BST_SAND,
         25, CLR_BRIGHT_GREEN, MEDUSA),
-    MON(NAM("Wizard of Yendor"), S_HUMAN,
+    MON(NAMS("Wizard of Yendor", "Witch of Yendor", "Wizard of Yendor"), S_HUMAN,
         LVL(30, 12, -8, 100, A_NONE), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_CLAW, AD_SAMU, 2, 12), ATTK(AT_MAGC, AD_SPEL, 0, 0),
           NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
@@ -3760,7 +3812,7 @@
     /*
      * quest leaders
      */
-    MON(NAM("Lord Carnarvon"), S_HUMAN,
+    MON(NAMS("Lord Carnarvon", "Lady Carnavon", "Lord Carnavon"), S_HUMAN,
         LVL(20, 15, 0, 90, 20), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_WEAP, AD_PHYS, 4, 10), ATTK(AT_MAGC, AD_SPEL, 4, 8),
           NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
@@ -3820,7 +3872,7 @@
         M2_NOPOLY | M2_HUMAN | M2_PNAME | M2_PEACEFUL | M2_STRONG | M2_MALE
             | M2_COLLECT | M2_MAGIC, M3_CLOSE | M3_INFRAVISIBLE, BST_GRASS,
         26, HI_LORD, HIPPOCRATES),
-    MON(NAM("King Arthur"), S_HUMAN,
+    MON(NAMS("King Arthur", "Queen Arthur", "Arthur"), S_HUMAN,
         LVL(20, 15, 0, 90, 20), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_WEAP, AD_PHYS, 4, 10), ATTK(AT_WEAP, AD_PHYS, 4, 10),
           NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
@@ -3829,7 +3881,7 @@
         M2_NOPOLY | M2_HUMAN | M2_PNAME | M2_PEACEFUL | M2_STRONG | M2_MALE
             | M2_COLLECT | M2_MAGIC, M3_CLOSE | M3_INFRAVISIBLE, BST_GRASS,
         24, HI_LORD, KING_ARTHUR),
-    MON(NAM("Grand Master"), S_HUMAN,
+    MON(NAMS("Grand Master", "Grand Mistress", "Grand Master"), S_HUMAN,
         LVL(25, 15, 0, 90, 0), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_CLAW, AD_PHYS, 4, 10), ATTK(AT_KICK, AD_PHYS, 2, 8),
           ATTK(AT_MAGC, AD_CLRC, 2, 8), ATTK(AT_MAGC, AD_CLRC, 2, 8),
@@ -3840,7 +3892,7 @@
         M2_NOPOLY | M2_HUMAN | M2_PEACEFUL | M2_STRONG | M2_MALE | M2_NASTY
             | M2_MAGIC, M3_CLOSE | M3_INFRAVISIBLE | M3_CALLOUT, BST_GRASS,
         30, CLR_BLACK, GRAND_MASTER),
-    MON(NAM("Arch Priest"), S_HUMAN,
+    MON(NAMS("Arch Priest", "Arch Priestess", "Arch Cleric"), S_HUMAN,
         LVL(25, 15, 7, 90, 0), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_WEAP, AD_PHYS, 4, 10), ATTK(AT_KICK, AD_PHYS, 2, 8),
           ATTK(AT_MAGC, AD_CLRC, 2, 8), ATTK(AT_MAGC, AD_CLRC, 2, 8),
@@ -3862,7 +3914,7 @@
         24, HI_LORD, ORION),
     /* Note: Master of Thieves is also the Tourist's nemesis.
      */
-    MON(NAM("Master of Thieves"), S_HUMAN,
+    MON(NAMS("Master of Thieves", "Mistress of Thieves", "Master of Thieves"), S_HUMAN,
         LVL(20, 15, 0, 90, -20), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_WEAP, AD_PHYS, 4, 10), ATTK(AT_WEAP, AD_PHYS, 2, 6),
           ATTK(AT_CLAW, AD_SAMU, 2, 4), NO_ATTK, NO_ATTK, NO_ATTK),
@@ -3873,7 +3925,8 @@
         M3_CLOSE | M3_INFRAVISIBLE | M3_AMBUSHER | M3_TRIPPER | M3_CALLOUT,
         BST_DIRT | BST_GRASS,
         24, HI_LORD, MASTER_OF_THIEVES),
-    MON(NAM("Lord Sato"), S_HUMAN, LVL(20, 15, 0, 90, 20), (G_NOGEN | G_UNIQ),
+    MON(NAMS("Lord Sato", "Lady Sato", "Lord Sato"),
+        S_HUMAN, LVL(20, 15, 0, 90, 20), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_WEAP, AD_PHYS, 4, 10), ATTK(AT_WEAP, AD_PHYS, 4, 10),
           NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
         SIZ(WT_HUMAN, 400, MS_LEADER, MZ_HUMAN), 0, 0,
@@ -3963,8 +4016,7 @@
             | M2_GREEDY | M2_JEWELS | M2_MAGIC,
         M3_WANTSARTI | M3_WAITFORU | M3_INFRAVISION | M3_INFRAVISIBLE, BST_POTION,
         23, HI_LORD, CHROMATIC_DRAGON),
-#if 0 /* OBSOLETE -- nemesis for 3.1.x/3.2.x elf quest when elf was a role */
-    MON(NAM("Goblin King"), S_ORC,
+    MON(NAMS("Goblin King", "Goblin Queen", "Goblin Monarch"), S_ORC,
         LVL(15, 12, 10, 0, -15), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_WEAP, AD_PHYS, 2, 6), ATTK(AT_WEAP, AD_PHYS, 2, 6),
           ATTK(AT_CLAW, AD_SAMU, 1, 6), NO_ATTK, NO_ATTK, NO_ATTK),
@@ -3974,7 +4026,6 @@
           | M2_MALE | M2_GREEDY | M2_JEWELS | M2_COLLECT | M2_MAGIC,
         M3_WANTSARTI | M3_WAITFORU | M3_INFRAVISION | M3_INFRAVISIBLE | M3_TRIPPER, BST_GRASS,
         18, HI_LORD, GOBLIN_KING),
-#endif
     MON(NAM("Cyclops"), S_GIANT,
         LVL(18, 12, 0, 0, -15), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_WEAP, AD_PHYS, 4, 8), ATTK(AT_WEAP, AD_PHYS, 4, 8),
@@ -3997,7 +4048,7 @@
             | M2_STALK | M2_GREEDY | M2_JEWELS | M2_MAGIC,
         M3_WANTSARTI | M3_WAITFORU | M3_INFRAVISIBLE, BST_ASHES,
         22, CLR_RED, IXOTH),
-    MON(NAM("Master Kaen"), S_HUMAN,
+    MON(NAMS("Master Kaen", "Mistress Kaen", "Master Kaen"), S_HUMAN,
         LVL(25, 12, -10, 10, -20), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_CLAW, AD_PHYS, 16, 2), ATTK(AT_CLAW, AD_PHYS, 16, 2),
           ATTK(AT_MAGC, AD_CLRC, 0, 0), ATTK(AT_CLAW, AD_SAMU, 1, 4),
@@ -4055,7 +4106,7 @@
     /*
      * Note: the Master of Thieves was defined above.
      */
-    MON(NAM("Lord Surtur"), S_GIANT,
+    MON(NAMS("Lord Surtur", "Lady Surtur", "Lord Surtur"), S_GIANT,
         LVL(15, 12, 2, 50, 12), (G_NOGEN | G_UNIQ),
         A(ATTK(AT_WEAP, AD_PHYS, 2, 10), ATTK(AT_WEAP, AD_PHYS, 2, 10),
           ATTK(AT_CLAW, AD_SAMU, 2, 6), NO_ATTK, NO_ATTK, NO_ATTK),
@@ -4099,7 +4150,7 @@
         M2_NOPOLY | M2_HUMAN | M2_PEACEFUL | M2_STRONG | M2_COLLECT,
         M3_INFRAVISIBLE, BST_GRASS,
         7, HI_DOMESTIC, STUDENT),
-    MON(NAM("chieftain"), S_HUMAN,
+    MON(NAMS("chieftain", "chieftainess", "chieftain"), S_HUMAN,
         LVL(5, 12, 10, 10, 0), G_NOGEN,
         A(ATTK(AT_WEAP, AD_PHYS, 1, 6),
           NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
@@ -4166,7 +4217,7 @@
         M2_NOPOLY | M2_HUMAN | M2_PEACEFUL | M2_STRONG | M2_COLLECT,
         M3_INFRAVISIBLE, BST_GRASS,
         8, HI_DOMESTIC, ACOLYTE),
-    MON(NAM("hunter"), S_HUMAN,
+    MON(NAMS("hunter", "huntress", "hunter"), S_HUMAN,
         LVL(5, 12, 10, 10, -7), G_NOGEN,
         A(ATTK(AT_WEAP, AD_PHYS, 1, 4),
           NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),

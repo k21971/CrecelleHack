@@ -114,6 +114,10 @@
 #define is_female(ptr) (((ptr)->mflags2 & M2_FEMALE) != 0L)
 #define is_neuter(ptr) (((ptr)->mflags2 & M2_NEUTER) != 0L)
 #define is_wanderer(ptr) (((ptr)->mflags2 & M2_WANDER) != 0L)
+#define is_roguish(ptr) (((ptr) == &mons[PM_ROGUE] || (ptr) == &mons[PM_NINJA] \
+                            || (ptr) == &mons[PM_MASTER_ASSASSIN] \
+                            || (ptr) == &mons[PM_ASHIKAGA_TAKAUJI] \
+                            || (ptr)== &mons[PM_MASTER_OF_THIEVES]))
 #define always_hostile(ptr) (((ptr)->mflags2 & M2_HOSTILE) != 0L)
 #define always_peaceful(ptr) (((ptr)->mflags2 & M2_PEACEFUL) != 0L)
 #define race_hostile(ptr) (((ptr)->mflags2 & gu.urace.hatemask) != 0L)

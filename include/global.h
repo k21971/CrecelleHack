@@ -430,6 +430,7 @@ extern struct nomakedefs_s nomakedefs;
 
 /* PANICTRACE: Always defined for NH_DEVEL_STATUS != NH_STATUS_RELEASED
    but only for supported platforms. */
+#ifndef NOPANICTRACE
 #ifdef UNIX
 #if (NH_DEVEL_STATUS != NH_STATUS_RELEASED)
 /* see end.c */
@@ -440,6 +441,7 @@ extern struct nomakedefs_s nomakedefs;
 #endif  /* CROSS_TO_WASM |  CROSS_TO_MSDOS */
 #endif  /* NH_DEVEL_STATUS != NH_STATUS_RELEASED */
 #endif  /* UNIX */
+#endif  /* !NOPANICTRACE */
 
 /* The following are meaningless if PANICTRACE is not defined: */
 #if defined(__linux__) && defined(__GLIBC__) && (__GLIBC__ >= 2)
@@ -505,6 +507,7 @@ extern struct nomakedefs_s nomakedefs;
                                * via #chronicle unless in wizard mode */
 #define LL_DUMP       0x4000L /* none of the above but should be in dumplog */
 #define LL_DEBUG      0x8000L /* For debugging messages and other spam */
+#define LL_SHOUT     0x10000L /* For player-generated shouts */
 
 /*
  * Lua sandbox
@@ -569,5 +572,7 @@ typedef enum NHL_pcall_action {
     NHLpa_panic,
     NHLpa_impossible
 } NHL_pcall_action;
+
+#define SFCTOOL_BIT (1UL << 30)
 
 #endif /* GLOBAL_H */

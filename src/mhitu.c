@@ -712,7 +712,7 @@ mattacku(struct monst *mtmp)
     /* monster might attempt a trip to gain an advantage */
     if (!ranged && (is_tripper(mtmp->data) 
           || (MON_WEP(mtmp) && is_tripweapon(MON_WEP(mtmp))))
-        && !Prone && !Flying && !Levitation 
+        && !Prone && !Flying && !Levitation && !u.usteed
         && is_trippable(gy.youmonst.data) && (u.uhp > mtmp->m_lev)
         && !rn2((10 - u.uac > mtmp->m_lev) ? 8 : 100)) {
         trip_monster(mtmp, &gy.youmonst, MON_WEP(mtmp));
@@ -913,14 +913,12 @@ mattacku(struct monst *mtmp)
                     mon_currwep = MON_WEP(mtmp);
                     if (mon_currwep) {
                         boolean bash = (is_pole(mon_currwep)
+                                        && !is_art(mon_currwep, ART_SNICKERSNEE)
                                         && m_next2u(mtmp));
 
                         hittmp = hitval(mon_currwep, &gy.youmonst);
                         tmp += hittmp;
                         mswings(mtmp, mon_currwep, bash);
-                    }
-                    if (mon_currwep) {
-                        mtmp->movement += objects[mon_currwep->otyp].oc_hspeed;
                     }
                     if (tmp > (j = gm.mhitu_dieroll = rnd(20 + i)))
                         sum[i] = hitmu(mtmp, mattk);
@@ -954,6 +952,7 @@ mattacku(struct monst *mtmp)
                 gm.multi = -1;
                 gn.nomovemsg = "The combat suddenly awakens you.";
             }
+            learn_mattack(mtmp->mnum, i);
         }
         if ((sum[i] & M_ATTK_AGR_DIED))
             return 1; /* attacker dead */
@@ -2638,6 +2637,11 @@ cloneu(void)
     u.mh -= mon->mhp;
     disp.botl = TRUE;
     return mon;
+}
+
+void
+learn_mattack(int index, int attack_index) {
+    svm.mvitals[index].know_attacks |= (1 << attack_index);
 }
 
 /*mhitu.c*/

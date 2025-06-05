@@ -628,6 +628,11 @@ probe_objchain(struct obj *otmp)
 void
 probe_monster(struct monst *mtmp)
 {
+    /* learn monster capabilities */
+    for (int i = 0; i < NATTK; i++)
+        learn_mattack(mtmp->mnum, i);
+    svm.mvitals[mtmp->mnum].know_pcorpse = 1;
+
     mstatusline(mtmp);
     if (gn.notonhead)
         return; /* don't show minvent for long worm tail */
@@ -1304,7 +1309,7 @@ cancel_item(struct obj *obj)
         || otyp == POT_SICKNESS
         || (otyp == POT_WATER && (obj->blessed || obj->cursed))
         /* not magic; cancels to blank spellbook */
-        || otyp == SPE_NOVEL) {
+        || otyp == SPE_NOVEL || otyp == SPE_BESTIARY) {
         int cancelled_spe = (obj->oclass == WAND_CLASS
                              || otyp == CRYSTAL_BALL) ? -1 : 0;
 
@@ -1583,6 +1588,9 @@ create_polymon(struct obj *obj, int okind)
         material = "metal ";
         break;
     case COPPER:
+        pm_index = rn2(7) ? PM_CLAY_GOLEM : PM_COLOSSUS;
+        material = "bronze ";
+        break;
     case SILVER:
     case PLATINUM:
     case GEMSTONE:
@@ -1593,7 +1601,7 @@ create_polymon(struct obj *obj, int okind)
     case 0:
     case FLESH:
         /* there is no flesh type, but all food is type 0, so we use it */
-        pm_index = PM_FLESH_GOLEM;
+        pm_index = rn2(2) ? PM_FLESH_GOLEM : PM_SALT_GOLEM;
         material = "organic ";
         break;
     case WOOD:
@@ -3685,7 +3693,7 @@ zap_map(
     ttmp = t_at(x, y); /* refresh in case trap was altered or is gone */
 
     if (u.dz > 0) { /* zapping down */
-        char ebuf[BUFSZ];
+        char ebuf[BUFSZ], pristinebuf[BUFSZ], *etxt;
         struct engr *e = engr_at(x, y);
 
         /* subset of engraving effects; none sets `disclose' */
@@ -3694,7 +3702,8 @@ zap_map(
             case WAN_POLYMORPH:
             case SPE_POLYMORPH:
                 del_engr(e);
-                make_engr_at(x, y, random_engraving(ebuf), svm.moves, 0);
+                etxt = random_engraving(ebuf, pristinebuf);
+                make_engr_at(x, y, etxt, pristinebuf, svm.moves, 0);
                 break;
             case WAN_CANCELLATION:
             case SPE_CANCELLATION:
@@ -3842,6 +3851,22 @@ zap_map(
             }
         } /* t_at() */
     } /* probing */
+    /* polymorph */
+    if (obj->otyp == WAN_POLYMORPH && has_coating(x, y, COAT_POTION) 
+        && levl[x][y].pindex != POT_WATER) {
+        add_coating(x, y, COAT_POTION, POT_GAIN_ABILITY + rn2(POT_OIL - POT_GAIN_ABILITY));
+    }
+    /* cancellation */
+    if (obj->otyp == WAN_CANCELLATION && has_coating(x, y, COAT_POTION)) {
+        if (levl[x][y].pindex == POT_SICKNESS || levl[x][y].pindex == POT_SEE_INVISIBLE)
+            add_coating(x, y, COAT_POTION, POT_FRUIT_JUICE);
+        else
+            add_coating(x, y, COAT_POTION, POT_WATER);
+    }
+    /* make invisible */
+    if (obj->otyp == WAN_MAKE_INVISIBLE && has_coating(x, y, COAT_POTION)) {
+        add_coating(x, y, COAT_POTION, POT_INVISIBILITY);
+    }
 
     if (learn_it)
         learnwand(obj);
@@ -4034,9 +4059,15 @@ bhit(
            give message and skip it in order to keep going;
            if attack is light and mtmp is a mimic pretending to be an
            object, behave as if there is no monster here (if pretending
-           to be furniture, it will be revealed by flash_hits_mon()) */
+           to be furniture, it will be revealed by flash_hits_mon());
+           thrown objects don't hit mimics pretending to be objects (both
+           because the hero is likely aiming to throw over what seems to
+           be an object rather than at it, and for balance because
+           otherwise mimics are too easy to identify by throwing gold at
+           them) */
         if (mtmp && (((weapon == THROWN_WEAPON || weapon == KICKED_WEAPON)
-                      && shade_miss(&gy.youmonst, mtmp, obj, TRUE, TRUE))
+                      && (shade_miss(&gy.youmonst, mtmp, obj, TRUE, TRUE)
+                          || M_AP_TYPE(mtmp) == M_AP_OBJECT))
                      || (weapon == FLASHED_LIGHT
                          && M_AP_TYPE(mtmp) == M_AP_OBJECT)))
             mtmp = (struct monst *) 0;
@@ -5260,11 +5291,17 @@ zap_over_floor(
                 }
             }
         } else if (IS_FOUNTAIN(lev->typ)) {
-            create_gas_cloud(x, y, rnd(3), 0, 0); /* 1..3, no damage */
-            if (see_it)
-                pline("Steam billows from the fountain.");
-            rangemod -= 1;
-            dryup(x, y, type > 0);
+            if (FOUNTAIN_IS_FROZEN(x, y)) {
+                CLEAR_FOUNTAIN_FROZEN(x, y);
+                if (see_it)
+                    pline("The frozen fountain thaws.");
+            } else {
+                create_gas_cloud(x, y, rnd(3), 0, 0); /* 1..3, no damage */
+                if (see_it)
+                    pline("Steam billows from the fountain.");
+                rangemod -= 1;
+                dryup(x, y, type > 0);
+            }
         } else {
             if (has_coating(x, y, COAT_GRASS)) {
                 remove_coating(x, y, COAT_GRASS);
@@ -5282,7 +5319,9 @@ zap_over_floor(
             } else if (has_coating(x, y, COAT_POTION)
                         && levl[x][y].pindex == POT_HAZARDOUS_WASTE) {
                 remove_coating(x, y, COAT_POTION);
-                explode(x, y, 11, d(4, 6), 0, EXPL_NOXIOUS);
+                explode(x, y, 11, d(1, 10), 0, EXPL_NOXIOUS);
+            } else if (has_coating(x, y, COAT_FROST)) {
+                add_coating(x, y, COAT_POTION, POT_WATER);
             }
             if (IS_SUBMASKABLE(levl[x][y].typ) && levl[x][y].submask == SM_SAND) {
                 add_coating(x, y, COAT_SHARDS, 0);
@@ -5386,6 +5425,13 @@ zap_over_floor(
                 spot_stop_timers(x, y, MELT_ICE_AWAY);
                 start_melt_ice_timeout(x, y, melt_time);
             }
+        } else {
+            add_coating(x, y, COAT_FROST, 0);
+        }
+        if (IS_FOUNTAIN(lev->typ) && !FOUNTAIN_IS_FROZEN(x, y)) {
+                SET_FOUNTAIN_FROZEN(x, y);
+                if (see_it)
+                    pline("The fountain freezes over.");
         }
         break; /* ZT_COLD */
 
@@ -5467,8 +5513,8 @@ zap_over_floor(
                     && levl[x][y].pindex == POT_HAZARDOUS_WASTE) {
             remove_coating(x, y, COAT_POTION);
             explode(x, y, 11, d(4, 6), 0, EXPL_NOXIOUS);
-        } else {
-            add_coating(x, y, COAT_POTION, POT_ACID);
+        } else if (damgtype == ZT_ACID) {
+            floor_alchemy(x, y, POT_ACID, 0);
         }
         break; /* ZT_ACID */
 

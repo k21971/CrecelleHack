@@ -251,6 +251,11 @@ drinkfountain(void)
         return;
     }
 
+    if (FOUNTAIN_IS_FROZEN(u.ux, u.uy)) {
+        pline("The water is frozen!");
+        return;
+    }
+
     if (mgkftn && u.uluck >= 0 && fate >= 10) {
         int i, ii, littleluck = (u.uluck < 4);
 
@@ -410,6 +415,11 @@ dipfountain(struct obj *obj)
         return;
     }
 
+    if (FOUNTAIN_IS_FROZEN(u.ux, u.uy)) {
+        pline("The water is frozen!");
+        return;
+    }
+
     if (obj->otyp == LONG_SWORD && u.ulevel >= 5
         && !rn2(Role_if(PM_KNIGHT) ? 6 : 30)
         /* once upon a time it was possible to poly N daggers into N swords */
@@ -460,6 +470,12 @@ dipfountain(struct obj *obj)
         er = wash_hands();
     } else {
         er = water_damage(obj, NULL, TRUE);
+    }
+
+    if (is_art(obj, ART_FROST_BRAND)) {
+        SET_FOUNTAIN_FROZEN(u.ux, u.uy);
+        pline("Frost spreads across the surface of the water.");
+        return;
     }
 
     if (er == ER_DESTROYED || (er != ER_NOTHING && !rn2(2))) {
