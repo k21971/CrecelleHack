@@ -1109,7 +1109,8 @@ populate_maze(void)
     }
     for (i = rn2(3); i; i--) {
         mazexy(&mm);
-        (void) makemon(&mons[PM_MINOTAUR], mm.x, mm.y, NO_MM_FLAGS);
+        if (!Is_magicmaze(&u.uz))
+            (void) makemon(&mons[PM_MINOTAUR], mm.x, mm.y, NO_MM_FLAGS);
     }
     for (i = rn1(5, 7); i; i--) {
         mazexy(&mm);

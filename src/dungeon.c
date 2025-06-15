@@ -717,6 +717,7 @@ static struct level_map {
                   { "fire", &fire_level },
                   { "juiblex", &juiblex_level },
                   { "knox", &knox_level },
+                  { "maze-1", &maze_level },
                   { "medusa", &medusa_level },
                   { "oracle", &oracle_level },
                   { "orcus", &orcus_level },
@@ -1165,6 +1166,7 @@ fixup_level_locations(void)
     mines_dnum = dname_to_dnum("The Gnomish Mines");
     tower_dnum = dname_to_dnum("Vlad's Tower");
     tutorial_dnum = dname_to_dnum("The Tutorial");
+    maze_dnum = dname_to_dnum("The Maze");
 
     /* one special fixup for dummy surface level */
     if ((x = find_level("dummy")) != 0) {
@@ -1952,7 +1954,7 @@ single_level_branch(d_level *lev)
      * TODO:  this should be generalized instead of assuming that
      * Fort Ludios is the only single level branch in the dungeon.
      */
-    return Is_knox(lev);
+    return Is_knox(lev) || Is_magicmaze(lev);
 }
 
 /* equivalent to dest = source */
@@ -2404,7 +2406,7 @@ print_dungeon(boolean bymenu, schar *rlev, xint16 *rdgn)
         else if (Is_earthlevel(&u.uz) || Is_waterlevel(&u.uz)
                  || Is_firelevel(&u.uz) || Is_airlevel(&u.uz)
                  || Is_qstart(&u.uz) || at_dgn_entrance("The Quest")
-                 || Is_knox(&u.uz))
+                 || Is_knox(&u.uz) || Is_magicmaze(&u.uz))
             Strcpy(buf, "No portal found.");
 
         /* only give output if we found a portal or expected one and didn't */

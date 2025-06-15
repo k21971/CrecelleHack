@@ -595,6 +595,8 @@ background_enlightenment(int unused_mode UNUSED, int final)
         Sprintf(buf, "on the %s level", svd.dungeons[u.uz.dnum].dname);
         /* TODO? maybe phrase it differently when actually inside the fort,
            if we're able to determine that (not trivial) */
+    } else if (Is_magicmaze(&u.uz)) {
+        Sprintf(buf, "in an otherworldly maze");
     } else {
         char dgnbuf[QBUFSZ];
 

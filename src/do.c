@@ -1696,7 +1696,7 @@ goto_level(
      * for the level being left, to recover dynamic memory in use and
      * to avoid dangling timers and light sources.
      */
-    cant_go_back = ((newdungeon && In_endgame(newlevel)) || leaving_tutorial);
+    cant_go_back = ((newdungeon && In_endgame(newlevel)) || leaving_tutorial) && !In_magicmaze(newlevel) && !In_magicmaze(&u.uz);
     if (!cant_go_back) {
         update_mlstmv(); /* current monsters are becoming inactive */
         if (nhfp->structlevel)
@@ -1787,8 +1787,9 @@ goto_level(
                 break;
 
         if (!ttrap) {
-            if (u.uevent.qexpelled
-                && (Is_qstart(&u.uz0) || Is_qstart(&u.uz))) {
+            if ((u.uevent.qexpelled
+                && (Is_qstart(&u.uz0) || Is_qstart(&u.uz)))
+                || (Is_magicmaze(&u.uz0) || Is_magicmaze(&u.uz))) {
                 /* we're coming back from or going into the quest home level,
                    after already getting expelled once. The portal back
                    doesn't exist anymore - see expulsion(). */

@@ -330,4 +330,23 @@ dungeon = {
          },
       }
    },
+   {
+      name = "The Maze",
+      base = 2,
+      bonetag = "M",
+      flags = { "mazelike", "unconnected" },
+      alignment = "unaligned",
+      levels = {
+         {
+            name = "maze-1",
+            bonetag = "M",
+            base = 1,
+         },
+         {
+            name = "maze-2",
+            bonetag = "M",
+            base = 2,
+         }
+      }
+   }
 }

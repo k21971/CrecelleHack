@@ -1269,6 +1269,8 @@ SCROLL("charging",                   "VENVIDVIC",  1,  15, 300,
                                                         SCR_CHARGING),
 SCROLL("control weather",               "EKDMOS",  1,  15, 300,
                                                         SCR_CONTROL_WEATHER),
+SCROLL("maze",                   "WAREZ WALL DO",  1,   5, 300,
+                                                         SCR_MAZE),
 SCROLL("stinking cloud",             "FIZZ BUZZ",  1,  15, 300,
                                                         SCR_STINKING_CLOUD),
     /* Extra descriptions, shuffled into use at start of new game.

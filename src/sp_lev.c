@@ -2954,7 +2954,8 @@ fill_empty_maze(void)
         }
         for (x = rn2(2); x; x--) {
             maze1xy(&mm, DRY);
-            (void) makemon(&mons[PM_MINOTAUR], mm.x, mm.y, NO_MM_FLAGS);
+            if (!Is_magicmaze(&u.uz))
+                (void) makemon(&mons[PM_MINOTAUR], mm.x, mm.y, NO_MM_FLAGS);
         }
         for (x = rnd((int) (12 * mapfact) / 100); x; x--) {
             maze1xy(&mm, DRY);

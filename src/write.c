@@ -48,6 +48,7 @@ cost(struct obj *otmp)
     case SCR_STINKING_CLOUD:
     case SCR_TAMING:
     case SCR_TELEPORTATION:
+    case SCR_MAZE:
         return 20;
     case SCR_GENOCIDE:
         return 30;

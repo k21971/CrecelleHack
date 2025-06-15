@@ -381,8 +381,9 @@ struct dgn_topology { /* special dungeon levels for speed */
     xint16 d_sokoban_dnum;
     xint16 d_mines_dnum, d_quest_dnum;
     xint16 d_tutorial_dnum;
+    xint16 d_maze_dnum;
     d_level d_qstart_level, d_qlocate_level, d_nemesis_level;
-    d_level d_knox_level;
+    d_level d_knox_level, d_maze_level;
     d_level d_mineend_level;
     d_level d_sokoend_level;
 };
@@ -414,10 +415,12 @@ struct dgn_topology { /* special dungeon levels for speed */
 #define mines_dnum              (svd.dungeon_topology.d_mines_dnum)
 #define quest_dnum              (svd.dungeon_topology.d_quest_dnum)
 #define tutorial_dnum           (svd.dungeon_topology.d_tutorial_dnum)
+#define maze_dnum               (svd.dungeon_topology.d_maze_dnum)
 #define qstart_level            (svd.dungeon_topology.d_qstart_level)
 #define qlocate_level           (svd.dungeon_topology.d_qlocate_level)
 #define nemesis_level           (svd.dungeon_topology.d_nemesis_level)
 #define knox_level              (svd.dungeon_topology.d_knox_level)
+#define maze_level              (svd.dungeon_topology.d_maze_level)
 #define mineend_level           (svd.dungeon_topology.d_mineend_level)
 #define sokoend_level           (svd.dungeon_topology.d_sokoend_level)
 /* clang-format on */

@@ -35,6 +35,7 @@ local special_levels = {
 "fire",
 "juiblex",
 "knox",
+"maze",
 "medusa-1",
 "medusa-2",
 "medusa-3",

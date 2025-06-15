@@ -330,6 +330,7 @@ mquaffmsg(struct monst *mtmp, struct obj *otmp)
 #define MUSE_COAT_ASHES 21
 #define MUSE_POT_BLOOD 22
 #define MUSE_COAT_BLOOD 23
+#define MUSE_SCR_MAZE 24
 /*
 #define MUSE_INNATE_TPT 9999
  * We cannot use this.  Since monsters get unlimited teleportation, if they
@@ -721,6 +722,14 @@ find_defensive(struct monst *mtmp, boolean tryescape)
                 gm.m.has_defense = MUSE_SCR_TELEPORTATION;
             }
         }
+        nomore(MUSE_SCR_MAZE);
+        if (obj->otyp == SCR_MAZE && mtmp->mcansee
+            && haseyes(mtmp->data)
+            && (!is_rider(mtmp->data) || (!(mtmp->isshk && inhishop(mtmp))
+                                 && !mtmp->isgd && !mtmp->ispriest))) {
+            gm.m.defensive = obj;
+            gm.m.has_defense = MUSE_SCR_MAZE;
+        }
 
         if (mtmp->data != &mons[PM_PESTILENCE]) {
             nomore(MUSE_POT_FULL_HEALING);
@@ -933,6 +942,23 @@ use_defensive(struct monst *mtmp)
         if (otmp->dknown && iflags.last_msg != PLNMSG_enum)
             trycall(otmp);
         /* already removed from mtmp->minvent so not 'm_useup(mtmp, otmp)' */
+        obfree(otmp, (struct obj *) 0);
+        return 2;
+    }
+    case MUSE_SCR_MAZE: {
+        if (!otmp)
+            panic(MissingDefensiveItem, "scroll of maze");
+        if (mtmp->isshk || mtmp->isgd || mtmp->ispriest)
+            return 2;
+        m_flee(mtmp);
+        if (otmp->quan > 1L)
+            otmp = splitobj(otmp, 1L);
+        extract_from_minvent(mtmp, otmp, FALSE, FALSE);
+        iflags.last_msg = PLNMSG_enum;
+        mreadmsg(mtmp, otmp);
+        pline_mon(mtmp, "Spectral tendrils drag %s into another reality!", mon_nam(mtmp));
+            migrate_to_level(mtmp, ledger_no(&maze_level), MIGR_RANDOM,
+                                (coord *) 0);
         obfree(otmp, (struct obj *) 0);
         return 2;
     }
@@ -1344,6 +1370,7 @@ rnd_defensive_item(struct monst *mtmp)
 /*#define MUSE_WAN_UNDEAD_TURNING 20*/ /* also a defensive item so don't
                                      * redefine; nonconsecutive value is ok */
 #define MUSE_FLOOR_ALCHEMY 21
+#define MUSE_SCR_MAZE_OFFENSIVE 22
 
 staticfn boolean
 linedup_chk_corpse(coordxy x, coordxy y)
@@ -1614,6 +1641,13 @@ find_offensive(struct monst *mtmp)
             && obj->spe > 0 && !rn2(6)) {
             gm.m.offensive = obj;
             gm.m.has_offense = MUSE_CAMERA;
+        }
+        nomore(MUSE_SCR_MAZE_OFFENSIVE);
+        if (obj->otyp == SCR_MAZE && !Blind && !In_magicmaze(&u.uz)
+            && !obj->cursed && !rn2(10)
+            && dist2(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy) <= 2) {
+            gm.m.offensive = obj;
+            gm.m.has_offense = MUSE_SCR_MAZE_OFFENSIVE;
         }
 #if 0
         nomore(MUSE_SCR_FIRE);
@@ -1978,6 +2012,11 @@ use_offensive(struct monst *mtmp)
         otmp->spe--;
         return 1;
     } /* case MUSE_CAMERA */
+    case MUSE_SCR_MAZE_OFFENSIVE: {
+        mreadmsg(mtmp, otmp);
+        player_to_magic_maze();
+        return 1;
+    }
 #if 0
     case MUSE_SCR_FIRE: {
         boolean vis = cansee(mtmp->mx, mtmp->my);
@@ -2829,7 +2868,7 @@ searches_for_item(struct monst *mon, struct obj *obj)
         break;
     case SCROLL_CLASS:
         if (typ == SCR_TELEPORTATION || typ == SCR_CREATE_MONSTER
-            || typ == SCR_EARTH || typ == SCR_FIRE)
+            || typ == SCR_EARTH || typ == SCR_FIRE || typ == SCR_MAZE)
             return TRUE;
         break;
     case AMULET_CLASS:

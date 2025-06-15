@@ -560,8 +560,9 @@ mon_arrive(struct monst *mtmp, int when)
             /* debugfuzzer returns from or enters another branch */
             xlocale = stway->sx, ylocale = stway->sy;
             break;
-        } else if (!(u.uevent.qexpelled
-                     && (Is_qstart(&u.uz0) || Is_qstart(&u.uz)))) {
+        } else if ((u.uevent.qexpelled
+                && (Is_qstart(&u.uz0) || Is_qstart(&u.uz)))
+                || (Is_magicmaze(&u.uz0) || Is_magicmaze(&u.uz))) {
             impossible("mon_arrive: no corresponding portal?");
         }
         FALLTHROUGH;

@@ -59,6 +59,10 @@
   - Uncursed: Swaps current weather from rain to shine.
   - Cursed: Causes bizarre inclement weather.
   - Confused and not cursed: Summons a tame tornado.
+- Scroll of Maze
+  - Allows you to send a monster to a randomly generated maze.
+    This does not affect Riders, but it bypasses all forms of
+    magic resistance.
 - Mirrored Glasses
   - Provide reflection.
 - Tinker Goggles

@@ -2669,6 +2669,7 @@ extern void punish(struct obj *) NO_NNARGS;
 extern void unpunish(void);
 extern boolean cant_revive(int *, boolean, struct obj *) NO_NNARGS;
 extern boolean create_particular(void);
+extern void player_to_magic_maze(void);
 
 /* ### rect.c ### */
 
