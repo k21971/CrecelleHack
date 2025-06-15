@@ -1343,7 +1343,7 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
     tmp = P_SKILL(P_TRIPPING) - 1;
 
     if (magr == &gy.youmonst) {
-        You("attempt to trip %s.", Monnam(mdef));
+        You("attempt to trip %s.", mon_nam(mdef));
         display_nhwindow(WIN_MESSAGE, TRUE);
         trip_diff -= tmp;
         trip_diff += (magr->m_lev / 10);
