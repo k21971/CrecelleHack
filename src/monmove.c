@@ -132,17 +132,10 @@ mon_yells(struct monst *mon, const char *shout)
 boolean
 m_can_break_boulder(struct monst *mtmp)
 {
-    return (!mtmp->mpeaceful
-            && (is_rider(mtmp->data)
-                || (MON_WEP(mtmp) && is_pick(MON_WEP(mtmp)))
-                || (!mtmp->mspec_used
-                    && (is_dprince(mtmp->data)
-                        || is_dlord(mtmp->data)
-                        || mtmp->isshk
-                        || mtmp->ispriest
-                        || mtmp->data->msound == MS_LEADER
-                        || mtmp->data->msound == MS_NEMESIS
-                        || mtmp->data == &mons[PM_ORACLE]))));
+    return (is_rider(mtmp->data)
+            || (!mtmp->mspec_used
+                && (mtmp->isshk || mtmp->ispriest
+                    || (mtmp->data->msound == MS_LEADER))));
 }
 
 /* monster mtmp breaks boulder at x,y */
@@ -160,10 +153,7 @@ m_break_boulder(struct monst *mtmp, coordxy x, coordxy y)
                       Monnam(mtmp),
                       mtmp->ispriest ? "a prayer" : "an incantation");
             }
-            if (unique_corpstat(mtmp->data))
-                mtmp->mspec_used += rn1(4, 2);
-            else
-                mtmp->mspec_used += rn1(20, 10);
+            mtmp->mspec_used += rn1(20, 10);
         }
         if (cansee(x, y)) {
             set_msg_xy(x, y);
@@ -1852,8 +1842,7 @@ m_move(struct monst *mtmp, int after)
         } else {
             mmoved = MMOVE_NOTHING;
         }
-        if (distu(mtmp->mx, mtmp->my) > 8)
-            return postmov(mtmp, ptr, omx, omy, mmoved,
+        return postmov(mtmp, ptr, omx, omy, mmoved,
                        seenflgs, can_tunnel, can_unlock, can_open);
     }
 
