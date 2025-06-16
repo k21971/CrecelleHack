@@ -2783,7 +2783,7 @@ get_artifact(struct obj *obj)
 {
     if (obj) {
         int artidx = (int) obj->oartifact;
-        artifact_from_index(artidx);
+        return artifact_from_index(artidx);
     }
     return &artilist[ART_NONARTIFACT];
 }
