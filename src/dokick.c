@@ -1406,6 +1406,7 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
 void
 make_prone(void) {
     stairway *stway;
+    d_level newlevel;
     u.uprops[PRONE].extrinsic = 1L;
     disp.botl = TRUE;
     selftouch("As you tumble, you");
@@ -1417,7 +1418,10 @@ make_prone(void) {
     }
     if ((stway = stairway_at(u.ux, u.uy)) != 0 && !stway->up) {
         u.dz = 1;
-        next_level(TRUE);
+        stway->u_traversed = TRUE;
+        newlevel.dnum = stway->tolev.dnum;
+        newlevel.dlevel = stway->tolev.dlevel;
+        schedule_goto(&newlevel, UTOTYPE_ATSTAIRS, (char *) 0, (char *) 0);
     }
 }
 
