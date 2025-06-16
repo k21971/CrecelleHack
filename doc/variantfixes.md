@@ -21,6 +21,8 @@
 - Monsters considered "roguish" can spawn with poisoned items or
   potions of sickness.
 - Monsters can dip items into potions.
+- Ported EvilHack and Spork's covetous monster behavior tweaks.
+- Ported EvilHack's ability for monsters to break boulders.
 
 ## New Monsters
 - Salt Golem
