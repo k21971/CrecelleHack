@@ -2571,6 +2571,13 @@ breaktest(struct obj *obj)
     if (obj->oclass == ARMOR_CLASS && objects[obj->otyp].oc_material == GLASS)
         nonbreakchance = 90;
 
+    if (obj->otyp == SKELETON) {
+        if (obj->owt < 50)
+            return TRUE;
+        else
+            nonbreakchance = 90;
+    }
+
     if (obj_resists(obj, nonbreakchance, 99))
         return FALSE;
     if (objects[obj->otyp].oc_material == GLASS && !obj->oartifact)
@@ -2626,6 +2633,13 @@ breakmsg(struct obj *obj, boolean in_view)
         else
             pline("%s shatter%s%s!", Doname2(obj),
                   (obj->quan == 1L) ? "s" : "", to_pieces);
+        break;
+    case SKELETON:
+        if (!in_view) You_hear(Hallucination
+                                ? "Bones troussling!" : "A crash!");
+        else
+            pline("%s fall%s apart!", Doname2(obj),
+                  (obj->quan == 1L) ? "s" : "");
         break;
     case EGG:
     case MELON:

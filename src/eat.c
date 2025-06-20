@@ -99,6 +99,10 @@ is_edible(struct obj *obj)
         && is_flammable(obj))
         return TRUE;
 
+    /* We don't want anyone digesting a skeleton, including gelatinous cubes. */
+    if (obj->otyp == SKELETON)
+        return FALSE;
+
     if (metallivorous(gy.youmonst.data) && is_metallic(obj)
         && (gy.youmonst.data != &mons[PM_RUST_MONSTER] || is_rustprone(obj)))
         return TRUE;

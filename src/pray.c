@@ -620,7 +620,7 @@ god_zaps_you(aligntyp resp_god)
              * Other credit/blame applies (luck or alignment adjustments),
              * but not direct kill count (pacifist conduct).
              */
-            xkilled(u.ustuck, XKILL_NOMSG | XKILL_NOCONDUCT);
+            xkilled(u.ustuck, XKILL_NOMSG | XKILL_NOCONDUCT | XKILL_SKELETONIZE);
         } else
             pline("%s seems unaffected.", Monnam(u.ustuck));
     } else {

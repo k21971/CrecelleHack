@@ -2166,6 +2166,7 @@ rnd_offensive_item(struct monst *mtmp)
 #define MUSE_BAG 10
 #define MUSE_GREASE 11
 #define MUSE_DIP_WEAPON 12
+#define MUSE_BURY_BONES 13
 
 boolean
 find_misc(struct monst *mtmp)
@@ -2292,6 +2293,14 @@ find_misc(struct monst *mtmp)
             ||  (mwep && mwep->cursed && obj->otyp == POT_WATER && obj->blessed)) {
                 gm.m.misc = obj;
                 gm.m.has_misc = MUSE_DIP_WEAPON;
+        }
+        nomore(MUSE_BURY_BONES);
+        if (likes_bones(mtmp->data)
+            && mtmp->data != &mons[PM_SKELETON]
+            && objects[obj->otyp].oc_material == BONE
+            && IS_ROOM(levl[mtmp->mx][mtmp->my].typ)) {
+            gm.m.misc = obj;
+            gm.m.has_misc = MUSE_BURY_BONES;
         }
         nomore(MUSE_WAN_MAKE_INVISIBLE);
         if (obj->otyp == WAN_MAKE_INVISIBLE && obj->spe > 0 && !mtmp->minvis
@@ -2649,6 +2658,9 @@ use_misc(struct monst *mtmp)
             otmp2->cursed = 0;
         m_useup(mtmp, otmp);
         return 0;
+    case MUSE_BURY_BONES:
+        mon_bury_obj(mtmp, otmp);
+        return 0;
     case MUSE_GREASE:
         for (otmp2 = mtmp->minvent; otmp2; otmp2 = otmp2->nobj) {
             if ((otmp2->owornmask & mtmp->misc_worn_check) && !otmp2->greased) {
@@ -2837,6 +2849,8 @@ searches_for_item(struct monst *mon, struct obj *obj)
                           && !attacktype(mon->data, AT_GAZE));
     if (typ == WAN_SPEED_MONSTER || typ == POT_SPEED)
         return (boolean) (mon->mspeed != MFAST);
+    if (objects[obj->otyp].oc_material == BONE)
+            return (likes_bones(mon->data));
 
     switch (obj->oclass) {
     case WAND_CLASS:

@@ -262,9 +262,15 @@
 
 #define has_blood(ptr) \
     (!(nonliving(ptr) || unsolid(ptr) || mindless(ptr)))
-
+#define has_bones(ptr) \
+    (!vegan(ptr) && !unsolid(ptr) && !amorphous(ptr))
 #define has_skull(ptr) \
-    (has_head(ptr) && !vegan(ptr) && !unsolid(ptr))
+    (has_head(ptr) && has_bones(ptr))
+
+#define likes_bones(ptr) \
+    (ptr->mlet == S_DOG || ptr == &mons[PM_HUMAN_WEREWOLF] \
+        || ptr == &mons[PM_SKELETON] \
+        || ptr == &mons[PM_BONE_DEVIL])
 
 #define can_grapple(ptr) \
     ((humanoid(ptr) || (ptr)->mlet == S_NAGA || (ptr)->mlet == S_DRAGON \

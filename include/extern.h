@@ -559,6 +559,7 @@ extern void draft_message(boolean);
 extern void watch_dig(struct monst *, coordxy, coordxy, boolean);
 extern void zap_dig(void);
 extern struct obj *bury_an_obj(struct obj *, boolean *) NONNULLARG1;
+extern void mon_bury_obj(struct monst *, struct obj *) NONNULLARG12;
 extern void bury_objs(int, int);
 extern void unearth_objs(int, int);
 extern void rot_organic(union any *, long) NONNULLARG1;

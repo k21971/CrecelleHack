@@ -1078,7 +1078,7 @@ minimal_xname(struct obj *obj)
     /* for a boulder, leave corpsenm as 0; non-zero produces "next boulder" */
     if (otyp != BOULDER)
         bareobj.corpsenm = NON_PM; /* suppress statue and figurine details */
-    if (otyp == SKULL_HELM || otyp == SKULL)
+    if (otyp == SKULL_HELM || otyp == SKULL || otyp == SKELETON)
         bareobj.corpsenm = obj->corpsenm; /* we need this to avoid issues with insight */
     /* but suppressing fruit details leads to "bad fruit #0"
        [perhaps we should force "slime mold" rather than use xname?] */
@@ -1328,7 +1328,8 @@ doname_base(
             Sprintf(prefix, "%ld ", obj->quan);
         else
             Strcpy(prefix, "some ");
-    } else if (obj->otyp == CORPSE || obj->otyp == SKULL || obj->otyp == SKULL_HELM) {
+    } else if (obj->otyp == CORPSE || obj->otyp == SKULL
+                || obj->otyp == SKULL_HELM || obj->otyp == SKELETON) {
         /* skip article prefix for corpses [else corpse_xname()
            would have to be taught how to strip it off again] */
         ;
@@ -1551,7 +1552,7 @@ doname_base(
     case FOOD_CLASS:
         if (obj->oeaten)
             Strcat(prefix, "partly eaten ");
-        if (obj->otyp == CORPSE) {
+        if (obj->otyp == CORPSE || obj->otyp == SKELETON) {
             /* (quan == 1) => want corpse_xname() to supply article,
                (quan != 1) => already have count or "some" as prefix;
                "corpse" is already in the buffer returned by xname() */
@@ -1594,7 +1595,7 @@ doname_base(
     }
 
     if ((obj->otyp == STATUE || obj->otyp == CORPSE || obj->otyp == FIGURINE 
-        || obj->otyp == SKULL || obj->otyp == SKULL_HELM)
+        || obj->otyp == SKULL || obj->otyp == SKULL_HELM || obj->otyp == SKELETON)
         && wizard && iflags.wizmgender) {
         int cgend = (obj->spe & CORPSTAT_GENDER),
             mgend = ((cgend == CORPSTAT_MALE) ? MALE
@@ -1955,7 +1956,10 @@ corpse_xname(
     if (glob) {
         ; /* omit_corpse doesn't apply; quantity is always 1 */
     } else if (!omit_corpse) {
-        Strcat(nambuf, " corpse");
+        if (otmp->otyp == CORPSE)
+            Strcat(nambuf, " corpse");
+        else
+           Strcat(nambuf, " skeleton");
         /* makeplural(nambuf) => append "s" to "corpse" */
         if (otmp->quan > 1L && !ignore_quan) {
             Strcat(nambuf, "s");
@@ -5208,6 +5212,7 @@ readobjnam(char *bp, struct obj *no_wish)
     case STATUE: /* otmp->cobj already done in mksobj() */
     case FIGURINE:
     case SKULL:
+    case SKELETON:
     case SKULL_HELM:
     case CORPSE: {
         struct permonst *P = (ismnum(d.mntmp)) ? &mons[d.mntmp] : 0;
@@ -5276,6 +5281,7 @@ readobjnam(char *bp, struct obj *no_wish)
                 d.otmp->corpsenm = d.mntmp;
             }
             break;
+        case SKELETON:
         case CORPSE:
             if ((!(mons[d.mntmp].geno & G_UNIQ) || wizard)
                 && !(svm.mvitals[d.mntmp].mvflags & G_NOCORPSE)) {

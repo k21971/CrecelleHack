@@ -2053,6 +2053,17 @@ bury_an_obj(struct obj *otmp, boolean *dealloced)
 }
 
 void
+mon_bury_obj(struct monst *mtmp, struct obj *otmp)
+{
+    if (canseemon(mtmp)) {
+        pline_mon(mtmp, "%s buries %s.",
+                    Monnam(mtmp),
+                    ansimpleoname(otmp));
+    }
+    bury_an_obj(otmp, (boolean *) 0);
+}
+
+void
 bury_objs(int x, int y)
 {
     struct obj *otmp, *otmp2;

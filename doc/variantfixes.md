@@ -70,6 +70,10 @@
 - Tinker Goggles
   - Block flash effects, as sunglasses do.
   - Protects from alchemic blasts when performing alchemy.
+- Skeleton
+  - Found on the ground of the dungeon, and occasionally
+    created through other situations, such as by zapping
+    a wand of death or being struck by lightning.
 
 ## Floor Coating System
 - Added ice as a floor coating.

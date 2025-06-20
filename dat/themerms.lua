@@ -183,7 +183,7 @@ themeroom_fills = {
          local idx = math.random(#mon);
          for i = 1, d(5,5) do
             if (percent(10)) then idx = math.random(#mon); end
-            des.object({ id = "corpse", montype = mon[idx] });
+            des.object({ id = "skeleton", montype = mon[idx] });
          end
       end,
    },
@@ -430,7 +430,7 @@ themerooms = {
                                        shuffle(mons);
                                        des.monster({ class = mons[1], x=0,y=0, waiting = 1 });
                                     else
-                                       des.object({ id = "corpse", montype = "@", coord = {0,0} });
+                                       des.object({ id = "skeleton", montype = "@", coord = {0,0} });
                                     end
                                     if (percent(20)) then
                                        des.door({ state="secret", wall="all" });

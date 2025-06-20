@@ -2004,7 +2004,8 @@ mktrap_victim(struct trap *ttmp)
        instead (always human); no role-specific equipment is provided */
     if (victim_mnum == PM_HUMAN && rn2(25))
         victim_mnum = rn1(PM_WIZARD - PM_ARCHEOLOGIST, PM_ARCHEOLOGIST);
-    otmp = mkcorpstat(CORPSE, NULL, &mons[victim_mnum], x, y, CORPSTAT_INIT);
+    otmp = mkcorpstat(rn2(9) ? SKELETON : CORPSE, NULL, &mons[victim_mnum],
+                        x, y, CORPSTAT_INIT);
     otmp->age -= (TAINT_AGE + 1); /* died too long ago to safely eat */
 }
 

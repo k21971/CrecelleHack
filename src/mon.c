@@ -577,6 +577,9 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     else if (!is_neuter(mtmp->data))
         corpstatflags |= CORPSTAT_MALE;
 
+    if ((corpstatflags & CORPSTAT_SKELETONIZE) != 0)
+        goto default_1;
+
     switch (mndx) {
     case PM_GRAY_DRAGON:
     case PM_GOLD_DRAGON:
@@ -917,8 +920,10 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
         } else {
             corpstatflags |= CORPSTAT_INIT;
             /* preserve the unique traits of some creatures */
-            obj = mkcorpstat(CORPSE, KEEPTRAITS(mtmp) ? mtmp : 0,
-                             mdat, x, y, corpstatflags);
+            obj = mkcorpstat(((corpstatflags & CORPSTAT_SKELETONIZE) != 0)
+                                ? SKELETON : CORPSE,
+                            KEEPTRAITS(mtmp) ? mtmp : 0,
+                            mdat, x, y, corpstatflags);
             if (burythem) {
                 boolean dealloc;
 
@@ -3570,6 +3575,8 @@ xkilled(
     boolean wasinside = engulfing_u(mtmp),
             burycorpse = FALSE,
             nomsg = (xkill_flags & XKILL_NOMSG) != 0,
+            skeletonize = ((xkill_flags & XKILL_SKELETONIZE) != 0
+                            && has_bones(mtmp->data)),
             nocorpse = (xkill_flags & XKILL_NOCORPSE) != 0,
             noconduct = (xkill_flags & XKILL_NOCONDUCT) != 0;
 
@@ -3623,7 +3630,7 @@ xkilled(
     }
 
     gv.vamp_rise_msg = FALSE; /* might get set in mondead(); checked below */
-    gd.disintegested = nocorpse; /* alternate vamp_rise mesg needed if true */
+    gd.disintegested = skeletonize; /* alternate vamp_rise mesg needed if true */
     /* dispose of monster and make cadaver */
     if (gs.stoned)
         monstone(mtmp);
@@ -3701,8 +3708,9 @@ xkilled(
             gz.zombify = (!gt.thrownobj && !gs.stoned && !uwep
                          && zombie_maker(&gy.youmonst)
                          && zombie_form(mtmp->data) != NON_PM);
-            cadaver = make_corpse(mtmp, burycorpse ? CORPSTAT_BURIED
-                                                   : CORPSTAT_NONE);
+            cadaver = make_corpse(mtmp,
+                                    (burycorpse ? CORPSTAT_BURIED : CORPSTAT_NONE)
+                                        | (skeletonize ? CORPSTAT_SKELETONIZE : 0));
             gz.zombify = FALSE; /* reset */
             if (burycorpse && cadaver && cansee(x, y) && !mtmp->minvis
                 && cadaver->where == OBJ_BURIED && !nomsg) {
