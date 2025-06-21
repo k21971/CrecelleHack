@@ -1672,7 +1672,6 @@ add_coating(coordxy x, coordxy y, short coatflags, int pindex) {
         levl[x][y].coat_info |= coatflags;
         if ((coatflags & COAT_FUNGUS) != 0) {
             levl[x][y].lit = 1;
-            newsym(x, y);
         }
         if ((coatflags & COAT_FROST) != 0) {
             remove_coating(x, y, COAT_POTION | COAT_BLOOD | COAT_ASHES | COAT_FUNGUS | COAT_GRASS);
@@ -1692,7 +1691,9 @@ add_coating(coordxy x, coordxy y, short coatflags, int pindex) {
         } else if (pindex) {
             impossible("non-tonic pindex coating?");
         }
-        newsym(x, y);
+        /* Don't expose squares during mapgen*/
+        if (!gi.in_mklev)
+            newsym(x, y);
     }
     return TRUE;
 }
@@ -1709,7 +1710,8 @@ remove_coating(coordxy x, coordxy y, short coatflags) {
     levl[x][y].coat_info &= ~coatflags;
     if ((coatflags & COAT_POTION) != 0 || (coatflags & COAT_BLOOD) != 0)
         levl[x][y].pindex = 0;
-    newsym(x, y);
+    if (!gi.in_mklev)
+        newsym(x, y);
     return TRUE;
 }
 
