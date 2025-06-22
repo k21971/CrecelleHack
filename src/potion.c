@@ -46,6 +46,12 @@ staticfn void hold_potion(struct obj *, const char *, const char *,
 staticfn void poof(struct obj *);
 staticfn int potion_dip(struct obj *obj, struct obj *potion);
 
+
+#define COAT(id, nam, adj, val) { nam, adj, val }
+struct floor_coating all_coatings[] = { COAT_LIST };
+#undef COAT
+#undef COAT_LIST
+
 /* used to indicate whether quaff or dip has skipped an opportunity to
    use a fountain or such, in order to vary the feedback if hero lacks
    any potions [reinitialized every time it's used so does not need to
@@ -1682,14 +1688,14 @@ add_coating(coordxy x, coordxy y, short coatflags, int pindex) {
             if (pindex == POT_ACID) {
                 remove_coating(x, y, COAT_GRASS | COAT_ASHES | COAT_HONEY);
             } else if (pindex < POT_GAIN_ABILITY || pindex > POT_WATER) {
-                impossible("coating floor with invalid object index %d?", pindex);
+                impossible("coating floor at <%d,%d> with invalid tonic %d?", x, y, pindex);
             }
         } else if ((coatflags & COAT_BLOOD) != 0) {
             remove_coating(x, y, COAT_POTION | COAT_FROST);
             levl[x][y].pindex = pindex;
-            if (!ismnum(pindex)) impossible("coating floor with invalid blood %d?", pindex);
+            if (!ismnum(pindex)) impossible("coating floor at <%d,%d> with invalid blood %d?", x, y, pindex);
         } else if (pindex) {
-            impossible("non-tonic pindex coating?");
+            impossible("non-tonic pindex coating at <%d,%d>?", x, y);
         }
         /* Don't expose squares during mapgen*/
         if (!gi.in_mklev)

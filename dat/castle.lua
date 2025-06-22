@@ -19,7 +19,11 @@
 
 des.level_init({ style="mazegrid", bg ="-" });
 
-des.level_flags("mazelevel", "noteleport", "noflipy")
+local temperatures = { "hot", "cold", "temperate" }
+shuffle(temperatures)
+local castle_temp = temperatures[1];
+
+des.level_flags("mazelevel", "noteleport", "noflipy", castle_temp)
 
 des.map([[
 }}}}}}}}}.............................................}}}}}}}}}
@@ -57,7 +61,15 @@ shuffle(monster)
 des.teleport_region({ region = {01,00,10,20}, region_islev=1, exclude={1,1,61,15}, dir="down" })
 des.teleport_region({ region = {69,00,79,20}, region_islev=1, exclude={1,1,61,15}, dir="up" })
 des.levregion({ region = {01,00,10,20}, region_islev=1, exclude={0,0,62,16}, type="stair-up" })
-des.feature("fountain", 10,08)
+des.feature({ type = "fountain", coord = {10,08}, frozen = (castle_temp == "cold")})
+-- Cover Courtyard in some kind of coating
+if (castle_temp == "cold") then
+    des.replace_terrain({ region={07,05, 14,11}, fromterrain=".", toterrain=".", coat="frost", chance=70 })
+elseif (castle_temp == "hot") then
+    des.replace_terrain({ region={07,05, 14,11}, fromterrain=".", toterrain=".", coat="ash", chance=90 })
+else
+    des.replace_terrain({ region={07,05, 14,11}, fromterrain=".", toterrain=".", coat="grass", chance=70 })
+end
 -- Doors
 des.door("closed",07,03)
 des.door("closed",55,03)

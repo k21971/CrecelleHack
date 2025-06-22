@@ -143,16 +143,27 @@ enum levl_typ_types {
  * coat_info is defined as flags, which is only 5 bytes in length.
  * It should be fine, as long as one sticks to passing defined coats.
  */
-#define COAT_NONE   0x00 /* no coating */
-#define COAT_GRASS  0x01 /* grass */
-#define COAT_ASHES  0x02 /* ashes */
-#define COAT_POTION 0x04 /* various types of potions */
-#define COAT_BLOOD  0x08 /* various types of blood */
-#define COAT_FUNGUS 0x10 /* luminescent fungus */
-#define COAT_SHARDS 0x20 /* shards of glass */
-#define COAT_HONEY  0x40 /* honey */
-#define COAT_FROST  0x80 /* frost */
-#define COAT_ALL 0xfff
+#define COAT_LIST COAT(GRASS,     "grass",    "grassy ",              0x01), \
+COAT(ASHES,     "ashes",    "ashy ",                0x02), \
+COAT(POTION,    "potion",   "potion-spattered ",    0x04), \
+COAT(BLOOD,     "blood",    "bloody ",              0x08), \
+COAT(FUNGUS,    "fungus",   "fungus-encrusted ",    0x10), \
+COAT(SHARDS,    "shards",   "glass-strewn ",        0x20), \
+COAT(HONEY,     "honey",    "sticky ",              0x40), \
+COAT(FROST,     "frost",    "icy ",                 0x80), \
+COAT(ALL,       "all",      "all",                  0xfff)
+
+#define NUM_COATINGS 8 /* must be incremented when coatings are addeed */
+#define COAT(id, nam, adj, val) COAT_##id = val
+enum coatings_enum { COAT_LIST };
+#undef COAT
+struct floor_coating {
+    const char *name;
+    const char *adj;
+    short val;
+};
+extern struct floor_coating all_coatings[];
+
 
 /*
  * The structure describing a coordinate position.

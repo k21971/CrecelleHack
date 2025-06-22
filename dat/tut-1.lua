@@ -28,7 +28,7 @@ end
 
 des.level_init({ style = "solidfill", fg = " " });
 des.level_flags("mazelevel", "noflip",
-                "nomongen", "nodeathdrops", "noautosearch", "arboreal");
+                "nomongen", "nodeathdrops", "noautosearch");
 des.map([[
 ---------------------------------------------------------------------------
 |...|.......|.............................................................|
@@ -80,9 +80,10 @@ des.engraving({ coord = { 8, 7 }, type = "engrave", text = "Notice how the tonic
 des.engraving({ coord = { 8, 6 }, type = "engrave", text = "The dungeon in CrecelleHack can become coated in all sorts of things, including tonics, grass, and more", degrade = false });
 des.door({ coord = { 8, 5 }, state = "closed" });
 --
+des.replace_terrain({ region={05,00, 04,11}, fromterrain=".", toterrain=".", coat="grass" })
 des.door({ coord = { 10, 5 }, state = "closed" });
-des.engraving({ coord = { 8, 3 }, type = "engrave", text = "Try standing on that altar and zapping this wand of fire", degrade = false });
-des.altar({ x = 8, y = 4, align="chaos", type="shrine" });
+des.engraving({ coord = { 8, 3 }, type = "engrave", text = "Try standing on that altar and zapping this wand of fire south", degrade = false });
+des.altar({ x = 8, y = 1, align="chaos", type="shrine" });
 des.object({ coord = { 8, 3 }, id = "wand of fire", buc = "blessed" });
 des.engraving({ coord = { 10, 7 }, type = "engrave", text = "There are many coating interactions to discover in your adventure", degrade = false });
 des.door({ coord = { 12, 7 }, state = "closed" });

@@ -5053,6 +5053,10 @@ lspo_replace_terrain(lua_State *L)
     lua_Integer x1, y1, x2, y2;
     int chance;
     int tolit;
+    int coat_type;
+    char *coat_str, *mon_str, *obj_str;
+    int gender = NEUTRAL;
+    int montype = 0, objtype = 0;
     NhRect rect = cg.zeroNhRect;
 
     create_des_coder();
@@ -5060,6 +5064,22 @@ lspo_replace_terrain(lua_State *L)
     lcheck_param_table(L);
 
     totyp = get_table_mapchr(L, "toterrain");
+
+    coat_str = get_table_str_opt(L, "coat", NULL);
+    mon_str = get_table_str_opt(L, "montype", NULL);
+    obj_str = get_table_str_opt(L, "objtype", NULL);
+    if (mon_str)
+        montype = find_montype(L, mon_str, &gender);
+    if (obj_str)
+        objtype = find_objtype(L, obj_str);
+    if (coat_str) {
+        for (int i = 0; i < NUM_COATINGS; i++) {
+            if (!strcmp(all_coatings[i].name, coat_str)) {
+                coat_type = all_coatings[i].val;
+                break;
+            }
+        }
+    }
 
     if (totyp >= MAX_TYPE)
         return 0;
@@ -5124,8 +5144,11 @@ lspo_replace_terrain(lua_State *L)
                 } else {
                     if (((fromtyp == MATCH_WALL && IS_STWALL(levl[x][y].typ))
                          || levl[x][y].typ == fromtyp)
-                        && rn2(100) < chance)
+                        && rn2(100) < chance) {
+                        if (coat_type)
+                            (void) add_coating(x, y, coat_type, montype ? montype : objtype);
                         (void) set_levltyp_lit(x, y, totyp, tolit);
+                    }
                 }
             }
 

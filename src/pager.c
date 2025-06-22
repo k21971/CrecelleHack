@@ -622,24 +622,19 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
         Strcpy(outbuf, floor_descr(x, y, symidx));
         return outbuf;
     }
-
+    /* Standard descriptions */
     pindex = levl[x][y].pindex;
-    if ((levl[x][y].coat_info & COAT_SHARDS) != 0)
-        Strcat(outbuf, "glass-strewn ");
-    if ((levl[x][y].coat_info & COAT_FROST) != 0)
-        Strcat(outbuf, "icy ");
-    if ((levl[x][y].coat_info & COAT_HONEY) != 0)
-        Strcat(outbuf, "sticky ");
-    if ((levl[x][y].coat_info & COAT_GRASS) != 0)
-        Strcat(outbuf, "grassy ");
-    if ((levl[x][y].coat_info & COAT_ASHES) != 0)
-        Strcat(outbuf, "ashy ");
-    if ((levl[x][y].coat_info & COAT_FUNGUS) != 0)
-        Strcat(outbuf, "fungus-encrusted ");
+    for (int i = 0; i < NUM_COATINGS; i++) {
+        if (all_coatings[i].val == COAT_POTION
+            || all_coatings[i].val == COAT_BLOOD)
+                continue;
+        if (levl[x][y].coat_info & all_coatings[i].val)
+            Strcat(outbuf, all_coatings[i].adj);
+    }
+    /* Special descriptions */
     if ((levl[x][y].coat_info & COAT_POTION) != 0
          && pindex == POT_WATER)
             Strcat(outbuf, "wet ");
-    
     if ((levl[x][y].coat_info & COAT_POTION) != 0 && pindex != POT_WATER) {
         Sprintf(buf, "%s covered in ", floor_descr(x, y, symidx));
         potion_coating_text(eos(buf), pindex);

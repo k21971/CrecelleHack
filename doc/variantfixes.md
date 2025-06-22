@@ -77,6 +77,8 @@
 
 ## Floor Coating System
 - Added ice as a floor coating.
+- Floor coatings can be added in level generation lua. Maps
+  have been updated to reflect this.
 
 ## Dungeon Changes
 - Allow fountains to become frozen. Frozen fountains cannot be

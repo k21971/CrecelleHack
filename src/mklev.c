@@ -1589,19 +1589,7 @@ coat_floors(void)
         for (int y = 0; y < ROWNO; y++) {
             if (!IS_COATABLE(levl[x][y].typ) || IS_STWALL(levl[x][y].typ))
                 continue;
-            if (Is_juiblex_level(&u.uz) && !rn2(3))
-                add_coating(x, y, COAT_FUNGUS, 0);
-            if (svl.level.flags.arboreal) {
-                if (rn2(4)) {
-                    if (IS_SUBMASKABLE(levl[x][y].typ)) {
-                        levl[x][y].submask = SM_DIRT;
-                    }
-                    add_coating(x, y, COAT_GRASS, 0);
-                }
-            } else if (svl.level.flags.temperature == 1) {
-                if (rn2(3))
-                    add_coating(x, y, COAT_ASHES, 0);
-            } else if (IS_SUBMASKABLE(levl[x][y].typ)) {
+            if (IS_SUBMASKABLE(levl[x][y].typ)) {
                 if (rn2(3)) {
                     levl[x][y].submask = SM_DIRT;
                 } else if (rn2(2)) {

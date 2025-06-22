@@ -38,6 +38,7 @@ L.....LLL......................LLLLL.........L.........LLLLLLLL..............LL
 ]]);
 des.teleport_region({ region = {71,16,71,16} })
 des.levregion({ region = {0,0,78,19}, exclude = {67,13,78,19}, type="portal", name="water" })
+des.replace_terrain({ region={00,00, 79,20}, fromterrain=".", toterrain=".", coat="ashes", chance=25 })
 
 des.trap("fire")
 des.trap("fire")
