@@ -663,6 +663,7 @@ Set flags for this level.
 | nodeathdrops  | Prevents killed monsters from dropping corpses or random death drops.
 | fumaroles     | Lava emits poison gas clouds at random.
 | stormy        | Clouds create lightning bolts at random.
+| outdoors      | Level is outside and has no ceiling.
 |===
 
 Example:

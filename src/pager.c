@@ -605,6 +605,8 @@ floor_descr(coordxy x, coordxy y, short symidx) {
             return "dirt";
         } else if (levl[x][y].submask == SM_SAND) {
             return "sand";
+        } else if (svl.level.flags.outdoors) {
+            return "earth";
         } else {
             return defsyms[symidx].explanation;
         }

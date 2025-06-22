@@ -904,6 +904,7 @@ clear_level_structures(void)
     svl.level.flags.noautosearch = 0;
     svl.level.flags.fumaroles = 0;
     svl.level.flags.stormy = 0;
+    svl.level.flags.outdoors = 0;
 
     svn.nroom = 0;
     svr.rooms[0].hx = -1;
@@ -1197,8 +1198,8 @@ coat_room(struct mkroom *croom, unsigned char coat_type) {
             if (croom->irregular && 
                 (IS_STWALL(levl[x][y].typ) || levl[x][y].typ == CORR))
                 continue;
-            if ((coat_type & COAT_GRASS) != 0 &&
-                x >= lx && x <= hx && y >= ly && y <= hy) {
+            if ((coat_type & COAT_GRASS) != 0 && !In_mines(&u.uz)
+                && x >= lx && x <= hx && y >= ly && y <= hy) {
                 if (grass_chance ? rn2(4) : !rn2(u.uz.dlevel)) {
                     add_coating(x, y, COAT_GRASS, 0);
                     if (IS_SUBMASKABLE(levl[x][y].typ)) {
@@ -1590,12 +1591,14 @@ coat_floors(void)
             if (!IS_COATABLE(levl[x][y].typ) || IS_STWALL(levl[x][y].typ))
                 continue;
             if (IS_SUBMASKABLE(levl[x][y].typ)) {
-                if (rn2(3)) {
+                if (Is_medusa_level(&u.uz))
+                    levl[x][y].submask = SM_SAND;
+                else if (rn2(3)) {
                     levl[x][y].submask = SM_DIRT;
                 } else if (rn2(2)) {
                     levl[x][y].submask = SM_SAND;
                 }
-                if (!Is_valley(&u.uz) && !Inhell && !rn2(7))
+                if (!has_ceiling(&u.uz) && !rn2(3)) 
                     add_coating(x, y,  COAT_GRASS, 0);
             }
         }
@@ -1610,7 +1613,8 @@ level_finalize_topology(void)
 
     bound_digging();
     mineralize(-1, -1, -1, -1, FALSE);
-    if (svl.level.flags.is_maze_lev)
+    if (!In_endgame(&u.uz) && !In_hell(&u.uz) && !In_sokoban(&u.uz)
+        && (svl.level.flags.is_maze_lev || In_mines(&u.uz)))
         coat_floors();
     gi.in_mklev = FALSE;
     /* avoid coordinates in future lua-loads for this level being thrown off
@@ -2057,6 +2061,10 @@ traptype_rnd(unsigned mktrapflags)
         if (rn2(7))
             kind = NO_TRAP;
         break;
+    case ROCKTRAP:
+        if (!has_ceiling(&u.uz))
+            kind = NO_TRAP;
+        break;
     }
     return kind;
 }
@@ -2141,7 +2149,7 @@ mktrap(
     }
 
     if (is_hole(kind) && !Can_fall_thru(&u.uz))
-        kind = ROCKTRAP;
+        kind = has_ceiling(&u.uz) ? ROCKTRAP : PIT;
 
     if (tm) {
         m = *tm;

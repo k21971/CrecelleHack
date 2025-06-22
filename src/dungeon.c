@@ -1672,7 +1672,7 @@ has_ceiling(d_level *lev)
     /* FIXME: some (most? all?) of the quest home levels are conceptually
        above ground and don't have ceilings outside of their buildings
        but we don't presently check for that */
-    if (In_endgame(lev) && !Is_earthlevel(lev))
+    if ((In_endgame(lev) && !Is_earthlevel(lev)) || svl.level.flags.outdoors)
         return FALSE;
     return TRUE;
 }
@@ -1766,7 +1766,7 @@ surface(coordxy x, coordxy y)
     else if (IS_SUBMASKABLE(levtyp) && levl[x][y].submask == SM_SAND)
         return "sand";
     else if (IS_ROOM(levtyp) && !Is_earthlevel(&u.uz))
-        return "floor";
+        return (svl.level.flags.outdoors) ? "earth" : "floor";
     else
         return "ground";
 }
