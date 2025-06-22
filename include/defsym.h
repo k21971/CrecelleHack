@@ -299,11 +299,11 @@
     MONSYM( 4, 'd', DOG, S_DOG, "dog or other canine")
     MONSYM( 5, 'e', EYE, S_EYE, "eye or sphere")
     MONSYM( 6, 'f', FELINE, S_FELINE, "cat or other feline")
-    MONSYM( 7, 'g', GREMLIN, S_GREMLIN, "gremlin")
+    MONSYM( 7, 'g', GREMLIN, S_GREMLIN, "grotesque")
     /* small humanoids: hobbit, dwarf */
     MONSYM( 8, 'h', HUMANOID, S_HUMANOID, "humanoid")
     /* minor demons */
-    MONSYM( 9, 'i', IMP, S_IMP, "imp or minor demon")
+    MONSYM( 9, 'i', IMP, S_IMP, "minor demon")
     MONSYM(10, 'j', JELLY, S_JELLY, "jelly")
     MONSYM(11, 'k', KOBOLD, S_KOBOLD, "kobold")
     MONSYM(12, 'l', LEPRECHAUN, S_LEPRECHAUN, "leprechaun")
@@ -315,17 +315,17 @@
     MONSYM(17, 'q', QUADRUPED, S_QUADRUPED, "quadruped")
     MONSYM(18, 'r', RODENT, S_RODENT, "rodent")
     MONSYM(19, 's', SPIDER, S_SPIDER, "arachnid or centipede")
-    MONSYM(20, 't', TRAPPER, S_TRAPPER, "trapper or lurker above")
+    MONSYM(20, 't', TRAPPER, S_TRAPPER, "ambusher")
     /* unicorn, horses */
-    MONSYM(21, 'u', UNICORN, S_UNICORN, "unicorn or horse")
+    MONSYM(21, 'u', UNICORN, S_UNICORN, "ungulate")
     MONSYM(22, 'v', VORTEX, S_VORTEX, "vortex")
     MONSYM(23, 'w', WORM, S_WORM, "worm")
-    MONSYM(24, 'x', XAN, S_XAN, "xan or other mythical/fantastic insect")
+    MONSYM(24, 'x', XAN, S_XAN, "fantastic insect")
     /* yellow light, black light */
     MONSYM(25, 'y', LIGHT, S_LIGHT, "light")
     MONSYM(26, 'z', ZRUTY, S_ZRUTY, "zruty")
     MONSYM(27, 'A', ANGEL, S_ANGEL, "angelic being")
-    MONSYM(28, 'B', BAT, S_BAT, "bat or bird")
+    MONSYM(28, 'B', BAT, S_BAT, "winged creature")
     MONSYM(29, 'C', CENTAUR, S_CENTAUR, "centaur")
     MONSYM(30, 'D', DRAGON, S_DRAGON, "dragon")
     /* elemental includes invisible stalker */
@@ -343,7 +343,7 @@
     MONSYM(41, 'O', OGRE, S_OGRE, "ogre")
     MONSYM(42, 'P', PUDDING, S_PUDDING, "pudding or ooze")
     MONSYM(43, 'Q', QUANTMECH, S_QUANTMECH, "quantum mechanic")
-    MONSYM(44, 'R', RUSTMONST, S_RUSTMONST, "rust monster or disenchanter")
+    MONSYM(44, 'R', RUSTMONST, S_RUSTMONST, "objevore")
     MONSYM(45, 'S', SNAKE, S_SNAKE, "snake")
     MONSYM(46, 'T', TROLL, S_TROLL, "troll")
     /* umber hulk */
@@ -357,10 +357,10 @@
     MONSYM(53, '@', HUMAN, S_HUMAN, "human or elf")
     /* space symbol*/
     MONSYM(54, ' ', GHOST, S_GHOST, "ghost")
-    MONSYM(55, '\'', GOLEM, S_GOLEM, "golem")
+    MONSYM(55, '\'', GOLEM, S_GOLEM, "construct")
     MONSYM(56, '&', DEMON, S_DEMON, "major demon")
     /* fish */
-    MONSYM(57, ';', EEL, S_EEL,  "sea monster")
+    MONSYM(57, ';', EEL, S_EEL,  "sea dweller")
     /* reptiles */
     MONSYM(58, ':', LIZARD, S_LIZARD, "lizard")
     MONSYM(59, '~', WORM_TAIL, S_WORM_TAIL, "long worm tail")

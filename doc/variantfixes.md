@@ -23,6 +23,7 @@
 - Monsters can dip items into potions.
 - Ported EvilHack and Spork's covetous monster behavior tweaks.
 - Ported EvilHack's ability for monsters to break boulders.
+- Made some fixes to defsym.h to clarify monsters.
 
 ## New Monsters
 - Salt Golem
