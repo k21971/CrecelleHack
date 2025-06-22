@@ -1631,7 +1631,7 @@ create_polymon(struct obj *obj, int okind)
         material = "glassy ";
         break;
     case PAPER:
-        pm_index = rn2(2) ? PM_PAPER_GOLEM : PM_SCROLEM;
+        pm_index = (obj->oclass != SPBOOK_CLASS) ? PM_PAPER_GOLEM : PM_SCROLEM;
         material = "paper ";
         break;
     default:
@@ -1639,6 +1639,18 @@ create_polymon(struct obj *obj, int okind)
         pm_index = PM_STRAW_GOLEM;
         material = "";
         break;
+    }
+
+    /* Floor coatings */
+    if (!rn2(2)) {
+        if (has_coating(obj->ox, obj->oy, COAT_BLOOD)
+            || obj->otyp == POT_BLOOD) {
+            pm_index = PM_BLOOD_GOLEM;
+            material = "bloody ";
+        } else if (has_coating(obj->ox, obj->oy, COAT_SHARDS)) {
+            pm_index = PM_GLASS_GOLEM;
+            material = "glassy ";
+        }
     }
 
     if (!(svm.mvitals[pm_index].mvflags & G_GENOD))
@@ -3854,9 +3866,15 @@ zap_map(
         } /* t_at() */
     } /* probing */
     /* polymorph */
-    if (obj->otyp == WAN_POLYMORPH && has_coating(x, y, COAT_POTION) 
-        && levl[x][y].pindex != POT_WATER) {
-        add_coating(x, y, COAT_POTION, POT_GAIN_ABILITY + rn2(POT_OIL - POT_GAIN_ABILITY));
+    if (obj->otyp == WAN_POLYMORPH) {
+        if (has_coating(x, y, COAT_POTION) && levl[x][y].pindex != POT_WATER) {
+            add_coating(x, y, COAT_POTION,
+                        POT_GAIN_ABILITY + rn2(POT_OIL - POT_GAIN_ABILITY));
+        } else if (has_coating(x, y, COAT_BLOOD)) {
+            do {
+                levl[x][y].pindex =rndmonnum();
+            } while (!has_blood(&mons[levl[x][y].pindex]));   
+        }
     }
     /* cancellation */
     if (obj->otyp == WAN_CANCELLATION && has_coating(x, y, COAT_POTION)) {
