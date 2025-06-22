@@ -1802,6 +1802,7 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
         } else if (!which_armor(mon, W_ARMF) && !resists_ston(mon)) {
             minstapetrify(mon, FALSE);
         }
+        remove_coating(x, y, COAT_BLOOD);
     }
     return ret;
 }

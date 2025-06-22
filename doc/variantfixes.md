@@ -80,6 +80,8 @@
 - Added ice as a floor coating.
 - Floor coatings can be added in level generation lua. Maps
   have been updated to reflect this.
+- Allow blood golems to be created while polypiling.
+- Remove cockatrice blood once it petrifies something.
 
 ## Dungeon Changes
 - Allow fountains to become frozen. Frozen fountains cannot be
