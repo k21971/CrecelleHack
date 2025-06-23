@@ -561,7 +561,7 @@ doengrave_ctx_init(struct _doengrave_ctx *de)
 
     de->jello = (u.uswallow && !(is_animal(u.ustuck->data)
                                  || is_whirly(u.ustuck->data)));
-    de->frosted = is_ice(u.ux, u.uy);
+    de->frosted = is_ice(u.ux, u.uy) || has_coating(u.ux, u.uy, COAT_FROST);
 }
 
 /* special engraving effects for WAND objects */
@@ -860,6 +860,11 @@ doengrave_sfx_item(struct _doengrave_ctx *de)
                     pline("%s can't wipe out this engraving.",
                           Yname2(de->otmp));
                 }
+            } else if (has_coating(u.ux, u.uy, COAT_POTION) || has_coating(u.ux, u.uy, COAT_BLOOD)) {
+                You("sop up the liquid on the floor.");
+                remove_coating(u.ux, u.uy, COAT_POTION);
+                remove_coating(u.ux, u.uy, COAT_BLOOD);
+                wet_a_towel(de->otmp, -1, TRUE);
             } else {
                 pline("%s %s.", Yobjnam2(de->otmp, "get"),
                       de->frosted ? "frosty" : "dusty");

@@ -4667,8 +4667,10 @@ dfeature_at(coordxy x, coordxy y, char *buf)
             listing = TRUE;
         }
         if ((lev->coat_info & COAT_BLOOD) != 0) {
-            if (ismnum(levl[x][y].pindex)) {
-                Sprintf(eos(altbuf), "%s%s blood", listing ? " and " : "", mons[levl[x][y].pindex].pmnames[NEUTRAL]);
+            if (ismnum(levl[x][y].pindex)
+                && (Role_if(PM_HEALER) || touch_petrifies(&mons[levl[x][y].pindex]))) {
+                Sprintf(eos(altbuf), "%s%s blood", listing ? " and " : "",
+                        mons[levl[x][y].pindex].pmnames[NEUTRAL]);
             } else
                 Sprintf(eos(altbuf), "%sblood", listing ? " and " : "");
             listing = TRUE;

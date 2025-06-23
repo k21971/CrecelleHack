@@ -695,6 +695,15 @@ m_everyturn_effect(struct monst *mtmp)
                 uarm->otyp == YELLOW_DRAGON_SCALE_MAIL))) {
         floor_alchemy(x, y, POT_ACID, NON_PM);
     }
+    /* Drip liquids */
+    if (is_u && Dripping && !rn2(3)) {
+        if (flags.verbose) You("drip some liquid.");
+        if (u.udriptype > 0) floor_alchemy(x, y, u.udriptype, NON_PM);
+        else add_coating(x, y, COAT_BLOOD, -1 * u.udriptype);
+    } else if (!is_u && mtmp->mdripping) {
+        if (mtmp->mdriptype > 0) floor_alchemy(x, y, mtmp->mdriptype, NON_PM);
+        else add_coating(x, y, COAT_BLOOD, -1 * mtmp->mdriptype);
+    }
 }
 
 /* do whatever effects monster has after moving.
@@ -804,6 +813,10 @@ dochug(struct monst *mtmp)
     /* stunned monsters get un-stunned with larger probability */
     if (mtmp->mstun && !rn2(10))
         mtmp->mstun = 0;
+
+    /* dripping monsters stop dripping with a very large probability */
+    if (mtmp->mdripping && !rn2(6))
+        mtmp->mdripping = 0;
 
     /* Some monsters teleport. Teleportation costs a turn. */
     if (mtmp->mflee && !rn2(40) && can_teleport(mdat) && !mtmp->iswiz

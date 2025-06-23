@@ -1098,6 +1098,7 @@ kick_nondoor(coordxy x, coordxy y, int avrg_attrib)
         if (uarmf && rn2(3))
             if (water_damage(uarmf, "metal boots", TRUE) == ER_NOTHING) {
                 Your("boots get wet.");
+                make_dripping(rnd(5), POT_WATER, NON_PM);
                 /* could cause short-lived fumbling here */
             }
         exercise(A_DEX, TRUE);

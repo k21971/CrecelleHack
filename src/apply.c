@@ -184,10 +184,21 @@ use_towel(struct obj *obj)
         if (is_wet_towel(obj))
             dry_a_towel(obj, -1, drying_feedback);
         return ECMD_TIME;
+    } else if (Dripping) {
+        You("towel off.");
+        if (obj->spe >= 3) {
+            pline("Unfortunately, your towel is too wet to help much.");
+        } else {
+            incr_itimeout(&HDripping, (-1 * (rnd(4))));
+            wet_a_towel(obj, -1, TRUE);
+            if (!Dripping) {
+                You("are nice and dry now.");
+            }
+        }
+        return ECMD_TIME;
     }
 
-    Your("%s and %s are already clean.", body_part(FACE),
-         makeplural(body_part(HAND)));
+    You("are already clean.");
 
     return ECMD_OK;
 }
@@ -1833,16 +1844,6 @@ dorub(void)
         /* message from Adventure */
         pline("Rubbing the electric lamp is not particularly rewarding.");
         pline("Anyway, nothing exciting happens.");
-    } else if (obj->otyp == TOWEL) {
-        if (Levitation) You("cannot reach the %s.", surface(u.ux, u.uy));
-        else if (has_coating(u.ux, u.uy, COAT_POTION) || has_coating(u.ux, u.uy, COAT_BLOOD)) {
-            You("sop up the liquid on the floor.");
-            remove_coating(u.ux, u.uy, COAT_POTION);
-            remove_coating(u.ux, u.uy, COAT_BLOOD);
-            wet_a_towel(obj, -1, TRUE);
-        } else {
-            pline("There is nothing here to clean up.");
-        }
     } else
         pline1(nothing_happens);
     return ECMD_TIME;

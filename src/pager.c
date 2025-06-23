@@ -641,7 +641,8 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
         Sprintf(buf, "%s covered in ", floor_descr(x, y, symidx));
         potion_coating_text(eos(buf), pindex);
     } else if ((levl[x][y].coat_info & COAT_BLOOD) != 0) {
-        if (ismnum(levl[x][y].pindex))
+        if (ismnum(levl[x][y].pindex)
+                && (Role_if(PM_HEALER) || touch_petrifies(&mons[levl[x][y].pindex])))
             Sprintf(buf, "%s covered in %s blood", floor_descr(x, y, symidx),  mons[levl[x][y].pindex].pmnames[NEUTRAL]);
         else
             Sprintf(buf, "%s covered in blood", floor_descr(x, y, symidx));
@@ -658,7 +659,10 @@ potion_coating_text(char *outbuf, int pindex) {
     Sprintf(outbuf, "%s %s",
                 objects[pindex].oc_name_known ? OBJ_NAME(objects[pindex]) 
                                               : OBJ_DESCR(objects[pindex]),
-                objects[pindex].oc_name_known ? "tonic" : "liquid");
+                objects[pindex].oc_name_known ?
+                    ((pindex == POT_BOOZE
+                        || pindex == POT_OIL
+                        || pindex == POT_BLOOD) ? "" : "tonic") : "liquid");
     return outbuf;
 }
 

@@ -82,6 +82,14 @@
   have been updated to reflect this.
 - Allow blood golems to be created while polypiling.
 - Remove cockatrice blood once it petrifies something.
+- Only healers recognize the origin of pools of blood.
+- Monsters and players can now drip with potions, spreading them
+  across the level. You stop dripping after a short time, but can
+  hasten the process using a towel.
+- You can #tip potions onto yourself to douse yourself in a liquid.
+- You can clean liquids off yourself by using #wipe.
+- Towels can now be used to wipe the floor by engraving with them, rather
+  than by using #rub.
 
 ## Dungeon Changes
 - Allow fountains to become frozen. Frozen fountains cannot be

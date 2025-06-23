@@ -3169,6 +3169,8 @@ pooleffects(
                 docrt();
                 gv.vision_full_recalc = 1;
             }
+            if (was_underwater)
+                make_dripping(rn1(10, 10), POT_WATER, NON_PM);
         }
     }
 

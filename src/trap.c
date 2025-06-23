@@ -1633,6 +1633,7 @@ trapeffect_rust_trap(
                 (void) water_damage(uarmu, "shirt", TRUE);
         }
         update_inventory();
+        make_dripping(rnd(20), POT_WATER, NON_PM);
 
         if (u.umonnum == PM_IRON_GOLEM) {
             int dam = u.mhmax;
@@ -1698,6 +1699,9 @@ trapeffect_rust_trap(
             else if ((target = which_armor(mtmp, W_ARMU)) != 0)
                 (void) water_damage(target, "shirt", TRUE);
         }
+
+        mtmp->mdripping = 1;
+        mtmp->mdriptype = POT_WATER;
 
         if (completelyrusts(mptr)) {
             if (in_sight)

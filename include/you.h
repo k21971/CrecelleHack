@@ -533,6 +533,7 @@ struct you {
     long ucleansed;          /* to record moves when player was cleansed */
     long usleep;             /* sleeping; monstermove you last started */
     int uinvault;
+    int udriptype;           /* type of liquid you are dripping */
     struct monst *ustuck;    /* engulfer or grabber, maybe grabbee if Upolyd */
     struct monst *usteed;    /* mount when riding */
     unsigned ustuck_mid;     /* u.ustuck->m_id, used during save/restore */

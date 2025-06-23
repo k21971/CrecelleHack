@@ -2537,6 +2537,7 @@ extern void make_vomiting(long, boolean);
 extern void make_blinded(long, boolean);
 extern void toggle_blindness(void);
 extern boolean make_hallucinated(long, boolean, long);
+extern void make_dripping(long, int, int);
 extern void make_deaf(long, boolean);
 extern void make_glib(int);
 extern void self_invis_message(void);

@@ -447,6 +447,19 @@ make_hallucinated(
 RESTORE_WARNING_FORMAT_NONLITERAL
 
 void
+make_dripping(long xtime, int otyp, int pm)
+{
+    if (otyp == POT_BLOOD) {
+        otyp = -1 * pm;
+    }
+    if (u.udriptype == otyp)
+        incr_itimeout(&HDripping, xtime);
+    else
+        set_itimeout(&HDripping, xtime);
+    u.udriptype = otyp;
+}
+
+void
 make_deaf(long xtime, boolean talk)
 {
     long old = HDeaf;
@@ -1910,6 +1923,7 @@ potionhit(struct monst *mon, struct obj *obj, int how)
                (how == POTHIT_OTHER_THROW) ? "propelled tonic" /* scatter */
                                            : "thrown tonic",
                KILLED_BY_AN);
+        make_dripping(rnd(12), obj->otyp, obj->corpsenm);
     } else {
         tx = mon->mx, ty = mon->my;
         /* sometimes it hits the saddle */
@@ -1946,10 +1960,14 @@ potionhit(struct monst *mon, struct obj *obj, int how)
         if (rn2(5) && mon->mhp > 1 && !hit_saddle)
             mon->mhp--;
     }
+    mon->mdripping = 1;
+    mon->mdriptype = (obj->otyp == POT_BLOOD) ? (-1 * obj->corpsenm) : obj->otyp;
 
     /* oil doesn't instantly evaporate; Neither does a saddle hit */
+    #if 0
     if (obj->otyp != POT_OIL && !hit_saddle && cansee(tx, ty))
         pline("%s.", Tobjnam(obj, "evaporate"));
+    #endif
 
     if (isyou) {
         switch (obj->otyp) {

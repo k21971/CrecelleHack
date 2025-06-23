@@ -1191,6 +1191,16 @@ status_enlightenment(int mode, int final)
         if (magic || cause_known(FUMBLING))
             enl_msg(You_, "fumble", "fumbled", "", from_what(FUMBLING));
     }
+    if (Dripping) {
+        potion_coating_text(buf, (u.udriptype > 0) ? u.udriptype : POT_BLOOD);
+        if (wizard) {
+            long dripping_timeout = (HDripping & TIMEOUT);
+
+            if (dripping_timeout)
+                Sprintf(eos(buf), " (%ld)", dripping_timeout);
+        }
+        enl_msg(You_, "drip ", "dripped ", "with ", buf);
+    }
     if (Sleepy) {
         if (magic || cause_known(SLEEPY)) {
             Strcpy(buf, from_what(SLEEPY));
