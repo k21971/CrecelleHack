@@ -24,6 +24,7 @@
 - Ported EvilHack and Spork's covetous monster behavior tweaks.
 - Ported EvilHack's ability for monsters to break boulders.
 - Made some fixes to defsym.h to clarify monsters.
+- Reduced nightcrust light emission range.
 
 ## New Monsters
 - Salt Golem

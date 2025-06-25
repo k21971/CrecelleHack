@@ -193,8 +193,8 @@
       || (ptr) == &mons[PM_FIRE_VORTEX])                          \
          ? 1                                                      \
          : ((ptr) == &mons[PM_FIRE_ELEMENTAL]                     \
-            || (ptr) == &mons[PM_GOLD_DRAGON]) ? 1 : \
-            ((ptr) == &mons[PM_NIGHTCRUST]) ? 2 : 0)
+            || (ptr) == &mons[PM_GOLD_DRAGON]                     \
+            || (ptr) == &mons[PM_NIGHTCRUST]) ? 1 : 0)
     /* [Note: the light ranges above were reduced to 1 for performance,
      *  otherwise screen updating on the plane of fire slowed to a crawl.
      *  Note too: that was with 1990s hardware and before fumarole smoke
