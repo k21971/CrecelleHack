@@ -3736,6 +3736,32 @@ mhitm_ad_worm(
 }
 
 void
+mhitm_ad_soak(struct monst *magr,     /* attacker */
+    struct attack *mattk,   /* magr's attack */
+    struct monst *mdef,     /* defender */
+    struct mhitm_data *mhm) /* optional for monster vs monster */
+{
+    if (magr == &gy.youmonst) {
+        /* uhitm */
+        pline_mon(mdef, "You soak %s.", mon_nam(mdef));
+        mdef->mdripping = 1;
+        mdef->mdriptype = POT_WATER;
+    } else if (mdef == &gy.youmonst) {
+        hitmsg(magr, mattk);
+        You("get soaked!");
+        make_dripping(rnd(20), POT_WATER, NON_PM);
+    } else {
+        /* mhitm */
+        pline("%s soaks %s.", Monnam(magr), mon_nam(mdef));
+        mdef->mdripping = 1;
+        mdef->mdriptype = POT_WATER;
+    }
+    if (mhm->done)
+        return;
+}
+
+
+void
 mhitm_ad_poly(
     struct monst *magr, struct attack *mattk,
     struct monst *mdef, struct mhitm_data *mhm)
@@ -4828,6 +4854,7 @@ mhitm_adtyping(
     case AD_CONF: mhitm_ad_conf(magr, mattk, mdef, mhm); break;
     case AD_POLY: mhitm_ad_poly(magr, mattk, mdef, mhm); break;
     case AD_WORM: mhitm_ad_worm(magr, mattk, mdef, mhm); break;
+    case AD_SOAK: mhitm_ad_soak(magr, mattk, mdef, mhm); break;
     case AD_DISE: mhitm_ad_dise(magr, mattk, mdef, mhm); break;
     case AD_SAMU: mhitm_ad_samu(magr, mattk, mdef, mhm); break;
     case AD_DETH: mhitm_ad_deth(magr, mattk, mdef, mhm); break;

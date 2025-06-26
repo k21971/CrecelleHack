@@ -25,6 +25,7 @@
 - Ported EvilHack's ability for monsters to break boulders.
 - Made some fixes to defsym.h to clarify monsters.
 - Reduced nightcrust light emission range.
+- Water elementals soak enemies with water on hit.
 
 ## New Monsters
 - Salt Golem
