@@ -1753,8 +1753,10 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
             nomul(-2);
             gm.multi_reason = "slipping on oil";
             gn.nomovemsg = "You regain your footing.";
+            makeknown(POT_OIL);
         } else {
             if (canseemon(mon)) {
+                makeknown(POT_OIL);
                 pline_mon(mon, "%s slips on a patch of %s!", Monnam(mon), buf);
             }
             mon->mfrozen = 2;
