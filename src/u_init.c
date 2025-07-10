@@ -839,6 +839,10 @@ u_init_role(void)
     default: /* impossible */
         break;
     }
+    /* Everyone should know water, and this prevents us from having
+       to modify the potion macro (especially if we decide to revert
+       this later) */
+    knows_object(POT_WATER, FALSE);
 }
 
 /* race-specific initializations */
