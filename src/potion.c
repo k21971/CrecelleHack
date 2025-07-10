@@ -1747,14 +1747,15 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
         return FALSE;
     /* Now the actual coat effects */
     if (has_coating(x, y, COAT_POTION) && levl[x][y].pindex == POT_OIL) {
+        potion_coating_text(buf, POT_OIL);
         if (isyou) {
-            You("slip on a patch of oil!");
+            You("slip on a patch of %s!", buf);
             nomul(-2);
             gm.multi_reason = "slipping on oil";
             gn.nomovemsg = "You regain your footing.";
         } else {
             if (canseemon(mon)) {
-                pline_mon(mon, "%s slips on a patch of oil!", Monnam(mon));
+                pline_mon(mon, "%s slips on a patch of %s!", Monnam(mon), buf);
             }
             mon->mfrozen = 2;
             mon->mcanmove = 0;
