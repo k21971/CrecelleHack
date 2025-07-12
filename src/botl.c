@@ -599,8 +599,7 @@ static struct istat_s initblstats[MAXBLSTATS] = {
        available mostly for screenshots or someone looking over shoulder;
        blstat[][BL_VERS] is actually an int copy of flags.versinfo (0...7) */
     INIT_BLSTAT("version", " %s", ANY_STR, MAXVALWIDTH, BL_VERS),
-    INIT_BLSTAT("timeofday", " %s", ANY_STR, 20, BL_TOD),
-    INIT_BLSTAT("harmony", " %s", ANY_STR, 20, BL_BOOST),
+    INIT_BLSTAT("timeofday", " %s", ANY_STR, 20, BL_TOD)
 };
 
 #undef INIT_BLSTATP
@@ -763,7 +762,7 @@ bot_via_windowport(void)
     char buf[BUFSZ];
     const char *titl;
     char *nb;
-    int i, idx, cap, hm;
+    int i, idx, cap;
     long money;
 
     if (!gb.blinit)
@@ -827,18 +826,6 @@ bot_via_windowport(void)
 
     /* Weather */
     Strcpy(gb.blstats[idx][BL_TOD].val, tod_string());
-
-    /* Harmony */
-    hm = 0;
-    if (u_boosted(gy.youmonst.data->mboost))
-        hm++;
-    if (uwep && uwep->known && u_boosted(uwep->booster))
-        hm++;
-
-    if (hm)
-        Sprintf(gb.blstats[idx][BL_BOOST].val, "Hmny%s", (hm == 2) ? "+" : "");
-    else
-        Sprintf(gb.blstats[idx][BL_BOOST].val, "Normal");
 
     /* Score */
     gb.blstats[idx][BL_SCORE].a.a_long =
@@ -3918,7 +3905,6 @@ status_hilite_menu_add(int origfld)
                 (fld == BL_CAP
                  || fld == BL_ALIGN
                  || fld == BL_TOD
-                 || fld == BL_BOOST
                  || fld == BL_HUNGER
                  || fld == BL_TITLE) ? "Choose" : "Enter",
                 initblstats[fld].fldname);
@@ -3957,18 +3943,6 @@ status_hilite_menu_add(int origfld)
 
             hilite.rel = TXT_VALUE;
             Strcpy(hilite.textmatch, todtxt[rv]);
-        } else if (fld == BL_BOOST) {
-            static const char *const boost_txt[] = {
-                "Normal", "Hmny", "Hmny+"
-            };
-            int rv = query_arrayvalue(qry_buf,
-                                      boost_txt, 0, 3);
-
-            if (rv < 0)
-                goto choose_behavior;
-
-            hilite.rel = TXT_VALUE;
-            Strcpy(hilite.textmatch, boost_txt[rv]);
         } else if (fld == BL_HUNGER) {
             static const char *const hutxt[] = {
                 "Satiated", (char *) 0, "Hungry", "Weak",
