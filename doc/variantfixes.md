@@ -2,10 +2,24 @@
 
 ## Commands
 - Add the #shout command. Present in many variants, but this uses
-  the 3.7-compatible code written by aosdict/Phol En Wodan
+  the 3.7-compatible code written by aosdict/Phol En Wodan.
+
+## Harmony System
+- Complete rework of the harmony system.
+  - Harmonic weapons now work differently depending on the type
+    of harmony. Full details about this system can be found
+    in doc/variantprops.md.
+- Made harmonic objects rarer.
+- Harmonic objects do not need to be identified to determine
+  what they harmonize with.
+- Dangerous monsters have a chance to spawn with harmonic objects
+  related to their abilities.
+- Reading a scroll of harmonize armor while wearing a skull
+  corresponding to a monster now not only transforms the skull
+  into a skull helm, but harmonizes that helm with the monster's
+  associated harmonies.
 
 ## Monsters
-- Orcs have a chance to spawn with a dual axe.
 - Slightly increase chance of random spawns of unique monsters.
 - Yellow dragons leave behind a trail of acid.
 - More types of monsters spread fire when they move.
@@ -26,6 +40,7 @@
 - Made some fixes to defsym.h to clarify monsters.
 - Reduced nightcrust light emission range.
 - Water elementals soak enemies with water on hit.
+- Greater variance in the weapons that monsters spawn with.
 
 ## New Monsters
 - Salt Golem
@@ -53,6 +68,7 @@
 - Allow acid spilled by acid beams to alchemize.
 - Tools can become eroded.
 - All blades are considered poisonable.
+- All players recognize water.
 
 ### New Objects
 - Bestiary

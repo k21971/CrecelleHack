@@ -2302,6 +2302,14 @@ domove_fight_empty(coordxy x, coordxy y)
             Strcpy(buf, "thin air");
         }
 
+        /* Ice harmonic weapons can fire icicles even when force attacking */
+        if (uwep && (uwep->booster & BST_ICE)
+            && (has_coating(u.ux, u.uy, COAT_FROST) || levl[u.ux][u.uy].typ == ICE)) {
+            struct obj *otmp = mksobj(ICICLE, FALSE, FALSE);
+            otmp->spe = 1;
+            throwit(otmp, 0L, FALSE, (struct obj *) 0);
+        }
+
  futile:
         You("%s%s %s.",
             !(boulder || solid) ? "" : !explo ? "harmlessly " : "futilely ",

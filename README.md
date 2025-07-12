@@ -15,6 +15,7 @@ Read at your own risk.
 - [New Monsters Spoiler](doc/variantmonsters.md)
 - [Unique Monster Spoiler](doc/variantuniques.md)
 - [Monster Spell Spoiler](doc/variantspells.md)
+- [Object Properties Spoiler](doc/variantprops.md)
 
 ## Design Goals
 

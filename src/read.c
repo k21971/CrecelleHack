@@ -1233,6 +1233,7 @@ seffect_enchant_armor(struct obj **sobjp)
                 bless(otmp);
         } else if (otmp->cursed)
             uncurse(otmp);
+        boost_object(otmp, mons[otmp->corpsenm].mboost);
         otmp->known = 1;
         setworn(otmp, W_ARMH);
         if (otmp->unpaid)

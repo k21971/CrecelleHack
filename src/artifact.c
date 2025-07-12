@@ -1509,6 +1509,7 @@ artifact_hit(
     const char *wepdesc;
     static const char you[] = "you";
     char hittee[BUFSZ];
+    int x, y, dx, dy;
 
     Strcpy(hittee, youdefend ? you : mon_nam(mdef));
 
@@ -1526,6 +1527,81 @@ artifact_hit(
     realizes_damage = (youdefend || vis
                        /* feel the effect even if not seen */
                        || (youattack && mdef == u.ustuck));
+
+    /* boosted attacks */
+    if (otmp->booster) {
+        if (youattack)
+            x = u.ux, y = u.uy;
+        else
+            x = magr->mx, y = magr->my;
+        if (youdefend)
+            dx = u.ux, dy = u.uy;
+        else
+            dx = mdef->mx, dy = mdef->my;
+        /* Order matters here. */
+        if ((otmp->booster & BST_HONEY)) {
+            /* TODO: Enable dripping honey? */
+            add_coating(dx, dy, COAT_HONEY, 0);
+        }
+        if ((otmp->booster & BST_WATER) && (youdefend ? Dripping : mdef->mdripping)) {
+            if (realizes_damage)
+                pline_The("oceanic %s absorbs the liquid on %s!",
+                            simpleonames(otmp), hittee);
+            if (youdefend) make_dripping(0, 0, NON_PM);
+            else mdef->mdripping = 0;
+            dieroll = 1;
+            *dmgptr = max(*dmgptr, 10);
+        }
+        if ((otmp->booster & BST_GRASS) && !has_coating(dx, dy, COAT_GRASS)
+            && IS_COATABLE(levl[dx][dy].typ)) {
+            if (realizes_damage)
+                pline("Grass erupts beneath %s!", hittee);
+            *dmgptr += d(2, 6);
+            add_coating(dx, dy, COAT_GRASS, 0);
+        }
+        if ((otmp->booster & BST_BLOOD) && has_coating(x, y, COAT_BLOOD)) {
+            if (realizes_damage)
+                pline_The("sanguine %s absorbs nearby blood!", simpleonames(otmp));
+            *dmgptr *= 2;
+            remove_coating(x, y, COAT_BLOOD);
+        }
+        if ((otmp->booster & BST_ASHES)
+            && (has_coating(x, y, COAT_ASHES) || has_coating(dx, dy, COAT_GRASS))) {
+            if (realizes_damage)
+                pline_The("thermal %s ignites!", simpleonames(otmp));
+            create_bonfire(dx, dy, rnd(7), d(2, 4));
+        }
+        if ((otmp->booster & BST_FUNGI)
+            && (has_coating(x, y, COAT_FUNGUS) || has_coating(dx, dy, COAT_FUNGUS))) {
+            if (has_coating(x, y, COAT_FUNGUS)) {
+                if (youdefend) make_stunned((HStun & TIMEOUT) + (long) rn1(2, 2), TRUE);
+                else mdef->mstun = 1;
+                if (realizes_damage)
+                    pline_The("fungal %s showers %s with yellow spores!", simpleonames(otmp), hittee);
+            }
+            if (has_coating(dx, dy, COAT_FUNGUS)) {
+                if (youdefend) make_confused((HStun & TIMEOUT) + (long) rn1(2, 2), TRUE);
+                else mdef->mconf = 1;
+                if (realizes_damage)
+                    pline_The("fungal %s blasts %s with orange spores!", simpleonames(otmp), hittee);
+            }
+            add_coating(x, y, COAT_FUNGUS, 0);
+            add_coating(dx, dy, COAT_FUNGUS, 0);
+        }
+        if (((otmp->booster & BST_DIRT)
+                && (levl[x][y].submask == SM_DIRT)
+                && IS_SUBMASKABLE(levl[x][y].typ))) {
+                if (!youdefend && mdef->mspeed != MSLOW) {
+                    mon_adjust_speed(mdef, -1, (struct obj *) 0);
+                } else if (youdefend) {
+                    pline_The("%s covers %s in mud!", simpleonames(otmp), hittee);
+                    if (HFast && !rn2(10))
+                        u_slow_down();
+                }
+        }
+        if (!otmp->oartifact)
+            return FALSE;
+    }
 
     /* the four basic attacks: fire, cold, shock and missiles */
     if (attacks(AD_FIRE, otmp)) {

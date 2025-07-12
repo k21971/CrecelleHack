@@ -584,7 +584,7 @@ m_initweap(struct monst *mtmp)
             break;
         case 2:
             if (strongmonst(ptr))
-                (void) mongets(mtmp, TWO_HANDED_SWORD);
+                (void) mongets(mtmp, rn2(4) ? TWO_HANDED_SWORD : BROADSWORD);
             else {
                 (void) mongets(mtmp, CROSSBOW);
                 m_initthrow(mtmp, CROSSBOW_BOLT, 12);
@@ -602,7 +602,7 @@ m_initweap(struct monst *mtmp)
             break;
         case 5:
             if (strongmonst(ptr))
-                (void) mongets(mtmp, LUCERN_HAMMER);
+                (void) mongets(mtmp, PARTISAN + rn1(BEC_DE_CORBIN - PARTISAN + 1, PARTISAN));
             else
                 (void) mongets(mtmp, AKLYS);
             break;
@@ -2357,6 +2357,25 @@ mongets(struct monst *mtmp, int otyp)
                 otmp->spe = 1;
             else if (otmp->oclass == ARMOR_CLASS && otmp->spe < 0)
                 otmp->spe = 0;
+        }
+
+        /* roguish monsters can get poisoned items */
+        if (is_roguish(mtmp->data) && is_poisonable(otmp))
+            otmp->opoisoned = rn2(2);
+
+        /* powerful monsters have a good chance of getting
+           some kind of boosted weapon related to their
+           abilities */
+        if (!otmp->booster &&
+            (otmp->oclass == WEAPON_CLASS
+                || otmp->oclass == ARMOR_CLASS
+                || is_weptool(otmp))) {
+            if ((is_prince(mtmp->data) && !rn2(3))
+                || (is_lord(mtmp->data) && !rn2(4))
+                || (extra_nasty(mtmp->data) && !rn2(8))
+                || ((mons[mtmp->mnum].geno & G_UNIQ) != 0)) {
+                boost_object(otmp, mtmp->data->mboost);
+            }
         }
 
         if (mpickobj(mtmp, otmp)) {

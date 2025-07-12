@@ -39,6 +39,7 @@ staticfn void releaseobuf(char *) NONNULLARG1;
 staticfn void xcalled(char *, int, const char *, const char *);
 staticfn char *xname_flags(struct obj *, unsigned);
 staticfn char *minimal_xname(struct obj *);
+staticfn void add_boost_words(struct obj *, char *);
 staticfn void add_erosion_words(struct obj *, char *);
 staticfn char *doname_base(struct obj *obj, unsigned);
 staticfn boolean singplur_lookup(char *, char *, boolean,
@@ -1151,17 +1152,17 @@ the_unique_pm(struct permonst *ptr)
 }
 
 static struct boostnam boostnams[] = {
-   { BST_GRASS, "Grass", "Grs" },
-   { BST_DIRT, "Dirt", "Drt" },
-   { BST_ROCK, "Rock", "Rck" },
-   { BST_WATER, "Water", "Wtr" },
-   { BST_ASHES, "Ashes", "Ash" },
-   { BST_FUNGI, "Fungi", "Fng" },
-   { BST_BLOOD, "Blood", "Bld" },
-   { BST_SAND, "Sand", "Snd" },
-   { BST_POTION, "Tonic", "Tnc" },
-   { BST_HONEY, "Honey", "Hny" },
-   { BST_ICE, "Ice", "Ice" }
+   { BST_GRASS, "Grass", "lush " },
+   { BST_DIRT, "Dirt", "earthen " },
+   { BST_ROCK, "Rock", "stony " },
+   { BST_WATER, "Water", "oceanic " },
+   { BST_ASHES, "Ashes", "thermal " },
+   { BST_FUNGI, "Fungi", "fungal " },
+   { BST_BLOOD, "Blood", "sanguine " },
+   { BST_SAND, "Sand", "wasting " }, /* TODO */
+   { BST_POTION, "Tonic", "alchemical " },
+   { BST_HONEY, "Honey", "honeyed " }, /* TODO */
+   { BST_ICE, "Ice", "boreal " }
 };
 
 void
@@ -1172,6 +1173,24 @@ print_mon_harmonies(struct permonst *pm, char *buf)
         if (pm->mboost & boostnams[i].boost_short) {
             Sprintf(eos(buf), "%s%s", first ? "" : ", ", boostnams[i].nam);
             first = FALSE;
+        }
+    }
+}
+
+staticfn void
+add_boost_words(struct obj *obj, char *prefix)
+{
+    if (!obj->booster)
+        return;
+    #if 0
+    if (!obj->known) {
+        Strcat(prefix, "harmonic ");
+        return;
+    }
+    #endif
+    for (int i = 0; i < SIZE(boostnams); i++) {
+        if (obj->booster & boostnams[i].boost_short) {
+            Strcat(prefix, boostnams[i].abbr);
         }
     }
 }
@@ -1466,12 +1485,12 @@ doname_base(
         add_erosion_words(obj, prefix);
         if (known) {
             Sprintf(eos(prefix), "%+d ", obj->spe); /* sitoa(obj->spe)+" " */
-        } else if (!known && obj->booster) {
-            Strcat(prefix, "harmonic ");
         }
+        add_boost_words(obj, prefix);
         break;
     case TOOL_CLASS:
         add_erosion_words(obj, prefix);
+        if (is_weptool(obj)) add_boost_words(obj, prefix);
         if (obj->owornmask & (W_TOOL | W_SADDLE)) { /* blindfold */
             Concat(bp, 0, " (being worn)");
             break;
@@ -1605,19 +1624,6 @@ doname_base(
         ConcatF1(bp, 0, " (%s)",
                  (cgend != CORPSTAT_RANDOM) ? genders[mgend].adj
                                             : "unspecified gender");
-    }
-
-    if (known && obj->booster &&
-        (obj->oclass == WEAPON_CLASS || 
-            obj->oclass == ARMOR_CLASS || 
-            is_weptool(obj))) {
-        Concat(bp, 0, " {");
-        for (int i = 0; i < SIZE(boostnams); i++) {
-            if (obj->booster & boostnams[i].boost_short) {
-                ConcatF1(bp, 0, "%s", boostnams[i].abbr);
-            }
-        }
-        Concat(bp, 0, "}");
     }
 
     if ((obj->owornmask & W_WEP) && !gm.mrg_to_wielded) {

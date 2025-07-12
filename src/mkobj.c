@@ -938,8 +938,8 @@ mksobj_init(struct obj **obj, boolean artif)
             otmp = mk_artifact(otmp, (aligntyp) A_NONE, 99, TRUE);
             *obj = otmp;
         }
-        /* 1/10 chance of making the object harmonic. */
-        if (!rn2(10)) {
+        /* Small chance of making the object harmonic. */
+        if (!rn2(16)) {
             boost_object(otmp, 0);
         }
         break;
@@ -1175,7 +1175,7 @@ mksobj_init(struct obj **obj, boolean artif)
 #endif
         }
         /* Armor has a slightly higher chance than weapons of being harmonic */
-        if (!rn2(8)) {
+        if (!rn2(14)) {
             boost_object(otmp, 0);
         }
         break;

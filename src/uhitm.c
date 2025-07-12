@@ -616,6 +616,12 @@ known_hitum(
             Your("bloodthirsty blade attacks!");
     }
 
+    /* Icicles fired from weapon could kill something before the attack finishes. */
+    if (weapon && weapon->booster) {
+        if (boost_effects_pre(&gy.youmonst, mon))
+            return FALSE;
+    }
+
     if (!*mhit) {
         missum(mon, uattk, (rollneeded + armorpenalty > dieroll));
     } else {
@@ -1008,7 +1014,7 @@ hmon_hitmon_weapon_melee(
         hmd->hittxt = TRUE;
     }
 
-    if (obj->oartifact
+    if ((obj->oartifact || obj->booster)
         && artifact_hit(&gy.youmonst, mon, obj, &hmd->dmg, hmd->dieroll)) {
         /* artifact_hit updates 'tmp' but doesn't inflict any
            damage; however, it might cause carried items to be
@@ -1811,7 +1817,8 @@ hmon_hitmon(
 
     if (hmd.jousting) {
         hmon_hitmon_jousting(&hmd, mon, obj);
-    } else if (hmd.unarmed && hmd.dmg > 1 && !thrown && !obj && !Upolyd) {
+    } else if ((hmd.unarmed && hmd.dmg > 1 && !thrown && !obj && !Upolyd)
+                || obj && (obj->booster & BST_SAND) && levl[u.ux][u.uy].submask == SM_SAND) {
         hmon_hitmon_stagger(&hmd, mon, obj);
     } else if (!hmd.unarmed && hmd.dmg > 1 && !thrown && !Upolyd
                && !u.twoweap && uwep) {
@@ -4101,7 +4108,7 @@ mhitm_ad_phys(
                     mhm->damage += rn1(4, 3); /* 3..6 */
                 if (mhm->damage <= 0)
                     mhm->damage = 1;
-                if (!otmp->oartifact
+                if ((!otmp->oartifact && !otmp->booster)
                     || !artifact_hit(magr, mdef, otmp, &mhm->damage,
                                      gm.mhitu_dieroll)) {
                     hitmsg(magr, mattk);
@@ -4189,7 +4196,7 @@ mhitm_ad_phys(
                 mhm->damage += rn1(4, 3); /* 3..6 */
             if (mhm->damage < 1) /* is this necessary?  mhitu.c has it... */
                 mhm->damage = 1;
-            if (mwep->oartifact) {
+            if (mwep->oartifact || mwep->booster) {
                 /* when magr's weapon is an artifact, caller suppressed its
                    usual 'hit' message in case artifact_hit() delivers one;
                    now we'll know and might need to deliver skipped message
@@ -4890,11 +4897,6 @@ damageum(
     /* If boosted, multiply damage */
     if (u_boosted(gy.youmonst.data->mboost))
         mhm.damage += d((int) mattk->damn, (int) mattk->damd);
-
-    if (mattk->aatyp == AT_WEAP && uwep 
-        && u_boosted(uwep->booster)) {
-        mhm.damage += d((int) mattk->damn, (int) mattk->damd);
-    }
 
     mhitm_adtyping(&gy.youmonst, mattk, mdef, &mhm);
 
@@ -6490,6 +6492,63 @@ light_hits_gremlin(struct monst *mon, int dmg)
     } else if (cansee(mon->mx, mon->my) && !canspotmon(mon)) {
         map_invisible(mon->mx, mon->my);
     }
+}
+
+boolean
+boost_effects_pre(struct monst *magr, struct monst *mdef)
+{
+    boolean is_u = (magr == &gy.youmonst);
+    boolean icy;
+    struct obj *otmp;
+    struct obj *weapon;
+    int x, y, dx, dy;
+
+    if (is_u) {
+        x = u.ux, y = u.uy;
+        dx = mdef->mx, dy = mdef->my;
+        weapon = uwep;
+    } else if (mdef == &gy.youmonst) {
+        x = magr->mx, y = magr->my;
+        dx = u.ux, dy = u.uy;
+        weapon = MON_WEP(magr);
+    } else {
+        x = magr->mx, y = magr->my;
+        dx = mdef->mx, dy = mdef->my;
+        weapon = MON_WEP(magr);
+    }
+
+    icy = (has_coating(x, y, COAT_FROST) || levl[x][y].typ == ICE);
+    if (is_u) {
+        if ((weapon->booster & BST_ICE) && icy) {
+            otmp = mksobj(ICICLE, FALSE, FALSE);
+            otmp->spe = 1;
+            throwit(otmp, 0L, FALSE, (struct obj *) 0);
+        }
+        if (((weapon->booster & BST_ROCK) && !rn2(7) && !levl[x][y].submask)
+                && (IS_SUBMASKABLE(levl[x][y].typ) || levl[x][y].typ == STONE)) {
+            drop_boulder_on_monster(dx, dy, FALSE, magr == &gy.youmonst);
+        }
+    } else {
+        if ((weapon->booster & BST_ICE) && icy) {
+            (void) linedup(x, y, dx, dy, 0); /* set up gt.tbx and gt.tby */
+            otmp = mksobj(ICICLE, FALSE, FALSE);
+            m_throw(magr, x, y, sgn(gt.tbx), sgn(gt.tby),
+                    distmin(x, y, dx, dy), otmp);
+        }
+        if (((weapon->booster & BST_ROCK) && !rn2(7) && !levl[x][y].submask)
+                && (IS_SUBMASKABLE(levl[x][y].typ) || levl[x][y].typ == STONE)) {
+            drop_boulder_on_player(FALSE, TRUE, magr == &gy.youmonst, FALSE);
+        }
+    }
+    if ((weapon->booster & BST_POTION) && !rn2(4)) {
+        char buf[BUFSZ];
+        int otyp = POT_GAIN_ABILITY + ((weapon->o_id) % (POT_OIL - POT_GAIN_ABILITY));
+        potion_splatter(x, y, otyp, 0);
+        potion_coating_text(buf, otyp);
+        if (cansee(x, y))
+            pline("A spray of %s erupts from %s!", buf, simpleonames(weapon));
+    }
+    return DEADMONSTER(mdef);
 }
 
 /*uhitm.c*/

@@ -658,6 +658,9 @@ hitmm(
 
     pre_mm_attack(magr, mdef);
 
+    if (boost_effects_pre(magr, mdef))
+        return M_ATTK_HIT; /* mdef died */
+
     compat = !magr->mcan ? could_seduce(magr, mdef, mattk) : 0;
     if (!compat && shade_miss(magr, mdef, mwep, FALSE, gv.vis))
         return M_ATTK_MISS; /* bypass mdamagem() */

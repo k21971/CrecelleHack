@@ -1341,7 +1341,7 @@ toss_up(struct obj *obj, boolean hitsroof)
                 artimsg = FALSE;
         int dmg = dmgval(obj, &gy.youmonst);
 
-        if (obj->oartifact && !harmless)
+        if ((obj->oartifact || obj->booster) && !harmless)
             /* need a fake die roll here; rn1(18,2) avoids 1 and 20 */
             artimsg = artifact_hit((struct monst *) 0, &gy.youmonst, obj,
                                    &dmg, rn1(18, 2));
@@ -1716,7 +1716,7 @@ throwit(
                                     : "%s back toward you, hitting your %s!",
                               Tobjnam(obj, Blind ? "hit" : "fly"),
                               body_part(ARM));
-                        if (obj->oartifact)
+                        if (obj->oartifact || obj->booster)
                             (void) artifact_hit((struct monst *) 0,
                                                 &gy.youmonst, obj, &dmg, 0);
                         losehp(Maybe_Half_Phys(dmg), killer_xname(obj),
@@ -2626,6 +2626,7 @@ breakmsg(struct obj *obj, boolean in_view)
         FALLTHROUGH;
     /*FALLTHRU*/
     case BOTTLE:
+    case ICICLE:
     case WORTHLESS_VIOLET_GLASS:
     case POT_WATER: /* really, all potions */
         if (!in_view)

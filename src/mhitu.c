@@ -1187,6 +1187,10 @@ hitmu(struct monst *mtmp, struct attack *mattk)
         }
     }
 
+    if (MON_WEP(mtmp) && MON_WEP(mtmp)->booster) {
+        boost_effects_pre(mtmp, &gy.youmonst);
+    }
+
     /*  First determine the base damage done */
     mhm.damage = d((int) mattk->damn, (int) mattk->damd);
     if (((is_undead(mdat) || is_vampshifter(mtmp)) && midnight())
