@@ -1080,7 +1080,8 @@ hmon_hitmon_weapon(
         /* or strike with a missile in your hand... */
         || (!hmd->thrown && (is_missile(obj) || is_ammo(obj)))
         /* or use a pole at short range and not mounted... */
-        || (!hmd->thrown && !u.usteed && is_pole(obj))
+        || (!hmd->thrown && !u.usteed && is_pole(obj)
+            && !is_art(obj,ART_SNICKERSNEE))
         /* or throw a missile without the proper bow... */
         || (is_ammo(obj) && (hmd->thrown != HMON_THROWN
                              || !ammo_and_launcher(obj, uwep)))) {
@@ -1818,7 +1819,7 @@ hmon_hitmon(
     if (hmd.jousting) {
         hmon_hitmon_jousting(&hmd, mon, obj);
     } else if ((hmd.unarmed && hmd.dmg > 1 && !thrown && !obj && !Upolyd)
-                || obj && (obj->booster & BST_SAND) && levl[u.ux][u.uy].submask == SM_SAND) {
+                || (obj && (obj->booster & BST_SAND) && levl[u.ux][u.uy].submask == SM_SAND)) {
         hmon_hitmon_stagger(&hmd, mon, obj);
     } else if (!hmd.unarmed && hmd.dmg > 1 && !thrown && !Upolyd
                && !u.twoweap && uwep) {
@@ -5602,6 +5603,9 @@ hmonas(struct monst *mon)
             FALLTHROUGH;
             /*FALLTHRU*/
         case AT_KICK:
+            if (mattk->aatyp == AT_KICK && mtrapped_in_pit(&gy.youmonst))
+                continue;
+            /*FALLTHRU*/
         case AT_BITE:
         case AT_STNG:
         case AT_BUTT:

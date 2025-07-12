@@ -10,7 +10,7 @@ function tut_key(command)
       return "Ctrl-" .. m;
    end
 
-   m = s:match("^M-([A-Z])$"); -- M-X is Alt-X
+   m = s:match("^M%-([A-Z])$"); -- M-X is Alt-X
    if (m ~= nil) then
       tut_alt_key = m;
       return "Alt-" .. m;
@@ -57,6 +57,10 @@ des.non_diggable();
 des.teleport_region({ region = { 3, 8, 3, 8 } });
 
 nh.parse_config("OPTIONS=taunt:do the tutorial shuffle.");
+
+if (u.role == "Knight") then
+   des.engraving({ coord = { 12,1 }, type = "engrave", text = "Knights can jump with '" .. tut_key("jump") .. "'", degrade = false });
+end
 
 --
 des.object({ coord = { 1, 6 }, id = "statue", montype = "blood golem", historic = true });
