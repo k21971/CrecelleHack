@@ -5792,7 +5792,8 @@ destroyable(struct obj *obj, int adtyp)
             return FALSE;
         }
         if (obj->otyp == GLOB_OF_GREEN_SLIME || obj->oclass == POTION_CLASS
-            || obj->oclass == SCROLL_CLASS || obj->oclass == SPBOOK_CLASS) {
+            || obj->oclass == SCROLL_CLASS || obj->oclass == SPBOOK_CLASS
+            || objects[obj->otyp].oc_material == BLUEICE) {
             return TRUE;
         }
     } else if (adtyp == AD_COLD) {
@@ -5950,6 +5951,7 @@ const char *const destroy_strings[][3] = {
     { "catches fire and burns", "", "burning book" },
     { "turns to dust and vanishes", "", "" },
     { "breaks apart and explodes", "", "exploding wand" },
+    { "melts into a puddle", "melt", "melting icicle" },
 };
 
 /* guts of destroy_items();
@@ -6018,6 +6020,12 @@ maybe_destroy_item(
         case FOOD_CLASS: /* only GLOB_OF_GREEN_SLIME */
             dindx = 1; /* boil and explode */
             dmg = (obj->owt + 19) / 20;
+            break;
+        }
+        /* Handle ice separately */
+        if (objects[obj->otyp].oc_material == BLUEICE) {
+            dindx = 7;
+            dmg = 0;
             break;
         }
         break;

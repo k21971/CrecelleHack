@@ -69,6 +69,9 @@
 - Tools can become eroded.
 - All blades are considered poisonable.
 - All players recognize water.
+- Added ice as a material, which is used for icicles and for a
+  new randomized wand appearance. It can both shatter and be
+  melted, making it extremely delicate.
 
 ### New Objects
 - Bestiary

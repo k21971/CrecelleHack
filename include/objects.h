@@ -219,7 +219,7 @@ WEAPON("knife", NoDes,
        1, 1, 0, 1, 20,   5,   4,  3,  2, 0, P|S, P_KNIFE, IRON, HI_METAL,
                                                         KNIFE),
 WEAPON("icicle", NoDes,
-       1, 1, 0, 1,  0,   4,   0,  3,  2, 0, P|S, P_KNIFE, GLASS, HI_GLASS,
+       1, 1, 0, 1,  0,   4,   0,  3,  2, 0, P|S, P_KNIFE, BLUEICE, HI_GLASS,
                                                         ICICLE),
 WEAPON("stiletto", NoDes,
        1, 1, 0, 1,  5,   5,   4,  3,  2, 0, P|S, P_KNIFE, IRON, HI_METAL,
@@ -1558,6 +1558,7 @@ WAND("lightning",      "curved", 40, 175, 1, RAY, IRON, HI_METAL,
 WAND(NoDes,             "forked",  0, 150, 1, 0, WOOD, HI_WOOD, WAN1),
 WAND(NoDes,             "spiked",  0, 150, 1, 0, IRON, HI_METAL, WAN2),
 WAND(NoDes,            "jeweled",  0, 150, 1, 0, IRON, HI_MINERAL, WAN3),
+WAND(NoDes,          "solid ice",  0, 150, 1, 0, BLUEICE, HI_GLASS, WAN4),
 #undef WAND
 
 /* coins ... - so far, gold is all there is */

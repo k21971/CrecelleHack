@@ -2580,7 +2580,8 @@ breaktest(struct obj *obj)
 
     if (obj_resists(obj, nonbreakchance, 99))
         return FALSE;
-    if (objects[obj->otyp].oc_material == GLASS && !obj->oartifact)
+    if ((objects[obj->otyp].oc_material == GLASS
+        || objects[obj->otyp].oc_material == BLUEICE) && !obj->oartifact)
         return TRUE;
     if (obj->oclass == GEM_CLASS && objects[obj->otyp].oc_material != MINERAL)
         return TRUE;

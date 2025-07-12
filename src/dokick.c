@@ -445,6 +445,8 @@ container_impact_dmg(
         if (objects[otmp->otyp].oc_material == GLASS
             && otmp->oclass != GEM_CLASS && !obj_resists(otmp, 33, 100)) {
             result = "shatter";
+        } else if (objects[otmp->otyp].oc_material == BLUEICE) {
+            result = "tinkling";
         } else if (otmp->otyp == EGG && !rn2(3)) {
             result = "cracking";
         }
@@ -1897,6 +1899,8 @@ ship_object(struct obj *otmp, coordxy x, coordxy y, boolean shop_floor_obj)
             if (otmp->otyp == MIRROR)
                 change_luck(-2);
             result = "crash";
+        } else if (objects[otmp->otyp].oc_material == ICE) {
+            result = "tinkling";
         } else {
             /* penalty for breaking eggs laid by you */
             if (otmp->otyp == EGG && otmp->spe && ismnum(otmp->corpsenm))

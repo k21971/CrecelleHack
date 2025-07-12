@@ -2489,7 +2489,7 @@ static const char *const foodwords[] = {
     "meal",    "liquid",  "wax",       "food", "meat",     "paper",
     "cloth",   "leather", "wood",      "bone", "scale",    "metal",
     "metal",   "metal",   "silver",    "gold", "platinum", "mithril",
-    "plastic", "glass",   "rich food", "stone"
+    "plastic", "glass",   "ice",       "rich food", "stone"
 };
 
 staticfn const char *
