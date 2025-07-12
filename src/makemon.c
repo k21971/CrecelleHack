@@ -528,7 +528,7 @@ m_initweap(struct monst *mtmp)
         }
         break;
     case S_WRAITH:
-        (void) mongets(mtmp, KNIFE);
+        (void) mongets(mtmp, rn2(9) ? KNIFE : ICICLE);
         (void) mongets(mtmp, LONG_SWORD);
         break;
     case S_ZOMBIE:
@@ -598,7 +598,8 @@ m_initweap(struct monst *mtmp)
             if (strongmonst(ptr))
                 (void) mongets(mtmp, LONG_SWORD);
             else
-                m_initthrow(mtmp, DAGGER, 3);
+                m_initthrow(mtmp, (svl.level.flags.temperature == -1)
+                                    ? ICICLE : DAGGER, 3);
             break;
         case 5:
             if (strongmonst(ptr))
