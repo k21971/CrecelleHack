@@ -517,14 +517,12 @@ m_initweap(struct monst *mtmp)
         break;
 
     case S_CENTAUR:
-        if (rn2(2)) {
-            if (ptr == &mons[PM_FOREST_CENTAUR]) {
-                (void) mongets(mtmp, BOW);
-                m_initthrow(mtmp, ARROW, 12);
-            } else {
-                (void) mongets(mtmp, CROSSBOW);
-                m_initthrow(mtmp, CROSSBOW_BOLT, 12);
-            }
+        if (ptr == &mons[PM_FOREST_CENTAUR]) {
+            (void) mongets(mtmp, BOW);
+            m_initthrow(mtmp, ARROW, 30);
+        } else {
+            (void) mongets(mtmp, CROSSBOW);
+            m_initthrow(mtmp, CROSSBOW_BOLT, 30);
         }
         break;
     case S_WRAITH:
