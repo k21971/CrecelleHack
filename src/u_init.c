@@ -1284,6 +1284,7 @@ ini_inv_adjust_obj(struct trobj *trop, struct obj *obj)
             obj->otrapped = 0;
         }
         obj->cursed = 0;
+        obj->booster = 0;
         if (obj->opoisoned && u.ualign.type != A_CHAOTIC)
             obj->opoisoned = 0;
         if (obj->oclass == WEAPON_CLASS || obj->oclass == TOOL_CLASS) {
