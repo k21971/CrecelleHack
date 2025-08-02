@@ -966,6 +966,8 @@ TOOL("magic lamp",        "lamp", 0, 0, 1, 0, 15, 20, 50, COPPER, CLR_YELLOW,
 /* other tools */
 TOOL("expensive camera",    NoDes, 1, 0, 0, 1, 15, 12,200, PLASTIC, CLR_BLACK,
                                                             EXPENSIVE_CAMERA),
+TOOL("roll of duct tape",   "roll of shiny tape", 0, 0, 0, 1, 15, 10, 200,
+                                                 PLASTIC, CLR_GRAY, DUCT_TAPE),
 TOOL("mirror",   "looking glass", 0, 0, 0, 0, 45, 13, 10, GLASS, HI_SILVER,
                                                                 MIRROR),
 TOOL("crystal ball", "glass orb", 0, 0, 1, 1, 15,150, 60, GLASS, HI_GLASS,

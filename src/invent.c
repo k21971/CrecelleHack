@@ -3213,6 +3213,8 @@ itemactions(struct obj *otmp)
         ia_addmenu(win, IA_DIP_OBJ, 'a', buf);
     } else if (otmp->otyp == EXPENSIVE_CAMERA)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Take a photograph");
+    else if (otmp->otyp == DUCT_TAPE)
+        ia_addmenu(win, IA_APPLY_OBJ, 'a', "Use the tape to combine items");
     else if (otmp->otyp == TOWEL)
         ia_addmenu(win, IA_APPLY_OBJ, 'a',
                    "Clean yourself off with this towel");

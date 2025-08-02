@@ -1078,6 +1078,7 @@ mksobj_init(struct obj **obj, boolean artif)
             otmp->spe = rn1(70, 30);
             break;
         case CAN_OF_GREASE:
+        case DUCT_TAPE:
             otmp->spe = rn1(21, 5); /* 0..20 + 5 => 5..25 */
             blessorcurse(otmp, 10);
             break;
