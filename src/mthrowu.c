@@ -449,7 +449,7 @@ ohitmon(
             if (resists_ston(mtmp))
                 damage = 0;
         }
-        if (otmp->otyp == BOLAS) {
+        if (otmp->otyp == BANANA_PEEL) {
             mtmp->mprone = 1;
             use_skill(P_TRIPPING, 1);
         }
@@ -759,7 +759,7 @@ m_throw(
                         Your("%s %s.", eyes, vtense(eyes, "sting"));
                 }
             }
-            if (hitu && singleobj->otyp == BOLAS) {
+            if (hitu && singleobj->otyp == BANANA_PEEL) {
                 You("tumble to the %s!", surface(u.ux, u.uy));
                 make_prone();
             }

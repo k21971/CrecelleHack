@@ -100,7 +100,7 @@ is_edible(struct obj *obj)
         return TRUE;
 
     /* We don't want anyone digesting a skeleton, including gelatinous cubes. */
-    if (obj->otyp == SKELETON)
+    if (obj->otyp == SKELETON || obj->otyp == BANANA_PEEL)
         return FALSE;
 
     if (metallivorous(gy.youmonst.data) && is_metallic(obj)
@@ -2507,6 +2507,7 @@ foodword(struct obj *otmp)
 staticfn void
 fpostfx(struct obj *otmp)
 {
+    struct obj *peel;
     switch (otmp->otyp) {
     case SPRIG_OF_WOLFSBANE:
         if (ismnum(u.ulycn) || is_were(gy.youmonst.data))
@@ -2592,6 +2593,11 @@ fpostfx(struct obj *otmp)
             }
             fall_asleep(-rn1(11, 20), TRUE);
         }
+        break;
+    case BANANA:
+        peel = mksobj(BANANA_PEEL, FALSE, FALSE);
+        hold_another_object(peel, "Whoops!", (const char *) 0,
+                                    (const char *) 0);
         break;
     }
     return;

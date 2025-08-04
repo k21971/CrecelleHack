@@ -99,6 +99,8 @@
 - Duct Tape
   - You can do all sorts of fun things with duct tape...
     - TODO: Breaking a taped-up wand should cause many explosions?
+- Banana Peel
+  - Replaces bolas.
 
 ## Floor Coating System
 - Added ice as a floor coating.

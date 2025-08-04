@@ -4515,7 +4515,6 @@ readobjnam_postparse1(struct _readobjnam_data *d)
            because singularize operates on "bag" and wishymatch()'s
            'of inversion' finds a match] */
         && strcmpi(d->bp, "tricks")
-        && strcmpi(d->bp, "bolas")
         /* an odd potential wish; fail rather than get a false match with
            "cloth" because it might yield a "cloth spellbook" rather than
            a "piece of cloth" cloak [maybe we should give random armor?] */

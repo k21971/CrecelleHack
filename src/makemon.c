@@ -303,7 +303,6 @@ m_initweap(struct monst *mtmp)
             (void) mongets(mtmp, rn2(4) ? SHURIKEN : DART);
             (void) mongets(mtmp, rn2(4) ? SHORT_SWORD : AXE);
         } else if (mm == PM_MASTER_KAEN) {
-            (void) mongets(mtmp, BOLAS);
             (void) mongets(mtmp, SHURIKEN);
         } else if (ptr->msound == MS_GUARDIAN) {
             /* quest "guardians" */
@@ -446,7 +445,7 @@ m_initweap(struct monst *mtmp)
         /* create Keystone Kops with cream pies to
            throw. As suggested by KAA.     [MRS] */
         if (!rn2(4))
-            m_initthrow(mtmp, CREAM_PIE, 2);
+            m_initthrow(mtmp, rn2(3) ? CREAM_PIE : BANANA_PEEL, 2);
         if (!rn2(3))
             (void) mongets(mtmp, (rn2(2)) ? CLUB : RUBBER_HOSE);
         break;

@@ -1739,6 +1739,7 @@ remove_coating(coordxy x, coordxy y, short coatflags) {
 boolean
 coateffects(coordxy x, coordxy y, struct monst *mon) {
     boolean isyou = (mon == &gy.youmonst);
+    boolean banana_peel = svl.level.objects[x][y] && svl.level.objects[x][y]->otyp == BANANA_PEEL;
     boolean ret = FALSE;
     char buf[BUFSZ];
     if (is_flyer(mon->data) || is_floater(mon->data)
@@ -1747,18 +1748,24 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
     if (isyou && (Levitation || Flying))
         return FALSE;
     /* Now the actual coat effects */
-    if (has_coating(x, y, COAT_POTION) && levl[x][y].pindex == POT_OIL) {
-        potion_coating_text(buf, POT_OIL);
+    if ((has_coating(x, y, COAT_POTION) && levl[x][y].pindex == POT_OIL) || banana_peel) {
+        if (banana_peel) {
+            if (Blind) Sprintf(buf, "an object");
+            else Sprintf(buf, "%s", an(xname(svl.level.objects[x][y])));
+        } else {
+            potion_coating_text(buf, POT_OIL);
+        }
         if (isyou) {
-            You("slip on a patch of %s!", buf);
+            You("slip on %s%s!", banana_peel ? "" : "a patch of ", buf);
             nomul(-2);
-            gm.multi_reason = "slipping on oil";
+            gm.multi_reason = "slipping on something";
             gn.nomovemsg = "You regain your footing.";
-            makeknown(POT_OIL);
+            if (!banana_peel) makeknown(POT_OIL);
         } else {
             if (canseemon(mon)) {
-                makeknown(POT_OIL);
-                pline_mon(mon, "%s slips on a patch of %s!", Monnam(mon), buf);
+                if (!banana_peel) makeknown(POT_OIL);
+                pline_mon(mon, "%s slips on %s%s!",
+                            Monnam(mon), banana_peel ? "" : "a patch of ", buf);
             }
             mon->mfrozen = 2;
             mon->mcanmove = 0;
