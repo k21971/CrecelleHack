@@ -234,6 +234,8 @@ loot_classify(Loot *sort_item, struct obj *obj)
             case TOOLED_HORN:
             case FROST_HORN:
             case FIRE_HORN:
+            case ACOUSTIC_GUITAR:
+            case ELECTRIC_GUITAR:
             case WOODEN_HARP:
             case MAGIC_HARP:
             case BUGLE:

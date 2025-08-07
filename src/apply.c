@@ -4476,6 +4476,8 @@ doapply(void)
     case TOOLED_HORN:
     case FROST_HORN:
     case FIRE_HORN:
+    case ACOUSTIC_GUITAR:
+    case ELECTRIC_GUITAR:
     case WOODEN_HARP:
     case MAGIC_HARP:
     case BUGLE:

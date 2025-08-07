@@ -101,6 +101,10 @@
     - TODO: Breaking a taped-up wand should cause many explosions?
 - Banana Peel
   - Replaces bolas.
+- Acoustic Guitar
+  - Tonal instrument.
+- Electric Guitar
+  - Fires bolts of electricity, as a fire or frost horn would.
 
 ## Floor Coating System
 - Added ice as a floor coating.

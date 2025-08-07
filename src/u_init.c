@@ -862,7 +862,8 @@ u_init_race(void)
          */
         if (Role_if(PM_CLERIC) || Role_if(PM_WIZARD)) {
             static int trotyp[] = { WOODEN_FLUTE, TOOLED_HORN, WOODEN_HARP,
-                                    BELL,         BUGLE,       LEATHER_DRUM };
+                                    BELL,         BUGLE,       LEATHER_DRUM,
+                                    ACOUSTIC_GUITAR };
             Instrument[0].trotyp = ROLL_FROM(trotyp);
             ini_inv(Instrument);
         }

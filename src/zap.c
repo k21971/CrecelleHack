@@ -2760,6 +2760,7 @@ zapyourself(struct obj *obj, boolean ordinary)
         break;
 
     case WAN_LIGHTNING:
+    case ELECTRIC_GUITAR:
         learn_it = TRUE;
         orig_dmg = d(12, 6);
         if (!Shock_resistance) {

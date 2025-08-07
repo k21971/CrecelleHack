@@ -1115,6 +1115,7 @@ mksobj_init(struct obj **obj, boolean artif)
         case MAGIC_HARP:
         case FROST_HORN:
         case FIRE_HORN:
+        case ELECTRIC_GUITAR:
         case DRUM_OF_EARTHQUAKE:
             otmp->spe = rn1(5, 4);
             break;
