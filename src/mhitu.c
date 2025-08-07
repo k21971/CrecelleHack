@@ -1310,7 +1310,7 @@ gulp_blnd_check(void)
     return FALSE;
 }
 
-/* monster swallows you, or damage if u.uswallow */
+/* monster swallows you, or damage if already swallowed (u.uswallow != 0) */
 staticfn int
 gulpmu(struct monst *mtmp, struct attack *mattk)
 {
@@ -1581,7 +1581,9 @@ gulpmu(struct monst *mtmp, struct attack *mattk)
     if (physical_damage)
         tmp = Maybe_Half_Phys(tmp);
 
+    gm.mswallower = mtmp; /* match gulpmm() */
     mdamageu(mtmp, tmp);
+    gm.mswallower = 0;
     if (tmp)
         stop_occupation();
 

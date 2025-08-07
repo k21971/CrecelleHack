@@ -678,6 +678,7 @@ struct mvitals {
     Bitfield(know_rcorpse, 1);
     Bitfield(know_stats, 1);
     Bitfield(know_attacks, 6);
+    Bitfield(photographed, 1);
 };
 
 

@@ -1,4 +1,4 @@
-/* NetHack 3.7	uhitm.c	$NHDT-Date: 1736575153 2025/01/10 21:59:13 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.461 $ */
+/* NetHack 3.7	uhitm.c	$NHDT-Date: 1752823766 2025/07/17 23:29:26 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.477 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2012. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -5108,6 +5108,7 @@ gulpum(struct monst *mdef, struct attack *mattk)
                    "you totally digest <mdef>" will be coming soon (after
                    several turns) but the level-gain message seems out of
                    order if the kill message is left implicit */
+                gm.mswallower = &gy.youmonst;
                 xkilled(mdef, XKILL_GIVEMSG | XKILL_NOCORPSE);
                 if (!DEADMONSTER(mdef)) { /* monster lifesaved */
                     You("hurriedly regurgitate the sizzling in your %s.",
@@ -5148,6 +5149,7 @@ gulpum(struct monst *mdef, struct attack *mattk)
                     } else
                         exercise(A_CON, TRUE);
                 }
+                gm.mswallower = (struct monst *) 0;
                 end_engulf();
                 return M_ATTK_DEF_DIED;
             case AD_PHYS:
@@ -5605,6 +5607,7 @@ hmonas(struct monst *mon)
         case AT_KICK:
             if (mattk->aatyp == AT_KICK && mtrapped_in_pit(&gy.youmonst))
                 continue;
+            FALLTHROUGH;
             /*FALLTHRU*/
         case AT_BITE:
         case AT_STNG:
