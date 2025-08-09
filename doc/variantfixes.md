@@ -128,6 +128,7 @@
 - Towels can now be used to wipe the floor by engraving with them, rather
   than by using #rub.
 - New messages for hurtling across coatings.
+- Fire traps now evaporate potion puddles.
 
 ## Dungeon Changes
 - Allow fountains to become frozen. Frozen fountains cannot be
