@@ -3296,7 +3296,10 @@ corpse_chance(
     }
 
     if (mdat == &mons[PM_CRIMSON_DEATH]) {
-        create_gas_cloud(mon->mx, mon->my, 5, POT_BLOOD, 8);
+        struct obj fakeobj = cg.zeroobj;
+        fakeobj.cursed = TRUE;
+        fakeobj.otyp = POT_BLOOD;
+        create_gas_cloud(mon->mx, mon->my, 5, &fakeobj, 8);
     }
 
     if (mdat == &mons[PM_ILLUSION]) {

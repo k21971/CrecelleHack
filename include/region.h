@@ -32,6 +32,8 @@ typedef boolean (*callback_proc)(genericptr_t, genericptr_t);
 struct region_arg {
     int damage;
     int otyp;
+    boolean blessed;
+    boolean cursed;
 };
 
 typedef struct {

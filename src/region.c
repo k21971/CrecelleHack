@@ -43,7 +43,7 @@ NhRegion *create_force_field(coordxy,coordxy,int,long);
 staticfn void reset_region_mids(NhRegion *);
 staticfn boolean poisongas_damage(NhRegion *, int, struct monst *);
 staticfn boolean is_hero_inside_gas_cloud(short);
-staticfn void make_gas_cloud(NhRegion *, int, int, boolean) NONNULLARG1;
+staticfn void make_gas_cloud(NhRegion *, struct obj *, int, boolean) NONNULLARG1;
 
 static const callback_proc callbacks[] = {
 #define INSIDE_GAS_CLOUD 0
@@ -58,6 +58,8 @@ static const callback_proc callbacks[] = {
 
 #define REGION_DAMAGE(reg) reg->arg.damage
 #define REGION_OTYP(reg) reg->arg.otyp
+#define REGION_BLESSED(reg) reg->arg.blessed
+#define REGION_CURSED(reg) reg->arg.cursed
 
 /* Should be inlined. */
 boolean
@@ -875,6 +877,8 @@ save_regions(NHFILE *nhfp)
         Sfo_int(nhfp, &r->glyph, "region-glyph");
         Sfo_int(nhfp, &r->arg.damage, "region-arg-damage");
         Sfo_int(nhfp, &r->arg.otyp, "region-arg-otyp");
+        Sfo_boolean(nhfp, &r->arg.blessed, "region-arg-blessed");
+        Sfo_boolean(nhfp, &r->arg.cursed, "region-arg-cursed");
     }
 
  skip_lots:
@@ -966,6 +970,8 @@ rest_regions(NHFILE *nhfp)
         Sfi_int(nhfp, &r->glyph, "region-glyph");
         Sfi_int(nhfp, &r->arg.damage, "region-arg-damage");
         Sfi_int(nhfp, &r->arg.otyp, "region-arg-otyp");
+        Sfi_boolean(nhfp, &r->arg.blessed, "region-arg-blessed");
+        Sfi_boolean(nhfp, &r->arg.cursed, "region-arg-cursed");
     }
 #ifndef SFCTOOL
     /* remove expired regions, do not trigger the expire_f callback (yet!);
@@ -1261,10 +1267,12 @@ inside_gas_cloud(genericptr_t p1, genericptr_t p2)
     if (otyp) {
         struct obj fakeobj = cg.zeroobj;
         fakeobj.otyp = otyp;
+        fakeobj.blessed = REGION_BLESSED(reg);
+        fakeobj.cursed = REGION_CURSED(reg);
         if (!mtmp && (!breathless(gy.youmonst.data) || haseyes(gy.youmonst.data))) {
             potionbreathe(&fakeobj);
         } else if (mtmp && (!breathless(mtmp->data) || haseyes(mtmp->data))) {
-            return potionhit_effects(mtmp, &fakeobj, heros_fault(reg));
+            mpotionbreathe(&fakeobj, mtmp, heros_fault(reg));
         }
         return FALSE;
     } else 
@@ -1288,7 +1296,7 @@ is_hero_inside_gas_cloud(short rtype)
 staticfn void
 make_gas_cloud(
     NhRegion *cloud,
-    int otyp,
+    struct obj *otmp,
     int damage,
     boolean inside_cloud)
 {
@@ -1298,12 +1306,14 @@ make_gas_cloud(
     cloud->inside_f = INSIDE_GAS_CLOUD;
     cloud->expire_f = EXPIRE_GAS_CLOUD;
     REGION_DAMAGE(cloud) = damage;
-    REGION_OTYP(cloud) = otyp;
+    REGION_OTYP(cloud) = otmp->otyp;
+    REGION_BLESSED(cloud) = otmp->blessed;
+    REGION_CURSED(cloud) = otmp->cursed;
     cloud->visible = TRUE;
     cloud->blocking = TRUE;
     /* Set up the cloud glyph */
-    if (otyp) {
-        cloud->glyph = cmap_to_glyph(S_potioncloud) + otyp - POT_GAIN_ABILITY;
+    if (otmp) {
+        cloud->glyph = cmap_to_glyph(S_potioncloud) + otmp->otyp - POT_GAIN_ABILITY;
     } else {
         cloud->glyph = cmap_to_glyph(damage ? S_poisoncloud : S_cloud);
     }
@@ -1348,7 +1358,7 @@ NhRegion *
 create_gas_cloud(
     coordxy x, coordxy y,
     int cloudsize,
-    int otyp,
+    struct obj *otmp,
     int damage)
 {
     NhRegion *cloud;
@@ -1440,7 +1450,7 @@ create_gas_cloud(
     /* If cloud was constrained in small space, give it more time to live. */
     cloud->ttl = (cloud->ttl * cloudsize) / newidx;
 
-    make_gas_cloud(cloud, otyp, damage, inside_cloud);
+    make_gas_cloud(cloud, otmp, damage, inside_cloud);
     return cloud;
 }
 
@@ -1467,7 +1477,7 @@ create_gas_cloud_selection(
                 add_rect_to_reg(cloud, &tmprect);
             }
 
-    make_gas_cloud(cloud, damage, 0, inside_cloud);
+    make_gas_cloud(cloud, 0, damage, inside_cloud);
     return cloud;
 }
 

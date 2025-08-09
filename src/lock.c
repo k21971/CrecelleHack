@@ -1296,7 +1296,7 @@ chest_shatter_msg(struct obj *otmp)
         You("%s %s shatter!", Blind ? "hear" : "see", an(bottlename()));
         if (!breathless(gy.youmonst.data) || haseyes(gy.youmonst.data)) {
             potion_splatter(u.ux, u.uy, otmp->otyp, otmp->corpsenm);
-            potion_fumigate(u.ux, u.uy, otmp->otyp);
+            potion_fumigate(u.ux, u.uy, otmp);
         }
         return;
     }

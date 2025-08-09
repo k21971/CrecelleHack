@@ -2501,8 +2501,9 @@ breakobj(
                 }
             }
         }
-        potion_fumigate(x, y, obj->otyp); /* TODO: Pull out into function so can stop certain potions (oil, water, blood) from making clouds */
+        potion_fumigate(x, y, obj);
         /* monster breathing isn't handled... [yet?] */
+        /* oh YES IT IS. - K */
         break;
     case EXPENSIVE_CAMERA:
         release_camera_demon(obj, x, y);

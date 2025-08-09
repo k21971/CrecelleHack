@@ -6216,6 +6216,7 @@ chest_trap(
     boolean disarm)
 {
     struct obj *otmp = obj, *otmp2;
+    struct obj fakeobj = cg.zeroobj;
     char buf[80];
     const char *msg;
     coord cc;
@@ -6394,7 +6395,9 @@ chest_trap(
             pline("A cloud of %s gas billows from %s.",
                   Blind ? ROLL_FROM(blindgas) : rndcolor(),
                   the(xname(obj)));
-            create_gas_cloud(obj->ox, obj->oy, 1, POT_HALLUCINATION, 8);
+            fakeobj.otyp = POT_HALLUCINATION;
+            fakeobj.cursed = TRUE;
+            create_gas_cloud(obj->ox, obj->oy, 1, &fakeobj, 8);
             break;
         default:
             impossible("bad chest trap");

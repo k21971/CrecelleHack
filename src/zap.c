@@ -5254,6 +5254,7 @@ zap_over_floor(
     boolean see_it = cansee(x, y), yourzap;
     int rangemod = 0, damgtype = zaptype(type) % 10;
     boolean lavawall = (lev->typ == LAVAWALL);
+    struct obj fakeobj = cg.zeroobj;
 
     if (type == PHYS_EXPL_TYPE) {
         /* this won't have any effect on the floor */
@@ -5484,8 +5485,11 @@ zap_over_floor(
             (void) create_gas_cloud(x, y, 1, 0, 8);
         break;
     case ZT_SLEEP:
-        if (ZAP_POS(lev->typ) && zaptype(type) == ZT_BREATH(ZT_SLEEP))
-            (void) create_gas_cloud(x, y, 1, POT_SLEEPING, 8);
+        if (ZAP_POS(lev->typ) && zaptype(type) == ZT_BREATH(ZT_SLEEP)) {
+            fakeobj.otyp = POT_SLEEPING;
+            fakeobj.cursed = TRUE;
+            (void) create_gas_cloud(x, y, 1, &fakeobj, 8);
+        }
         break;
     case ZT_DEATH:
         /* Kill any grass on a surface. */
