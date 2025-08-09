@@ -192,7 +192,7 @@ does_block(int x, int y, struct rm *lev)
     if (gs.seethru != 1) {
 #endif
     /* Clouds (poisonous or not) block light. */
-    if (visible_region_at(x, y))
+    if (blocking_region_at(x, y))
         return 2;
 #ifdef DEBUG
     } /* gs.seethru */

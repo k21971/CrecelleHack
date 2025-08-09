@@ -330,7 +330,7 @@ add_region(NhRegion *reg)
                 }
             }
             if (reg->visible) {
-                if (is_inside)
+                if (is_inside && reg->blocking)
                     block_point(i, j);
                 if (cansee(i, j))
                     newsym(i, j);
@@ -781,6 +781,24 @@ visible_region_at(coordxy x, coordxy y)
 
     for (i = 0; i < svn.n_regions; i++) {
         if (!gr.regions[i]->visible || gr.regions[i]->ttl == -2L)
+            continue;
+        if (inside_region(gr.regions[i], x, y))
+            return gr.regions[i];
+    }
+    return (NhRegion *) 0;
+}
+
+/*
+ * Check if a spot is under a blocking region (eg: gas cloud).
+ * Returns NULL if not, otherwise returns region.
+ */
+NhRegion *
+blocking_region_at(coordxy x, coordxy y)
+{
+    int i;
+
+    for (i = 0; i < svn.n_regions; i++) {
+        if (!gr.regions[i]->blocking || gr.regions[i]->ttl == -2L)
             continue;
         if (inside_region(gr.regions[i], x, y))
             return gr.regions[i];
@@ -1251,6 +1269,7 @@ make_gas_cloud(
     cloud->arg = cg.zeroany;
     cloud->arg.a_int = damage;
     cloud->visible = TRUE;
+    cloud->blocking = TRUE;
     cloud->glyph = cmap_to_glyph(damage ? S_poisoncloud : S_cloud);
     add_region(cloud);
 
@@ -1623,6 +1642,7 @@ create_bonfire(coordxy x, coordxy y, int lifetime, int damage)
     flames->arg = cg.zeroany;
     flames->arg.a_int = damage;
     flames->visible = TRUE;
+    flames->blocking = FALSE;
     flames->glyph = cmap_to_glyph(S_bonfire);
     add_region(flames);
 
