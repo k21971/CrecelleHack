@@ -254,9 +254,14 @@ mhidden_description(
             Sprintf(eos(outbuf), " on the %s",
                     ceiling_hider(mon->data) ? "ceiling"
                        : surface(x, y)); /* trapper */
+        } else if (mud_hider(mon->data)
+                    && has_coating(mon->mx, mon->my, COAT_MUD)) {
+
         } else {
             if (mon->data->mlet == S_EEL && is_pool(x, y))
                 Strcat(outbuf, " in murky water");
+            else if (has_coating(x, y, COAT_MUD))
+                Strcat(outbuf, "in mud");
         }
     }
 

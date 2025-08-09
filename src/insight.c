@@ -2125,6 +2125,10 @@ youhiding(boolean via_enlghtmt, /* enlightenment line vs topl message */
 
                 Sprintf(bp, " in a %spit",
                         (t && t->ttyp == SPIKED_PIT) ? "spiked " : "");
+            } else if (has_coating(u.ux, u.uy, COAT_GRASS)) {
+                Sprintf(bp, " in the grass");
+            } else if (has_coating(u.ux, u.uy, COAT_MUD)) {
+                Sprintf(bp, " in the mud");
             } else
                 Sprintf(bp, " on the %s", surface(u.ux, u.uy));
         }

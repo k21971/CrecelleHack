@@ -107,7 +107,11 @@
   - Fires bolts of electricity, as a fire or frost horn would.
 
 ## Floor Coating System
-- Added ice as a floor coating.
+- Added frost and mud as a floor coatings.
+  - Frost causes those walking over it to slip, as walking over ice.
+  - Mud costs additional movement points to move through. Additionally,
+    many monsters can hide themselves in the mud in order to ambush
+    the player.
 - Floor coatings can be added in level generation lua. Maps
   have been updated to reflect this.
 - Allow blood golems to be created while polypiling.
@@ -120,6 +124,7 @@
 - You can clean liquids off yourself by using #wipe.
 - Towels can now be used to wipe the floor by engraving with them, rather
   than by using #rub.
+- New messages for hurtling across coatings.
 
 ## Dungeon Changes
 - Allow fountains to become frozen. Frozen fountains cannot be

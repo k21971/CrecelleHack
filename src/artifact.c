@@ -1588,7 +1588,7 @@ artifact_hit(
             add_coating(x, y, COAT_FUNGUS, 0);
             add_coating(dx, dy, COAT_FUNGUS, 0);
         }
-        if (((otmp->booster & BST_DIRT)
+        if (((otmp->booster & BST_MUD)
                 && (levl[x][y].submask == SM_DIRT)
                 && IS_SUBMASKABLE(levl[x][y].typ))) {
                 if (!youdefend && mdef->mspeed != MSLOW) {

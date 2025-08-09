@@ -5360,8 +5360,12 @@ zap_over_floor(
             } else if (has_coating(x, y, COAT_FROST)) {
                 add_coating(x, y, COAT_POTION, POT_WATER);
             }
-            if (IS_SUBMASKABLE(levl[x][y].typ) && levl[x][y].submask == SM_SAND) {
-                add_coating(x, y, COAT_SHARDS, 0);
+            if (IS_SUBMASKABLE(levl[x][y].typ)) {
+                if (has_coating(x, y, COAT_MUD)) {
+                    remove_coating(x, y, COAT_MUD);
+                    levl[x][y].submask = SM_DIRT;
+                } else if (levl[x][y].submask == SM_SAND)
+                    add_coating(x, y, COAT_SHARDS, 0);
             }
             evaporate_potion_puddles(x, y);
         }

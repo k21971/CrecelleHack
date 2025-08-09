@@ -4695,6 +4695,10 @@ dfeature_at(coordxy x, coordxy y, char *buf)
             Sprintf(eos(altbuf), "%sice", listing ? " and " : "");
             listing = TRUE;
         }
+        if ((lev->coat_info & COAT_MUD) != 0) {
+            Sprintf(eos(altbuf), "%smud", listing ? " and " : "");
+            listing = TRUE;
+        }
         if ((lev->coat_info & COAT_SHARDS) != 0) {
             Sprintf(eos(altbuf), "%ssharp dust", listing ? " and " : "");
             listing = TRUE;

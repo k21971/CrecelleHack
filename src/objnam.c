@@ -1153,15 +1153,15 @@ the_unique_pm(struct permonst *ptr)
 
 static struct boostnam boostnams[] = {
    { BST_GRASS, "Grass", "lush " },
-   { BST_DIRT, "Dirt", "earthen " },
+   { BST_MUD, "Mud", "squelching " },
    { BST_ROCK, "Rock", "stony " },
    { BST_WATER, "Water", "oceanic " },
    { BST_ASHES, "Ashes", "thermal " },
    { BST_FUNGI, "Fungi", "fungal " },
    { BST_BLOOD, "Blood", "sanguine " },
-   { BST_SAND, "Sand", "wasting " }, /* TODO */
+   { BST_SAND, "Sand", "wasting " },
    { BST_POTION, "Tonic", "alchemical " },
-   { BST_HONEY, "Honey", "honeyed " }, /* TODO */
+   { BST_HONEY, "Honey", "honeyed " },
    { BST_ICE, "Ice", "boreal " }
 };
 

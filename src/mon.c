@@ -1313,7 +1313,9 @@ movemon_singlemon(struct monst *mtmp)
         }
     }
 
-    if (is_hider(mtmp->data)) {
+    if (is_hider(mtmp->data)
+        || (mud_hider(mtmp->data)
+                && has_coating(mtmp->mx, mtmp->my, COAT_MUD))) {
         /* unwatched mimics and piercers may hide again  [MRS] */
         if (restrap(mtmp))
             return FALSE;
@@ -4942,8 +4944,9 @@ void
 hide_monst(struct monst *mon)
 {
     boolean hider_under = hides_under(mon->data) || mon->data->mlet == S_EEL;
+    boolean mud_hider = (mud_hider(mon->data) && has_coating(mon->mx, mon->my, COAT_MUD));
 
-    if ((is_hider(mon->data) || hider_under)
+    if ((is_hider(mon->data) || hider_under || mud_hider)
         && !(mon->mundetected || M_AP_TYPE(mon))) {
         coordxy x = mon->mx, y = mon->my;
         char save_viz = gv.viz_array[y][x];
@@ -6274,9 +6277,8 @@ is_boosted(int x, int y, short boost) {
         return TRUE;
     } else if ((boost & BST_HONEY) && has_coating(x, y, COAT_HONEY)) {
         return TRUE;
-    } else if ((boost & BST_DIRT) && IS_SUBMASKABLE(levl[x][y].typ)
-        && !levl[x][y].coat_info
-        && levl[x][y].submask == SM_DIRT) {
+    } else if ((boost & BST_MUD)
+        && has_coating(x, y, COAT_MUD)) {
         return TRUE;
     } else if ((boost & BST_SAND) && IS_SUBMASKABLE(levl[x][y].typ)
         && !levl[x][y].coat_info

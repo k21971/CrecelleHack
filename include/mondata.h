@@ -280,6 +280,10 @@
     ((ptr)->mlet == S_NAGA || (ptr)->mlet == S_ZOMBIE \
         || ptr == &mons[PM_WRESTLER])
 
+#define mud_hider(ptr) \
+    ((!is_hider(ptr) && ptr->msize <= MZ_MEDIUM) \
+        && !mindless(ptr))
+
 /* monkeys are tamable via bananas but not pacifiable via food,
    otherwise their theft attack could be nullified too easily;
    dogs and cats can be tamed by anything they like to eat and are

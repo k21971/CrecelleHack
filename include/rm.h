@@ -143,17 +143,18 @@ enum levl_typ_types {
  * coat_info is defined as flags, which is only 5 bytes in length.
  * It should be fine, as long as one sticks to passing defined coats.
  */
-#define COAT_LIST COAT(GRASS,     "grass",    "grassy ",              0x01), \
-COAT(ASHES,     "ashes",    "ashy ",                0x02), \
-COAT(POTION,    "potion",   "potion-spattered ",    0x04), \
-COAT(BLOOD,     "blood",    "bloody ",              0x08), \
-COAT(FUNGUS,    "fungus",   "fungus-encrusted ",    0x10), \
-COAT(SHARDS,    "shards",   "glass-strewn ",        0x20), \
-COAT(HONEY,     "honey",    "sticky ",              0x40), \
-COAT(FROST,     "frost",    "icy ",                 0x80), \
+#define COAT_LIST COAT(GRASS,     "grass",    "grassy ",              0x001), \
+COAT(ASHES,     "ashes",    "ashy ",                0x002), \
+COAT(POTION,    "potion",   "potion-spattered ",    0x004), \
+COAT(BLOOD,     "blood",    "bloody ",              0x008), \
+COAT(FUNGUS,    "fungus",   "fungus-encrusted ",    0x010), \
+COAT(SHARDS,    "shards",   "glass-strewn ",        0x020), \
+COAT(HONEY,     "honey",    "sticky ",              0x040), \
+COAT(FROST,     "frost",    "icy ",                 0x080), \
+COAT(MUD,       "mud",      "muddy ",               0x100), \
 COAT(ALL,       "all",      "all",                  0xfff)
 
-#define NUM_COATINGS 8 /* must be incremented when coatings are addeed */
+#define NUM_COATINGS 9 /* IMPORTANT: must be incremented when coatings are addeed */
 #define COAT(id, nam, adj, val) COAT_##id = val
 enum coatings_enum { COAT_LIST };
 #undef COAT
@@ -184,8 +185,8 @@ struct rm {
 
     /* HORRIBLE HACK INCOMING DANGER DANGER */
     Bitfield(pindex, 10);    /* This puts a hard upper limit on monster and potion types of 1024.*/
-    /* 6 free  bits */
-    Bitfield(coat_info, 8);  /* Stores the info about the floor's coating. */
+    /* 2 free  bits */
+    Bitfield(coat_info, 12);  /* Stores the info about the floor's coating. */
 
     Bitfield(roomno, 6); /* room # for special rooms */
     Bitfield(edge, 1);   /* marks boundaries for special rooms*/

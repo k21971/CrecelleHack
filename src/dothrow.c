@@ -932,6 +932,12 @@ hurtle_step(genericptr_t arg, coordxy x, coordxy y)
         }
     } else if (is_lava(x, y) && !stopping_short) {
         Norep("You move over some lava.");
+    } else if (has_coating(x, y, COAT_MUD) && !(Levitation || Flying)) {
+        Norep("You skid through the mud.");
+    } else if (has_coating(x, y, COAT_POTION) && !(Levitation || Flying)) {
+        Norep("You skid across the surface of the liquid.");
+    } else if (has_coating(x, y, COAT_BLOOD) && !(Levitation || Flying)) {
+        Norep("You skid through the blood.");
     }
 
     /* FIXME:

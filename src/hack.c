@@ -1689,7 +1689,7 @@ notice_mon(struct monst *mtmp)
 {
     if (a11y.mon_notices && !a11y.mon_notices_blocked) {
         boolean spot = canspotmon(mtmp)
-            && !(is_hider(mtmp->data)
+            && !((is_hider(mtmp->data) || mud_hider(mtmp->data))
                  && (mtmp->mundetected
                      || M_AP_TYPE(mtmp) == M_AP_FURNITURE
                      || M_AP_TYPE(mtmp) == M_AP_OBJECT));
@@ -2916,7 +2916,7 @@ domove_core(void)
          * be caught by the normal falling-monster code.
          */
         } else if (is_safemon(mtmp)
-                   && !(is_hider(mtmp->data) && mtmp->mundetected)) {
+                   && !((is_hider(mtmp->data) || mud_hider(mtmp->data)) && mtmp->mundetected)) {
             if (!domove_swap_with_pet(mtmp, x, y)) {
                 u.ux = u.ux0, u.uy = u.uy0; /* didn't move after all */
                 /* could skip this since we're about to call u_on_newpos() */
@@ -3359,6 +3359,9 @@ spoteffects(boolean pick)
                 You("surprise %s!",
                     Blind && !sensemon(mtmp) ? something : a_monnam(mtmp));
                 mtmp->mpeaceful = 0;
+            } else if (mud_hider(mtmp->data)
+                        && has_coating(mtmp->mx, mtmp->my, COAT_MUD)) {
+                pline("%s bursts out of the mud!", Amonnam(mtmp));
             } else
                 pline("%s attacks you by surprise!", Amonnam(mtmp));
             break;

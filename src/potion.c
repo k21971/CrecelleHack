@@ -1689,12 +1689,22 @@ add_coating(coordxy x, coordxy y, short coatflags, int pindex) {
         /* If in mklev we need to clear the coat info first. */
         if (gi.in_mklev)
             levl[x][y].coat_info = 0;
+        /* Mud is special*/
+        if ((coatflags & COAT_POTION) && pindex == POT_WATER
+            && levl[x][y].submask == SM_DIRT) {
+            coatflags &= ~COAT_POTION;
+            coatflags |= COAT_MUD;
+            pindex = 0;
+        }
         levl[x][y].coat_info |= coatflags;
         if ((coatflags & COAT_FUNGUS) != 0) {
             levl[x][y].lit = 1;
         }
         if ((coatflags & COAT_FROST) != 0) {
             remove_coating(x, y, COAT_POTION | COAT_BLOOD | COAT_ASHES | COAT_FUNGUS | COAT_GRASS);
+        }
+        if ((coatflags & COAT_MUD) != 0) {
+            remove_coating(x, y, COAT_FUNGUS | COAT_GRASS);
         }
         if ((coatflags & COAT_POTION) != 0) {
             remove_coating(x, y, COAT_BLOOD | COAT_FROST);
@@ -1816,6 +1826,14 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
                 pline("Some honey sticks to your %s.", body_part(FOOT));
             }
         }
+    }
+    if (has_coating(x, y, COAT_MUD)) {
+        if (isyou && !(uarmf && objdescr_is(uarmf, "mud boots"))) {
+            You("slog through the mud.");
+            u.umovement -= 3;
+        } else if (mon) {
+            mon->movement -= 3;
+        } 
     }
     if (has_coating(x, y, COAT_BLOOD) && touch_petrifies(&mons[levl[x][y].pindex])) {
         if (isyou && !uarmf && !Stone_resistance) {
@@ -2600,8 +2618,11 @@ dodip(void)
     uchar here = levl[u.ux][u.uy].typ;
     boolean is_hands, at_pool = is_pool(u.ux, u.uy),
             at_fountain = IS_FOUNTAIN(here), at_sink = IS_SINK(here),
+            at_mud = has_coating(u.ux, u.uy, COAT_MUD),
+            at_puddle = (has_coating(u.ux, u.uy, COAT_POTION)
+                            || has_coating(u.ux, u.uy, COAT_BLOOD)),
             at_here = (!iflags.menu_requested
-                       && (at_pool || at_fountain || at_sink));
+                       && (at_pool || at_fountain || at_sink || at_mud || at_puddle));
 
     obj = getobj("dip", at_here ? dip_hands_ok : dip_ok, GETOBJ_PROMPT);
     if (!obj)
@@ -2686,6 +2707,38 @@ dodip(void)
                         && obj->in_use)
                         useup(obj);
                 }
+                return ECMD_TIME;
+            }
+            ++drink_ok_extra;
+        } else if (at_mud) {
+            Snprintf(qbuf, sizeof(qbuf), "%s%s into the mud?", Dip_,
+                     flags.verbose ? obuf : shortestname);
+            if (y_n(qbuf) == 'y') {
+                if (Levitation) {
+                    floating_above("the mud");
+                } if (obj->otyp == UNICORN_HORN) {
+                    if (Blind) {
+                        pline("The mud thins.");
+                    } else {
+                        pline("The mud transforms into pure water.");
+                    }
+                    remove_coating(u.ux, u.uy, COAT_MUD);
+                    if (IS_SUBMASKABLE(levl[u.ux][u.uy].typ)
+                        && levl[u.ux][u.uy].submask == SM_DIRT)
+                        levl[u.ux][u.uy].submask = STONE;
+                    add_coating(u.ux, u.uy, COAT_POTION, POT_WATER);
+                } else {
+                    pline("%s muddy.", Yobjnam2(obj, "get"));
+                }
+                return ECMD_TIME;
+            }
+            ++drink_ok_extra;
+        } else if (at_puddle) {
+            Snprintf(qbuf, sizeof(qbuf), "%s%s into the liquid here?", Dip_,
+                     flags.verbose ? obuf : shortestname);
+            if (y_n(qbuf) == 'y') {
+                /* TODO: Actually handle this, as opposed to just using a junk message */
+                pline("The liquid here is too widely distributed to dip anything into.");
                 return ECMD_TIME;
             }
             ++drink_ok_extra;
