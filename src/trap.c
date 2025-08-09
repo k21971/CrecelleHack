@@ -1809,6 +1809,7 @@ trapeffect_fire_trap(
             trapkilled = TRUE;
         if (see_it && t_at(tx, ty))
             seetrap(t_at(tx, ty));
+        evaporate_potion_puddles(tx, ty);
 
         return trapkilled ? Trap_Killed_Mon : mtmp->mtrapped
             ? Trap_Caught_Mon : Trap_Effect_Finished;
@@ -4220,6 +4221,7 @@ dofiretrap(
     else
         losehp(num, tower_of_flame, KILLED_BY_AN); /* fire damage */
     burn_away_slime();
+    evaporate_potion_puddles(u.ux, u.uy);
 
     if (burnarmor(&gy.youmonst) || rn2(3)) {
         (void) destroy_items(&gy.youmonst, AD_FIRE, orig_dmg);
