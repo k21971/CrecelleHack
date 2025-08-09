@@ -5080,6 +5080,7 @@ drown(void)
         if (succ) {
             pline("Pheew!  That was close.");
             teleds(x, y, TELEDS_ALLOW_DRAG);
+            make_dripping(rnd(20), POT_WATER, NON_PM);
             return TRUE;
         }
         /* still too much weight */
