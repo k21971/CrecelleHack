@@ -6394,18 +6394,7 @@ chest_trap(
             pline("A cloud of %s gas billows from %s.",
                   Blind ? ROLL_FROM(blindgas) : rndcolor(),
                   the(xname(obj)));
-            if (!Stunned) {
-                if (Hallucination)
-                    pline("What a groovy feeling!");
-                else
-                    You("%s%s...", stagger(gy.youmonst.data, "stagger"),
-                        Halluc_resistance ? ""
-                                          : Blind ? " and get dizzy"
-                                                  : " and your vision blurs");
-            }
-            make_stunned((HStun & TIMEOUT) + (long) rn1(7, 16), FALSE);
-            (void) make_hallucinated(
-                (HHallucination & TIMEOUT) + (long) rn1(5, 16), FALSE, 0L);
+            create_gas_cloud(obj->ox, obj->oy, 1, POT_HALLUCINATION, 8);
             break;
         default:
             impossible("bad chest trap");

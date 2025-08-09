@@ -43,6 +43,7 @@
 - Reduced nightcrust light emission range.
 - Water elementals soak enemies with water on hit.
 - Greater variance in the weapons that monsters spawn with.
+- Crimson deaths create a massive cloud of bloody mist upon death.
 
 ## New Monsters
 - Salt Golem
@@ -143,6 +144,9 @@
 
 ## Misc
 - Bonfires no longer block sight.
+- Potions destroyed in chests now splatter everywhere and create clouds of
+  gas.
+- Trapped chests that create gas clouds actually creat clouds of gas.
 
 # 1.0
 

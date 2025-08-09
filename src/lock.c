@@ -1294,8 +1294,10 @@ chest_shatter_msg(struct obj *otmp)
 
     if (otmp->oclass == POTION_CLASS) {
         You("%s %s shatter!", Blind ? "hear" : "see", an(bottlename()));
-        if (!breathless(gy.youmonst.data) || haseyes(gy.youmonst.data))
-            potionbreathe(otmp);
+        if (!breathless(gy.youmonst.data) || haseyes(gy.youmonst.data)) {
+            potion_splatter(u.ux, u.uy, otmp->otyp, otmp->corpsenm);
+            potion_fumigate(u.ux, u.uy, otmp->otyp);
+        }
         return;
     }
     /* We have functions for distant and singular names, but not one */
