@@ -141,6 +141,9 @@
 - Add code to windowports to support botl handling of many more statuses.
 - Switch riding to opt_in on botl and being held to opt_out.
 
+## Misc
+- Bonfires no longer block sight.
+
 # 1.0
 
 ## Artifacts

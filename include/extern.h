@@ -2701,6 +2701,7 @@ extern int reg_damg(NhRegion *) NONNULLARG1;
 extern boolean any_visible_region(void);
 extern void visible_region_summary(winid);
 extern NhRegion *visible_region_at(coordxy, coordxy);
+extern NhRegion *blocking_region_at(coordxy, coordxy);
 extern void show_region(NhRegion *, coordxy, coordxy) NONNULLARG1;
 extern void save_regions(NHFILE *) NONNULLARG1;
 extern void rest_regions(NHFILE *) NONNULLARG1;
