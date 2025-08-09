@@ -18,6 +18,8 @@
   corresponding to a monster now not only transforms the skull
   into a skull helm, but harmonizes that helm with the monster's
   associated harmonies.
+- Remove obscure ordering system for determining whether a harmony
+  is active.
 
 ## Monsters
 - Slightly increase chance of random spawns of unique monsters.

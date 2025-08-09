@@ -6266,34 +6266,43 @@ is_boosted(int x, int y, short boost) {
         && has_coating(x, y, COAT_POTION)) {
         if (boost & BST_WATER) return levl[x][y].pindex == POT_WATER;
         if (boost & BST_POTION) return levl[x][y].pindex != POT_WATER;
-    } else if ((boost & BST_GRASS)
+    } 
+    /* Non-exclusive coatings */
+    if ((boost & BST_GRASS)
         && has_coating(x, y, COAT_GRASS)) {
         return TRUE;
-    } else if ((boost & BST_ASHES)
+    }
+    if ((boost & BST_ASHES)
         && has_coating(x, y, COAT_ASHES)) {
         return TRUE;
-    } else if ((boost & BST_FUNGI)
+    } 
+    if ((boost & BST_FUNGI)
         && has_coating(x, y, COAT_FUNGUS)) {
         return TRUE;
-    } else if ((boost & BST_HONEY) && has_coating(x, y, COAT_HONEY)) {
+    }
+    if ((boost & BST_HONEY) && has_coating(x, y, COAT_HONEY)) {
         return TRUE;
-    } else if ((boost & BST_MUD)
+    }
+    if ((boost & BST_MUD)
         && has_coating(x, y, COAT_MUD)) {
+        return TRUE;
+    } 
+    if ((boost & BST_ICE)
+                && ((levl[x][y].typ == ICE && !levl[x][y].coat_info) 
+                    || has_coating(x, y, COAT_FROST))) {
+        return TRUE;
+    }
+    /* Submasks */
+    if (((boost & BST_ROCK)
+                && !levl[x][y].submask
+                && !levl[x][y].coat_info
+                && IS_SUBMASKABLE(levl[x][y].typ)) || levl[x][y].typ == STONE) {
         return TRUE;
     } else if ((boost & BST_SAND) && IS_SUBMASKABLE(levl[x][y].typ)
         && !levl[x][y].coat_info
         && levl[x][y].submask == SM_SAND) {
         return TRUE;
-    } else if (((boost & BST_ROCK)
-                && !levl[x][y].submask
-                && !levl[x][y].coat_info
-                && IS_SUBMASKABLE(levl[x][y].typ)) || levl[x][y].typ == STONE) {
-        return TRUE;
-    } else if ((boost & BST_ICE)
-                && ((levl[x][y].typ == ICE && !levl[x][y].coat_info) 
-                    || has_coating(x, y, COAT_FROST))) {
-        return TRUE;
-    }
+    } 
     return FALSE;
 }
 
