@@ -3295,6 +3295,10 @@ corpse_chance(
         return FALSE;
     }
 
+    if (mdat == &mons[PM_CRIMSON_DEATH]) {
+        create_gas_cloud(mon->mx, mon->my, 5, POT_BLOOD, 8);
+    }
+
     if (mdat == &mons[PM_ILLUSION]) {
         /* Illusions killed while undiscovered yield a message. */
         if (cansee(mon->mx, mon->my) && mon->mappearance) {
