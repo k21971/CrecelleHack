@@ -146,7 +146,9 @@
 - Bonfires no longer block sight.
 - Potions destroyed in chests now splatter everywhere and create clouds of
   gas.
-- Trapped chests that create gas clouds actually creat clouds of gas.
+- Potion vapors are tracked and displayed as poison gas and mist would be,
+  and can impact both players and monsters in new ways.
+- Trapped chests that create gas clouds actually create clouds of gas.
 
 # 1.0
 

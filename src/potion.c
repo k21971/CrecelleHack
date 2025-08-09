@@ -2390,7 +2390,7 @@ potionbreathe(struct obj *obj)
             gn.nomovemsg = You_can_move_again;
             exercise(A_DEX, FALSE);
         } else
-            You("stiffen momentarily.");
+            Norep("You stiffen momentarily.");
         break;
     case POT_SLEEPING:
         kn++;
@@ -2401,7 +2401,7 @@ potionbreathe(struct obj *obj)
             gn.nomovemsg = You_can_move_again;
             exercise(A_DEX, FALSE);
         } else {
-            You("yawn.");
+            Norep("You yawn.");
             monstseesu(M_SEEN_SLEEP);
         }
         break;
