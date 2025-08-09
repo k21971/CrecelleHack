@@ -901,7 +901,7 @@ revive(struct obj *corpse, boolean by_hero)
     int montype, cgend, container_nesting = 0;
     boolean is_zomb;
 
-    if (corpse->otyp != CORPSE) {
+    if (corpse->otyp != CORPSE && corpse->otyp != SKELETON) {
         impossible("Attempting to revive %s?", xname(corpse));
         return (struct monst *) 0;
     }
@@ -1477,7 +1477,9 @@ obj_resists(struct obj *obj,
         || obj->otyp == BELL_OF_OPENING
         || (obj->otyp == CORPSE && is_rider(&mons[obj->corpsenm]))) {
         return TRUE;
-    } else if (obj->otyp == SKULL 
+    } else if ((obj->otyp == SKULL
+                || obj->otyp == SKULL_HELM
+                || obj->otyp == SKELETON)
                 && (obj->corpsenm == PM_BLACK_DRAGON 
                     || obj->corpsenm == PM_BABY_BLACK_DRAGON)) {
         return TRUE;
@@ -1629,7 +1631,7 @@ create_polymon(struct obj *obj, int okind)
         material = "glassy ";
         break;
     case PAPER:
-        pm_index = rn2(2) ? PM_PAPER_GOLEM : PM_SCROLEM;
+        pm_index = (obj->oclass != SPBOOK_CLASS) ? PM_PAPER_GOLEM : PM_SCROLEM;
         material = "paper ";
         break;
     default:
@@ -1637,6 +1639,18 @@ create_polymon(struct obj *obj, int okind)
         pm_index = PM_STRAW_GOLEM;
         material = "";
         break;
+    }
+
+    /* Floor coatings */
+    if (!rn2(2)) {
+        if (has_coating(obj->ox, obj->oy, COAT_BLOOD)
+            || obj->otyp == POT_BLOOD) {
+            pm_index = PM_BLOOD_GOLEM;
+            material = "bloody ";
+        } else if (has_coating(obj->ox, obj->oy, COAT_SHARDS)) {
+            pm_index = PM_GLASS_GOLEM;
+            material = "glassy ";
+        }
     }
 
     if (!(svm.mvitals[pm_index].mvflags & G_GENOD))
@@ -2355,7 +2369,7 @@ bhito(struct obj *obj, struct obj *otmp)
         case SPE_TURN_UNDEAD:
             if (obj->otyp == EGG) {
                 revive_egg(obj);
-            } else if (obj->otyp == CORPSE) {
+            } else if (obj->otyp == CORPSE || obj->otyp == SKELETON) {
                 struct monst *mtmp;
                 coordxy ox, oy;
                 unsigned save_norevive;
@@ -2746,6 +2760,7 @@ zapyourself(struct obj *obj, boolean ordinary)
         break;
 
     case WAN_LIGHTNING:
+    case ELECTRIC_GUITAR:
         learn_it = TRUE;
         orig_dmg = d(12, 6);
         if (!Shock_resistance) {
@@ -3036,6 +3051,13 @@ zapyourself(struct obj *obj, boolean ordinary)
        that the wand itself has been seen */
     if (learn_it)
         learnwand(obj);
+    /* Handle chained zaps */
+    if (obj->cobj) {
+        pline("The wands taped to %s go off!", yname(obj));
+        for (struct obj *otmp = obj->cobj; otmp; otmp = otmp->nobj) {
+            zapyourself(otmp, ordinary);
+        }
+    }
     return damage;
 }
 
@@ -3522,6 +3544,13 @@ weffects(struct obj *obj)
         if (was_unkn)
             more_experienced(0, 10);
     }
+    /* Dear god... */
+    if (obj->cobj) {
+        pline("The wands taped to %s go off!", yname(obj));
+        for (struct obj *otmp = obj->cobj; otmp; otmp = otmp->nobj) {
+            weffects(otmp);
+        }
+    }
     return;
 }
 
@@ -3852,9 +3881,15 @@ zap_map(
         } /* t_at() */
     } /* probing */
     /* polymorph */
-    if (obj->otyp == WAN_POLYMORPH && has_coating(x, y, COAT_POTION) 
-        && levl[x][y].pindex != POT_WATER) {
-        add_coating(x, y, COAT_POTION, POT_GAIN_ABILITY + rn2(POT_OIL - POT_GAIN_ABILITY));
+    if (obj->otyp == WAN_POLYMORPH) {
+        if (has_coating(x, y, COAT_POTION) && levl[x][y].pindex != POT_WATER) {
+            add_coating(x, y, COAT_POTION,
+                        POT_GAIN_ABILITY + rn2(POT_OIL - POT_GAIN_ABILITY));
+        } else if (has_coating(x, y, COAT_BLOOD)) {
+            do {
+                levl[x][y].pindex =rndmonnum();
+            } while (!has_blood(&mons[levl[x][y].pindex]));   
+        }
     }
     /* cancellation */
     if (obj->otyp == WAN_CANCELLATION && has_coating(x, y, COAT_POTION)) {
@@ -4961,6 +4996,8 @@ dobuzz(
                                 /* paper golem or straw golem */
                                 && completelyburns(mon->data))
                                 xkflags |= XKILL_NOCORPSE;
+                            if (damgtype == ZT_DEATH)
+                                xkflags |= XKILL_SKELETONIZE;
                             xkilled(mon, xkflags);
                         }
                     } else {
@@ -5323,8 +5360,12 @@ zap_over_floor(
             } else if (has_coating(x, y, COAT_FROST)) {
                 add_coating(x, y, COAT_POTION, POT_WATER);
             }
-            if (IS_SUBMASKABLE(levl[x][y].typ) && levl[x][y].submask == SM_SAND) {
-                add_coating(x, y, COAT_SHARDS, 0);
+            if (IS_SUBMASKABLE(levl[x][y].typ)) {
+                if (has_coating(x, y, COAT_MUD)) {
+                    remove_coating(x, y, COAT_MUD);
+                    levl[x][y].submask = SM_DIRT;
+                } else if (levl[x][y].submask == SM_SAND)
+                    add_coating(x, y, COAT_SHARDS, 0);
             }
             evaporate_potion_puddles(x, y);
         }
@@ -5775,7 +5816,8 @@ destroyable(struct obj *obj, int adtyp)
             return FALSE;
         }
         if (obj->otyp == GLOB_OF_GREEN_SLIME || obj->oclass == POTION_CLASS
-            || obj->oclass == SCROLL_CLASS || obj->oclass == SPBOOK_CLASS) {
+            || obj->oclass == SCROLL_CLASS || obj->oclass == SPBOOK_CLASS
+            || objects[obj->otyp].oc_material == BLUEICE) {
             return TRUE;
         }
     } else if (adtyp == AD_COLD) {
@@ -5933,6 +5975,7 @@ const char *const destroy_strings[][3] = {
     { "catches fire and burns", "", "burning book" },
     { "turns to dust and vanishes", "", "" },
     { "breaks apart and explodes", "", "exploding wand" },
+    { "melts into a puddle", "melt", "melting icicle" },
 };
 
 /* guts of destroy_items();
@@ -6001,6 +6044,12 @@ maybe_destroy_item(
         case FOOD_CLASS: /* only GLOB_OF_GREEN_SLIME */
             dindx = 1; /* boil and explode */
             dmg = (obj->owt + 19) / 20;
+            break;
+        }
+        /* Handle ice separately */
+        if (objects[obj->otyp].oc_material == BLUEICE) {
+            dindx = 7;
+            dmg = 0;
             break;
         }
         break;
@@ -6379,6 +6428,7 @@ makewish(void)
     int tries = 0;
     long oldwisharti = u.uconduct.wisharti;
 
+    svc.context.resume_wish = 0;
     promptbuf[0] = '\0';
     nothing = cg.zeroobj; /* lint suppression; only its address matters */
     if (flags.verbose)
@@ -6389,6 +6439,12 @@ makewish(void)
         Strcat(promptbuf, " (enter 'help' for assistance)");
     Strcat(promptbuf, "?");
     getlin(promptbuf, buf);
+
+    if (iflags.term_gone) {
+        svc.context.resume_wish = 1;
+        return;
+    }
+
     (void) mungspaces(buf);
     if (buf[0] == '\033') {
         buf[0] = '\0';

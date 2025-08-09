@@ -839,6 +839,10 @@ u_init_role(void)
     default: /* impossible */
         break;
     }
+    /* Everyone should know water, and this prevents us from having
+       to modify the potion macro (especially if we decide to revert
+       this later) */
+    knows_object(POT_WATER, FALSE);
 }
 
 /* race-specific initializations */
@@ -858,7 +862,8 @@ u_init_race(void)
          */
         if (Role_if(PM_CLERIC) || Role_if(PM_WIZARD)) {
             static int trotyp[] = { WOODEN_FLUTE, TOOLED_HORN, WOODEN_HARP,
-                                    BELL,         BUGLE,       LEATHER_DRUM };
+                                    BELL,         BUGLE,       LEATHER_DRUM,
+                                    ACOUSTIC_GUITAR };
             Instrument[0].trotyp = ROLL_FROM(trotyp);
             ini_inv(Instrument);
         }
@@ -1280,6 +1285,7 @@ ini_inv_adjust_obj(struct trobj *trop, struct obj *obj)
             obj->otrapped = 0;
         }
         obj->cursed = 0;
+        obj->booster = 0;
         if (obj->opoisoned && u.ualign.type != A_CHAOTIC)
             obj->opoisoned = 0;
         if (obj->oclass == WEAPON_CLASS || obj->oclass == TOOL_CLASS) {

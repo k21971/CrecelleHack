@@ -88,6 +88,7 @@ static const struct propname {
     { HALLUC_RES, "hallucination resistance" },
     { BLND_RES, "light-induced blindness resistance" },
     { FUMBLING, "fumbling" },
+    { DRIPPING, "dripping" },
     { HUNGER, "voracious hunger" },
     { TELEPAT, "telepathic" },
     { WARNING, "warning" },
@@ -882,15 +883,15 @@ nh_timeout(void)
                     You("feel less vulnerable to disintegration.");
                 break;
             case SHOCK_VUL:
-                if (Cold_resistance)
+                if (Shock_resistance)
                     You("feel more grounded.");
-                else if (!Cold_vulnerability)
+                else if (!Shock_vulnerability)
                     You("feel less vulnerable to shock.");
                 break;
             case POISON_VUL:
-                if (Cold_resistance)
+                if (Poison_resistance)
                     You("feel healthier.");
-                else if (!Cold_vulnerability)
+                else if (!Poison_vulnerability)
                     You("feel less vulnerable to poison.");
                 break;
             case WWALKING:

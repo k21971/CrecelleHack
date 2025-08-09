@@ -65,6 +65,7 @@
     <Luafiles Include = "Kni-loca.lua"/>
     <Luafiles Include = "Kni-strt.lua"/>
     <Luafiles Include = "knox.lua"/>
+    <Luafiles Include = "maze-1.lua"/>
     <Luafiles Include = "medusa-1.lua"/>
     <Luafiles Include = "medusa-2.lua"/>
     <Luafiles Include = "medusa-3.lua"/>

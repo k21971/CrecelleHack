@@ -1,4 +1,4 @@
-/* NetHack 3.7	uhitm.c	$NHDT-Date: 1736575153 2025/01/10 21:59:13 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.461 $ */
+/* NetHack 3.7	uhitm.c	$NHDT-Date: 1752823766 2025/07/17 23:29:26 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.477 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2012. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -616,6 +616,12 @@ known_hitum(
             Your("bloodthirsty blade attacks!");
     }
 
+    /* Icicles fired from weapon could kill something before the attack finishes. */
+    if (weapon && weapon->booster) {
+        if (boost_effects_pre(&gy.youmonst, mon))
+            return FALSE;
+    }
+
     if (!*mhit) {
         missum(mon, uattk, (rollneeded + armorpenalty > dieroll));
     } else {
@@ -1008,7 +1014,7 @@ hmon_hitmon_weapon_melee(
         hmd->hittxt = TRUE;
     }
 
-    if (obj->oartifact
+    if ((obj->oartifact || obj->booster)
         && artifact_hit(&gy.youmonst, mon, obj, &hmd->dmg, hmd->dieroll)) {
         /* artifact_hit updates 'tmp' but doesn't inflict any
            damage; however, it might cause carried items to be
@@ -1074,7 +1080,8 @@ hmon_hitmon_weapon(
         /* or strike with a missile in your hand... */
         || (!hmd->thrown && (is_missile(obj) || is_ammo(obj)))
         /* or use a pole at short range and not mounted... */
-        || (!hmd->thrown && !u.usteed && is_pole(obj))
+        || (!hmd->thrown && !u.usteed && is_pole(obj)
+            && !is_art(obj,ART_SNICKERSNEE))
         /* or throw a missile without the proper bow... */
         || (is_ammo(obj) && (hmd->thrown != HMON_THROWN
                              || !ammo_and_launcher(obj, uwep)))) {
@@ -1811,7 +1818,8 @@ hmon_hitmon(
 
     if (hmd.jousting) {
         hmon_hitmon_jousting(&hmd, mon, obj);
-    } else if (hmd.unarmed && hmd.dmg > 1 && !thrown && !obj && !Upolyd) {
+    } else if ((hmd.unarmed && hmd.dmg > 1 && !thrown && !obj && !Upolyd)
+                || (obj && (obj->booster & BST_SAND) && levl[u.ux][u.uy].submask == SM_SAND)) {
         hmon_hitmon_stagger(&hmd, mon, obj);
     } else if (!hmd.unarmed && hmd.dmg > 1 && !thrown && !Upolyd
                && !u.twoweap && uwep) {
@@ -3736,6 +3744,32 @@ mhitm_ad_worm(
 }
 
 void
+mhitm_ad_soak(struct monst *magr,     /* attacker */
+    struct attack *mattk,   /* magr's attack */
+    struct monst *mdef,     /* defender */
+    struct mhitm_data *mhm) /* optional for monster vs monster */
+{
+    if (magr == &gy.youmonst) {
+        /* uhitm */
+        pline_mon(mdef, "You soak %s.", mon_nam(mdef));
+        mdef->mdripping = 1;
+        mdef->mdriptype = POT_WATER;
+    } else if (mdef == &gy.youmonst) {
+        hitmsg(magr, mattk);
+        You("get soaked!");
+        make_dripping(rnd(20), POT_WATER, NON_PM);
+    } else {
+        /* mhitm */
+        pline("%s soaks %s.", Monnam(magr), mon_nam(mdef));
+        mdef->mdripping = 1;
+        mdef->mdriptype = POT_WATER;
+    }
+    if (mhm->done)
+        return;
+}
+
+
+void
 mhitm_ad_poly(
     struct monst *magr, struct attack *mattk,
     struct monst *mdef, struct mhitm_data *mhm)
@@ -4075,7 +4109,7 @@ mhitm_ad_phys(
                     mhm->damage += rn1(4, 3); /* 3..6 */
                 if (mhm->damage <= 0)
                     mhm->damage = 1;
-                if (!otmp->oartifact
+                if ((!otmp->oartifact && !otmp->booster)
                     || !artifact_hit(magr, mdef, otmp, &mhm->damage,
                                      gm.mhitu_dieroll)) {
                     hitmsg(magr, mattk);
@@ -4163,7 +4197,7 @@ mhitm_ad_phys(
                 mhm->damage += rn1(4, 3); /* 3..6 */
             if (mhm->damage < 1) /* is this necessary?  mhitu.c has it... */
                 mhm->damage = 1;
-            if (mwep->oartifact) {
+            if (mwep->oartifact || mwep->booster) {
                 /* when magr's weapon is an artifact, caller suppressed its
                    usual 'hit' message in case artifact_hit() delivers one;
                    now we'll know and might need to deliver skipped message
@@ -4828,6 +4862,7 @@ mhitm_adtyping(
     case AD_CONF: mhitm_ad_conf(magr, mattk, mdef, mhm); break;
     case AD_POLY: mhitm_ad_poly(magr, mattk, mdef, mhm); break;
     case AD_WORM: mhitm_ad_worm(magr, mattk, mdef, mhm); break;
+    case AD_SOAK: mhitm_ad_soak(magr, mattk, mdef, mhm); break;
     case AD_DISE: mhitm_ad_dise(magr, mattk, mdef, mhm); break;
     case AD_SAMU: mhitm_ad_samu(magr, mattk, mdef, mhm); break;
     case AD_DETH: mhitm_ad_deth(magr, mattk, mdef, mhm); break;
@@ -4863,11 +4898,6 @@ damageum(
     /* If boosted, multiply damage */
     if (u_boosted(gy.youmonst.data->mboost))
         mhm.damage += d((int) mattk->damn, (int) mattk->damd);
-
-    if (mattk->aatyp == AT_WEAP && uwep 
-        && u_boosted(uwep->booster)) {
-        mhm.damage += d((int) mattk->damn, (int) mattk->damd);
-    }
 
     mhitm_adtyping(&gy.youmonst, mattk, mdef, &mhm);
 
@@ -5078,6 +5108,7 @@ gulpum(struct monst *mdef, struct attack *mattk)
                    "you totally digest <mdef>" will be coming soon (after
                    several turns) but the level-gain message seems out of
                    order if the kill message is left implicit */
+                gm.mswallower = &gy.youmonst;
                 xkilled(mdef, XKILL_GIVEMSG | XKILL_NOCORPSE);
                 if (!DEADMONSTER(mdef)) { /* monster lifesaved */
                     You("hurriedly regurgitate the sizzling in your %s.",
@@ -5118,6 +5149,7 @@ gulpum(struct monst *mdef, struct attack *mattk)
                     } else
                         exercise(A_CON, TRUE);
                 }
+                gm.mswallower = (struct monst *) 0;
                 end_engulf();
                 return M_ATTK_DEF_DIED;
             case AD_PHYS:
@@ -5277,12 +5309,26 @@ mhitm_knockback(
     boolean u_def = (mdef == &gy.youmonst);
     boolean was_u = FALSE, dismount = FALSE;
     struct obj *wep = weapon_used ? (u_agr ? uwep : MON_WEP(magr))
-                                  : (struct obj *)0;
+                                  : (struct obj *) 0;
 
     if (wep && is_art(wep, ART_OGRESMASHER))
         chance = 2;
 
     if (rn2(chance))
+        return FALSE;
+
+    /* only certain attacks qualify for knockback */
+    if (!((mattk->adtyp == AD_PHYS)
+          && (mattk->aatyp == AT_CLAW
+              || mattk->aatyp == AT_KICK
+              || mattk->aatyp == AT_BUTT
+              || mattk->aatyp == AT_WEAP)))
+        return FALSE;
+
+    /* don't knockback if attacker also wants to grab or engulf */
+    if (attacktype(magr->data, AT_ENGL)
+        || attacktype(magr->data, AT_HUGS)
+        || sticks(magr->data))
         return FALSE;
 
     /* decide where the first step will place the target; not accurate
@@ -5329,14 +5375,6 @@ mhitm_knockback(
 
     /* no knockback with a flimsy or non-blunt weapon */
     if (wep && (is_flimsy(wep) || !is_blunt_weapon(wep)))
-        return FALSE;
-
-    /* only certain attacks qualify for knockback */
-    if (!((mattk->adtyp == AD_PHYS)
-          && (mattk->aatyp == AT_CLAW
-              || mattk->aatyp == AT_KICK
-              || mattk->aatyp == AT_BUTT
-              || mattk->aatyp == AT_WEAP)))
         return FALSE;
 
     /* needs a solid physical hit */
@@ -5462,6 +5500,14 @@ hmonas(struct monst *mon)
 
     for (i = 0; i < NATTK; i++) {
         /* sum[i] = M_ATTK_MISS; -- now done above */
+
+        /* target might have been knocked back so no longer in range, or an
+           engulfing vampshifted fog cloud killed and reverted to vampire
+           that's placed at another spot (hero occupies mon's first spot) */
+        if (i > 0 && (m_at(gb.bhitpos.x, gb.bhitpos.y) != mon
+                      || DEADMONSTER(mon)))
+            continue;
+
         mattk = getmattk(&gy.youmonst, mon, i, sum, &alt_attk);
         if (gs.skipdrin && mattk->aatyp == AT_TENT && mattk->adtyp == AD_DRIN)
             continue;
@@ -5559,6 +5605,10 @@ hmonas(struct monst *mon)
             FALLTHROUGH;
             /*FALLTHRU*/
         case AT_KICK:
+            if (mattk->aatyp == AT_KICK && mtrapped_in_pit(&gy.youmonst))
+                continue;
+            FALLTHROUGH;
+            /*FALLTHRU*/
         case AT_BITE:
         case AT_STNG:
         case AT_BUTT:
@@ -6449,6 +6499,63 @@ light_hits_gremlin(struct monst *mon, int dmg)
     } else if (cansee(mon->mx, mon->my) && !canspotmon(mon)) {
         map_invisible(mon->mx, mon->my);
     }
+}
+
+boolean
+boost_effects_pre(struct monst *magr, struct monst *mdef)
+{
+    boolean is_u = (magr == &gy.youmonst);
+    boolean icy;
+    struct obj *otmp;
+    struct obj *weapon;
+    int x, y, dx, dy;
+
+    if (is_u) {
+        x = u.ux, y = u.uy;
+        dx = mdef->mx, dy = mdef->my;
+        weapon = uwep;
+    } else if (mdef == &gy.youmonst) {
+        x = magr->mx, y = magr->my;
+        dx = u.ux, dy = u.uy;
+        weapon = MON_WEP(magr);
+    } else {
+        x = magr->mx, y = magr->my;
+        dx = mdef->mx, dy = mdef->my;
+        weapon = MON_WEP(magr);
+    }
+
+    icy = (has_coating(x, y, COAT_FROST) || levl[x][y].typ == ICE);
+    if (is_u) {
+        if ((weapon->booster & BST_ICE) && icy) {
+            otmp = mksobj(ICICLE, FALSE, FALSE);
+            otmp->spe = 1;
+            throwit(otmp, 0L, FALSE, (struct obj *) 0);
+        }
+        if (((weapon->booster & BST_ROCK) && !rn2(7) && !levl[x][y].submask)
+                && (IS_SUBMASKABLE(levl[x][y].typ) || levl[x][y].typ == STONE)) {
+            drop_boulder_on_monster(dx, dy, FALSE, magr == &gy.youmonst);
+        }
+    } else {
+        if ((weapon->booster & BST_ICE) && icy) {
+            (void) linedup(x, y, dx, dy, 0); /* set up gt.tbx and gt.tby */
+            otmp = mksobj(ICICLE, FALSE, FALSE);
+            m_throw(magr, x, y, sgn(gt.tbx), sgn(gt.tby),
+                    distmin(x, y, dx, dy), otmp);
+        }
+        if (((weapon->booster & BST_ROCK) && !rn2(7) && !levl[x][y].submask)
+                && (IS_SUBMASKABLE(levl[x][y].typ) || levl[x][y].typ == STONE)) {
+            drop_boulder_on_player(FALSE, TRUE, magr == &gy.youmonst, FALSE);
+        }
+    }
+    if ((weapon->booster & BST_POTION) && !rn2(4)) {
+        char buf[BUFSZ];
+        int otyp = POT_GAIN_ABILITY + ((weapon->o_id) % (POT_OIL - POT_GAIN_ABILITY));
+        potion_splatter(x, y, otyp, 0);
+        potion_coating_text(buf, otyp);
+        if (cansee(x, y))
+            pline("A spray of %s erupts from %s!", buf, simpleonames(weapon));
+    }
+    return DEADMONSTER(mdef);
 }
 
 /*uhitm.c*/

@@ -234,6 +234,8 @@ loot_classify(Loot *sort_item, struct obj *obj)
             case TOOLED_HORN:
             case FROST_HORN:
             case FIRE_HORN:
+            case ACOUSTIC_GUITAR:
+            case ELECTRIC_GUITAR:
             case WOODEN_HARP:
             case MAGIC_HARP:
             case BUGLE:
@@ -3213,6 +3215,8 @@ itemactions(struct obj *otmp)
         ia_addmenu(win, IA_DIP_OBJ, 'a', buf);
     } else if (otmp->otyp == EXPENSIVE_CAMERA)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Take a photograph");
+    else if (otmp->otyp == DUCT_TAPE)
+        ia_addmenu(win, IA_APPLY_OBJ, 'a', "Use the tape to combine items");
     else if (otmp->otyp == TOWEL)
         ia_addmenu(win, IA_APPLY_OBJ, 'a',
                    "Clean yourself off with this towel");
@@ -4667,8 +4671,10 @@ dfeature_at(coordxy x, coordxy y, char *buf)
             listing = TRUE;
         }
         if ((lev->coat_info & COAT_BLOOD) != 0) {
-            if (ismnum(levl[x][y].pindex)) {
-                Sprintf(eos(altbuf), "%s%s blood", listing ? " and " : "", mons[levl[x][y].pindex].pmnames[NEUTRAL]);
+            if (ismnum(levl[x][y].pindex)
+                && (Role_if(PM_HEALER) || touch_petrifies(&mons[levl[x][y].pindex]))) {
+                Sprintf(eos(altbuf), "%s%s blood", listing ? " and " : "",
+                        mons[levl[x][y].pindex].pmnames[NEUTRAL]);
             } else
                 Sprintf(eos(altbuf), "%sblood", listing ? " and " : "");
             listing = TRUE;
@@ -4687,6 +4693,10 @@ dfeature_at(coordxy x, coordxy y, char *buf)
         }
         if ((lev->coat_info & COAT_FROST) != 0) {
             Sprintf(eos(altbuf), "%sice", listing ? " and " : "");
+            listing = TRUE;
+        }
+        if ((lev->coat_info & COAT_MUD) != 0) {
+            Sprintf(eos(altbuf), "%smud", listing ? " and " : "");
             listing = TRUE;
         }
         if ((lev->coat_info & COAT_SHARDS) != 0) {

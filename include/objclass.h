@@ -30,8 +30,9 @@ enum obj_material_types {
     MITHRIL     = 17,
     PLASTIC     = 18,
     GLASS       = 19,
-    GEMSTONE    = 20,
-    MINERAL     = 21
+    BLUEICE     = 20,
+    GEMSTONE    = 21,
+    MINERAL     = 22
 };
 
 enum obj_armor_types {
@@ -195,7 +196,8 @@ extern NEARDATA struct objdescr obj_descr[NUM_OBJECTS + 1];
 /* is_flammable(otmp), is_rottable(otmp) in mkobj.c */
 #define is_rustprone(otmp) (objects[otmp->otyp].oc_material == IRON)
 #define is_crackable(otmp) \
-    (objects[(otmp)->otyp].oc_material == GLASS         \
+    ((objects[(otmp)->otyp].oc_material == GLASS \
+        || objects[(otmp)->otyp].oc_material == ICE) \
      && ((otmp)->oclass == ARMOR_CLASS || (otmp)->oclass == TOOL_CLASS)) /* erosion_matters() */
 /* secondary damage: rot/acid/acid */
 #define is_corrodeable(otmp) \

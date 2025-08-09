@@ -1689,7 +1689,7 @@ notice_mon(struct monst *mtmp)
 {
     if (a11y.mon_notices && !a11y.mon_notices_blocked) {
         boolean spot = canspotmon(mtmp)
-            && !(is_hider(mtmp->data)
+            && !((is_hider(mtmp->data) || mud_hider(mtmp->data))
                  && (mtmp->mundetected
                      || M_AP_TYPE(mtmp) == M_AP_FURNITURE
                      || M_AP_TYPE(mtmp) == M_AP_OBJECT));
@@ -2302,6 +2302,14 @@ domove_fight_empty(coordxy x, coordxy y)
             Strcpy(buf, "thin air");
         }
 
+        /* Ice harmonic weapons can fire icicles even when force attacking */
+        if (uwep && (uwep->booster & BST_ICE)
+            && (has_coating(u.ux, u.uy, COAT_FROST) || levl[u.ux][u.uy].typ == ICE)) {
+            struct obj *otmp = mksobj(ICICLE, FALSE, FALSE);
+            otmp->spe = 1;
+            throwit(otmp, 0L, FALSE, (struct obj *) 0);
+        }
+
  futile:
         You("%s%s %s.",
             !(boulder || solid) ? "" : !explo ? "harmlessly " : "futilely ",
@@ -2909,7 +2917,7 @@ domove_core(void)
          * be caught by the normal falling-monster code.
          */
         } else if (is_safemon(mtmp)
-                   && !(is_hider(mtmp->data) && mtmp->mundetected)) {
+                   && !((is_hider(mtmp->data) || mud_hider(mtmp->data)) && mtmp->mundetected)) {
             if (!domove_swap_with_pet(mtmp, x, y)) {
                 u.ux = u.ux0, u.uy = u.uy0; /* didn't move after all */
                 /* could skip this since we're about to call u_on_newpos() */
@@ -3170,6 +3178,8 @@ pooleffects(
                 docrt();
                 gv.vision_full_recalc = 1;
             }
+            if (was_underwater)
+                make_dripping(rn1(10, 10), POT_WATER, NON_PM);
         }
     }
 
@@ -3350,6 +3360,9 @@ spoteffects(boolean pick)
                 You("surprise %s!",
                     Blind && !sensemon(mtmp) ? something : a_monnam(mtmp));
                 mtmp->mpeaceful = 0;
+            } else if (mud_hider(mtmp->data)
+                        && has_coating(mtmp->mx, mtmp->my, COAT_MUD)) {
+                pline("%s bursts out of the mud!", Amonnam(mtmp));
             } else
                 pline("%s attacks you by surprise!", Amonnam(mtmp));
             break;

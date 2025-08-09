@@ -833,6 +833,8 @@ wiz_map_levltyp(void)
             Strcat(dsc, " quest");
         else if (Is_knox(&u.uz))
             Strcat(dsc, " ludios");
+        else if (Is_magicmaze(&u.uz))
+            Strcat(dsc, "maze");
         else if (u.uz.dnum == 1)
             Strcat(dsc, " gehennom");
         else if (u.uz.dnum == tower_dnum)

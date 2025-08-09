@@ -193,8 +193,8 @@
       || (ptr) == &mons[PM_FIRE_VORTEX])                          \
          ? 1                                                      \
          : ((ptr) == &mons[PM_FIRE_ELEMENTAL]                     \
-            || (ptr) == &mons[PM_GOLD_DRAGON]) ? 1 : \
-            ((ptr) == &mons[PM_NIGHTCRUST]) ? 2 : 0)
+            || (ptr) == &mons[PM_GOLD_DRAGON]                     \
+            || (ptr) == &mons[PM_NIGHTCRUST]) ? 1 : 0)
     /* [Note: the light ranges above were reduced to 1 for performance,
      *  otherwise screen updating on the plane of fire slowed to a crawl.
      *  Note too: that was with 1990s hardware and before fumarole smoke
@@ -262,9 +262,15 @@
 
 #define has_blood(ptr) \
     (!(nonliving(ptr) || unsolid(ptr) || mindless(ptr)))
-
+#define has_bones(ptr) \
+    (!vegan(ptr) && !unsolid(ptr) && !amorphous(ptr))
 #define has_skull(ptr) \
-    (has_head(ptr) && !vegan(ptr) && !unsolid(ptr))
+    (has_head(ptr) && has_bones(ptr))
+
+#define likes_bones(ptr) \
+    (ptr->mlet == S_DOG || ptr == &mons[PM_HUMAN_WEREWOLF] \
+        || ptr == &mons[PM_SKELETON] \
+        || ptr == &mons[PM_BONE_DEVIL])
 
 #define can_grapple(ptr) \
     ((humanoid(ptr) || (ptr)->mlet == S_NAGA || (ptr)->mlet == S_DRAGON \
@@ -273,6 +279,10 @@
 #define likes_grappling(ptr) \
     ((ptr)->mlet == S_NAGA || (ptr)->mlet == S_ZOMBIE \
         || ptr == &mons[PM_WRESTLER])
+
+#define mud_hider(ptr) \
+    ((!is_hider(ptr) && ptr->msize <= MZ_MEDIUM) \
+        && !mindless(ptr))
 
 /* monkeys are tamable via bananas but not pacifiable via food,
    otherwise their theft attack could be nullified too easily;

@@ -1517,6 +1517,14 @@ hitting with Ogresmasher gives a higher chance of knockback
 Snickersnee can hit at a distance once per turn for free
 the engraving pristine text field was not being appropriately populated during
        level creation
+worn alchemy smock reduces chances of dipped potions exploding
+dwarves can sense buried items under their feet
+monsters trapped in pits cannot kick
+create familiar spell can create harder creatures
+a vampire lord could choose to take on wolf form while flying over water or
+	lava, then revert to vampire lord form and teleport unnecessarily
+a gas spore that was killed when an engulfer swallowed it produced an explosion
+	on the map rather than inside the engulfer
 
 
 Fixes to 3.7.0-x General Problems Exposed Via git Repository
@@ -2228,6 +2236,9 @@ X11: when trying to lookup scrollbars in order to handle scrolling via keys,
 X11: enable horizontal scrollbar for persistent inventory window
 X11: if a group accelerator matched a menu command ('^' in menu for '/')
 	it wouldn't work to select, just to manipulate the menu
+X11: ascii_map could try to use a color value, with some added flag bits set,
+	as an index into the color_gcs[] and inv_color_gcs[] arrays leading
+	to a segfault; clear the flag bits before using the color as an index
 X11+macOS: after the "bad Atom" fix (below), the persistent inventory window
 	crept downward every time it got updated
 
@@ -2446,6 +2457,8 @@ tty: hide cursor unless waiting for user input; now extended to include tty
 	platforms that define NO_TERMS, rather than just on those using
 	termcap/terminfo, namely Windows console and msdos (text-mode
 	implemented; vga and vesa just have stubs currently)
+tty+curses: if terminal goes away while in the wishing prompt, return to the
+	wish prompt when game is restored
 Unix: when user name is used as default character name, keep hyphenated value
 	intact instead stripping off dash and whatever follows as if that
 	specified role/race/&c (worked once upon a time; broken since 3.3.0)

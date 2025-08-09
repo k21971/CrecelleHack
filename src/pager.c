@@ -254,9 +254,14 @@ mhidden_description(
             Sprintf(eos(outbuf), " on the %s",
                     ceiling_hider(mon->data) ? "ceiling"
                        : surface(x, y)); /* trapper */
+        } else if (mud_hider(mon->data)
+                    && has_coating(mon->mx, mon->my, COAT_MUD)) {
+
         } else {
             if (mon->data->mlet == S_EEL && is_pool(x, y))
                 Strcat(outbuf, " in murky water");
+            else if (has_coating(x, y, COAT_MUD))
+                Strcat(outbuf, "in mud");
         }
     }
 
@@ -605,6 +610,8 @@ floor_descr(coordxy x, coordxy y, short symidx) {
             return "dirt";
         } else if (levl[x][y].submask == SM_SAND) {
             return "sand";
+        } else if (svl.level.flags.outdoors) {
+            return "earth";
         } else {
             return defsyms[symidx].explanation;
         }
@@ -622,29 +629,25 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
         Strcpy(outbuf, floor_descr(x, y, symidx));
         return outbuf;
     }
-
+    /* Standard descriptions */
     pindex = levl[x][y].pindex;
-    if ((levl[x][y].coat_info & COAT_SHARDS) != 0)
-        Strcat(outbuf, "glass-strewn ");
-    if ((levl[x][y].coat_info & COAT_FROST) != 0)
-        Strcat(outbuf, "icy ");
-    if ((levl[x][y].coat_info & COAT_HONEY) != 0)
-        Strcat(outbuf, "sticky ");
-    if ((levl[x][y].coat_info & COAT_GRASS) != 0)
-        Strcat(outbuf, "grassy ");
-    if ((levl[x][y].coat_info & COAT_ASHES) != 0)
-        Strcat(outbuf, "ashy ");
-    if ((levl[x][y].coat_info & COAT_FUNGUS) != 0)
-        Strcat(outbuf, "fungus-encrusted ");
+    for (int i = 0; i < NUM_COATINGS; i++) {
+        if (all_coatings[i].val == COAT_POTION
+            || all_coatings[i].val == COAT_BLOOD)
+                continue;
+        if (levl[x][y].coat_info & all_coatings[i].val)
+            Strcat(outbuf, all_coatings[i].adj);
+    }
+    /* Special descriptions */
     if ((levl[x][y].coat_info & COAT_POTION) != 0
          && pindex == POT_WATER)
             Strcat(outbuf, "wet ");
-    
     if ((levl[x][y].coat_info & COAT_POTION) != 0 && pindex != POT_WATER) {
         Sprintf(buf, "%s covered in ", floor_descr(x, y, symidx));
         potion_coating_text(eos(buf), pindex);
     } else if ((levl[x][y].coat_info & COAT_BLOOD) != 0) {
-        if (ismnum(levl[x][y].pindex))
+        if (ismnum(levl[x][y].pindex)
+                && (Role_if(PM_HEALER) || touch_petrifies(&mons[levl[x][y].pindex])))
             Sprintf(buf, "%s covered in %s blood", floor_descr(x, y, symidx),  mons[levl[x][y].pindex].pmnames[NEUTRAL]);
         else
             Sprintf(buf, "%s covered in blood", floor_descr(x, y, symidx));
@@ -661,7 +664,10 @@ potion_coating_text(char *outbuf, int pindex) {
     Sprintf(outbuf, "%s %s",
                 objects[pindex].oc_name_known ? OBJ_NAME(objects[pindex]) 
                                               : OBJ_DESCR(objects[pindex]),
-                objects[pindex].oc_name_known ? "tonic" : "liquid");
+                objects[pindex].oc_name_known ?
+                    ((pindex == POT_BOOZE
+                        || pindex == POT_OIL
+                        || pindex == POT_BLOOD) ? "" : "tonic") : "liquid");
     return outbuf;
 }
 

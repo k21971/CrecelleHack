@@ -1371,7 +1371,8 @@ obj_pmname(struct obj *obj)
     }
 #endif
     if ((obj->otyp == CORPSE || obj->otyp == STATUE || obj->otyp == FIGURINE
-        || obj->otyp == SKULL || obj->otyp == SKULL_HELM)
+        || obj->otyp == SKULL || obj->otyp == SKULL_HELM
+        || obj->otyp == SKELETON)
         && ismnum(obj->corpsenm)) {
         int cgend = (obj->spe & CORPSTAT_GENDER),
             mgend = ((cgend == CORPSTAT_MALE) ? MALE

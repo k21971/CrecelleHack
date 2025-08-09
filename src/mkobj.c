@@ -938,8 +938,8 @@ mksobj_init(struct obj **obj, boolean artif)
             otmp = mk_artifact(otmp, (aligntyp) A_NONE, 99, TRUE);
             *obj = otmp;
         }
-        /* 1/10 chance of making the object harmonic. */
-        if (!rn2(10)) {
+        /* Small chance of making the object harmonic. */
+        if (!rn2(16)) {
             boost_object(otmp, 0);
         }
         break;
@@ -947,6 +947,7 @@ mksobj_init(struct obj **obj, boolean artif)
         otmp->oeaten = 0;
         switch (otmp->otyp) {
         case CORPSE:
+        case SKELETON:
             /* possibly overridden by mkcorpstat() */
             tryct = 50;
             do
@@ -1018,6 +1019,7 @@ mksobj_init(struct obj **obj, boolean artif)
             start_glob_timeout(otmp, 0L);
         } else {
             if (otmp->otyp != CORPSE && otmp->otyp != MEAT_RING
+                && otmp->otyp != SKELETON
                 && otmp->otyp != KELP_FROND && !rn2(6)) {
                 otmp->quan = 2L;
             }
@@ -1076,6 +1078,7 @@ mksobj_init(struct obj **obj, boolean artif)
             otmp->spe = rn1(70, 30);
             break;
         case CAN_OF_GREASE:
+        case DUCT_TAPE:
             otmp->spe = rn1(21, 5); /* 0..20 + 5 => 5..25 */
             blessorcurse(otmp, 10);
             break;
@@ -1112,6 +1115,7 @@ mksobj_init(struct obj **obj, boolean artif)
         case MAGIC_HARP:
         case FROST_HORN:
         case FIRE_HORN:
+        case ELECTRIC_GUITAR:
         case DRUM_OF_EARTHQUAKE:
             otmp->spe = rn1(5, 4);
             break;
@@ -1173,7 +1177,7 @@ mksobj_init(struct obj **obj, boolean artif)
 #endif
         }
         /* Armor has a slightly higher chance than weapons of being harmonic */
-        if (!rn2(8)) {
+        if (!rn2(14)) {
             boost_object(otmp, 0);
         }
         break;
@@ -1273,12 +1277,15 @@ mksobj(int otyp, boolean init, boolean artif)
         /*FALLTHRU*/
     case SKULL:
     case SKULL_HELM:
+    case SKELETON:
     case CORPSE:
         if (otmp->corpsenm == NON_PM) {
             otmp->corpsenm = undead_to_corpse(rndmonnum());
             if ((svm.mvitals[otmp->corpsenm].mvflags & (G_NOCORPSE | G_GONE))
                 || ((otmp->otyp == SKULL || otmp->otyp == SKULL_HELM) 
-                    && !has_skull(&mons[otmp->corpsenm])))
+                    && !has_skull(&mons[otmp->corpsenm]))
+                || (otmp->otyp == SKELETON
+                    && !has_bones(&mons[otmp->corpsenm])))
                 otmp->corpsenm = gu.urole.mnum;
         }
         FALLTHROUGH;
@@ -1437,6 +1444,7 @@ set_corpsenm(struct obj *obj, int id)
         obj->owt = weight(obj);
         break;
     case SKULL:
+    case SKELETON:
         obj->owt = weight(obj);
         break;
     case EGG:
@@ -1484,6 +1492,9 @@ start_corpse_timeout(struct obj *body)
 
     /* lizards and lichen don't rot or revive */
     if (body->corpsenm == PM_LIZARD || body->corpsenm == PM_LICHEN)
+        return;
+    /* skeletons do not use corpse timers */
+    if (body->otyp == SKELETON)
         return;
 
     action = ROT_CORPSE;               /* default action: rot away */
@@ -2051,6 +2062,8 @@ weight(struct obj *obj)
     } else if ((obj->otyp == SKULL || obj->otyp == SKULL_HELM) && ismnum(obj->corpsenm)) {
         /* Yuck */
         return max(obj->otyp == SKULL ? 1 : 10, mons[obj->corpsenm].cwt / 50);
+    } else if (obj->otyp == SKELETON && ismnum(obj->corpsenm)) {
+        return max(10, mons[obj->corpsenm].cwt / 3);
     } else if (obj->oclass == FOOD_CLASS && obj->oeaten) {
         return eaten_stat((int) obj->quan * wt, obj);
     } else if (obj->oclass == COIN_CLASS) {
@@ -2152,7 +2165,7 @@ mkcorpstat(
     struct obj *otmp;
     boolean init = ((corpstatflags & CORPSTAT_INIT) != 0);
 
-    if (objtype != CORPSE && objtype != STATUE)
+    if (objtype != CORPSE && objtype != STATUE && objtype != SKELETON)
         impossible("making corpstat type %d", objtype);
     if (x == 0 && y == 0) { /* special case - random placement */
         otmp = mksobj(objtype, init, FALSE);
@@ -2209,6 +2222,8 @@ corpse_revive_type(struct obj *obj)
     int revivetype = obj->corpsenm;
     struct monst *mtmp;
 
+    if (obj->otyp == SKELETON)
+        return PM_SKELETON;
     if (has_omonst(obj) && ((mtmp = get_mtraits(obj, FALSE)) != 0)) {
         /* mtmp is a temporary pointer to a monster's stored
         attributes, not a real monster */

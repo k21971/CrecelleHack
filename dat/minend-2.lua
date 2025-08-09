@@ -31,6 +31,9 @@ des.map([[
 ---------------------------------------------------------------------------
 ]]);
 
+-- Some spilled booze
+des.replace_terrain({ region={00,00, 79,20}, fromterrain=".", toterrain=".", coat="potion", objtype="booze", chance=2 })
+
 if percent(50) then
    des.terrain({55,14},"-")
    des.terrain({56,14},"-")

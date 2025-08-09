@@ -303,7 +303,6 @@ m_initweap(struct monst *mtmp)
             (void) mongets(mtmp, rn2(4) ? SHURIKEN : DART);
             (void) mongets(mtmp, rn2(4) ? SHORT_SWORD : AXE);
         } else if (mm == PM_MASTER_KAEN) {
-            (void) mongets(mtmp, BOLAS);
             (void) mongets(mtmp, SHURIKEN);
         } else if (ptr->msound == MS_GUARDIAN) {
             /* quest "guardians" */
@@ -446,7 +445,7 @@ m_initweap(struct monst *mtmp)
         /* create Keystone Kops with cream pies to
            throw. As suggested by KAA.     [MRS] */
         if (!rn2(4))
-            m_initthrow(mtmp, CREAM_PIE, 2);
+            m_initthrow(mtmp, rn2(3) ? CREAM_PIE : BANANA_PEEL, 2);
         if (!rn2(3))
             (void) mongets(mtmp, (rn2(2)) ? CLUB : RUBBER_HOSE);
         break;
@@ -517,18 +516,16 @@ m_initweap(struct monst *mtmp)
         break;
 
     case S_CENTAUR:
-        if (rn2(2)) {
-            if (ptr == &mons[PM_FOREST_CENTAUR]) {
-                (void) mongets(mtmp, BOW);
-                m_initthrow(mtmp, ARROW, 12);
-            } else {
-                (void) mongets(mtmp, CROSSBOW);
-                m_initthrow(mtmp, CROSSBOW_BOLT, 12);
-            }
+        if (ptr == &mons[PM_FOREST_CENTAUR]) {
+            (void) mongets(mtmp, BOW);
+            m_initthrow(mtmp, ARROW, 30);
+        } else {
+            (void) mongets(mtmp, CROSSBOW);
+            m_initthrow(mtmp, CROSSBOW_BOLT, 30);
         }
         break;
     case S_WRAITH:
-        (void) mongets(mtmp, KNIFE);
+        (void) mongets(mtmp, rn2(9) ? KNIFE : ICICLE);
         (void) mongets(mtmp, LONG_SWORD);
         break;
     case S_ZOMBIE:
@@ -584,7 +581,7 @@ m_initweap(struct monst *mtmp)
             break;
         case 2:
             if (strongmonst(ptr))
-                (void) mongets(mtmp, TWO_HANDED_SWORD);
+                (void) mongets(mtmp, rn2(4) ? TWO_HANDED_SWORD : BROADSWORD);
             else {
                 (void) mongets(mtmp, CROSSBOW);
                 m_initthrow(mtmp, CROSSBOW_BOLT, 12);
@@ -598,11 +595,12 @@ m_initweap(struct monst *mtmp)
             if (strongmonst(ptr))
                 (void) mongets(mtmp, LONG_SWORD);
             else
-                m_initthrow(mtmp, DAGGER, 3);
+                m_initthrow(mtmp, (svl.level.flags.temperature == -1)
+                                    ? ICICLE : DAGGER, 3);
             break;
         case 5:
             if (strongmonst(ptr))
-                (void) mongets(mtmp, LUCERN_HAMMER);
+                (void) mongets(mtmp, PARTISAN + rn1(BEC_DE_CORBIN - PARTISAN + 1, PARTISAN));
             else
                 (void) mongets(mtmp, AKLYS);
             break;
@@ -2357,6 +2355,25 @@ mongets(struct monst *mtmp, int otyp)
                 otmp->spe = 1;
             else if (otmp->oclass == ARMOR_CLASS && otmp->spe < 0)
                 otmp->spe = 0;
+        }
+
+        /* roguish monsters can get poisoned items */
+        if (is_roguish(mtmp->data) && is_poisonable(otmp))
+            otmp->opoisoned = rn2(2);
+
+        /* powerful monsters have a good chance of getting
+           some kind of boosted weapon related to their
+           abilities */
+        if (!otmp->booster &&
+            (otmp->oclass == WEAPON_CLASS
+                || otmp->oclass == ARMOR_CLASS
+                || is_weptool(otmp))) {
+            if ((is_prince(mtmp->data) && !rn2(3))
+                || (is_lord(mtmp->data) && !rn2(4))
+                || (extra_nasty(mtmp->data) && !rn2(8))
+                || ((mons[mtmp->mnum].geno & G_UNIQ) != 0)) {
+                boost_object(otmp, mtmp->data->mboost);
+            }
         }
 
         if (mpickobj(mtmp, otmp)) {

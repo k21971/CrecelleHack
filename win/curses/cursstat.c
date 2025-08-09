@@ -259,7 +259,7 @@ draw_horizontal(boolean border)
           /*xspace*/ BL_STR, BL_DX, BL_CO, BL_IN, BL_WI, BL_CH,
           /*xspace*/ BL_ALIGN,
           /*xspace*/ BL_SCORE,
-          BL_TOD, BL_BOOST, BL_FLUSH, blPAD, blPAD, blPAD, blPAD },
+          BL_TOD, BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD },
         { BL_LEVELDESC,
           /*xspace*/ BL_GOLD,
           /*xspace*/ BL_HP, BL_HPMAX,
@@ -286,11 +286,11 @@ draw_horizontal(boolean border)
           /*xspace*/ BL_HUNGER, BL_CAP,
           BL_FLUSH, blPAD, blPAD },
         { BL_LEVELDESC,
-          /*xspace*/ BL_TOD, BL_BOOST, BL_TIME,
+          /*xspace*/ BL_TOD, BL_TIME,
           /*xspecial*/ BL_CONDITION,
           /*xspecial*/ BL_VERS,
           BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD,
-          blPAD, blPAD, blPAD, blPAD }
+          blPAD, blPAD, blPAD, blPAD, blPAD }
     };
     const enum statusfields (*fieldorder)[16];
     coordxy spacing[MAXBLSTATS], valline[MAXBLSTATS];
@@ -421,7 +421,6 @@ draw_horizontal(boolean border)
             case BL_ALIGN:
             case BL_LEVELDESC:
             case BL_TOD:
-            case BL_BOOST:
                 spacing[fld] = (i > 0 ? 1 : 0); /* extra space unless first */
                 break;
             case BL_HUNGER:
@@ -700,7 +699,6 @@ draw_vertical(boolean border)
         BL_XP, BL_EXP, BL_HD,
         BL_GOLD,
         BL_TOD,
-        BL_BOOST,
         /* 3:blank (but only if time or score or both enabled) */
         BL_TIME,
         BL_SCORE,

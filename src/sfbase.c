@@ -71,18 +71,18 @@ void sf_log(NHFILE *, const char *, size_t, int, char *);
 
 #else
 
-#define sfvalue(x)                       \
-    _Generic( (x),                       \
-        anything *: sfvalue_any,         \
+#define sfvalue(x)                          \
+    _Generic( (x),                          \
+        anything *: sfvalue_any,            \
         genericptr_t *: sfvalue_genericptr, \
-        int16_t *: sfvalue_int16,        \
-        int32_t *: sfvalue_int32,        \
-        int64_t *: sfvalue_int64,        \
-        uchar *: sfvalue_uchar,          \
-        uint16_t *: sfvalue_uint16,      \
-        uint32_t *: sfvalue_uint32,      \
-        uint64_t *: sfvalue_uint64,      \
-        xint8 *: sfvalue_xint8           \
+        int16_t *: sfvalue_int16,           \
+        int32_t *: sfvalue_int32,           \
+        int64_t *: sfvalue_int64,           \
+        uchar *: sfvalue_uchar,             \
+        uint16_t *: sfvalue_uint16,         \
+        uint32_t *: sfvalue_uint32,         \
+        uint64_t *: sfvalue_uint64,         \
+        xint8 *: sfvalue_xint8              \
     )(x)
 
 #define Sfvalue_any(a) sfvalue(a)
@@ -160,14 +160,14 @@ void sfo_##dtyp(NHFILE *nhfp, keyw dtyp *d_##dtyp, const char *myname)          
 {                                                                               \
     if (nhfp->fplog)                                                            \
         sf_log(nhfp, myname, sizeof *d_##dtyp, 1,                               \
-               complex_dump((uchar *) d_##dtyp));                                \
+               complex_dump((uchar *) d_##dtyp));                               \
     if (nhfp->structlevel) {                                                    \
         (*sfoprocs[nhfp->fnidx].fn.sf_##dtyp)(nhfp, d_##dtyp, myname);          \
     } else {                                                                    \
         FILE *save_fplog = nhfp->fplog;                                         \
                                                                                 \
         nhfp->fplog = 0;                                                        \
-        (*sfoflprocs[nhfp->fnidx].fn_x.sf_##dtyp)(nhfp, d_##dtyp, myname);        \
+        (*sfoflprocs[nhfp->fnidx].fn_x.sf_##dtyp)(nhfp, d_##dtyp, myname);      \
         nhfp->fplog = save_fplog;                                               \
     }                                                                           \
 }                                                                               \
@@ -181,7 +181,7 @@ void sfi_##dtyp(NHFILE *nhfp, keyw dtyp *d_##dtyp, const char *myname)          
                                                                                 \
         nhfp->mode &= ~(CONVERTING | UNCONVERTING);                             \
         nhfp->mode |= TURN_OFF_LOGGING;                                         \
-        (*sfiflprocs[nhfp->fnidx].fn_x.sf_##dtyp)(nhfp, d_##dtyp, myname);        \
+        (*sfiflprocs[nhfp->fnidx].fn_x.sf_##dtyp)(nhfp, d_##dtyp, myname);      \
         nhfp->mode = save_mode;                                                 \
     }                                                                           \
     if (!nhfp->eof) {                                                           \
@@ -192,7 +192,7 @@ void sfi_##dtyp(NHFILE *nhfp, keyw dtyp *d_##dtyp, const char *myname)          
         }                                                                       \
         if (nhfp->fplog)                                                        \
             sf_log(nhfp, myname, sizeof *d_##dtyp, 1,                           \
-                       complex_dump((uchar *) d_##dtyp));                        \
+                       complex_dump((uchar *) d_##dtyp));                       \
     }                                                                           \
 }
   
@@ -208,7 +208,8 @@ void sfo_##dtyp(NHFILE *nhfp, xxx *d_##dtyp, const char *myname, int bfsz)      
         FILE *save_fplog = nhfp->fplog;                                         \
                                                                                 \
         nhfp->fplog = 0;                                                        \
-        (*sfoflprocs[nhfp->fnidx].fn_x.sf_##dtyp)(nhfp, d_##dtyp, myname, bfsz);  \
+        (*sfoflprocs[nhfp->fnidx].fn_x.sf_##dtyp)(nhfp, d_##dtyp,               \
+                                                  myname, bfsz);                \
         nhfp->fplog = save_fplog;                                               \
     }                                                                           \
     if (nhfp->fplog && !nhfp->eof)                                              \
@@ -224,7 +225,8 @@ void sfi_##dtyp(NHFILE *nhfp, xxx *d_##dtyp, const char *myname, int bfsz)      
                                                                                 \
         nhfp->mode &= ~(CONVERTING | UNCONVERTING);                             \
         nhfp->mode |= TURN_OFF_LOGGING;                                         \
-        (*sfiflprocs[nhfp->fnidx].fn_x.sf_##dtyp)(nhfp, d_##dtyp, myname, bfsz);  \
+        (*sfiflprocs[nhfp->fnidx].fn_x.sf_##dtyp)(nhfp, d_##dtyp,               \
+                                                  myname, bfsz);                \
         nhfp->mode = save_mode;                                                 \
     }                                                                           \
     if (!nhfp->eof) {                                                           \
@@ -239,72 +241,8 @@ void sfi_##dtyp(NHFILE *nhfp, xxx *d_##dtyp, const char *myname, int bfsz)      
     }                                                                           \
 }
 
-SF_C(struct, arti_info)
-SF_C(struct, nhrect)
-SF_C(struct, branch)
-SF_C(struct, bubble)
-SF_C(struct, cemetery)
-SF_C(struct, context_info)
-SF_C(struct, nhcoord)
-SF_C(struct, damage)
-SF_C(struct, dest_area)
-SF_C(struct, dgn_topology)
-SF_C(struct, dungeon)
-SF_C(struct, d_level)
-SF_C(struct, ebones)
-SF_C(struct, edog)
-SF_C(struct, egd)
-SF_C(struct, emin)
-SF_C(struct, engr)
-SF_C(struct, epri)
-SF_C(struct, eshk)
-SF_C(struct, fe)
-SF_C(struct, flag)
-SF_C(struct, fruit)
-SF_C(struct, gamelog_line)
-SF_C(struct, kinfo)
-SF_C(struct, levelflags)
-SF_C(struct, ls_t)
-SF_C(struct, linfo)
-SF_C(struct, mapseen_feat)
-SF_C(struct, mapseen_flags)
-SF_C(struct, mapseen_rooms)
-SF_C(struct, mkroom)
-SF_C(struct, monst)
-SF_C(struct, mvitals)
-SF_C(struct, obj)
-SF_C(struct, objclass)
-SF_C(struct, q_score)
-SF_C(struct, rm)
-SF_C(struct, spell)
-SF_C(struct, stairway)
-SF_C(struct, s_level)
-SF_C(struct, trap)
-SF_C(struct, you)
-SF_C(union, any)
+#include "sfmacros.h"
 
-SF_A(aligntyp)
-SF_A(boolean)
-SF_A(coordxy)
-//SF_A(genericptr)
-SF_A(int)
-SF_A(int16)
-SF_A(int32)
-SF_A(int64)
-SF_A(long)
-SF_A(schar)
-SF_A(short)
-SF_A(size_t)
-SF_A(time_t)
-SF_A(uchar)
-SF_A(uint16)
-SF_A(uint32)
-SF_A(uint64)
-SF_A(ulong)
-SF_A(unsigned)
-SF_A(ushort)
-SF_A(xint16)
-SF_A(xint8)
 SF_X(uint8_t, bitfield)
 
 void

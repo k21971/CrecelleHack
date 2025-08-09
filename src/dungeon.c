@@ -60,6 +60,7 @@ staticfn void init_dungeon_set_depth(struct proto_dungeon *, int);
 staticfn void init_castle_tune(void);
 staticfn void fixup_level_locations(void);
 staticfn void free_proto_dungeon(struct proto_dungeon *);
+staticfn void earth_sense(void);
 staticfn boolean init_dungeon_dungeons(lua_State *, struct proto_dungeon *,
                                       int);
 staticfn boolean unplaced_floater(struct dungeon *);
@@ -717,6 +718,7 @@ static struct level_map {
                   { "fire", &fire_level },
                   { "juiblex", &juiblex_level },
                   { "knox", &knox_level },
+                  { "maze-1", &maze_level },
                   { "medusa", &medusa_level },
                   { "oracle", &oracle_level },
                   { "orcus", &orcus_level },
@@ -1165,6 +1167,7 @@ fixup_level_locations(void)
     mines_dnum = dname_to_dnum("The Gnomish Mines");
     tower_dnum = dname_to_dnum("Vlad's Tower");
     tutorial_dnum = dname_to_dnum("The Tutorial");
+    maze_dnum = dname_to_dnum("The Maze");
 
     /* one special fixup for dummy surface level */
     if ((x = find_level("dummy")) != 0) {
@@ -1541,6 +1544,28 @@ prev_level(boolean at_stairs)
     }
 }
 
+/* Dwarves have "earth sense",
+   able to sense if something is buried under their feet */
+staticfn void
+earth_sense(void)
+{
+    struct obj *otmp;
+
+    if (!Race_if(PM_DWARF))
+        return;
+    if (u.usteed || Flying || Levitation || Upolyd)
+        return;
+    if (levl[u.ux][u.uy].typ != CORR
+        && levl[u.ux][u.uy].typ != ROOM)
+        return;
+
+    for (otmp = svl.level.buriedobjlist; otmp; otmp = otmp->nobj)
+        if (u_at(otmp->ox, otmp->oy)) {
+            You("sense something below your %s.", makeplural(body_part(FOOT)));
+            return;
+        }
+}
+
 void
 u_on_newpos(coordxy x, coordxy y)
 {
@@ -1568,6 +1593,7 @@ u_on_newpos(coordxy x, coordxy y)
         /* still on same level; might have come close enough to
            generic object(s) to redisplay them as specific objects */
         see_nearby_objects();
+    earth_sense();
 }
 
 /* place you on a random location when arriving on a level */
@@ -1670,7 +1696,7 @@ has_ceiling(d_level *lev)
     /* FIXME: some (most? all?) of the quest home levels are conceptually
        above ground and don't have ceilings outside of their buildings
        but we don't presently check for that */
-    if (In_endgame(lev) && !Is_earthlevel(lev))
+    if ((In_endgame(lev) && !Is_earthlevel(lev)) || svl.level.flags.outdoors)
         return FALSE;
     return TRUE;
 }
@@ -1764,7 +1790,7 @@ surface(coordxy x, coordxy y)
     else if (IS_SUBMASKABLE(levtyp) && levl[x][y].submask == SM_SAND)
         return "sand";
     else if (IS_ROOM(levtyp) && !Is_earthlevel(&u.uz))
-        return "floor";
+        return (svl.level.flags.outdoors) ? "earth" : "floor";
     else
         return "ground";
 }
@@ -1952,7 +1978,7 @@ single_level_branch(d_level *lev)
      * TODO:  this should be generalized instead of assuming that
      * Fort Ludios is the only single level branch in the dungeon.
      */
-    return Is_knox(lev);
+    return Is_knox(lev) || Is_magicmaze(lev);
 }
 
 /* equivalent to dest = source */
@@ -2404,7 +2430,7 @@ print_dungeon(boolean bymenu, schar *rlev, xint16 *rdgn)
         else if (Is_earthlevel(&u.uz) || Is_waterlevel(&u.uz)
                  || Is_firelevel(&u.uz) || Is_airlevel(&u.uz)
                  || Is_qstart(&u.uz) || at_dgn_entrance("The Quest")
-                 || Is_knox(&u.uz))
+                 || Is_knox(&u.uz) || Is_magicmaze(&u.uz))
             Strcpy(buf, "No portal found.");
 
         /* only give output if we found a portal or expected one and didn't */

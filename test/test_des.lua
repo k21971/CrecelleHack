@@ -163,7 +163,7 @@ end
 
 function test_level_flags()
    des.level_flags("noteleport")
-   des.level_flags("noteleport", "hardfloor", "nommap", "shortsighted", "arboreal")
+   des.level_flags("noteleport", "hardfloor", "nommap", "shortsighted", "arboreal", "outdoors")
    des.level_flags("mazelevel", "shroud", "graveyard", "icedpools", "corrmaze")
    des.level_flags("premapped", "solidify", "inaccessibles")
 end

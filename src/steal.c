@@ -890,7 +890,11 @@ relobj(
     } /* isgd && has gold */
 
     while ((otmp = (is_pet ? droppables(mtmp) : mtmp->minvent)) != 0) {
-        mdrop_obj(mtmp, otmp, is_pet && flags.verbose);
+        if (likes_bones(mtmp->data) && mtmp->data != &mons[PM_SKELETON]
+            && IS_ROOM(levl[mtmp->mx][mtmp->my].typ)) {
+            mon_bury_obj(mtmp, otmp);
+        } else
+            mdrop_obj(mtmp, otmp, is_pet && flags.verbose);
     }
 
     if (show && cansee(omx, omy))

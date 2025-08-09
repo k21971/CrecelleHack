@@ -381,8 +381,9 @@ struct dgn_topology { /* special dungeon levels for speed */
     xint16 d_sokoban_dnum;
     xint16 d_mines_dnum, d_quest_dnum;
     xint16 d_tutorial_dnum;
+    xint16 d_maze_dnum;
     d_level d_qstart_level, d_qlocate_level, d_nemesis_level;
-    d_level d_knox_level;
+    d_level d_knox_level, d_maze_level;
     d_level d_mineend_level;
     d_level d_sokoend_level;
 };
@@ -414,10 +415,12 @@ struct dgn_topology { /* special dungeon levels for speed */
 #define mines_dnum              (svd.dungeon_topology.d_mines_dnum)
 #define quest_dnum              (svd.dungeon_topology.d_quest_dnum)
 #define tutorial_dnum           (svd.dungeon_topology.d_tutorial_dnum)
+#define maze_dnum               (svd.dungeon_topology.d_maze_dnum)
 #define qstart_level            (svd.dungeon_topology.d_qstart_level)
 #define qlocate_level           (svd.dungeon_topology.d_qlocate_level)
 #define nemesis_level           (svd.dungeon_topology.d_nemesis_level)
 #define knox_level              (svd.dungeon_topology.d_knox_level)
+#define maze_level              (svd.dungeon_topology.d_maze_level)
 #define mineend_level           (svd.dungeon_topology.d_mineend_level)
 #define sokoend_level           (svd.dungeon_topology.d_sokoend_level)
 /* clang-format on */
@@ -675,6 +678,7 @@ struct mvitals {
     Bitfield(know_rcorpse, 1);
     Bitfield(know_stats, 1);
     Bitfield(know_attacks, 6);
+    Bitfield(photographed, 1);
 };
 
 
@@ -1197,6 +1201,7 @@ typedef uint32_t mmflags_nht;     /* makemon MM_ flags */
 #define CORPSTAT_SPE_VAL  0x07 /* 0x03 | 0x04 */
 #define CORPSTAT_INIT     0x08 /* pass init flag to mkcorpstat */
 #define CORPSTAT_BURIED   0x10 /* bury the corpse or statue */
+#define CORPSTAT_SKELETONIZE 0x20 /* skeletonize the corpse */
 /* note: gender flags have different values from those used for monsters
    so that 0 can be unspecified/random instead of male */
 #define CORPSTAT_RANDOM 0
@@ -1379,6 +1384,7 @@ typedef uint32_t mmflags_nht;     /* makemon MM_ flags */
 #define XKILL_NOMSG     1
 #define XKILL_NOCORPSE  2
 #define XKILL_NOCONDUCT 4
+#define XKILL_SKELETONIZE 5
 
 /* pline_flags; mask values for custompline()'s first argument */
 /* #define PLINE_ORDINARY 0 */

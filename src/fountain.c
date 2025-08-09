@@ -552,6 +552,7 @@ dipfountain(struct obj *obj)
                 CLEAR_FOUNTAIN_LOOTED(u.ux, u.uy);
                 exercise(A_WIS, FALSE);
             }
+            make_dripping(rnd(20), POT_WATER, NON_PM);
         }
         break;
     case 29: /* You see coins */
@@ -600,6 +601,7 @@ wash_hands(void)
        compare the result to ER_DESTROYED and ER_NOTHING, so it works */
     if (was_glib && res == ER_NOTHING)
         res = ER_GREASED;
+    make_dripping(rnd(5), POT_WATER, NON_PM);
     return res;
 }
 

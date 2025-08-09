@@ -99,6 +99,10 @@ is_edible(struct obj *obj)
         && is_flammable(obj))
         return TRUE;
 
+    /* We don't want anyone digesting a skeleton, including gelatinous cubes. */
+    if (obj->otyp == SKELETON || obj->otyp == BANANA_PEEL)
+        return FALSE;
+
     if (metallivorous(gy.youmonst.data) && is_metallic(obj)
         && (gy.youmonst.data != &mons[PM_RUST_MONSTER] || is_rustprone(obj)))
         return TRUE;
@@ -2485,7 +2489,7 @@ static const char *const foodwords[] = {
     "meal",    "liquid",  "wax",       "food", "meat",     "paper",
     "cloth",   "leather", "wood",      "bone", "scale",    "metal",
     "metal",   "metal",   "silver",    "gold", "platinum", "mithril",
-    "plastic", "glass",   "rich food", "stone"
+    "plastic", "glass",   "ice",       "rich food", "stone"
 };
 
 staticfn const char *
@@ -2503,6 +2507,7 @@ foodword(struct obj *otmp)
 staticfn void
 fpostfx(struct obj *otmp)
 {
+    struct obj *peel;
     switch (otmp->otyp) {
     case SPRIG_OF_WOLFSBANE:
         if (ismnum(u.ulycn) || is_were(gy.youmonst.data))
@@ -2588,6 +2593,11 @@ fpostfx(struct obj *otmp)
             }
             fall_asleep(-rn1(11, 20), TRUE);
         }
+        break;
+    case BANANA:
+        peel = mksobj(BANANA_PEEL, FALSE, FALSE);
+        hold_another_object(peel, "Whoops!", (const char *) 0,
+                                    (const char *) 0);
         break;
     }
     return;

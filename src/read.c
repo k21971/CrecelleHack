@@ -37,6 +37,7 @@ staticfn void seffect_fire(struct obj **);
 staticfn void seffect_earth(struct obj **);
 staticfn void seffect_punishment(struct obj **);
 staticfn void seffect_control_weather(struct obj **);
+staticfn void seffect_maze(struct obj **);
 staticfn void seffect_stinking_cloud(struct obj **);
 staticfn void seffect_blank_paper(struct obj **);
 staticfn void seffect_teleportation(struct obj **);
@@ -956,6 +957,7 @@ recharge(struct obj *obj, int curse_bless)
         case HORN_OF_PLENTY:
         case BAG_OF_TRICKS:
         case CAN_OF_GREASE:
+        case DUCT_TAPE:
             if (is_cursed) {
                 stripspe(obj);
             } else if (is_blessed) {
@@ -977,6 +979,7 @@ recharge(struct obj *obj, int curse_bless)
         case MAGIC_HARP:
         case FROST_HORN:
         case FIRE_HORN:
+        case ELECTRIC_GUITAR:
         case DRUM_OF_EARTHQUAKE:
             if (is_cursed) {
                 stripspe(obj);
@@ -1232,6 +1235,7 @@ seffect_enchant_armor(struct obj **sobjp)
                 bless(otmp);
         } else if (otmp->cursed)
             uncurse(otmp);
+        boost_object(otmp, mons[otmp->corpsenm].mboost);
         otmp->known = 1;
         setworn(otmp, W_ARMH);
         if (otmp->unpaid)
@@ -1965,6 +1969,59 @@ seffect_control_weather(struct obj **sobjp)
 }
 
 staticfn void
+seffect_maze(struct obj **sobjp)
+{
+    struct obj *sobj = *sobjp;
+    struct monst *mtmp;
+    coord cc;
+    boolean scursed = sobj->cursed;
+    s_level *sp = find_level("maze-1");
+    cc.x = u.ux;
+    cc.y = u.uy;
+
+    useup(*sobjp);
+    *sobjp = 0;
+    gk.known = TRUE;
+
+    if (Is_magicmaze(&u.uz)) {
+        pline("Your %s spins!", body_part(HEAD));
+        make_confused(HConfusion + rnd(30), FALSE);
+        return;
+    }
+    if (!sp) {
+        pline1(nothing_happens);
+        return;
+    }
+
+    /* Send a monster to the maze */
+    if (!scursed) {
+        pline("Who do you want to condemn to the Maze?");
+        getpos_sethilite(display_stinking_cloud_positions,
+                            can_center_cloud);
+        (void) getpos(&cc, TRUE, "the desired position");
+        if (!can_center_cloud(cc.x, cc.y)) {
+            cc.x = u.ux;
+            cc.y = u.uy;
+        }
+        if (!(cc.x == u.ux && cc.y == u.uy)) {
+            mtmp = m_at(cc.x, cc.y);
+            if (is_rider(mtmp->data)) {
+                You("lack the authority...");
+                return;
+            } else if (mtmp) {
+                pline_mon(mtmp, "Spectral tendrils drag %s into another reality!", mon_nam(mtmp));
+                migrate_to_level(mtmp, ledger_no(&maze_level), MIGR_RANDOM,
+                                    (coord *) 0);
+            }
+        }
+    }
+    /* Send the reader to the maze */
+    if (scursed || (cc.x == u.ux && cc.y == u.uy)) {
+        player_to_magic_maze();
+    }
+}
+
+staticfn void
 seffect_stinking_cloud(struct obj **sobjp)
 {
     struct obj *sobj = *sobjp;
@@ -2270,6 +2327,9 @@ seffects(
         break;
     case SCR_CONTROL_WEATHER:
         seffect_control_weather(&sobj);
+        break;
+    case SCR_MAZE:
+        seffect_maze(&sobj);
         break;
     case SCR_STINKING_CLOUD:
         seffect_stinking_cloud(&sobj);
@@ -3327,7 +3387,8 @@ create_particular_creation(
         if (d->hidden
            && ((is_hider(mtmp->data) && mtmp->data->mlet != S_MIMIC)
                || (hides_under(mtmp->data) && OBJ_AT(mx, my))
-               || (mtmp->data->mlet == S_EEL && is_pool(mx, my))))
+               || (mtmp->data->mlet == S_EEL && is_pool(mx, my))
+               || (mud_hider(mtmp->data) && has_coating(mx, my, COAT_MUD))))
             mtmp->mundetected = 1;
         if (d->sleeping)
             mtmp->msleeping = 1;
@@ -3396,6 +3457,42 @@ create_particular(void)
         return create_particular_creation(&d);
 
     return FALSE;
+}
+
+void
+player_to_magic_maze(void) {
+    struct monst *mon, *mon2;
+    struct obj *obj, *obj2;
+    s_level *sp = find_level("maze-1");
+    assign_level(&u.ucamefrom, &u.uz);
+    schedule_goto(&sp->dlevel, UTOTYPE_NONE,
+                    "You are transported to an endless maze...", (char *) 0);
+    deferred_goto();
+    /* migrate out */
+    for (mon = fmon; mon; mon = mon2) {
+        mon2 = mon->nmon;
+        m_into_limbo(mon);
+    }
+    for (obj = fobj; obj; obj = obj2) {
+        obj2 = obj->nobj;
+        obj_extract_self(obj);
+        add_to_migration(obj);
+    }
+    makemap_prepost(TRUE, FALSE);
+    mklev();
+    makemap_prepost(FALSE, FALSE);
+    /* migrate in */
+    for (mon = gm.migrating_mons; mon; mon = mon2) {
+        mon2 = mon->nmon;
+        mon_arrive(mon, 2);
+    }
+    for (obj = gm.migrating_objs; obj; obj = obj2) {
+        obj2 = obj->nobj;
+        obj_extract_self(obj);
+        place_object(obj, rn2(COLNO), rn2(ROWNO));
+    }
+    vision_recalc(0);
+    docrt();
 }
 
 /*read.c*/

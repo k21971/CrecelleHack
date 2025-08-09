@@ -6,6 +6,7 @@
 des.level_flags("noflip");
 
 des.room({ type = "ordinary", lit=1, x=3,y=3, xalign="center",yalign="center", w=11,h=9, contents = function()
+              des.replace_terrain({ region={00,00, 10,10}, fromterrain=".", toterrain=".", coat="grass", chance=80 })
               des.object({ id = "statue", x = 0, y = 0, montype = "C", historic = true });
               des.object({ id = "statue", x = 0, y = 8, montype = "C", historic = true });
               des.object({ id = "statue", x =10, y = 0, montype = "C", historic = true });
@@ -22,6 +23,7 @@ des.room({ type = "ordinary", lit=1, x=3,y=3, xalign="center",yalign="center", w
                             des.feature("fountain", 2, 1);
                             des.monster("Oracle", 1, 1);
                             des.door({ state="nodoor", wall="all" });
+                            des.replace_terrain({ region={00,00, 02,02}, fromterrain=".", toterrain=".", coat="potion", objtype="water" })
                          end
               });
 

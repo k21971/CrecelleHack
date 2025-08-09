@@ -445,6 +445,8 @@ container_impact_dmg(
         if (objects[otmp->otyp].oc_material == GLASS
             && otmp->oclass != GEM_CLASS && !obj_resists(otmp, 33, 100)) {
             result = "shatter";
+        } else if (objects[otmp->otyp].oc_material == BLUEICE) {
+            result = "tinkling";
         } else if (otmp->otyp == EGG && !rn2(3)) {
             result = "cracking";
         }
@@ -1098,6 +1100,7 @@ kick_nondoor(coordxy x, coordxy y, int avrg_attrib)
         if (uarmf && rn2(3))
             if (water_damage(uarmf, "metal boots", TRUE) == ER_NOTHING) {
                 Your("boots get wet.");
+                make_dripping(rnd(5), POT_WATER, NON_PM);
                 /* could cause short-lived fumbling here */
             }
         exercise(A_DEX, TRUE);
@@ -1343,7 +1346,7 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
     tmp = P_SKILL(P_TRIPPING) - 1;
 
     if (magr == &gy.youmonst) {
-        You("attempt to trip %s.", Monnam(mdef));
+        You("attempt to trip %s.", mon_nam(mdef));
         display_nhwindow(WIN_MESSAGE, TRUE);
         trip_diff -= tmp;
         trip_diff += (magr->m_lev / 10);
@@ -1406,6 +1409,7 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
 void
 make_prone(void) {
     stairway *stway;
+    d_level newlevel;
     u.uprops[PRONE].extrinsic = 1L;
     disp.botl = TRUE;
     selftouch("As you tumble, you");
@@ -1417,7 +1421,10 @@ make_prone(void) {
     }
     if ((stway = stairway_at(u.ux, u.uy)) != 0 && !stway->up) {
         u.dz = 1;
-        next_level(TRUE);
+        stway->u_traversed = TRUE;
+        newlevel.dnum = stway->tolev.dnum;
+        newlevel.dlevel = stway->tolev.dlevel;
+        schedule_goto(&newlevel, UTOTYPE_ATSTAIRS, (char *) 0, (char *) 0);
     }
 }
 
@@ -1892,6 +1899,8 @@ ship_object(struct obj *otmp, coordxy x, coordxy y, boolean shop_floor_obj)
             if (otmp->otyp == MIRROR)
                 change_luck(-2);
             result = "crash";
+        } else if (objects[otmp->otyp].oc_material == ICE) {
+            result = "tinkling";
         } else {
             /* penalty for breaking eggs laid by you */
             if (otmp->otyp == EGG && otmp->spe && ismnum(otmp->corpsenm))

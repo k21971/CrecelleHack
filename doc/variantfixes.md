@@ -2,10 +2,26 @@
 
 ## Commands
 - Add the #shout command. Present in many variants, but this uses
-  the 3.7-compatible code written by aosdict/Phol En Wodan
+  the 3.7-compatible code written by aosdict/Phol En Wodan.
+
+## Harmony System
+- Complete rework of the harmony system.
+  - Harmonic weapons now work differently depending on the type
+    of harmony. Full details about this system can be found
+    in doc/variantprops.md.
+- Made harmonic objects rarer.
+- Harmonic objects do not need to be identified to determine
+  what they harmonize with.
+- Dangerous monsters have a chance to spawn with harmonic objects
+  related to their abilities.
+- Reading a scroll of harmonize armor while wearing a skull
+  corresponding to a monster now not only transforms the skull
+  into a skull helm, but harmonizes that helm with the monster's
+  associated harmonies.
+- Remove obscure ordering system for determining whether a harmony
+  is active.
 
 ## Monsters
-- Orcs have a chance to spawn with a dual axe.
 - Slightly increase chance of random spawns of unique monsters.
 - Yellow dragons leave behind a trail of acid.
 - More types of monsters spread fire when they move.
@@ -21,6 +37,12 @@
 - Monsters considered "roguish" can spawn with poisoned items or
   potions of sickness.
 - Monsters can dip items into potions.
+- Ported EvilHack and Spork's covetous monster behavior tweaks.
+- Ported EvilHack's ability for monsters to break boulders.
+- Made some fixes to defsym.h to clarify monsters.
+- Reduced nightcrust light emission range.
+- Water elementals soak enemies with water on hit.
+- Greater variance in the weapons that monsters spawn with.
 
 ## New Monsters
 - Salt Golem
@@ -48,6 +70,10 @@
 - Allow acid spilled by acid beams to alchemize.
 - Tools can become eroded.
 - All blades are considered poisonable.
+- All players recognize water.
+- Added ice as a material, which is used for icicles and for a
+  new randomized wand appearance. It can both shatter and be
+  melted, making it extremely delicate.
 
 ### New Objects
 - Bestiary
@@ -59,14 +85,48 @@
   - Uncursed: Swaps current weather from rain to shine.
   - Cursed: Causes bizarre inclement weather.
   - Confused and not cursed: Summons a tame tornado.
+- Scroll of Maze
+  - Allows you to send a monster to a randomly generated maze.
+    This does not affect Riders, but it bypasses all forms of
+    magic resistance.
 - Mirrored Glasses
   - Provide reflection.
 - Tinker Goggles
   - Block flash effects, as sunglasses do.
   - Protects from alchemic blasts when performing alchemy.
+- Skeleton
+  - Found on the ground of the dungeon, and occasionally
+    created through other situations, such as by zapping
+    a wand of death or being struck by lightning.
+- Duct Tape
+  - You can do all sorts of fun things with duct tape...
+    - TODO: Breaking a taped-up wand should cause many explosions?
+- Banana Peel
+  - Replaces bolas.
+- Acoustic Guitar
+  - Tonal instrument.
+- Electric Guitar
+  - Fires bolts of electricity, as a fire or frost horn would.
 
 ## Floor Coating System
-- Added ice as a floor coating.
+- Added frost and mud as a floor coatings.
+  - Frost causes those walking over it to slip, as walking over ice.
+  - Mud costs additional movement points to move through. Additionally,
+    many monsters can hide themselves in the mud in order to ambush
+    the player.
+- Floor coatings can be added in level generation lua. Maps
+  have been updated to reflect this.
+- Allow blood golems to be created while polypiling.
+- Remove cockatrice blood once it petrifies something.
+- Only healers recognize the origin of pools of blood.
+- Monsters and players can now drip with potions, spreading them
+  across the level. You stop dripping after a short time, but can
+  hasten the process using a towel.
+- You can #tip potions onto yourself to douse yourself in a liquid.
+- You can clean liquids off yourself by using #wipe.
+- Towels can now be used to wipe the floor by engraving with them, rather
+  than by using #rub.
+- New messages for hurtling across coatings.
 
 ## Dungeon Changes
 - Allow fountains to become frozen. Frozen fountains cannot be

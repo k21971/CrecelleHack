@@ -559,6 +559,7 @@ extern void draft_message(boolean);
 extern void watch_dig(struct monst *, coordxy, coordxy, boolean);
 extern void zap_dig(void);
 extern struct obj *bury_an_obj(struct obj *, boolean *) NONNULLARG1;
+extern void mon_bury_obj(struct monst *, struct obj *) NONNULLARG12;
 extern void bury_objs(int, int);
 extern void unearth_objs(int, int);
 extern void rot_organic(union any *, long) NONNULLARG1;
@@ -1002,7 +1003,7 @@ extern char *build_english_list(char *) NONNULLARG1;
 extern char *random_engraving(char *, char *) NONNULLARG12;
 extern void wipeout_text(char *, int, unsigned) NONNULLARG1;
 extern boolean can_reach_floor(boolean);
-extern void cant_reach_floor(coordxy, coordxy, boolean, boolean);
+extern void cant_reach_floor(coordxy, coordxy, boolean, boolean, boolean);
 extern struct engr *engr_at(coordxy, coordxy);
 extern struct engr *sengr_at(const char *, coordxy, coordxy, boolean) NONNULLARG1;
 extern void u_wipe_engr(int);
@@ -1542,6 +1543,7 @@ extern struct monst *cloneu(void);
 extern void expels(struct monst *, struct permonst *, boolean) NONNULLARG12;
 extern struct attack *getmattk(struct monst *, struct monst *, int, int *,
                                struct attack *) NONNULLARG12;
+extern boolean mtrapped_in_pit(struct monst *) NONNULLARG1;
 extern int mattacku(struct monst *) NONNULLARG1;
 boolean diseasemu(struct permonst *) NONNULLARG1;
 boolean u_slip_free(struct monst *, struct attack *) NONNULLARG12;
@@ -1852,7 +1854,7 @@ extern boolean usmellmon(struct permonst *);
 extern void mimic_hit_msg(struct monst *, short);
 extern void adj_midbosses(void);
 extern void adj_erinys(unsigned);
-extern void see_monster_closeup(struct monst *) NONNULLARG1;
+extern void see_monster_closeup(struct monst *, boolean) NONNULLARG1;
 extern void see_nearby_monsters(void);
 extern void shieldeff_mon(struct monst *) NONNULLARG1;
 extern void flash_mon(struct monst *) NONNULLARG1;
@@ -2536,6 +2538,7 @@ extern void make_vomiting(long, boolean);
 extern void make_blinded(long, boolean);
 extern void toggle_blindness(void);
 extern boolean make_hallucinated(long, boolean, long);
+extern void make_dripping(long, int, int);
 extern void make_deaf(long, boolean);
 extern void make_glib(int);
 extern void self_invis_message(void);
@@ -2671,6 +2674,7 @@ extern void punish(struct obj *) NO_NNARGS;
 extern void unpunish(void);
 extern boolean cant_revive(int *, boolean, struct obj *) NO_NNARGS;
 extern boolean create_particular(void);
+extern void player_to_magic_maze(void);
 
 /* ### rect.c ### */
 
@@ -3220,6 +3224,7 @@ extern void level_tele(void);
 extern void domagicportal(struct trap *) NONNULLARG1;
 extern void tele_trap(struct trap *) NONNULLARG1;
 extern void level_tele_trap(struct trap *, unsigned) NONNULLARG1;
+extern boolean rloc_pos_ok(coordxy, coordxy, struct monst *);
 extern void rloc_to(struct monst *, coordxy, coordxy) NONNULLARG1;
 extern void rloc_to_flag(struct monst *, coordxy, coordxy,
                          unsigned) NONNULLARG1;
@@ -3431,6 +3436,8 @@ extern void mhitm_ad_conf(struct monst *, struct attack *, struct monst *,
                           struct mhitm_data *) NONNULLPTRS;
 extern void mhitm_ad_worm(struct monst *, struct attack *, struct monst *,
                           struct mhitm_data *) NONNULLPTRS;
+extern void mhitm_ad_soak(struct monst *, struct attack *, struct monst *,
+                          struct mhitm_data *) NONNULLPTRS;
 extern void mhitm_ad_poly(struct monst *, struct attack *, struct monst *,
                           struct mhitm_data *) NONNULLPTRS;
 extern void mhitm_ad_famn(struct monst *, struct attack *, struct monst *,
@@ -3482,6 +3489,7 @@ extern void that_is_a_mimic(struct monst *, unsigned) NONNULLARG1;
 extern void stumble_onto_mimic(struct monst *) NONNULLARG1;
 extern int flash_hits_mon(struct monst *, struct obj *) NONNULLARG12;
 extern void light_hits_gremlin(struct monst *, int) NONNULLARG1;
+extern boolean boost_effects_pre(struct monst *, struct monst *);
 
 
 /* ### unixmain.c ### */

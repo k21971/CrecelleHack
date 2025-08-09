@@ -11,7 +11,7 @@
 --
 des.level_init({ style = "solidfill", fg = " " });
 
-des.level_flags("mazelevel", "noteleport", "hardfloor")
+des.level_flags("mazelevel", "noteleport", "hardfloor", "outdoors")
 
 des.map([[
 ..................................PP........................................
@@ -43,6 +43,8 @@ des.replace_terrain({ region={65,00, 75,19}, fromterrain=".", toterrain="T", cha
 -- guarantee a path and free spot for the portal
 des.terrain(selection.randline(selection.new(), 37,7, 62,02, 7), ".")
 des.terrain({62,02}, ".")
+-- blood of enemies discussed in quest dialogue
+des.replace_terrain({ region={00,00, 79,20}, fromterrain=".", toterrain=".", coat="blood", montype="ogre", chance=7 })
 
 -- Dungeon Description
 des.region(selection.area(00,00,75,19), "lit")

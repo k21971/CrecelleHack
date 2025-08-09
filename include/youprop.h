@@ -146,6 +146,11 @@
 #define EFumbling u.uprops[FUMBLING].extrinsic
 #define Fumbling (HFumbling || EFumbling)
 
+/* Dripping */
+#define HDripping u.uprops[DRIPPING].intrinsic
+#define EDripping u.uprops[DRIPPING].extrinsic
+#define Dripping (HDripping || EDripping)
+
 /* HWounded_legs indicates whether wounded leg(s) condition exists and
    holds the timeout for recovery; EWounded_legs uses the worn-ring bits
    to track left vs right vs both and is meaningless when HWounded_legs
