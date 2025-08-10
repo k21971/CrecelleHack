@@ -3752,6 +3752,9 @@ zap_map(
                     wipe_engr_at(x, y, d(2, 4), TRUE);
                 }
                 break;
+            case SPE_DRAIN_LIFE:
+                remove_coating(x, y, COAT_FUNGUS | COAT_GRASS);
+                break;
             case WAN_STRIKING:
             case SPE_FORCE_BOLT:
                 wipe_engr_at(x, y, d(2, 4), TRUE);
@@ -3880,7 +3883,8 @@ zap_map(
             }
         } /* t_at() */
     } /* probing */
-    /* polymorph */
+    /* Handle coating mutations */
+    /* TODO: Messages? */
     if (obj->otyp == WAN_POLYMORPH) {
         if (has_coating(x, y, COAT_POTION) && levl[x][y].pindex != POT_WATER) {
             add_coating(x, y, COAT_POTION,
@@ -3890,17 +3894,15 @@ zap_map(
                 levl[x][y].pindex =rndmonnum();
             } while (!has_blood(&mons[levl[x][y].pindex]));   
         }
-    }
-    /* cancellation */
-    if (obj->otyp == WAN_CANCELLATION && has_coating(x, y, COAT_POTION)) {
+    } else if (obj->otyp == WAN_CANCELLATION && has_coating(x, y, COAT_POTION)) {
         if (levl[x][y].pindex == POT_SICKNESS || levl[x][y].pindex == POT_SEE_INVISIBLE)
             add_coating(x, y, COAT_POTION, POT_FRUIT_JUICE);
         else
             add_coating(x, y, COAT_POTION, POT_WATER);
-    }
-    /* make invisible */
-    if (obj->otyp == WAN_MAKE_INVISIBLE && has_coating(x, y, COAT_POTION)) {
+    } else if (obj->otyp == WAN_MAKE_INVISIBLE && has_coating(x, y, COAT_POTION)) {
         add_coating(x, y, COAT_POTION, POT_INVISIBILITY);
+    } else if (obj->otyp == SPE_DRAIN_LIFE) {
+        remove_coating(x, y, COAT_FUNGUS | COAT_GRASS);
     }
 
     if (learn_it)

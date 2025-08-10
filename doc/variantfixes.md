@@ -129,6 +129,7 @@
   than by using #rub.
 - New messages for hurtling across coatings.
 - Fire traps now evaporate potion puddles.
+- Drain life destroys fungal and grass coatings.
 
 ## Dungeon Changes
 - Allow fountains to become frozen. Frozen fountains cannot be
