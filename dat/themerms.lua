@@ -179,7 +179,7 @@ themeroom_fills = {
                      "samurai", "rogue", "ranger", "priestess",
                      "priest", "monk", "knight", "healer",
                      "cavewoman", "caveman", "barbarian",
-                     "archeologist", "wrestler" };
+                     "archeologist", "grappler" };
          local idx = math.random(#mon);
          for i = 1, d(5,5) do
             if (percent(10)) then idx = math.random(#mon); end

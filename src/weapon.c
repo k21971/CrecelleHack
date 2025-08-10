@@ -1759,7 +1759,7 @@ skill_init(const struct def_skill *class_skill)
         P_SKILL(P_BARE_HANDED_COMBAT) = P_BASIC;
 
     /* Wrestlers have trained in grappling */
-    if (Role_if(PM_WRESTLER))
+    if (Role_if(PM_GRAPPLER))
         P_SKILL(P_GRAPPLING) = P_BASIC;
 
     /* Roles that start with a horse know how to ride it */

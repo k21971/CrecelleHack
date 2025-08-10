@@ -176,7 +176,7 @@ static struct trobj Wizard[] = {
     { MAGIC_MARKER, 19, TOOL_CLASS, 1, 0 }, /* actually spe = 18 + d4 */
     { 0, 0, 0, 0, 0 }
 };
-static struct trobj Wrestler[] = {
+static struct trobj Grappler[] = {
     { UNDEF_TYP, UNDEF_SPE, POTION_CLASS, 3, UNDEF_BLESS },
     { FOOD_RATION, 0, FOOD_CLASS, 3, 0 },
     { APPLE, 0, FOOD_CLASS, 5, UNDEF_BLESS },
@@ -561,7 +561,7 @@ static const struct def_skill Skill_V[] = {
     { P_GRAPPLING, P_BASIC },
     { P_NONE, 0 }
 };
-static const struct def_skill Skill_Wre[] = {
+static const struct def_skill Skill_Grp[] = {
     { P_DAGGER, P_BASIC },
     { P_KNIFE, P_BASIC },
     { P_PICK_AXE, P_BASIC },
@@ -825,9 +825,9 @@ u_init_role(void)
         knows_class(ARMOR_CLASS);
         skill_init(Skill_V);
         break;
-    case PM_WRESTLER:
-        ini_inv(Wrestler);
-        skill_init(Skill_Wre);
+    case PM_GRAPPLER:
+        ini_inv(Grappler);
+        skill_init(Skill_Grp);
         break;
     case PM_WIZARD:
         ini_inv(Wizard);
@@ -975,7 +975,7 @@ pauper_reinit(void)
     case PM_BARBARIAN:
     case PM_RANGER:
     case PM_VALKYRIE:
-    case PM_WRESTLER:
+    case PM_GRAPPLER:
         break;
     }
     if (preknown != STRANGE_OBJECT)
@@ -1164,8 +1164,8 @@ restricted_spell_discipline(int otyp)
     case PM_WIZARD:
         skills = Skill_W;
         break;
-    case PM_WRESTLER:
-        skills = Skill_Wre;
+    case PM_GRAPPLER:
+        skills = Skill_Grp;
         break;
     default:
         skills = 0; /* lint suppression */
@@ -1216,7 +1216,7 @@ ini_inv_mkobj_filter(int oclass, boolean got_level1_spellbook)
            /* orcs start with poison resistance */
            || (otyp == RIN_POISON_RESISTANCE && Race_if(PM_ORC))
            /* Monks don't use weapons */
-           || (otyp == SCR_ENCHANT_WEAPON && (Role_if(PM_MONK) || Role_if(PM_WRESTLER)))
+           || (otyp == SCR_ENCHANT_WEAPON && (Role_if(PM_MONK) || Role_if(PM_GRAPPLER)))
            /* wizard patch -- they already have one */
            || (otyp == SPE_FORCE_BOLT && Role_if(PM_WIZARD))
            /* powerful spells are either useless to

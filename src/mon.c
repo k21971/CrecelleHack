@@ -896,7 +896,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_ARCHEOLOGIST: case PM_BARBARIAN: case PM_CAVE_DWELLER:
     case PM_HEALER: case PM_KNIGHT: case PM_MONK: case PM_CLERIC:
     case PM_RANGER: case PM_ROGUE: case PM_SAMURAI: case PM_TOURIST:
-    case PM_VALKYRIE: case PM_WIZARD: case PM_WRESTLER:
+    case PM_VALKYRIE: case PM_WIZARD: case PM_GRAPPLER:
 
     case PM_LORD_CARNARVON: case PM_PELIAS: case PM_SHAMAN_KARNOV:
     case PM_HIPPOCRATES: case PM_KING_ARTHUR: case PM_GRAND_MASTER:

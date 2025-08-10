@@ -278,7 +278,7 @@
 
 #define likes_grappling(ptr) \
     ((ptr)->mlet == S_NAGA || (ptr)->mlet == S_ZOMBIE \
-        || ptr == &mons[PM_WRESTLER])
+        || ptr == &mons[PM_GRAPPLER])
 
 #define mud_hider(ptr) \
     ((!is_hider(ptr) && ptr->msize <= MZ_MEDIUM) \

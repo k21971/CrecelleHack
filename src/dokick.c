@@ -2231,7 +2231,7 @@ int grapple_move(struct monst *mon) {
     start_menu(menuwin, MENU_BEHAVE_STANDARD);
     add_menu_str(menuwin, "Which technique do you want to use?");
     if (P_SKILL(P_GRAPPLING) >= P_BASIC) {
-        if (Role_if(PM_WRESTLER)) {
+        if (Role_if(PM_GRAPPLER)) {
             any.a_int = 1;
             add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Pummel", MENU_ITEMFLAGS_NONE);
         }
@@ -2239,7 +2239,7 @@ int grapple_move(struct monst *mon) {
         add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Heel Hook", MENU_ITEMFLAGS_NONE);
     }
     if (P_SKILL(P_GRAPPLING) >= P_SKILLED) {
-        if (Role_if(PM_WRESTLER)) {
+        if (Role_if(PM_GRAPPLER)) {
             any.a_int = 3;
             add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Limb Lock", MENU_ITEMFLAGS_NONE);
         }
