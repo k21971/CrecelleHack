@@ -2361,19 +2361,26 @@ int grapple_move(struct monst *mon) {
                 (void) mintrap(mon, FORCEBUNGLE);
             break;
         case 11:
-            You("hit %s with the Soko Stunner! %s is stunned!", mon_nam(mon), Monnam(mon));
+            You("hit %s with the Soko Stunner!", mon_nam(mon));
+            shieldeff(u.ux, u.uy);
+            shieldeff(mon->mx, mon->my);
             mon->mstun = 1;
             mon->mconf = 1;
             mon->msleeping = 1;
+            pline_mon(mon, "%s reels!", Monnam(mon));
             break;
         case 12:
             urgent_pline("It's the most shocking move in the dungeon...");
+            shieldeff(u.ux, u.uy);
+            shieldeff(mon->mx, mon->my);
             urgent_pline("The Yendorian's Elbow!");
-            explode(u.ux, u.uy, -(WAN_LIGHTNING), d(30, 4), WAND_CLASS, EXPL_MAGICAL);
+            explode(mon->mx, mon->my, -(WAN_LIGHTNING), d(30, 4), WAND_CLASS, EXPL_MAGICAL);
             break;
         case 13:
             You("execute a brutal submission!");
-            pline("%s is about to die.", Monnam(mon));
+            shieldeff(u.ux, u.uy);
+            shieldeff(mon->mx, mon->my);
+            pline("%s HP dropped to one!", Monnam(mon));
             mon->mhp = 1;
             break;
         default:
