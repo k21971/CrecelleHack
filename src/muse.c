@@ -1564,7 +1564,7 @@ find_offensive(struct monst *mtmp)
             gm.m.has_offense = MUSE_WAN_STRIKING;
         }
         nomore(MUSE_WAN_WATER);
-        if (obj->otyp == MUSE_WAN_WATER && obj->spe > 0) {
+        if (obj->otyp == WAN_WATER && obj->spe > 0) {
             gm.m.offensive = obj;
             gm.m.has_offense = MUSE_WAN_WATER;
         }
