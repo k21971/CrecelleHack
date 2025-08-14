@@ -655,6 +655,10 @@ doengrave_sfx_item_WAN(struct _doengrave_ctx *de)
         if (!Blind)
             Strcpy(de->post_engr_text,
                    "A few ice cubes drop from the wand.");
+        if (has_coating(COAT_POTION) || has_coating(COAT_BLOOD)) {
+            remove_coating(u.ux, u.uy, COAT_POTION | COAT_BLOOD);
+            add_coating(u.ux, u.uy, COAT_FROST, 0);
+        }
         if (!de->oep || (de->oep->engr_type != BURN))
             break;
         FALLTHROUGH;
