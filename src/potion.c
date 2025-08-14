@@ -26,6 +26,7 @@ staticfn void peffect_confusion(struct obj *);
 staticfn void peffect_gain_ability(struct obj *);
 staticfn void peffect_speed(struct obj *);
 staticfn void peffect_blindness(struct obj *);
+staticfn void peffect_teleportitis(struct obj *);
 staticfn void peffect_gain_level(struct obj *);
 staticfn void peffect_healing(struct obj *);
 staticfn void peffect_extra_healing(struct obj *);
@@ -1121,6 +1122,14 @@ peffect_blindness(struct obj *otmp)
 }
 
 staticfn void
+peffect_teleportitis(struct obj *otmp)
+{
+    if (!otmp->cursed)
+        tele();
+    incr_itimeout(&HTeleportation, rn1(50, 250));
+}
+
+staticfn void
 peffect_gain_level(struct obj *otmp)
 {
     if (otmp->cursed) {
@@ -1446,6 +1455,9 @@ peffects(struct obj *otmp)
         break;
     case POT_BLINDNESS:
         peffect_blindness(otmp);
+        break;
+    case POT_TELEPORTITIS:
+        peffect_teleportitis(otmp);
         break;
     case POT_GAIN_LEVEL:
         peffect_gain_level(otmp);
@@ -2046,6 +2058,9 @@ do_illness:
             mon->mcansee = 0;
         }
         break;
+    case POT_TELEPORTITIS:
+        u_teleport_mon(mon, TRUE);
+        break;
     case POT_WATER:
         if (mon_hates_blessings(mon) /* undead or demon */
             || is_were(mon->data) || is_vampshifter(mon)) {
@@ -2429,6 +2444,9 @@ potionbreathe(struct obj *obj)
         if (!Blind && !Unaware)
             Your1(vision_clears);
         break;
+    case POT_TELEPORTITIS:
+        tele();
+        break;
     case POT_BLOOD:
         if (olfaction(gy.youmonst.data))
             Norep("You catch a whiff of iron.");
@@ -2530,6 +2548,7 @@ mpotionbreathe(struct obj *obj, struct monst *mtmp, boolean heros_fault)
     case POT_GAIN_ABILITY:
     case POT_POLYMORPH:
     case POT_SPEED:
+    case POT_TELEPORTITIS:
         potionhit_effects(mtmp, obj, heros_fault);
         break;
     case POT_HAZARDOUS_WASTE:

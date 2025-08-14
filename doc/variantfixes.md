@@ -112,6 +112,9 @@
 - Wand of water
   - Does damage as a wand of striking, but cannot be resisted.
   - Coats things in water.
+- Potion of teleportitis
+  - Non-cursed potions teleport the drinker.
+  - Gas released from the potion teleports those that breathe it.
 
 ## Floor Coating System
 - Added frost and mud as a floor coatings.

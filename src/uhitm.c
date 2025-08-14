@@ -6524,6 +6524,9 @@ boost_effects_pre(struct monst *magr, struct monst *mdef)
         weapon = MON_WEP(magr);
     }
 
+    if (!weapon)
+        return DEADMONSTER(mdef);
+
     icy = (has_coating(x, y, COAT_FROST) || levl[x][y].typ == ICE);
     if (is_u) {
         if ((weapon->booster & BST_ICE) && icy) {
