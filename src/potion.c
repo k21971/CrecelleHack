@@ -1869,7 +1869,8 @@ evaporate_potion_puddles(coordxy x, coordxy y) {
         remove_coating(x, y, COAT_POTION);
     }
     if ((levl[x][y].coat_info & COAT_BLOOD) && !rn2(4)) {
-        create_gas_cloud(x, y, 1, 0, 0);
+        fakeobj.otyp = 0;
+        create_gas_cloud(x, y, 1, &fakeobj, 0);
         remove_coating(x, y, COAT_BLOOD);
     }
 }
