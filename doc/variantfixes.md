@@ -75,6 +75,7 @@
 - Added ice as a material, which is used for icicles and for a
   new randomized wand appearance. It can both shatter and be
   melted, making it extremely delicate.
+- Significantly increased wand of teleportation rarity.
 
 ### New Objects
 - Bestiary
@@ -108,6 +109,9 @@
   - Tonal instrument.
 - Electric Guitar
   - Fires bolts of electricity, as a fire or frost horn would.
+- Wand of water
+  - Does damage as a wand of striking, but cannot be resisted.
+  - Coats things in water.
 
 ## Floor Coating System
 - Added frost and mud as a floor coatings.
