@@ -2453,7 +2453,7 @@ potionbreathe(struct obj *obj)
         break;
     case POT_ACID:
         /* Not all forms have noses, maybe check if humanoid? */
-        Norep("nose burns.");
+        Norep("Your nose burns.");
         exercise(A_CON, FALSE);
         break;
     case POT_FRUIT_JUICE:
