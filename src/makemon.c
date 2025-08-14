@@ -387,7 +387,7 @@ m_initweap(struct monst *mtmp)
             /* make long sword be +0 to +3, mace be +3 to +6 to compensate
                for being significantly weaker against large opponents */
             otmp->spe = rn2(4);
-            if (typ == MACE)
+            if (typ == SILVER_MACE)
                 otmp->spe += 3;
             (void) mpickobj(mtmp, otmp);
 
