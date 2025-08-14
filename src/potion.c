@@ -587,6 +587,14 @@ dodrink(void)
             }
             ++drink_ok_extra;
         }
+        if (has_coating(u.ux, u.ux, COAT_POTION)
+            || has_coating(u.ux, u.ux, COAT_BLOOD)) {
+            if (y_n("Drink liquid on the floor?") == 'y') {
+                pline("Do you know how many bugs there are on the floor?");
+                return ECMD_TIME;
+            }
+            ++drink_ok_extra;
+        }
     }
 
     otmp = getobj("drink", drink_ok, GETOBJ_NOFLAGS);
