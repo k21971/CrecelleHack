@@ -6,6 +6,7 @@
 
 staticfn boolean throne_mon_sound(struct monst *);
 staticfn boolean beehive_mon_sound(struct monst *);
+staticfn boolean scilab_mon_sound(struct monst *);
 staticfn boolean morgue_mon_sound(struct monst *);
 staticfn boolean zoo_mon_sound(struct monst *);
 staticfn boolean temple_priest_sound(struct monst *);
@@ -79,6 +80,28 @@ beehive_mon_sound(struct monst *mtmp)
             Soundeffect(se_bees, 100);
             You_hear("bees in your %sbonnet!",
                      uarmh ? "" : "(nonexistent) ");
+            break;
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
+staticfn boolean
+scilab_mon_sound(struct monst *mtmp)
+{
+    if ((mtmp->data->mlet == S_QUANTMECH || mtmp->data == &mons[PM_FLESH_GOLEM])
+        && mon_in_room(mtmp, SCILAB)) {
+        int hallu = Hallucination ? 1 : 0;
+        switch (rn2(2) + hallu) {
+        case 0:
+            You_hear("the clinking of phials and beakers.");
+            break;
+        case 1:
+            You_hear("liquids bubbling and fizzing.");
+            break;
+        case 2:
+            You_hear("Walter White!");
             break;
         }
         return TRUE;
@@ -291,6 +314,10 @@ dosounds(void)
     }
     if (svl.level.flags.has_morgue && !rn2(200)) {
         if (get_iter_mons(morgue_mon_sound))
+            return;
+    }
+    if (svl.level.flags.has_scilab && !rn2(200)) {
+        if (get_iter_mons(scilab_mon_sound))
             return;
     }
     if (svl.level.flags.has_barracks && !rn2(200)) {

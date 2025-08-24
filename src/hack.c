@@ -3615,6 +3615,9 @@ check_special_room(boolean newlev)
         case ANTHOLE:
             You("enter an anthole!");
             break;
+        case SCILAB:
+            You("enter a laboratory!");
+            break;
         case BARRACKS:
             if (monstinroom(&mons[PM_SOLDIER], roomno)
                 || monstinroom(&mons[PM_SERGEANT], roomno)
@@ -3675,6 +3678,9 @@ check_special_room(boolean newlev)
                     break;
                 case BEEHIVE:
                     svl.level.flags.has_beehive = 0;
+                    break;
+                case SCILAB:
+                    svl.level.flags.has_scilab = 0;
                     break;
                 }
             }

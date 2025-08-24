@@ -2767,6 +2767,7 @@ fill_special_room(struct mkroom *croom)
         case BEEHIVE:
         case ANTHOLE:
         case BARRACKS:
+        case SCILAB:
             fill_zoo(croom);
             break;
         case DELPHI:
@@ -2798,6 +2799,9 @@ fill_special_room(struct mkroom *croom)
         break;
     case SWAMP:
         svl.level.flags.has_swamp = TRUE;
+        break;
+    case SCILAB:
+        svl.level.flags.has_scilab = TRUE;
         break;
     }
 }
@@ -3966,6 +3970,7 @@ static const struct {
     { "delphi", DELPHI },
     { "temple", TEMPLE },
     { "anthole", ANTHOLE },
+    { "laboratory", SCILAB },
     { "cocknest", COCKNEST },
     { "leprehall", LEPREHALL },
     { "shop", SHOPBASE },

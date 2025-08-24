@@ -887,6 +887,7 @@ clear_level_structures(void)
     svl.level.flags.has_barracks = 0;
     svl.level.flags.has_temple = 0;
     svl.level.flags.has_swamp = 0;
+    svl.level.flags.has_scilab = 0;
     svl.level.flags.noteleport = 0;
     svl.level.flags.hardfloor = 0;
     svl.level.flags.nommap = 0;
@@ -1193,6 +1194,9 @@ coat_room(struct mkroom *croom, unsigned char coat_type) {
     int ly = croom->ly;
     int hx = croom->hx;
     int hy = croom->hy;
+
+    if (croom->rtype >= BEEHIVE && croom->rtype <= SCILAB)
+        return;
     
     for (x = lx - 1; x <= hx + 1; x++) {
         for (y = ly - 1; y <= hy + 1; y++) {
@@ -1406,7 +1410,7 @@ makelevel(void)
             do_mkroom(SHOPBASE);
         else if (u_depth > 4 && !rn2(6))
             do_mkroom(COURT);
-        else if (u_depth > 5 && !rn2(8)
+        else if (u_depth > 5 && !rn2(9)
                  && !(svm.mvitals[PM_LEPRECHAUN].mvflags & G_GONE))
             do_mkroom(LEPREHALL);
         else if (u_depth > 6 && !rn2(7))
@@ -1416,6 +1420,8 @@ makelevel(void)
         else if (u_depth > 9 && !rn2(5)
                  && !(svm.mvitals[PM_KILLER_BEE].mvflags & G_GONE))
             do_mkroom(BEEHIVE);
+        else if (u_depth > 10 && !rn2(7))
+            do_mkroom(SCILAB);
         else if (u_depth > 11 && !rn2(6))
             do_mkroom(MORGUE);
         else if (u_depth > 12 && !rn2(8) && antholemon())
