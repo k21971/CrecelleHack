@@ -464,8 +464,10 @@ look_at_monster(
         /* arbitrary reason why it isn't moving */
         Strcat(buf, ", meditating");
 
+#ifdef MON_HARMONICS
     if (mon_boosted(mtmp, mtmp->data->mboost))
         Strcat(buf, ", harmonizing");
+#endif
     if (mtmp->mleashed)
         Strcat(buf, ", leashed to you");
     if (mtmp->mprone)

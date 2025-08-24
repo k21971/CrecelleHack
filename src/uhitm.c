@@ -4896,8 +4896,10 @@ damageum(
     }
 
     /* If boosted, multiply damage */
+#ifdef MON_HARMONICS
     if (u_boosted(gy.youmonst.data->mboost))
         mhm.damage += d((int) mattk->damn, (int) mattk->damd);
+#endif
 
     mhitm_adtyping(&gy.youmonst, mattk, mdef, &mhm);
 

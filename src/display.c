@@ -601,11 +601,13 @@ display_monster(
                 num = petnum_to_glyph(PM_LONG_WORM_TAIL, mgendercode);
             else
                 num = pet_to_glyph(mon, rn2_on_display_rng);
+#ifdef MON_HARMONICS
         } else if (!Hallucination && mon_boosted(mon, mon->data->mboost)) {
             if (worm_tail)
                 num = boosted_monnum_to_glyph(PM_LONG_WORM_TAIL, mgendercode);
             else
                 num = boosted_to_glyph(mon, rn2_on_display_rng);
+#endif
         } else if (sightflags == DETECTED) {
             if (worm_tail)
                 num = detected_monnum_to_glyph(what_mon(PM_LONG_WORM_TAIL,

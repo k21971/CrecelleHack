@@ -20,6 +20,8 @@
   associated harmonies.
 - Remove obscure ordering system for determining whether a harmony
   is active.
+- Disable monster harmonization while reworking the system to be
+  more interesting.
 
 ## Monsters
 - Slightly increase chance of random spawns of unique monsters.
