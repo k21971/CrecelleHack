@@ -1306,12 +1306,14 @@ make_gas_cloud(
     cloud->inside_f = INSIDE_GAS_CLOUD;
     cloud->expire_f = EXPIRE_GAS_CLOUD;
     REGION_DAMAGE(cloud) = damage;
-    REGION_OTYP(cloud) = otmp->otyp;
-    REGION_BLESSED(cloud) = otmp->blessed;
-    REGION_CURSED(cloud) = otmp->cursed;
     cloud->visible = TRUE;
     cloud->blocking = TRUE;
     /* Set up the cloud glyph */
+    if (otmp) {
+        REGION_OTYP(cloud) = otmp->otyp;
+        REGION_BLESSED(cloud) = otmp->blessed;
+        REGION_CURSED(cloud) = otmp->cursed;
+    }
     if (otmp) {
         cloud->glyph = cmap_to_glyph(S_potioncloud) + otmp->otyp - POT_GAIN_ABILITY;
     } else {
