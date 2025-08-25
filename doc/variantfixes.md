@@ -144,7 +144,7 @@
 - Allow fountains to become frozen. Frozen fountains cannot be
   dipped into or quaffed from.
 - New special room: Laboratory
-- Fixed zoos having grass in them.
+- Fixed many special rooms having grass inside.
 
 ## GUI
 - Farlook a monster with (:) to see a summary of a monster's stats,

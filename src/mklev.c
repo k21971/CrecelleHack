@@ -1195,7 +1195,7 @@ coat_room(struct mkroom *croom, unsigned char coat_type) {
     int hx = croom->hx;
     int hy = croom->hy;
 
-    if (croom->rtype >= BEEHIVE && croom->rtype <= SCILAB)
+    if (croom->rtype >= VAULT && croom->rtype <= CANDLESHOP)
         return;
     
     for (x = lx - 1; x <= hx + 1; x++) {
