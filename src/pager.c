@@ -676,13 +676,18 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
 /* describe the tonic depending on if it is known or unknown */
 char *
 potion_coating_text(char *outbuf, int pindex) {
-    Sprintf(outbuf, "%s %s",
-                objects[pindex].oc_name_known ? OBJ_NAME(objects[pindex]) 
-                                              : OBJ_DESCR(objects[pindex]),
-                objects[pindex].oc_name_known ?
-                    ((pindex == POT_BOOZE
-                        || pindex == POT_OIL
-                        || pindex == POT_BLOOD) ? "" : "tonic") : "liquid");
+
+    if (objects[pindex].oc_uname) {
+        Sprintf(outbuf, "tonic called %s", objects[pindex].oc_uname);
+    } else {
+        Sprintf(outbuf, "%s %s",
+                    objects[pindex].oc_name_known ? OBJ_NAME(objects[pindex]) 
+                                                : OBJ_DESCR(objects[pindex]),
+                    objects[pindex].oc_name_known ?
+                        ((pindex == POT_BOOZE
+                            || pindex == POT_OIL
+                            || pindex == POT_BLOOD) ? "" : "tonic") : "liquid");
+    }
     return outbuf;
 }
 
