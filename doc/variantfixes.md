@@ -46,6 +46,7 @@
 - Water elementals soak enemies with water on hit.
 - Greater variance in the weapons that monsters spawn with.
 - Crimson deaths create a massive cloud of bloody mist upon death.
+- Change name of wargs to dire wolves.
 
 ## New Monsters
 - Salt Golem
