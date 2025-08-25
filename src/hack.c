@@ -42,6 +42,7 @@ staticfn boolean avoid_trap_andor_region(coordxy, coordxy);
 staticfn boolean move_out_of_bounds(coordxy, coordxy);
 staticfn boolean carrying_too_much(void);
 staticfn boolean escape_from_sticky_mon(coordxy, coordxy);
+staticfn boolean grappling_finisher(coordxy, coordxy, struct monst *) NONNULLARG3;
 staticfn void domove_core(void);
 staticfn void maybe_smudge_engr(coordxy, coordxy, coordxy, coordxy);
 staticfn struct monst *monstinroom(struct permonst *, int) NONNULLARG1;
@@ -2642,12 +2643,16 @@ escape_from_sticky_mon(coordxy x, coordxy y)
             /* perhaps it fled (or was teleported or ... ) */
             set_ustuck((struct monst *) 0);
         } else if (u.usticker) {
+            mtmp = u.ustuck;
             /* When polymorphed into a sticking monster,
              * u.ustuck means it's stuck to you, not you to it.
              */
-            mtmp = u.ustuck;
-            set_ustuck((struct monst *) 0);
-            You("release %s.", y_monnam(mtmp));
+            if (Role_if(PM_GRAPPLER)) {
+                grappling_finisher(x, y, mtmp);
+            } else {
+                set_ustuck((struct monst *) 0);
+                You("release %s.", y_monnam(mtmp));
+            }
         } else {
             /* If holder is asleep or paralyzed:
              *      37.5% chance of getting away,
@@ -2688,6 +2693,69 @@ escape_from_sticky_mon(coordxy x, coordxy y)
         }
     }
     return FALSE;
+}
+
+/* Move executed by a grappler when moving while holding a monster. Returns
+   true if the grapple is maintained. */
+staticfn boolean
+grappling_finisher(coordxy x, coordxy y, struct monst *mtmp)
+{
+    coord cc;
+    char kbuf[BUFSZ];
+    int future_dist = dist2(x, y, mtmp->mx, mtmp->my);
+    boolean bare_hit = FALSE;
+    boolean break_grapple = TRUE;
+    
+    if (future_dist == 1 && (x == mtmp->mx || y == mtmp->my)) {
+        pline_mon(mtmp, "You hit %s with a lariat!", mon_nam(mtmp));
+        make_mon_prone(mtmp);
+    } else if (future_dist == 2) {
+        pline_mon(mtmp, "You spin-kick %s!", mon_nam(mtmp));
+        if (rn2(8 - P_SKILL(P_GRAPPLING))) {
+            mtmp->mconf = 1;
+            if (canseemon(mtmp))
+                pline_mon(mtmp, "%s looks confused!", Monnam(mtmp));
+        }
+        bare_hit = TRUE;
+    } else if (future_dist == 5) {
+        if (enexto(&cc, x, y, mtmp->data)) {
+            rloc_to(mtmp, cc.x, cc.y);
+            pline_mon(mtmp, "You %s drag %s!",  mbodypart(mtmp, LEG), mon_nam(mtmp));
+            bare_hit = TRUE;
+        } else {
+            pline("Your move fails!");
+        }
+        break_grapple = FALSE;
+    } else if (goodpos(x, y, mtmp, 0)) {
+        pline_mon(mtmp, "You suplex %s!", mon_nam(mtmp));
+        rloc_to(mtmp, x, y);
+        bare_hit = TRUE;
+        mtmp->mhp -= rnd(8);
+    } else {
+        pline_mon(mtmp, "You pummel %s!", mon_nam(mtmp));
+        bare_hit = TRUE;
+    }
+    /* Now do some damage */
+    if (bare_hit) {
+        mtmp->mhp -= rnd(!martial_bonus() ? 2 : 4);
+        if (DEADMONSTER(mtmp)) {
+            killed(mtmp);
+            return TRUE;
+        }
+        if (touch_petrifies(mtmp->data)) {
+            Sprintf(kbuf, "grappling %s", mon_nam(mtmp));
+            instapetrify(kbuf);
+        }
+    }
+    /* Decide whether the grapple is maintained */
+    if (break_grapple && P_SKILL(P_GRAPPLING) > P_BASIC) {
+        break_grapple = !rn2(P_SKILL(P_GRAPPLING));
+    }
+    if (break_grapple || mdistu(mtmp) > 1) {
+        set_ustuck((struct monst *) 0);
+        pline_mon(mtmp, "Your grip on %s is broken.", mon_nam(mtmp));
+    }
+    return break_grapple;
 }
 
 void

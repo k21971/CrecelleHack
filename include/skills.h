@@ -64,8 +64,9 @@ enum p_skills {
     P_RIDING             = 37, /* How well you control your steed */
     P_TRIPPING           = 38, /* How well you can trip others and avoid trips */
     P_GRAPPLING          = 39, /* How well you can grapple others and escape grapples */
+    P_IMPROV             = 40,  /* How well can you improvise weapons */
 
-    P_NUM_SKILLS         = 40
+    P_NUM_SKILLS         = 41
 };
 
 #define P_MARTIAL_ARTS P_BARE_HANDED_COMBAT /* Role distinguishes */
@@ -76,7 +77,7 @@ enum p_skills {
 #define P_FIRST_SPELL P_ATTACK_SPELL
 #define P_LAST_SPELL P_MATTER_SPELL
 
-#define P_LAST_H_TO_H P_GRAPPLING
+#define P_LAST_H_TO_H P_IMPROV
 #define P_FIRST_H_TO_H P_BARE_HANDED_COMBAT
 
 /* These roles qualify for a martial arts bonus */

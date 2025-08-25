@@ -47,6 +47,7 @@ staticfn void hmon_hitmon_pet(struct _hitmon_data *, struct monst *,
                              struct obj *) NONNULLARG12;
 staticfn void hmon_hitmon_splitmon(struct _hitmon_data *, struct monst *,
                              struct obj *) NONNULLARG12;
+staticfn const char * weapon_hit_text(struct obj *);
 staticfn void hmon_hitmon_msg_hit(struct _hitmon_data *, struct monst *,
                              struct obj *) NONNULLARG12;
 staticfn void hmon_hitmon_msg_silver(struct _hitmon_data *, struct monst *,
@@ -627,6 +628,14 @@ known_hitum(
     } else {
         int oldhp = mon->mhp;
         long oldweaphit = u.uconduct.weaphit;
+
+        /* Grappler grabs */
+        if (Role_if(PM_GRAPPLER) && !u.ustuck) {
+            pline_mon(mon, "You grab %s!", mon_nam(mon));
+            u.usticker = 1;
+            set_ustuck(mon);
+            return malive;
+        }
 
         /* KMH, conduct */
         if (weapon && (weapon->oclass == WEAPON_CLASS || is_weptool(weapon)))
@@ -1345,7 +1354,9 @@ hmon_hitmon_misc_obj(
         /* (but not too much) */
         hmd->dmg = (obj->owt + 99) / 100;
         hmd->dmg = (hmd->dmg <= 1) ? 1 : rnd(hmd->dmg);
-        if (hmd->dmg > 6)
+        if (Role_if(PM_GRAPPLER && hmd->dmg > 20)) {
+            hmd->dmg = 20;
+        } else if (hmd->dmg > 6)
             hmd->dmg = 6;
         /* wet towel has modest damage bonus beyond its weight,
            based on its wetness */
@@ -1372,6 +1383,8 @@ hmon_hitmon_misc_obj(
         if (obj->blessed && mon_hates_blessings(mon))
             hmd->dmg += rnd(4);
     }
+    /* Improve improved improv */
+    use_skill(P_IMPROV, 1);
 }
 
 /* do the actual hitting monster with obj/fists */
@@ -1628,6 +1641,44 @@ hmon_hitmon_splitmon(
     }
 }
 
+staticfn const char *
+weapon_hit_text(struct obj *obj) {
+    if (!obj) {
+        if (Role_if(PM_MONK)) return "strike";
+        else if (!Upolyd) return "punch";
+        else return "hit";
+    }
+    switch (objects[obj->otyp].oc_skill) {
+    case P_AXE:
+        return "hew";
+    case P_DAGGER:
+    case P_KNIFE:
+    case P_SHORT_SWORD:
+    case P_UNICORN_HORN:
+        return "stab";
+    case P_LONG_SWORD:
+    case P_BROAD_SWORD:
+    case P_TWO_HANDED_SWORD:
+    case P_SABER:
+        return "slash";
+    case P_MACE:
+    case P_MORNING_STAR:
+    case P_FLAIL:
+    case P_HAMMER:
+        return "bash";
+    case P_QUARTERSTAFF:
+        return "strike";
+    case P_SPEAR:
+    case P_TRIDENT:
+    case P_LANCE:
+        return "jab";
+    case P_WHIP:
+        return "lash";
+    default:
+        return "hit";
+    }
+}
+
 staticfn void
 hmon_hitmon_msg_hit(
     struct _hitmon_data *hmd,
@@ -1646,10 +1697,9 @@ hmon_hitmon_msg_hit(
             You("%s %s%s",
                 (obj && (is_shield(obj)
                          || obj->otyp == HEAVY_IRON_BALL)) ? "bash"
-                : (obj && (objects[obj->otyp].oc_skill == P_WHIP
-                           || is_wet_towel(obj))) ? "lash"
+                : (obj && is_wet_towel(obj)) ? "lash"
                   : Role_if(PM_BARBARIAN) ? "smite"
-                    : "hit",
+                    : weapon_hit_text(obj),
                 mon_nam(mon), canseemon(mon) ? exclam(hmd->dmg) : ".");
     }
 }
@@ -1823,6 +1873,11 @@ hmon_hitmon(
         hmon_hitmon_stagger(&hmd, mon, obj);
     } else if (!hmd.unarmed && hmd.dmg > 1 && !thrown && !Upolyd
                && !u.twoweap && uwep) {
+        maybe_knockback = TRUE;
+    }
+
+    /* Grapplers always get knockback if not polyd */
+    if (Role_if(PM_GRAPPLER) && !thrown && !Upolyd) {
         maybe_knockback = TRUE;
     }
 
@@ -5309,6 +5364,7 @@ mhitm_knockback(
     int chance = 6; /* 1/6 chance of attack knocking back a monster */
     boolean u_agr = (magr == &gy.youmonst);
     boolean u_def = (mdef == &gy.youmonst);
+    boolean wrasslin = (u_agr && Role_if(PM_GRAPPLER) && u.usticker && u.ustuck == mdef);
     boolean was_u = FALSE, dismount = FALSE;
     struct obj *wep = weapon_used ? (u_agr ? uwep : MON_WEP(magr))
                                   : (struct obj *) 0;
@@ -5316,7 +5372,7 @@ mhitm_knockback(
     if (wep && is_art(wep, ART_OGRESMASHER))
         chance = 2;
 
-    if (rn2(chance))
+    if (rn2(chance) && !wrasslin)
         return FALSE;
 
     /* only certain attacks qualify for knockback */
@@ -5328,9 +5384,9 @@ mhitm_knockback(
         return FALSE;
 
     /* don't knockback if attacker also wants to grab or engulf */
-    if (attacktype(magr->data, AT_ENGL)
+    if ((attacktype(magr->data, AT_ENGL)
         || attacktype(magr->data, AT_HUGS)
-        || sticks(magr->data))
+        || sticks(magr->data)) && !wrasslin)
         return FALSE;
 
     /* decide where the first step will place the target; not accurate
@@ -5372,11 +5428,10 @@ mhitm_knockback(
         return FALSE;
 
     /* attacker must be much larger than defender */
-    if (!(magr->data->msize > (mdef->data->msize + 1)))
+    if ((!(magr->data->msize > (mdef->data->msize + 1)) && !wrasslin))
         return FALSE;
-
     /* no knockback with a flimsy or non-blunt weapon */
-    if (wep && (is_flimsy(wep) || !is_blunt_weapon(wep)))
+    if (wep && (is_flimsy(wep) || !is_blunt_weapon(wep)) && !wrasslin)
         return FALSE;
 
     /* needs a solid physical hit */
@@ -5408,7 +5463,9 @@ mhitm_knockback(
                    : "back";
 
     /* give the message */
-    if (u_def || canseemon(mdef)) {
+    if (wrasslin && canseemon(mdef) && !uwep) {
+        pline_mon(mdef, "You dropkick %s!", mon_nam(mdef));
+    } else if (u_def || canseemon(mdef)) {
         Strcpy(magrbuf, u_agr ? "You" : Monnam(magr));
         Strcpy(mdefbuf, (u_def || was_u) ? "you" : y_monnam(mdef));
         if (was_u)

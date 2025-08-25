@@ -156,6 +156,21 @@
 - Add code to windowports to support botl handling of many more statuses.
 - Switch riding to opt_in on botl and being held to opt_out.
 
+## Roles and Races
+- Rewrote the wrestler role entirely.
+  - Wrestlers are now known as grapplers.
+  - Attacking a monster as a grappler now initiates a grap instead of an attack.
+  - The direction one moves while holding a grabbed monster determines the kind
+    of attack one performs against it.
+  - Using #grapple while holding a monster releases that monster instead of
+    executing a special move.
+
+## Skills
+- New Skill: Improvised Weaponry
+  - Improvised weaponry allows players to improve their to-hit with
+    abnormally wielded objects.
+  - Grappler damage for improvised weapons caps at 1d20 instead of 1d6.
+
 ## Misc
 - Bonfires no longer block sight.
 - Potions destroyed in chests now splatter everywhere and create clouds of
@@ -343,13 +358,6 @@
 - Unlocking tools now stack.
 - Unlocking tools have a small chance of being destroyed upon use.
   The chance is dependent upon the type of unlocking tool.
-
-## Roles and Races
-
-### New Role: The Wrestler
-- Can you wrestle the dungeon into submission?
-- TODO: Overwrite placeholder racial wrestling attacks.
-- TODO: Improvised weapon usage.
 
 ### General
 - Roles are not restricted by race, with the exception of

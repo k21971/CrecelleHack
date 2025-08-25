@@ -24,17 +24,18 @@ staticfn void skill_advance(int);
 #define PN_RIDING (-3)
 #define PN_TRIPPING (-4)
 #define PN_GRAPPLING (-5)
-#define PN_POLEARMS (-6)
-#define PN_SABER (-7)
-#define PN_HAMMER (-8)
-#define PN_WHIP (-9)
-#define PN_ATTACK_SPELL (-10)
-#define PN_HEALING_SPELL (-11)
-#define PN_DIVINATION_SPELL (-12)
-#define PN_ENCHANTMENT_SPELL (-13)
-#define PN_CLERIC_SPELL (-14)
-#define PN_ESCAPE_SPELL (-15)
-#define PN_MATTER_SPELL (-16)
+#define PN_IMPROV (-6)
+#define PN_POLEARMS (-7)
+#define PN_SABER (-8)
+#define PN_HAMMER (-9)
+#define PN_WHIP (-10)
+#define PN_ATTACK_SPELL (-11)
+#define PN_HEALING_SPELL (-12)
+#define PN_DIVINATION_SPELL (-13)
+#define PN_ENCHANTMENT_SPELL (-14)
+#define PN_CLERIC_SPELL (-15)
+#define PN_ESCAPE_SPELL (-16)
+#define PN_MATTER_SPELL (-17)
 
 static NEARDATA const short skill_names_indices[P_NUM_SKILLS] = {
     /* Weapon */
@@ -46,13 +47,16 @@ static NEARDATA const short skill_names_indices[P_NUM_SKILLS] = {
     PN_ATTACK_SPELL, PN_HEALING_SPELL, PN_DIVINATION_SPELL,
     PN_ENCHANTMENT_SPELL, PN_CLERIC_SPELL, PN_ESCAPE_SPELL, PN_MATTER_SPELL,
     /* Other */
-    PN_BARE_HANDED, PN_TWO_WEAPONS, PN_RIDING, PN_TRIPPING, PN_GRAPPLING
+    PN_BARE_HANDED, PN_TWO_WEAPONS, PN_RIDING, PN_TRIPPING, PN_GRAPPLING,
+    PN_IMPROV
 };
 
 /* note: entry [0] isn't used */
 static NEARDATA const char *const odd_skill_names[] = {
     "no skill", "bare hands", /* use barehands_or_martial[] instead */
-    "two weapon combat", "riding", "tripping", "grappling", "polearms", "saber", "hammer", "whip",
+    "two weapon combat", "riding", "tripping", "grappling",
+    "improvised weaponry",
+    "polearms", "saber", "hammer", "whip",
     "attack spells", "healing spells", "divination spells",
     "enchantment spells", "clerical spells", "escape spells", "matter spells",
 };
@@ -1493,7 +1497,7 @@ weapon_type(struct obj *obj)
         return P_BARE_HANDED_COMBAT; /* Not using a weapon */
     if (obj->oclass != WEAPON_CLASS && obj->oclass != TOOL_CLASS
         && obj->oclass != GEM_CLASS)
-        return P_NONE; /* Not a weapon, weapon-tool, or ammo */
+        return P_IMPROV; /* Not a weapon, weapon-tool, or ammo */
     type = objects[obj->otyp].oc_skill;
     return (type < 0) ? -type : type;
 }
@@ -1525,7 +1529,7 @@ weapon_hit_bonus(struct obj *weapon)
                : wep_type;
     if (type == P_NONE) {
         bonus = 0;
-    } else if (type <= P_LAST_WEAPON) {
+    } else if (type <= P_LAST_WEAPON || type == P_IMPROV) {
         switch (P_SKILL(type)) {
         default:
             impossible(bad_skill, P_SKILL(type));
@@ -1625,7 +1629,7 @@ weapon_dam_bonus(struct obj *weapon)
                : wep_type;
     if (type == P_NONE) {
         bonus = 0;
-    } else if (type <= P_LAST_WEAPON) {
+    } else if (type <= P_LAST_WEAPON || type == P_IMPROV) {
         switch (P_SKILL(type)) {
         default:
             impossible("weapon_dam_bonus: bad skill %d", P_SKILL(type));
