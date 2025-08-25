@@ -12,6 +12,7 @@ staticfn boolean alreadynamed(struct monst *, char *, char *) NONNULLPTRS;
 staticfn void do_oname(struct obj *) NONNULLARG1;
 staticfn char *docall_xname(struct obj *) NONNULLARG1;
 staticfn void namefloorobj(void);
+staticfn void namefloorliquid(void);
 staticfn const char *baby_name(struct monst *) NONNULLARG1;
 
 #define NUMMBUF 5
@@ -548,6 +549,10 @@ docallcmd(void)
     add_menu(win, &nul_glyphinfo, &any, abc ? 0 : any.a_char, 'l',
              ATR_NONE, clr, "record an annotation for the current level",
              MENU_ITEMFLAGS_NONE);
+    any.a_char = 't'; /* group accelerator ',' (or ':' instead?) */
+    add_menu(win, &nul_glyphinfo, &any, abc ? 0 : any.a_char, ',',
+             ATR_NONE, clr, "the type of a tonic upon the floor",
+             MENU_ITEMFLAGS_NONE);
     end_menu(win, "What do you want to name?");
     if (select_menu(win, PICK_ONE, &pick_list) > 0) {
         ch = pick_list[0].item.a_char;
@@ -590,6 +595,9 @@ docallcmd(void)
         break;
     case 'f': /* name a type of object visible on the floor */
         namefloorobj();
+        break;
+    case 't': /* name a visible liquid on the floor */
+        namefloorliquid();
         break;
     case 'd': /* name a type of object on the discoveries list */
         rename_disco();
@@ -754,6 +762,31 @@ namefloorobj(void)
         dealloc_obj(obj); /* has no contents */
     }
 }
+
+staticfn void
+namefloorliquid(void)
+{
+    coord cc;
+    char buf[BUFSZ];
+    struct obj fakeobj;
+
+    cc.x = u.ux, cc.y = u.uy;
+    Sprintf(buf, "tonic coating on map (or '.' for one under you)");
+    if (getpos(&cc, FALSE, buf) < 0 || cc.x <= 0)
+        return;
+
+    if (!has_coating(cc.x, cc.y, COAT_POTION)) {
+        There("does not seem to be a tonic coating %s.",
+                u_at(cc.x, cc.y) ? "under you" : "there");
+        return;
+    }
+    fakeobj = cg.zeroobj;
+    fakeobj.dknown = 1;
+    fakeobj.otyp = levl[cc.x][cc.y].pindex;
+    fakeobj.oclass = POTION_CLASS;
+    docall(&fakeobj);
+}
+
 
 static const char *const ghostnames[] = {
     /* these names should have length < PL_NSIZ */
