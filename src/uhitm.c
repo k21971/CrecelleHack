@@ -630,7 +630,7 @@ known_hitum(
         long oldweaphit = u.uconduct.weaphit;
 
         /* Grappler grabs */
-        if (Role_if(PM_GRAPPLER) && !u.ustuck) {
+        if (Role_if(PM_GRAPPLER) && !u.ustuck && mdistu(mon) <= 2) {
             pline_mon(mon, "You grab %s!", mon_nam(mon));
             u.usticker = 1;
             set_ustuck(mon);

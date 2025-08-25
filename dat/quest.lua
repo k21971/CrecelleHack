@@ -3139,8 +3139,10 @@ Get out of here, and do not come back until you are truly ready."]],
       badlevel = {
          synopsis = "[Return when you are %Ra.]",
          output = "text",
-         text = [["Sorry %p, but you have to be at least %ra in order to have a chance
-against %n. Get out there and start training!"]],
+         text = [["Sorry %p, but you have to be at least %r in order to have a chance
+against %n.
+A %ra just won't cut it!
+Get out there and start training!"]],
       },
       discourage = {
          "\"I'd fathom you can't block this one!\"",
@@ -3171,8 +3173,9 @@ not as you remember it. Furniture has been overturned, equipment smolders,
 and bodies lie in repose across the ground. Even your fearless mentor,
 %l, is nowhere to be seen.
 
-You can make out the silhouettes of wrestlers in the distance, but their forms
-are twisted and inhuman. You may have a fight on your hands.]],
+You can make out the silhouettes of wrestlers in the distance,
+but their forms are twisted and inhuman. You may have a fight
+on your hands.]],
       },
       goal_alt = {
          text = "You have returned to %ns lair.",

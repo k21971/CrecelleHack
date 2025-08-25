@@ -2649,6 +2649,7 @@ escape_from_sticky_mon(coordxy x, coordxy y)
              */
             if (Role_if(PM_GRAPPLER)) {
                 grappling_finisher(x, y, mtmp);
+                if (MON_AT(x, y)) return TRUE;
             } else {
                 set_ustuck((struct monst *) 0);
                 You("release %s.", y_monnam(mtmp));
