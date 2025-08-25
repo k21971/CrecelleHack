@@ -821,7 +821,7 @@ newgame(void)
 
     if (flags.legacy) {
         flush_screen(1);
-        com_pager("crecelle");
+        com_pager("crecelle_legacy");
     }
     
     adj_midbosses();
@@ -885,7 +885,6 @@ welcome(boolean new_game) /* false => restoring an old game */
     pline(new_game ? "%s %s, welcome to CrecelleHack.  You are a%s."
                    : "%s %s, the%s, welcome back to CrecelleHack.",
           Hello((struct monst *) 0), svp.plname, buf);
-    timechange_message(new_game);
 
     if (new_game) {
         /* guarantee that 'major' event category is never empty */

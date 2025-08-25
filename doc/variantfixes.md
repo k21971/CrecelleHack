@@ -46,6 +46,7 @@
 - Water elementals soak enemies with water on hit.
 - Greater variance in the weapons that monsters spawn with.
 - Crimson deaths create a massive cloud of bloody mist upon death.
+- Change name of wargs to dire wolves.
 
 ## New Monsters
 - Salt Golem
@@ -144,7 +145,7 @@
 - Allow fountains to become frozen. Frozen fountains cannot be
   dipped into or quaffed from.
 - New special room: Laboratory
-- Fixed zoos having grass in them.
+- Fixed many special rooms having grass inside.
 
 ## GUI
 - Farlook a monster with (:) to see a summary of a monster's stats,

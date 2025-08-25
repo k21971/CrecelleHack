@@ -299,7 +299,7 @@
         M1_ANIMAL | M1_NOHANDS | M1_CARNIVORE, M2_HOSTILE,
         M3_AMBUSHER | M3_TRIPPER | M3_CALLOUT, BST_ICE | BST_BLOOD,
         7, CLR_CYAN, WINTER_WOLF_CUB),
-    MON(NAM("warg"), S_DOG,
+    MON(NAM("dire wolf"), S_DOG,
         LVL(7, 12, 4, 0, -5), (G_GENO | G_SGROUP | 2),
         A(ATTK(AT_BITE, AD_PHYS, 2, 6),
           NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),

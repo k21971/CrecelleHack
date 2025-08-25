@@ -343,7 +343,7 @@
     MONSYM(40, 'N', NAGA, S_NAGA, "naga")
     MONSYM(41, 'O', OGRE, S_OGRE, "ogre")
     MONSYM(42, 'P', PUDDING, S_PUDDING, "pudding or ooze")
-    MONSYM(43, 'Q', QUANTMECH, S_QUANTMECH, "quantum mechanic")
+    MONSYM(43, 'Q', QUANTMECH, S_QUANTMECH, "scientist")
     MONSYM(44, 'R', RUSTMONST, S_RUSTMONST, "objevore")
     MONSYM(45, 'S', SNAKE, S_SNAKE, "snake")
     MONSYM(46, 'T', TROLL, S_TROLL, "troll")
