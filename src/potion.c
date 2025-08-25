@@ -26,6 +26,7 @@ staticfn void peffect_confusion(struct obj *);
 staticfn void peffect_gain_ability(struct obj *);
 staticfn void peffect_speed(struct obj *);
 staticfn void peffect_blindness(struct obj *);
+staticfn void peffect_teleportitis(struct obj *);
 staticfn void peffect_gain_level(struct obj *);
 staticfn void peffect_healing(struct obj *);
 staticfn void peffect_extra_healing(struct obj *);
@@ -587,6 +588,14 @@ dodrink(void)
             }
             ++drink_ok_extra;
         }
+        if (has_coating(u.ux, u.uy, POT_WATER)
+            || has_coating(u.ux, u.uy, COAT_BLOOD)) {
+            if (y_n("Drink liquid on the floor?") == 'y') {
+                pline("Do you know how many bugs there are on the floor?");
+                return ECMD_TIME;
+            }
+            ++drink_ok_extra;
+        }
     }
 
     otmp = getobj("drink", drink_ok, GETOBJ_NOFLAGS);
@@ -1113,6 +1122,14 @@ peffect_blindness(struct obj *otmp)
 }
 
 staticfn void
+peffect_teleportitis(struct obj *otmp)
+{
+    if (!otmp->cursed)
+        tele();
+    incr_itimeout(&HTeleportation, rn1(50, 250));
+}
+
+staticfn void
 peffect_gain_level(struct obj *otmp)
 {
     if (otmp->cursed) {
@@ -1438,6 +1455,9 @@ peffects(struct obj *otmp)
         break;
     case POT_BLINDNESS:
         peffect_blindness(otmp);
+        break;
+    case POT_TELEPORTITIS:
+        peffect_teleportitis(otmp);
         break;
     case POT_GAIN_LEVEL:
         peffect_gain_level(otmp);
@@ -1861,7 +1881,8 @@ evaporate_potion_puddles(coordxy x, coordxy y) {
         remove_coating(x, y, COAT_POTION);
     }
     if ((levl[x][y].coat_info & COAT_BLOOD) && !rn2(4)) {
-        create_gas_cloud(x, y, 1, 0, 0);
+        fakeobj.otyp = 0;
+        create_gas_cloud(x, y, 1, &fakeobj, 0);
         remove_coating(x, y, COAT_BLOOD);
     }
 }
@@ -2036,6 +2057,9 @@ do_illness:
             mon->mblinded = min(btmp, 127);
             mon->mcansee = 0;
         }
+        break;
+    case POT_TELEPORTITIS:
+        u_teleport_mon(mon, TRUE);
         break;
     case POT_WATER:
         if (mon_hates_blessings(mon) /* undead or demon */
@@ -2420,6 +2444,9 @@ potionbreathe(struct obj *obj)
         if (!Blind && !Unaware)
             Your1(vision_clears);
         break;
+    case POT_TELEPORTITIS:
+        tele();
+        break;
     case POT_BLOOD:
         if (olfaction(gy.youmonst.data))
             Norep("You catch a whiff of iron.");
@@ -2445,7 +2472,7 @@ potionbreathe(struct obj *obj)
         break;
     case POT_ACID:
         /* Not all forms have noses, maybe check if humanoid? */
-        Norep("nose burns.");
+        Norep("Your nose burns.");
         exercise(A_CON, FALSE);
         break;
     case POT_FRUIT_JUICE:
@@ -2521,6 +2548,7 @@ mpotionbreathe(struct obj *obj, struct monst *mtmp, boolean heros_fault)
     case POT_GAIN_ABILITY:
     case POT_POLYMORPH:
     case POT_SPEED:
+    case POT_TELEPORTITIS:
         potionhit_effects(mtmp, obj, heros_fault);
         break;
     case POT_HAZARDOUS_WASTE:

@@ -387,7 +387,7 @@ m_initweap(struct monst *mtmp)
             /* make long sword be +0 to +3, mace be +3 to +6 to compensate
                for being significantly weaker against large opponents */
             otmp->spe = rn2(4);
-            if (typ == MACE)
+            if (typ == SILVER_MACE)
                 otmp->spe += 3;
             (void) mpickobj(mtmp, otmp);
 
@@ -759,7 +759,7 @@ m_initinv(struct monst *mtmp)
                 FALLTHROUGH;
                 /*FALLTHRU*/
             case 3:
-                (void) mongets(mtmp, WAN_STRIKING);
+                (void) mongets(mtmp, rn2(3) ? WAN_STRIKING : WAN_WATER);
             }
         } else if (ptr->msound == MS_PRIEST
                    || quest_mon_represents_role(ptr, PM_CLERIC)) {

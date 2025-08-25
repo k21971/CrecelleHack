@@ -651,10 +651,24 @@ doengrave_sfx_item_WAN(struct _doengrave_ctx *de)
                     surface(u.ux, u.uy));
         }
         break;
+    case WAN_WATER:
+        if (!Blind)
+            Sprintf(de->post_engr_text, "The bugs on the %s are washed away!",
+                    surface(u.ux, u.uy));
+        if (!de->oep || (de->oep->engr_type != BURN)) {
+            if (!Blind)
+                pline_The("engraving on the %s is washed away!", surface(u.ux, u.uy));
+            de->dengr = TRUE;
+        }
+        break;
     case WAN_COLD:
         if (!Blind)
             Strcpy(de->post_engr_text,
                    "A few ice cubes drop from the wand.");
+        if (has_coating(u.ux, u.uy, COAT_POTION) || has_coating(u.ux, u.uy, COAT_BLOOD)) {
+            remove_coating(u.ux, u.uy, COAT_POTION | COAT_BLOOD);
+            add_coating(u.ux, u.uy, COAT_FROST, 0);
+        }
         if (!de->oep || (de->oep->engr_type != BURN))
             break;
         FALLTHROUGH;

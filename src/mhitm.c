@@ -1042,8 +1042,10 @@ mdamagem(
     mhm.dieroll = dieroll;
     mhm.done = FALSE;
 
+#ifdef MON_HARMONICS
     if (mon_boosted(magr, magr->data->mboost))
         mhm.damage += d((int) mattk->damn, (int) mattk->damd);
+#endif
 
     if ((touch_petrifies(pd) /* or flesh_petrifies() */
          || (mattk->adtyp == AD_DGST && pd == &mons[PM_MEDUSA]))

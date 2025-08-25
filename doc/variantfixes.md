@@ -20,6 +20,8 @@
   associated harmonies.
 - Remove obscure ordering system for determining whether a harmony
   is active.
+- Disable monster double damage harmonization while reworking
+  the system to be more interesting.
 
 ## Monsters
 - Slightly increase chance of random spawns of unique monsters.
@@ -75,6 +77,7 @@
 - Added ice as a material, which is used for icicles and for a
   new randomized wand appearance. It can both shatter and be
   melted, making it extremely delicate.
+- Significantly increased wand of teleportation rarity.
 
 ### New Objects
 - Bestiary
@@ -108,6 +111,12 @@
   - Tonal instrument.
 - Electric Guitar
   - Fires bolts of electricity, as a fire or frost horn would.
+- Wand of water
+  - Does damage as a wand of striking, but cannot be resisted.
+  - Coats things in water.
+- Potion of teleportitis
+  - Non-cursed potions teleport the drinker.
+  - Gas released from the potion teleports those that breathe it.
 
 ## Floor Coating System
 - Added frost and mud as a floor coatings.
@@ -134,6 +143,8 @@
 ## Dungeon Changes
 - Allow fountains to become frozen. Frozen fountains cannot be
   dipped into or quaffed from.
+- New special room: Laboratory
+- Fixed zoos having grass in them.
 
 ## GUI
 - Farlook a monster with (:) to see a summary of a monster's stats,

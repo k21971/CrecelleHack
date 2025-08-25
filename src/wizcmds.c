@@ -795,6 +795,8 @@ wiz_map_levltyp(void)
             Strcat(dsc, " hive");
         if (svl.level.flags.has_swamp)
             Strcat(dsc, " swamp");
+        if (svl.level.flags.has_scilab)
+            Strcat(dsc, "lab");
         /* level flags */
         if (svl.level.flags.noteleport)
             Strcat(dsc, " noTport");
