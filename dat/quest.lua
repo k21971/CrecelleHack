@@ -132,7 +132,7 @@ Go now!  You are banished from this place.]],
          "\"Hold! Thy face is a most exquisite torture!\"",
          "\"I should fart in thy direction, but it might improve thy smell!\"",
       },
-      crecelle = {
+      crecelle_legacy = {
          synopsis = "[%dC has chosen you to recover the Amulet of Yendor for %dI.]",
          output = "menu",
          text = [[Late-Yendorian-style roofs with shingles that dangle like rotting teeth
@@ -144,16 +144,12 @@ underground sea. The minarets of a castle, improbably large.
 
 According to legend, somewhere beneath the sprawl is an unassuming
 staircase. It spirals deep into the earth, where the air turns to poison
-and even %d dares not tread. Somewhere in that hell, the object of your
-quest awaits you.
+and even %d dares not tread. Somewhere in that hell,
+the object of your quest awaits you.
 
 As you descend toward the complex, the air is filled with the peal of
 tocsins and the clang of church bells, announcing your arrival alongside
-the sun's. War has come to Yendor, and it shall not be caught unprepared.
-The cantor of bells continues, growing faint only when you cross the first
-threshold.
-
-The eye of Moloch is upon you, and his song shall follow you into the deep.]],
+the sun's. War has come to Yendor, and it shall not be caught unprepared.]],
       },
       legacy = {
          synopsis = "[%dC has chosen you to recover the Amulet of Yendor for %dI.]",

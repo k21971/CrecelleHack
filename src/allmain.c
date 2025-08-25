@@ -821,7 +821,7 @@ newgame(void)
 
     if (flags.legacy) {
         flush_screen(1);
-        com_pager("crecelle");
+        com_pager("crecelle_legacy");
     }
     
     adj_midbosses();
