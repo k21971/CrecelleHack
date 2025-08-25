@@ -1734,7 +1734,7 @@ skill_init(const struct def_skill *class_skill)
             continue;
 
         skill = weapon_type(obj);
-        if (skill != P_NONE)
+        if (skill != P_NONE && skill != P_IMPROV)
             P_SKILL(skill) = P_BASIC;
     }
 
