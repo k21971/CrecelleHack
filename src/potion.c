@@ -1760,6 +1760,8 @@ remove_coating(coordxy x, coordxy y, short coatflags) {
     levl[x][y].coat_info &= ~coatflags;
     if ((coatflags & COAT_POTION) != 0 || (coatflags & COAT_BLOOD) != 0)
         levl[x][y].pindex = 0;
+    if ((coatflags & COAT_MUD) != 0)
+        maybe_unhide_at(x, y);
     if (!gi.in_mklev)
         newsym(x, y);
     return TRUE;

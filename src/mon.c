@@ -147,7 +147,7 @@ sanity_check_single_mon(
                    pmname(mptr, Mgender(mtmp)), msg);
 
     /* monster is hiding? */
-    if (mtmp->mundetected) {
+    if (mtmp->mundetected && !has_coating(mx, my, COAT_MUD)) {
         struct trap *t;
 
         if (!isok(mx, my)) /* caller will have checked this but not fixed it */
@@ -4954,7 +4954,9 @@ void
 hide_monst(struct monst *mon)
 {
     boolean hider_under = hides_under(mon->data) || mon->data->mlet == S_EEL;
-    boolean mud_hider = (mud_hider(mon->data) && has_coating(mon->mx, mon->my, COAT_MUD));
+    boolean mud_hider = (mud_hider(mon->data)
+                            && has_coating(mon->mx, mon->my, COAT_MUD)
+                            && !t_at(mon->mx, mon->my));
 
     if ((is_hider(mon->data) || hider_under || mud_hider)
         && !(mon->mundetected || M_AP_TYPE(mon))) {

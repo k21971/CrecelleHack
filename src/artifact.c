@@ -1529,7 +1529,7 @@ artifact_hit(
                        || (youattack && mdef == u.ustuck));
 
     /* boosted attacks */
-    if (otmp->booster) {
+    if (otmp->booster && magr) {
         if (youattack)
             x = u.ux, y = u.uy;
         else

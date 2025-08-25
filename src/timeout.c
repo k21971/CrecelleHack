@@ -2206,8 +2206,8 @@ timer_sanity_check(void)
                            obj_adr, obj->where, t_id);
             } else if (!isok(x, y)) {
                 impossible(
-              "timer sanity: obj %s [where=%d] located at <%d,%d>, timer %lu",
-                           obj_adr, obj->where, x, y, t_id);
+              "timer sanity: obj %s %s [where=%d] located at <%d,%d>, timer %lu",
+                           obj_adr, xname(obj), obj->where, x, y, t_id);
             }
             break;
         }

@@ -3103,7 +3103,7 @@ You have an odd feeling this may be the last time you ever come here.]],
 So, have you succeeded in your quest for the Amulet of Yendor?"]],
       },
    },
-   Wre = {
+   Grp = {
       assignquest = {
          synopsis = "[Travel to %i; beat %n a wrestling match; return with %o.]",
          output = "text",

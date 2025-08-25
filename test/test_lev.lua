@@ -72,7 +72,7 @@ local special_levels = {
 "wizard3"
 }
 
-local roles = { "Arc", "Bar", "Cav", "Hea", "Kni", "Mon", "Pri", "Ran", "Rog", "Sam", "Tou", "Val", "Wre", "Wiz" }
+local roles = { "Arc", "Bar", "Cav", "Hea", "Kni", "Mon", "Pri", "Ran", "Rog", "Sam", "Tou", "Val", "Grp", "Wiz" }
 local questlevs = { "fila", "filb", "goal", "loca", "strt" }
 
 for _,role in ipairs(roles) do
