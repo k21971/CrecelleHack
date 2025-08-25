@@ -1082,6 +1082,9 @@ spell_would_be_useless(struct monst *mtmp, int spellnum)
             || spellnum == MCU_CLONE_WIZ || spellnum == MCU_GRAVITY
             || spellnum == MCU_RAISE_DEAD || spellnum == MCU_MIRROR_IMAGE))
         return TRUE;
+    /* illusiory armies play absolute hell with fuzzing. */
+    if (iflags.debug_fuzzer && spellnum == MCU_MIRROR_IMAGE)
+        return TRUE;
     /* haste self when already fast */
     if (mtmp->permspeed == MFAST && spellnum == MCU_HASTE_SELF)
         return TRUE;
