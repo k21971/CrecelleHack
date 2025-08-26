@@ -2889,7 +2889,7 @@ dodip(void)
                         levl[u.ux][u.uy].submask = STONE;
                     add_coating(u.ux, u.uy, COAT_POTION, POT_WATER);
                 } else {
-                    pline("%s muddy.", Yobjnam2(obj, "get"));
+                    pline("You get %s muddy.", flags.verbose ? obuf : shortestname);
                 }
                 return ECMD_TIME;
             }

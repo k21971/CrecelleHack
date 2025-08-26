@@ -2636,6 +2636,7 @@ carrying_too_much(void)
 staticfn boolean
 escape_from_sticky_mon(coordxy x, coordxy y)
 {
+    int escape_chance;
     if (u.ustuck && (x != u.ustuck->mx || y != u.ustuck->my)) {
         struct monst *mtmp;
 
@@ -2649,7 +2650,11 @@ escape_from_sticky_mon(coordxy x, coordxy y)
              */
             if (Role_if(PM_GRAPPLER)) {
                 grappling_finisher(x, y, mtmp);
-                if (MON_AT(x, y)) return TRUE;
+                if (m_at(x, y) == mtmp) {
+                    nomul(0);
+                    return TRUE;
+                }
+                return FALSE;
             } else {
                 set_ustuck((struct monst *) 0);
                 You("release %s.", y_monnam(mtmp));
@@ -2664,9 +2669,13 @@ escape_from_sticky_mon(coordxy x, coordxy y)
              * If holder is tame and there is no conflict,
              * guaranteed escape.
              */
-            switch (rn2(!u.ustuck->mcanmove ? 
-                        (P_SKILL(P_GRAPPLING) >= P_BASIC ? 2 : 8) 
-                        : min(40, 40 - 12 * max(0, P_SKILL(P_GRAPPLING) - 1)))) {
+            if (u.ustuck->mcanmove)
+                escape_chance = 40;
+            else
+                escape_chance = 8;
+            if (P_SKILL(P_GRAPPLING) >= P_BASIC)
+                escape_chance -= P_SKILL(P_GRAPPLING);
+            switch (escape_chance) {
             case 3:
                 if (!u.ustuck->mcanmove) {
                     /* it's free to move on next turn */
@@ -2861,6 +2870,12 @@ domove_core(void)
 
         if (domove_bump_mon(mtmp, glyph))
             return;
+
+        if (Role_if(PM_GRAPPLER) && u.usticker && mtmp == u.ustuck) {
+            You("are already grappling %s!", mon_nam(mtmp));
+            nomul(0);
+            return;
+        }
 
         /* attack monster */
         if (domove_attackmon_at(mtmp, x, y, &displaceu))

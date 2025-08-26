@@ -655,11 +655,13 @@ doengrave_sfx_item_WAN(struct _doengrave_ctx *de)
         if (!Blind)
             Sprintf(de->post_engr_text, "The bugs on the %s are washed away!",
                     surface(u.ux, u.uy));
-        if (!de->oep || (de->oep->engr_type != BURN)) {
+        if (de->oep && de->oep->engr_type != BURN) {
             if (!Blind)
                 pline_The("engraving on the %s is washed away!", surface(u.ux, u.uy));
             de->dengr = TRUE;
         }
+        remove_coating(u.ux, u.uy, COAT_POTION | COAT_BLOOD);
+        add_coating(u.ux, u.uy, COAT_POTION, POT_WATER);
         break;
     case WAN_COLD:
         if (!Blind)
