@@ -1789,18 +1789,20 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
         }
         if (isyou) {
             You("slip on %s%s!", banana_peel ? "" : "a patch of ", buf);
-            nomul(-2);
+            nomul(-1);
             gm.multi_reason = "slipping on something";
             gn.nomovemsg = "You regain your footing.";
             if (!banana_peel) makeknown(POT_OIL);
+            make_prone();
         } else {
             if (canseemon(mon)) {
                 if (!banana_peel) makeknown(POT_OIL);
                 pline_mon(mon, "%s slips on %s%s!",
                             Monnam(mon), banana_peel ? "" : "a patch of ", buf);
             }
-            mon->mfrozen = 2;
+            mon->mfrozen = 1;
             mon->mcanmove = 0;
+            make_mon_prone(mdef);
         }
         ret = TRUE;
     }
