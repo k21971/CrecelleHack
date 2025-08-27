@@ -360,6 +360,65 @@ dmgval(struct obj *otmp, struct monst *mon)
     return  tmp;
 }
 
+const char *
+stringify_dmgval(int otyp, boolean large) {
+    if (large) {
+        switch (otyp) {
+        case IRON_CHAIN:
+        case CROSSBOW_BOLT:
+        case MORNING_STAR:
+        case PARTISAN:
+        case RUNESWORD:
+        case ELVEN_BROADSWORD:
+        case BROADSWORD:
+            return "1";
+        case FLAIL:
+        case RANSEUR:
+        case VOULGE:
+            return "+1d4";
+        case ACID_VENOM:
+        case HALBERD:
+        case SPETUM:
+            return "+1d6";
+        case BATTLE_AXE:
+        case BARDICHE:
+        case TRIDENT:
+            return "+2d4";
+        case TSURUGI:
+        case DWARVISH_MATTOCK:
+        case TWO_HANDED_SWORD:
+            return "+2d6";
+        }
+    } else {
+        switch (otyp) {
+        case IRON_CHAIN:
+        case CROSSBOW_BOLT:
+        case MACE:
+        case SILVER_MACE:
+        case WAR_HAMMER:
+        case FLAIL:
+        case SPETUM:
+        case TRIDENT:
+            return "+1";
+        case BATTLE_AXE:
+        case BARDICHE:
+        case BILL_GUISARME:
+        case GUISARME:
+        case LUCERN_HAMMER:
+        case MORNING_STAR:
+        case RANSEUR:
+        case BROADSWORD:
+        case ELVEN_BROADSWORD:
+        case RUNESWORD:
+        case VOULGE:
+            return "+1d4";
+        case ACID_VENOM:
+            return "+1d6";
+        }
+    }
+    return "";
+}
+
 /* check whether blessed and/or silver damage applies for *non-weapon* hit;
    return value is the amount of the extra damage */
 int

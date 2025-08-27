@@ -151,6 +151,8 @@
 ## GUI
 - Farlook a monster with (:) to see a summary of a monster's stats,
   including attacks and harmonies.
+- Examining an item in one's inventory allows one to view the item's
+  stats.
 - You can learn more about monsters' attacks by getting hit by them,
   chatting with them, using a stethoscope, or a wand of probing.
 - Default to 3 status lines.

@@ -3493,11 +3493,11 @@ itemactions(struct obj *otmp)
                    "Zap this wand to release its magic");
 
     /* ?: Look up an item in the game's database */
-    if (ia_checkfile(otmp)) {
+    //if (ia_checkfile(otmp)) {
         Sprintf(buf, "Look up information about %s",
                 (otmp->quan > 1L) ? "these" : "this");
         ia_addmenu(win, IA_WHATIS_OBJ, '/', buf);
-    }
+    //}
 
     Sprintf(buf, "Do what with %s?", the(cxname(otmp)));
     end_menu(win, buf);

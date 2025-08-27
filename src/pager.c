@@ -31,6 +31,7 @@ staticfn void look_region_nearby(coordxy *, coordxy *, coordxy *, coordxy *,
 staticfn void look_all(boolean, boolean);
 staticfn void look_traps(boolean);
 staticfn void look_engrs(boolean);
+staticfn void do_supplemental_item_info(struct obj *) NONNULLPTRS;
 staticfn void do_supplemental_info(char *, struct permonst *,
                                                          boolean) NONNULLPTRS;
 staticfn void whatdoes_help(void);
@@ -1902,6 +1903,7 @@ do_look(int mode, coord *click_cc)
                     Strcpy(out_str, singular(invobj, xname));
                     break;
                 }
+            do_supplemental_item_info(invobj);
             if (*out_str)
                 (void) checkfile(out_str, pm, chkfilUsrTyped | chkfilDontAsk,
                                  (char *) 0);
@@ -2316,6 +2318,66 @@ static const char *suptext2[] = {
     "stairs leading to the Gnomish Mines.",
     (char *) 0,
 };
+
+staticfn void
+do_supplemental_item_info(struct obj *otmp)
+{
+    winid datawin = WIN_ERR;
+    char buf[BUFSZ];
+    char dam_buf[10];
+    int dbonus;
+    /* Display monster info */
+    datawin = create_nhwindow(NHW_MENU);
+    Sprintf(buf, doname(otmp));
+    buf[0] = highc(buf[0]);
+    putstr(datawin, 0, buf);
+    putstr(datawin, 0, "");
+    if (otmp->oclass == WEAPON_CLASS) {
+        dbonus = otmp->known ? (otmp->spe - greatest_erosion(otmp)) : greatest_erosion(otmp);
+        if (dbonus) {
+            Sprintf(dam_buf, " %s %d", (dbonus >= 0) ? "+" : "-", abs(dbonus));
+        }
+        Sprintf(buf, "Type: %s%sweapon", objects[otmp->otyp].oc_bimanual ? "two-handed " : "one-handed ",
+                                 objects[otmp->otyp].oc_finesse ? "finesse " : "");
+        putstr(datawin, 0, buf);
+        Sprintf(buf, "Damage (S): 1d%d%s%s%s", objects[otmp->otyp].oc_wsdam,
+                                            stringify_dmgval(otmp->otyp, FALSE),
+                                            dbonus ? dam_buf : "",
+                                            otmp->known ? "" : "?");
+        putstr(datawin, 0, buf);
+        Sprintf(buf, "Damage (L): 1d%d%s%s%s", objects[otmp->otyp].oc_wldam,
+                                            stringify_dmgval(otmp->otyp, TRUE),
+                                            dbonus ? dam_buf : "",
+                                            otmp->known ? "" : "?");
+        putstr(datawin, 0, buf);
+    } else {
+        Sprintf(buf, "Class: %s", OBJ_DESCR(objects[(int) otmp->oclass]));
+        putstr(datawin, 0, buf);
+    }
+    if (otmp->oclass == ARMOR_CLASS) {
+        Sprintf(buf, "AC: %d%s", (objects[otmp->otyp].a_ac + (otmp->known ? otmp->spe : 0)),
+                                otmp->known ? "" : "?");
+        putstr(datawin, 0, buf);
+        Sprintf(buf, "MC: %d%%%s", max(0, (objects[otmp->otyp].a_can) - (otmp->known ? otmp->spe : 0)),
+                                 otmp->known ? "" : "?");
+        putstr(datawin, 0, buf);
+    }
+    if (otmp->booster) {
+        Sprintf(buf, "Harmonies: ");
+        print_obj_harmonies(otmp, buf);
+        putstr(datawin, 0, buf);
+    }
+    Sprintf(buf, "Weight: %d aum (Average %d aum)", otmp->owt, objects[otmp->otyp].oc_weight);
+    putstr(datawin, 0, buf);
+    Sprintf(buf, "Material: %s", materialnm[objects[otmp->otyp].oc_material]);
+    putstr(datawin, 0, buf);
+    Sprintf(buf, "Rarity: %s, %s", objects[otmp->otyp].oc_unique ? "unique" : "common",
+                                    objects[otmp->otyp].oc_nowish ? "unwishable" : "wishable");
+    putstr(datawin, 0, buf);
+    
+    display_nhwindow(datawin, FALSE);
+    destroy_nhwindow(datawin), datawin = WIN_ERR;
+}
 
 staticfn void
 do_supplemental_info(
