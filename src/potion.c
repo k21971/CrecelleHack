@@ -1802,7 +1802,7 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
             }
             mon->mfrozen = 1;
             mon->mcanmove = 0;
-            make_mon_prone(mdef);
+            make_mon_prone(mon);
         }
         ret = TRUE;
     }
