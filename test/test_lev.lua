@@ -51,6 +51,8 @@ local special_levels = {
 "minetn-5",
 "minetn-6",
 "minetn-7",
+"minetn-8",
+"minetn-9",
 "oracle",
 "orcus",
 "sanctum",

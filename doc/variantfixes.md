@@ -1,3 +1,12 @@
+# 1.2
+
+## Dungeon Changes
+- New minetown variants: Zootown and Lavender Town.
+  - Lavender Town originates with me in Splice. I fixed a few issues
+    with this one and also added a bit of variance to it.
+  - Zootown is from Spork, modified by K2 for EvilHack, then ported
+    to Lua by me in Splice.
+
 # 1.1
 
 ## Commands
