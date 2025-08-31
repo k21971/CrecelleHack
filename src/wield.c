@@ -999,6 +999,7 @@ chwepon(struct obj *otmp, int amount)
         return 1;
     }
     /* there is a (soft) upper and lower limit to uwep->spe */
+    #if 0
     if (((uwep->spe > 5 && amount >= 0) || (uwep->spe < -5 && amount < 0))
         && rn2(3)) {
         if (!Blind)
@@ -1011,6 +1012,7 @@ chwepon(struct obj *otmp, int amount)
         useupall(uwep); /* let all of them disappear */
         return 1;
     }
+    #endif
     if (!Blind) {
         xtime = (amount * amount == 1) ? "moment" : "while";
         pline("%s %s for a %s.",

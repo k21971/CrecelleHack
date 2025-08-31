@@ -1178,6 +1178,7 @@ seffect_enchant_armor(struct obj **sobjp)
         same_color = FALSE;
 
     /* KMH -- catch underflow */
+    #if 0
     s = scursed ? -otmp->spe : otmp->spe;
     if (s > (special_armor ? 5 : 3) && rn2(s)) {
         otmp->in_use = TRUE;
@@ -1191,6 +1192,7 @@ seffect_enchant_armor(struct obj **sobjp)
         useup(otmp);
         return;
     }
+    #endif
     s = scursed ? -1
         : (otmp->spe >= 9)
         ? (rn2(otmp->spe) == 0)
