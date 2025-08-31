@@ -20,8 +20,14 @@
 des.level_init({ style="mazegrid", bg ="-" });
 
 local temperatures = { "hot", "cold", "temperate" }
+local temp_dragons = {}
 shuffle(temperatures)
 local castle_temp = temperatures[1];
+if (castle_temp == "cold") then
+    temp_dragons = { "white dragon", "silver dragon", "green dragon", "blue dragon"}
+else
+    temp_dragons = { "red dragon", "gold dragon", "orange dragon", "gray dragon" }
+end
 
 des.level_flags("mazelevel", "noteleport", "noflipy", castle_temp)
 
@@ -66,7 +72,7 @@ des.feature({ type = "fountain", coord = {10,08}, frozen = (castle_temp == "cold
 if (castle_temp == "cold") then
     des.replace_terrain({ region={07,05, 14,11}, fromterrain=".", toterrain=".", coat="frost", chance=70 })
 elseif (castle_temp == "hot") then
-    des.replace_terrain({ region={07,05, 14,11}, fromterrain=".", toterrain=".", coat="ash", chance=90 })
+    des.replace_terrain({ region={07,05, 14,11}, fromterrain=".", toterrain=".", coat="ashes", chance=90 })
 else
     des.replace_terrain({ region={07,05, 14,11}, fromterrain=".", toterrain=".", coat="grass", chance=70 })
 end
@@ -190,10 +196,21 @@ des.monster("soldier",05,14)
 des.monster("soldier",57,14)
 des.monster("soldier",59,14)
 -- The four dragons that are guarding the storerooms
-des.monster("D",47,05)
-des.monster("D",47,06)
-des.monster("D",47,10)
-des.monster("D",47,11)
+if (castle_temp == "temperate") then
+    des.monster("D",47,05)
+    des.monster("D",47,06)
+    des.monster("D",47,10)
+    des.monster("D",47,11)
+else
+    shuffle(temp_dragons)
+    des.monster(temp_dragons[1], 47,05)
+    shuffle(temp_dragons)
+    des.monster(temp_dragons[1], 47,06)
+    shuffle(temp_dragons)
+    des.monster(temp_dragons[1], 47,10)
+    shuffle(temp_dragons)
+    des.monster(temp_dragons[1], 47,11)
+end
 -- Sea monsters in the moat
 des.monster("giant eel",05,07)
 des.monster("giant eel",05,09)
