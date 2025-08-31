@@ -1555,29 +1555,20 @@ trapeffect_slp_gas_trap(
     struct trap *trap,
     unsigned int trflags UNUSED)
 {
+    struct obj fakeobj;
     if (mtmp == &gy.youmonst) {
         seetrap(trap);
-        if (Sleep_resistance || breathless(gy.youmonst.data)) {
-            You("are enveloped in a cloud of gas!");
-            monstseesu(M_SEEN_SLEEP);
-        } else {
-            pline("A cloud of gas puts you to sleep!");
-            fall_asleep(-rnd(25), TRUE);
-            monstunseesu(M_SEEN_SLEEP);
-        }
-        (void) steedintrap(trap, (struct obj *) 0);
+        pline("Gas sprays from hidden vents in the %s!", surface(trap->tx, trap->ty));
     } else {
         boolean in_sight = canseemon(mtmp) || (mtmp == u.usteed);
-
-        if (!resists_sleep(mtmp) && !breathless(mtmp->data)
-            && !helpless(mtmp)) {
-            if (sleep_monst(mtmp, rnd(25), -1) && in_sight) {
-                pline_mon(mtmp,
-                          "%s suddenly falls asleep!", Monnam(mtmp));
-                seetrap(trap);
-            }
-        }
+        if (in_sight) {
+            pline_mon(mtmp, "%s is enveloped in a cloud of gas!", Monnam(mtmp));
+            seetrap(trap);
+        } else
+            You_hear("a whoomph!");
     }
+    fakeobj.otyp = POT_SLEEPING;
+    create_gas_cloud(trap->tx, trap->ty, 5, &fakeobj, 5);
     return Trap_Effect_Finished;
 }
 

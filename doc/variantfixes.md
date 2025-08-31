@@ -9,6 +9,9 @@
 - Swamps generate with mud in addition to fungus. This impacts
   juiblex's level.
 
+## Traps
+- Sleeping gas traps actually create clouds of sleep gas.
+
 # 1.1
 
 ## Commands
