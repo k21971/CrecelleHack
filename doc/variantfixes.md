@@ -8,6 +8,15 @@
     to Lua by me in Splice.
 - Swamps generate with mud in addition to fungus. This impacts
   juiblex's level.
+- The Castle has increased variance from game to game. The following
+  effects are possible:
+  - Front of the castle has walls partially replaced by iron bars.
+  - A storeroom contains potions.
+  - Mimics mimic chests in some towers (idea from RGRN).
+  - Surrounded by swamp instead of maze.
+  - Monster and terrain variance based on temperature.
+- Birds, rather than zombies, can appear in the castle courtyard.
+- Castle maze extends closer to the backdoor of the castle.
 
 ## Traps
 - Sleeping gas traps actually create clouds of sleep gas.
