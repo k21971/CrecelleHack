@@ -6,6 +6,8 @@
     with this one and also added a bit of variance to it.
   - Zootown is from Spork, modified by K2 for EvilHack, then ported
     to Lua by me in Splice.
+- Swamps generate with mud in addition to fungus. This impacts
+  juiblex's level.
 
 # 1.1
 
