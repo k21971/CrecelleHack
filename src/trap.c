@@ -576,6 +576,16 @@ maketrap(coordxy x, coordxy y, int typ)
             }
         }
         break;
+    case SLP_GAS_TRAP:
+        static const int hellgas[] = { POT_SLEEPING, POT_HALLUCINATION, POT_PARALYSIS,
+                                        POT_POLYMORPH, POT_SICKNESS, POT_BLINDNESS,
+                                        POT_CONFUSION };
+        if (In_hell(&u.uz)) {
+            ttmp->launch_otyp = ROLL_FROM(hellgas);
+        } else {
+            ttmp->launch_otyp = POT_SLEEPING;
+        }
+        break;
     }
 
     if (!oldplace) {
@@ -1127,7 +1137,8 @@ m_harmless_trap(struct monst *mtmp, struct trap *ttmp)
     case ROLLING_BOULDER_TRAP:
         break;
     case SLP_GAS_TRAP:
-        if (resists_sleep(mtmp) || defended(mtmp, AD_SLEE))
+        if ((!Inhell && (resists_sleep(mtmp) || defended(mtmp, AD_SLEE)))
+            || (Inhell && breathless(mtmp->data)))
             return TRUE;
         break;
     case RUST_TRAP:
@@ -1567,7 +1578,7 @@ trapeffect_slp_gas_trap(
         } else
             You_hear("a whoomph!");
     }
-    fakeobj.otyp = POT_SLEEPING;
+    fakeobj.otyp = trap->launch_otyp;
     create_gas_cloud(trap->tx, trap->ty, 5, &fakeobj, 5);
     return Trap_Effect_Finished;
 }
@@ -2757,9 +2768,9 @@ immune_to_trap(struct monst *mon, unsigned ttype)
     case SLP_GAS_TRAP:
         if (breathless(pm))
             return TRAP_CLEARLY_IMMUNE;
-        else if (!is_you && resists_sleep(mon))
+        else if (!is_you && resists_sleep(mon) && !Inhell)
             return TRAP_CLEARLY_IMMUNE;
-        else if (is_you && Sleep_resistance)
+        else if (is_you && Sleep_resistance && !Inhell)
             return TRAP_HIDDEN_IMMUNE;
         return TRAP_NOT_IMMUNE;
     case LEVEL_TELEP:

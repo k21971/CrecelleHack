@@ -161,7 +161,7 @@
     PCHAR( 53, '^',  S_bear_trap, "bear trap", HI_METAL)
     PCHAR( 54, '^',  S_land_mine, "land mine", CLR_RED)
     PCHAR( 55, '^',  S_rolling_boulder_trap, "rolling boulder trap", CLR_GRAY)
-    PCHAR( 56, '^',  S_sleeping_gas_trap, "sleeping gas trap", HI_ZAP)
+    PCHAR( 56, '^',  S_sleeping_gas_trap, "gas trap", HI_ZAP)
     PCHAR( 57, '^',  S_rust_trap, "rust trap", CLR_BLUE)
     PCHAR( 58, '^',  S_fire_trap, "fire trap", CLR_ORANGE)
     PCHAR( 59, '^',  S_pit, "pit", CLR_BLACK)

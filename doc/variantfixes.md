@@ -11,6 +11,7 @@
 
 ## Traps
 - Sleeping gas traps actually create clouds of sleep gas.
+- Sleeping gas traps in Gehennom may emit other types of gas.
 
 # 1.1
 
