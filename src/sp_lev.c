@@ -5060,7 +5060,7 @@ lspo_replace_terrain(lua_State *L)
     lua_Integer x1, y1, x2, y2;
     int chance;
     int tolit;
-    int coat_type;
+    int coat_type = 0;
     char *coat_str, *mon_str, *obj_str;
     int gender = NEUTRAL;
     int montype = 0, objtype = 0;
