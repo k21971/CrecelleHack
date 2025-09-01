@@ -1,3 +1,35 @@
+# 1.2
+
+## Dungeon Changes
+- New minetown variants: Zootown and Lavender Town.
+  - Lavender Town originates with me in Splice. I fixed a few issues
+    with this one and also added a bit of variance to it.
+  - Zootown is from Spork, modified by K2 for EvilHack, then ported
+    to Lua by me in Splice.
+- Bazaar Town has a 10% chance of generating as a cold level
+  filled with frost.
+- Swamps generate with mud in addition to fungus. This impacts
+  juiblex's level.
+- The Castle has increased variance from game to game. The following
+  effects are possible:
+  - Front of the castle has walls partially replaced by iron bars.
+  - A storeroom contains potions.
+  - Mimics mimic chests in some towers (idea from RGRN).
+  - Surrounded by swamp instead of maze.
+  - Monster and terrain variance based on temperature.
+- Birds, rather than zombies, can appear in the castle courtyard.
+- Castle maze extends closer to the backdoor of the castle.
+- Add xNetHack's oracle level variants.
+
+## Traps
+- Sleeping gas traps actually create clouds of sleep gas.
+- Sleeping gas traps in Gehennom may emit other types of gas.
+
+## Items
+- Winter Hat
+  - Worn by mercenaries such as soldiers when generated on a
+    level that is cold.
+
 # 1.1
 
 ## Commands

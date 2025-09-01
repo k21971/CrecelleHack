@@ -8,7 +8,7 @@
 
 /* NetHack 3.7.x */
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 1
+#define VERSION_MINOR 2
 /*
  * PATCHLEVEL is updated for each release.
  */

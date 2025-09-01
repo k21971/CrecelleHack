@@ -1168,6 +1168,8 @@ fill_ordinary_room(
     coatings = COAT_GRASS;
     if (svl.level.flags.has_swamp || (u.uz.dlevel >= 5 && !rn2(u.uz.dlevel)))
         coatings |= COAT_FUNGUS;
+    if (svl.level.flags.has_swamp)
+        coatings |= COAT_MUD;
     coat_room(croom, coatings);
 
  skip_nonrogue:
@@ -1218,13 +1220,12 @@ coat_room(struct mkroom *croom, unsigned char coat_type) {
                     levl[x][y].submask = SM_DIRT;
                 }
             }
-            if ((coat_type & COAT_FUNGUS) != 0) {
+            if ((coat_type & COAT_FUNGUS) != 0)
                 if (!rn2(max(2, abs(13 - u.uz.dlevel)))) add_coating(x, y, COAT_FUNGUS, 0);
-            }
+            if ((coat_type & COAT_MUD) != 0)
+                if (!rn2(2)) add_coating(x, y, COAT_MUD, 0);
             if (svl.level.flags.temperature == 1)
                 if (rn2(4)) add_coating(x, y, COAT_ASHES, 0);
-            if (svl.level.flags.has_swamp)
-                if (rn2(5)) add_coating(x, y, COAT_POTION, POT_WATER);
         }
     }
 }

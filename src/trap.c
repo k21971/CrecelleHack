@@ -576,6 +576,16 @@ maketrap(coordxy x, coordxy y, int typ)
             }
         }
         break;
+    case SLP_GAS_TRAP:
+        static const int hellgas[] = { POT_SLEEPING, POT_HALLUCINATION, POT_PARALYSIS,
+                                        POT_POLYMORPH, POT_SICKNESS, POT_BLINDNESS,
+                                        POT_CONFUSION };
+        if (In_hell(&u.uz)) {
+            ttmp->launch_otyp = ROLL_FROM(hellgas);
+        } else {
+            ttmp->launch_otyp = POT_SLEEPING;
+        }
+        break;
     }
 
     if (!oldplace) {
@@ -1127,7 +1137,8 @@ m_harmless_trap(struct monst *mtmp, struct trap *ttmp)
     case ROLLING_BOULDER_TRAP:
         break;
     case SLP_GAS_TRAP:
-        if (resists_sleep(mtmp) || defended(mtmp, AD_SLEE))
+        if ((!Inhell && (resists_sleep(mtmp) || defended(mtmp, AD_SLEE)))
+            || (Inhell && breathless(mtmp->data)))
             return TRUE;
         break;
     case RUST_TRAP:
@@ -1555,29 +1566,20 @@ trapeffect_slp_gas_trap(
     struct trap *trap,
     unsigned int trflags UNUSED)
 {
+    struct obj fakeobj;
     if (mtmp == &gy.youmonst) {
         seetrap(trap);
-        if (Sleep_resistance || breathless(gy.youmonst.data)) {
-            You("are enveloped in a cloud of gas!");
-            monstseesu(M_SEEN_SLEEP);
-        } else {
-            pline("A cloud of gas puts you to sleep!");
-            fall_asleep(-rnd(25), TRUE);
-            monstunseesu(M_SEEN_SLEEP);
-        }
-        (void) steedintrap(trap, (struct obj *) 0);
+        pline("Gas sprays from hidden vents in the %s!", surface(trap->tx, trap->ty));
     } else {
         boolean in_sight = canseemon(mtmp) || (mtmp == u.usteed);
-
-        if (!resists_sleep(mtmp) && !breathless(mtmp->data)
-            && !helpless(mtmp)) {
-            if (sleep_monst(mtmp, rnd(25), -1) && in_sight) {
-                pline_mon(mtmp,
-                          "%s suddenly falls asleep!", Monnam(mtmp));
-                seetrap(trap);
-            }
-        }
+        if (in_sight) {
+            pline_mon(mtmp, "%s is enveloped in a cloud of gas!", Monnam(mtmp));
+            seetrap(trap);
+        } else
+            You_hear("a whoomph!");
     }
+    fakeobj.otyp = trap->launch_otyp;
+    create_gas_cloud(trap->tx, trap->ty, 5, &fakeobj, 5);
     return Trap_Effect_Finished;
 }
 
@@ -2766,9 +2768,9 @@ immune_to_trap(struct monst *mon, unsigned ttype)
     case SLP_GAS_TRAP:
         if (breathless(pm))
             return TRAP_CLEARLY_IMMUNE;
-        else if (!is_you && resists_sleep(mon))
+        else if (!is_you && resists_sleep(mon) && !Inhell)
             return TRAP_CLEARLY_IMMUNE;
-        else if (is_you && Sleep_resistance)
+        else if (is_you && Sleep_resistance && !Inhell)
             return TRAP_HIDDEN_IMMUNE;
         return TRAP_NOT_IMMUNE;
     case LEVEL_TELEP:
