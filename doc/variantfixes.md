@@ -19,6 +19,7 @@
   - Monster and terrain variance based on temperature.
 - Birds, rather than zombies, can appear in the castle courtyard.
 - Castle maze extends closer to the backdoor of the castle.
+- Add xNetHack's oracle level variants.
 
 ## Traps
 - Sleeping gas traps actually create clouds of sleep gas.
