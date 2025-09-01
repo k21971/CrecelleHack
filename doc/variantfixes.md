@@ -6,6 +6,8 @@
     with this one and also added a bit of variance to it.
   - Zootown is from Spork, modified by K2 for EvilHack, then ported
     to Lua by me in Splice.
+- Bazaar Town has a 10% chance of generating as a cold level
+  filled with frost.
 - Swamps generate with mud in addition to fungus. This impacts
   juiblex's level.
 - The Castle has increased variance from game to game. The following
@@ -24,7 +26,7 @@
 
 ## Items
 - Winter Hat
-  - Worn by mercernaries such as soldiers when generated on a
+  - Worn by mercenaries such as soldiers when generated on a
     level that is cold.
 
 # 1.1
