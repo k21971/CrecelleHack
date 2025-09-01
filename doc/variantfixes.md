@@ -22,6 +22,11 @@
 - Sleeping gas traps actually create clouds of sleep gas.
 - Sleeping gas traps in Gehennom may emit other types of gas.
 
+## Items
+- Winter Hat
+  - Worn by mercernaries such as soldiers when generated on a
+    level that is cold.
+
 # 1.1
 
 ## Commands

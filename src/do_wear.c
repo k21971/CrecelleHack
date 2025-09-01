@@ -440,6 +440,7 @@ Helmet_on(void)
         break;
     case HELMET:
     case YENDORIAN_BASCINET:
+    case WINTER_HAT:
     case ELVEN_LEATHER_HELM:
     case DWARVISH_IRON_HELM:
     case ORCISH_HELM:
@@ -530,6 +531,7 @@ Helmet_off(void)
         break;
     case HELMET:
     case YENDORIAN_BASCINET:
+    case WINTER_HAT:
     case ELVEN_LEATHER_HELM:
     case DWARVISH_IRON_HELM:
     case ORCISH_HELM:
