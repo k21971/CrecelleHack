@@ -12,6 +12,9 @@
 
 #define NO_CALLBACK (-1)
 boolean inside_bonfire(genericptr, genericptr);
+
+void free_region(NhRegion *);
+#ifndef SFCTOOL
 boolean inside_gas_cloud(genericptr, genericptr);
 boolean expire_bonfire(genericptr, genericptr);
 boolean expire_gas_cloud(genericptr, genericptr);
@@ -25,7 +28,6 @@ boolean mon_in_region(NhRegion *, struct monst *);
 #if 0
 NhRegion *clone_region(NhRegion *);
 #endif
-void free_region(NhRegion *);
 void add_region(NhRegion *);
 void remove_region(NhRegion *);
 
@@ -39,8 +41,9 @@ NhRegion *create_force_field(coordxy,coordxy,int,long);
 #endif
 
 staticfn void reset_region_mids(NhRegion *);
+staticfn boolean poisongas_damage(NhRegion *, int, struct monst *);
 staticfn boolean is_hero_inside_gas_cloud(short);
-staticfn void make_gas_cloud(NhRegion *, int, boolean) NONNULLARG1;
+staticfn void make_gas_cloud(NhRegion *, struct obj *, int, boolean) NONNULLARG1;
 
 static const callback_proc callbacks[] = {
 #define INSIDE_GAS_CLOUD 0
@@ -52,6 +55,11 @@ static const callback_proc callbacks[] = {
 #define EXPIRE_BONFIRE 3
     expire_bonfire
 };
+
+#define REGION_DAMAGE(reg) reg->arg.damage
+#define REGION_OTYP(reg) reg->arg.otyp
+#define REGION_BLESSED(reg) reg->arg.blessed
+#define REGION_CURSED(reg) reg->arg.cursed
 
 /* Should be inlined. */
 boolean
@@ -126,7 +134,8 @@ create_region(NhRect *rects, int nrect)
     reg->n_monst = 0;
     reg->max_monst = 0;
     reg->monsters = (unsigned *) 0;
-    reg->arg = cg.zeroany;
+    REGION_DAMAGE(reg) = 0;
+    REGION_OTYP(reg) = 0;
     return reg;
 }
 
@@ -258,6 +267,7 @@ clone_region(NhRegion *reg)
 }
 
 #endif /*0*/
+#endif /* !SFCTOOL */
 
 /*
  * Free mem from region.
@@ -278,6 +288,7 @@ free_region(NhRegion *reg)
     }
 }
 
+#ifndef SFCTOOL
 /*
  * Add a region to the list.
  * This actually activates the region.
@@ -326,7 +337,7 @@ add_region(NhRegion *reg)
                 }
             }
             if (reg->visible) {
-                if (is_inside)
+                if (is_inside && reg->blocking)
                     block_point(i, j);
                 if (cansee(i, j))
                     newsym(i, j);
@@ -386,6 +397,7 @@ remove_region(NhRegion *reg)
     }
     free_region(reg);
 }
+#endif /* !SFCTOOL */
 
 /*
  * Remove all regions and clear all related data.  This must be done
@@ -405,6 +417,7 @@ clear_regions(void)
     gr.regions = (NhRegion **) 0;
 }
 
+#ifndef SFCTOOL
 /*
  * This function is called every turn.
  * It makes the regions age, if necessary and calls the appropriate
@@ -498,6 +511,7 @@ spread_bonfire(NhRegion *reg) {
     int stopy = min(ROWNO - 1, reg->bounding_box.hy + 1);
     for (int x = startx; x <= stopx; x++) {
         for (int y = starty; y <= stopy; y++) {
+            remove_coating(x, y, COAT_FROST | COAT_MUD);
             if (has_coating(x, y, COAT_GRASS) && !rn2(10)) {
                 remove_coating(x, y, COAT_GRASS);
                 add_coating(x, y, COAT_ASHES, 0);
@@ -699,7 +713,7 @@ remove_mon_from_regions(struct monst *mon)
 int
 reg_damg(NhRegion *reg)
 {
-    int damg = (!reg->visible || reg->ttl == -2L) ? 0 : reg->arg.a_int;
+    int damg = (!reg->visible || reg->ttl == -2L) ? 0 : REGION_DAMAGE(reg);
 
     return damg;
 }
@@ -724,7 +738,7 @@ visible_region_summary(winid win)
 {
     NhRegion *reg;
     char buf[BUFSZ], typbuf[QBUFSZ];
-    int i, damg, hdr_done = 0;
+    int i, damg, otyp, hdr_done = 0;
     const char *fldsep = iflags.menu_tab_sep ? "\t" : "  ";
 
     for (i = 0; i < svn.n_regions; i++) {
@@ -746,9 +760,13 @@ visible_region_summary(winid win)
            which are due to timeout on the next turn have ttl==0;
            adding 1 is intended to make the display be less confusing */
         Sprintf(buf, "%5ld", reg->ttl + 1L);
-        damg = reg->arg.a_int;
+        damg = REGION_DAMAGE(reg);
+        otyp = REGION_OTYP(reg);
         if (reg->inside_f == INSIDE_GAS_CLOUD) {
-            if (damg)
+            if (otyp)
+                Sprintf(typbuf, "potion vapors (otyp %d, damg %d)", 
+                        otyp, damg);
+            else if (damg)
                 Sprintf(typbuf, "poison gas (%d)", damg);
             else
                 Strcpy(typbuf, "vapor");
@@ -781,6 +799,24 @@ visible_region_at(coordxy x, coordxy y)
     return (NhRegion *) 0;
 }
 
+/*
+ * Check if a spot is under a blocking region (eg: gas cloud).
+ * Returns NULL if not, otherwise returns region.
+ */
+NhRegion *
+blocking_region_at(coordxy x, coordxy y)
+{
+    int i;
+
+    for (i = 0; i < svn.n_regions; i++) {
+        if (!gr.regions[i]->blocking || gr.regions[i]->ttl == -2L)
+            continue;
+        if (inside_region(gr.regions[i], x, y))
+            return gr.regions[i];
+    }
+    return (NhRegion *) 0;
+}
+
 void
 show_region(NhRegion *reg, coordxy x, coordxy y)
 {
@@ -797,78 +833,59 @@ save_regions(NHFILE *nhfp)
     int i, j;
     unsigned n;
 
-    if (!perform_bwrite(nhfp))
+    if (!update_file(nhfp))
         goto skip_lots;
-    if (nhfp->structlevel) {
-        /* timestamp */
-        bwrite(nhfp->fd, (genericptr_t) &svm.moves, sizeof svm.moves);
-        bwrite(nhfp->fd, (genericptr_t) &svn.n_regions, sizeof svn.n_regions);
-    }
+    /* timestamp */
+    Sfo_long(nhfp, &svm.moves, "region-tmstamp");
+    Sfo_int(nhfp, &svn.n_regions, "region-region_count");
+
     for (i = 0; i < svn.n_regions; i++) {
         r = gr.regions[i];
-        if (nhfp->structlevel) {
-            bwrite(nhfp->fd, (genericptr_t) &r->bounding_box,
-                   sizeof (NhRect));
-            bwrite(nhfp->fd, (genericptr_t) &r->nrects, sizeof (short));
-        }
+        Sfo_nhrect(nhfp, &r->bounding_box, "region-bounding_box");
+        Sfo_short(nhfp, &r->nrects, "region-nrects");
         for (j = 0; j < r->nrects; j++) {
-            if (nhfp->structlevel) {
-                bwrite(nhfp->fd, (genericptr_t) &r->rects[j],
-                       sizeof (NhRect));
-            }
+            Sfo_nhrect(nhfp, &r->rects[j], "region-rect");
         }
-        if (nhfp->structlevel) {
-            bwrite(nhfp->fd, (genericptr_t) &r->attach_2_u, sizeof (boolean));
-            bwrite(nhfp->fd, (genericptr_t) &r->attach_2_m, sizeof (unsigned));
-        }
-
+        Sfo_boolean(nhfp, &r->attach_2_u, "region-attach_2_u");
+        Sfo_unsigned(nhfp, &r->attach_2_m, "region-attach_2_m");
+        n = 0;
         n = !r->enter_msg ? 0U : (unsigned) strlen(r->enter_msg);
-        if (nhfp->structlevel) {
-            bwrite(nhfp->fd, (genericptr_t) &n, sizeof n);
-        }
+        Sfo_unsigned(nhfp, &n, "region-enter_msg_length");
         if (n > 0) {
-            if (nhfp->structlevel) {
-                bwrite(nhfp->fd, (genericptr_t) r->enter_msg, n);
-            }
+            Sfo_char(nhfp, (char *) r->enter_msg,
+                     "region-enter_msg", (int) n);
         }
         n = !r->leave_msg ? 0U : (unsigned) strlen(r->leave_msg);
-        if (nhfp->structlevel) {
-            bwrite(nhfp->fd, (genericptr_t) &n, sizeof n);
-        }
+        Sfo_unsigned(nhfp, &n, "region-leave_msg_length");
         if (n > 0) {
-            if (nhfp->structlevel) {
-                bwrite(nhfp->fd, (genericptr_t) r->leave_msg, n);
-            }
+            Sfo_char(nhfp, (char *) r->leave_msg, "region-leave_msg", (int) n);
         }
-        if (nhfp->structlevel) {
-            bwrite(nhfp->fd, (genericptr_t) &r->ttl, sizeof (long));
-            bwrite(nhfp->fd, (genericptr_t) &r->expire_f, sizeof (short));
-            bwrite(nhfp->fd, (genericptr_t) &r->can_enter_f, sizeof (short));
-            bwrite(nhfp->fd, (genericptr_t) &r->enter_f, sizeof (short));
-            bwrite(nhfp->fd, (genericptr_t) &r->can_leave_f, sizeof (short));
-            bwrite(nhfp->fd, (genericptr_t) &r->leave_f, sizeof (short));
-            bwrite(nhfp->fd, (genericptr_t) &r->inside_f, sizeof (short));
-            bwrite(nhfp->fd, (genericptr_t) &r->player_flags,
-                   sizeof (unsigned));
-            bwrite(nhfp->fd, (genericptr_t) &r->n_monst, sizeof (short));
-        }
+        Sfo_long(nhfp, &r->ttl, "region-ttl");
+        Sfo_short(nhfp, &r->expire_f, "region-expire_f");
+        Sfo_short(nhfp, &r->can_enter_f, "region-can_enter_f");
+        Sfo_short(nhfp, &r->enter_f, "region-enter_f");
+        Sfo_short(nhfp, &r->can_leave_f, "region-can_leave_f");
+        Sfo_short(nhfp, &r->leave_f, "region-leave_f");
+        Sfo_short(nhfp, &r->inside_f, "region-inside_f");
+        Sfo_unsigned(nhfp, &r->player_flags, "region-player_flags");
+        Sfo_short(nhfp, &r->n_monst, "region-monster_count");
+
         for (j = 0; j < r->n_monst; j++) {
-            if (nhfp->structlevel) {
-                bwrite(nhfp->fd, (genericptr_t) &r->monsters[j],
-                       sizeof (unsigned));
-            }
+            Sfo_unsigned(nhfp, &r->monsters[j], "region-monster");
         }
-        if (nhfp->structlevel) {
-            bwrite(nhfp->fd, (genericptr_t) &r->visible, sizeof (boolean));
-            bwrite(nhfp->fd, (genericptr_t) &r->glyph, sizeof (int));
-            bwrite(nhfp->fd, (genericptr_t) &r->arg, sizeof (anything));
-        }
+        Sfo_boolean(nhfp, &r->visible, "region-visible");
+        Sfo_int(nhfp, &r->glyph, "region-glyph");
+        Sfo_int(nhfp, &r->arg.damage, "region-arg-damage");
+        Sfo_int(nhfp, &r->arg.otyp, "region-arg-otyp");
+        Sfo_boolean(nhfp, &r->arg.blessed, "region-arg-blessed");
+        Sfo_boolean(nhfp, &r->arg.cursed, "region-arg-cursed");
     }
 
  skip_lots:
     if (release_data(nhfp))
         clear_regions();
 }
+#endif /* !SFCTOOL */
 
 void
 rest_regions(NHFILE *nhfp)
@@ -881,106 +898,82 @@ rest_regions(NHFILE *nhfp)
     boolean ghostly = (nhfp->ftype == NHF_BONESFILE);
 
     clear_regions(); /* Just for security */
-    if (nhfp->structlevel) {
-        mread(nhfp->fd, (genericptr_t) &tmstamp, sizeof(tmstamp));
-    }
+    Sfi_long(nhfp, &tmstamp, "region-tmstamp");
     if (ghostly)
         tmstamp = 0;
     else
         tmstamp = (svm.moves - tmstamp);
-
-    if (nhfp->structlevel) {
-        mread(nhfp->fd, (genericptr_t) &svn.n_regions, sizeof svn.n_regions);
-    }
-
+    Sfi_int(nhfp, &svn.n_regions, "region-region_count");
     gm.max_regions = svn.n_regions;
     if (svn.n_regions > 0)
         gr.regions = (NhRegion **) alloc(svn.n_regions * sizeof (NhRegion *));
     for (i = 0; i < svn.n_regions; i++) {
         r = gr.regions[i] = (NhRegion *) alloc(sizeof (NhRegion));
-        if (nhfp->structlevel) {
-            mread(nhfp->fd, (genericptr_t) &r->bounding_box, sizeof (NhRect));
-            mread(nhfp->fd, (genericptr_t) &r->nrects, sizeof (short));
-        }
+        Sfi_nhrect(nhfp, &r->bounding_box, "region-bounding box");
+        Sfi_short(nhfp, &r->nrects, "region-nrects");
         if (r->nrects > 0)
             r->rects = (NhRect *) alloc(r->nrects * sizeof (NhRect));
         else
             r->rects = (NhRect *) 0;
         for (j = 0; j < r->nrects; j++) {
-            if (nhfp->structlevel) {
-                mread(nhfp->fd, (genericptr_t) &r->rects[j], sizeof(NhRect));
-            }
+           Sfi_nhrect(nhfp, &r->rects[j], "region-rect");
         }
-        if (nhfp->structlevel) {
-            mread(nhfp->fd, (genericptr_t) &r->attach_2_u, sizeof (boolean));
-            mread(nhfp->fd, (genericptr_t) &r->attach_2_m, sizeof (unsigned));
-            mread(nhfp->fd, (genericptr_t) &n, sizeof n);
-        }
+
+        Sfi_boolean(nhfp, &r->attach_2_u, "region-attach_2_u");
+        Sfi_unsigned(nhfp, &r->attach_2_m, "region-attach_2_m");
+        Sfi_unsigned(nhfp, &n, "region-enter_msg_length");
         if (n > 0) {
             msg_buf = (char *) alloc(n + 1);
-            if (nhfp->structlevel) {
-                mread(nhfp->fd, (genericptr_t) msg_buf, n);
-            }
+            Sfi_char(nhfp, msg_buf, "region-enter_msg", n);
             msg_buf[n] = '\0';
         } else {
             msg_buf = (char *) 0;
         }
         r->enter_msg = (const char *) msg_buf;
 
-        if (nhfp->structlevel) {
-            mread(nhfp->fd, (genericptr_t) &n, sizeof n);
-        }
-         if (n > 0) {
+        Sfi_unsigned(nhfp, &n, "region-leave_msg_length");
+        if (n > 0) {
             msg_buf = (char *) alloc(n + 1);
-            if (nhfp->structlevel) {
-                mread(nhfp->fd, (genericptr_t) msg_buf, n);
-            }
+            Sfi_char(nhfp, msg_buf, "region-leave_msg", n);
             msg_buf[n] = '\0';
-         } else {
-             msg_buf = (char *) 0;
-         }
-         r->leave_msg = (const char *) msg_buf;
+            r->leave_msg = (const char *) msg_buf;
+        } else {
+            msg_buf = (char *) 0;
+        }
+        r->leave_msg = (const char *) msg_buf;
 
-        if (nhfp->structlevel) {
-             mread(nhfp->fd, (genericptr_t) &r->ttl, sizeof(long));
-         }
+        Sfi_long(nhfp, &r->ttl, "region-ttl");
         /* check for expired region */
         if (r->ttl >= 0L)
             r->ttl = (r->ttl > tmstamp) ? r->ttl - tmstamp : 0L;
-        if (nhfp->structlevel) {
-            mread(nhfp->fd, (genericptr_t) &r->expire_f, sizeof (short));
-            mread(nhfp->fd, (genericptr_t) &r->can_enter_f, sizeof (short));
-            mread(nhfp->fd, (genericptr_t) &r->enter_f, sizeof (short));
-            mread(nhfp->fd, (genericptr_t) &r->can_leave_f, sizeof (short));
-            mread(nhfp->fd, (genericptr_t) &r->leave_f, sizeof (short));
-            mread(nhfp->fd, (genericptr_t) &r->inside_f, sizeof (short));
-            mread(nhfp->fd, (genericptr_t) &r->player_flags,
-                  sizeof (unsigned));
-        }
+        Sfi_short(nhfp, &r->expire_f, "region-expire_f");
+        Sfi_short(nhfp, &r->can_enter_f, "region-can_enter_f");
+        Sfi_short(nhfp, &r->enter_f, "region-enter_f");
+        Sfi_short(nhfp, &r->can_leave_f, "region-can_leave_f");
+        Sfi_short(nhfp, &r->leave_f, "region-leave_f");
+        Sfi_short(nhfp, &r->inside_f, "region-inside_f");
+        Sfi_unsigned(nhfp, &r->player_flags, "region-player_flags");
         if (ghostly) { /* settings pertained to old player */
             clear_hero_inside(r);
             clear_heros_fault(r);
         }
-        if (nhfp->structlevel) {
-            mread(nhfp->fd, (genericptr_t) &r->n_monst, sizeof (short));
-        }
+        Sfi_short(nhfp, &r->n_monst, "region-monster_count");
         if (r->n_monst > 0)
             r->monsters = (unsigned *) alloc(r->n_monst * sizeof (unsigned));
         else
             r->monsters = (unsigned *) 0;
         r->max_monst = r->n_monst;
         for (j = 0; j < r->n_monst; j++) {
-            if (nhfp->structlevel) {
-                mread(nhfp->fd, (genericptr_t) &r->monsters[j],
-                      sizeof(unsigned));
-            }
+            Sfi_unsigned(nhfp, &r->monsters[j], "region-monster");
         }
-        if (nhfp->structlevel) {
-            mread(nhfp->fd, (genericptr_t) &r->visible, sizeof (boolean));
-            mread(nhfp->fd, (genericptr_t) &r->glyph, sizeof (int));
-            mread(nhfp->fd, (genericptr_t) &r->arg, sizeof (anything));
-        }
+        Sfi_boolean(nhfp, &r->visible, "region-visible");
+        Sfi_int(nhfp, &r->glyph, "region-glyph");
+        Sfi_int(nhfp, &r->arg.damage, "region-arg-damage");
+        Sfi_int(nhfp, &r->arg.otyp, "region-arg-otyp");
+        Sfi_boolean(nhfp, &r->arg.blessed, "region-arg-blessed");
+        Sfi_boolean(nhfp, &r->arg.cursed, "region-arg-cursed");
     }
+#ifndef SFCTOOL
     /* remove expired regions, do not trigger the expire_f callback (yet!);
        also update monster lists if this data is coming from a bones file */
     for (i = svn.n_regions - 1; i >= 0; i--) {
@@ -990,8 +983,10 @@ rest_regions(NHFILE *nhfp)
         else if (ghostly && r->n_monst > 0)
             reset_region_mids(r);
     }
+#endif /* !SFCTOOL */
 }
 
+#ifndef SFCTOOL
 DISABLE_WARNING_FORMAT_NONLITERAL
 
 /* to support '#stats' wizard-mode command */
@@ -1150,13 +1145,12 @@ expire_gas_cloud(genericptr_t p1, genericptr_t p2 UNUSED)
     coordxy x, y;
 
     reg = (NhRegion *) p1;
-    damage = reg->arg.a_int;
+    damage = REGION_DAMAGE(reg);
 
     /* If it was a thick cloud, it dissipates a little first */
     if (damage >= 5) {
         damage /= 2; /* It dissipates, let's do less damage */
-        reg->arg = cg.zeroany;
-        reg->arg.a_int = damage;
+        REGION_DAMAGE(reg) = damage;
         reg->ttl = 2L; /* Here's the trick : reset ttl */
         return FALSE;  /* THEN return FALSE, means "still there" */
     }
@@ -1186,27 +1180,10 @@ expire_gas_cloud(genericptr_t p1, genericptr_t p2 UNUSED)
     return TRUE; /* OK, it's gone, you can free it! */
 }
 
-/* returns True if p2 is killed by region p1, False otherwise */
-boolean
-inside_gas_cloud(genericptr_t p1, genericptr_t p2)
-{
-    NhRegion *reg = (NhRegion *) p1;
-    struct monst *mtmp = (struct monst *) p2;
-    struct monst *umon = mtmp ? mtmp : &gy.youmonst;
-    int dam = reg->arg.a_int;
-
-    /*
-     * Gas clouds can't be targeted at water locations, but they can
-     * start next to water and spread over it.
-     */
-
-    /* fog clouds maintain gas clouds, even poisonous ones */
-    if (reg->ttl < 20 && umon && umon->data == &mons[PM_FOG_CLOUD])
-        reg->ttl += 5;
-
-    if (dam < 1)
-        return FALSE; /* if no damage then there's nothing to do here... */
-
+/* Vanilla keeps this in inside_gas_cloud, but we'll pull it out for the
+   sake of keeping things readable. */
+staticfn boolean 
+poisongas_damage(NhRegion *reg, int dam, struct monst *mtmp) {
     if (!mtmp) { /* hero is indicated by Null rather than by &youmonst */
         if (m_poisongas_ok(&gy.youmonst) == M_POISONGAS_OK)
             return FALSE;
@@ -1232,7 +1209,8 @@ inside_gas_cloud(genericptr_t p1, genericptr_t p2)
             return FALSE;
         }
     } else { /* A monster is inside the cloud */
-        mtmp = (struct monst *) p2;
+        /* For the life of me I can't figure out what this line was supposed to do. */
+        /*mtmp = (struct monst *) p2; */
 
         if (m_poisongas_ok(mtmp) != M_POISONGAS_OK) {
             if (!is_silent(mtmp->data)) {
@@ -1264,6 +1242,43 @@ inside_gas_cloud(genericptr_t p1, genericptr_t p2)
     return FALSE; /* Monster is still alive */
 }
 
+/* returns True if p2 is killed by region p1, False otherwise */
+boolean
+inside_gas_cloud(genericptr_t p1, genericptr_t p2)
+{
+    NhRegion *reg = (NhRegion *) p1;
+    struct monst *mtmp = (struct monst *) p2;
+    struct monst *umon = mtmp ? mtmp : &gy.youmonst;
+    int dam = REGION_DAMAGE(reg);
+    int otyp = REGION_OTYP(reg);
+
+    /*
+     * Gas clouds can't be targeted at water locations, but they can
+     * start next to water and spread over it.
+     */
+
+    /* fog clouds maintain gas clouds, even poisonous ones */
+    if (reg->ttl < 20 && umon && umon->data == &mons[PM_FOG_CLOUD])
+        reg->ttl += 5;
+
+    if (dam < 1)
+        return FALSE; /* if no damage then there's nothing to do here... */
+
+    if (otyp) {
+        struct obj fakeobj = cg.zeroobj;
+        fakeobj.otyp = otyp;
+        fakeobj.blessed = REGION_BLESSED(reg);
+        fakeobj.cursed = REGION_CURSED(reg);
+        if (!mtmp && (!breathless(gy.youmonst.data) || haseyes(gy.youmonst.data))) {
+            potionbreathe(&fakeobj);
+        } else if (mtmp && (!breathless(mtmp->data) || haseyes(mtmp->data))) {
+            mpotionbreathe(&fakeobj, mtmp, heros_fault(reg));
+        }
+        return FALSE;
+    } else 
+        return poisongas_damage(reg, dam, mtmp);
+}
+
 staticfn boolean
 is_hero_inside_gas_cloud(short rtype)
 {
@@ -1281,27 +1296,59 @@ is_hero_inside_gas_cloud(short rtype)
 staticfn void
 make_gas_cloud(
     NhRegion *cloud,
+    struct obj *otmp,
     int damage,
     boolean inside_cloud)
 {
+    char description[BUFSZ];
     if (!gi.in_mklev && !svc.context.mon_moving)
         set_heros_fault(cloud); /* assume player has created it */
     cloud->inside_f = INSIDE_GAS_CLOUD;
     cloud->expire_f = EXPIRE_GAS_CLOUD;
-    cloud->arg = cg.zeroany;
-    cloud->arg.a_int = damage;
+    REGION_DAMAGE(cloud) = damage;
     cloud->visible = TRUE;
-    cloud->glyph = cmap_to_glyph(damage ? S_poisoncloud : S_cloud);
+    cloud->blocking = TRUE;
+    /* Set up the cloud glyph */
+    if (otmp) {
+        REGION_OTYP(cloud) = otmp->otyp;
+        REGION_BLESSED(cloud) = otmp->blessed;
+        REGION_CURSED(cloud) = otmp->cursed;
+    }
+    if (otmp) {
+        cloud->glyph = cmap_to_glyph(S_potioncloud) + otmp->otyp - POT_GAIN_ABILITY;
+    } else {
+        cloud->glyph = cmap_to_glyph(damage ? S_poisoncloud : S_cloud);
+    }
     add_region(cloud);
+    reg_descr(cloud, description);
 
     if (!gi.in_mklev && !inside_cloud && is_hero_inside_gas_cloud(INSIDE_GAS_CLOUD)) {
         You("are enveloped in a cloud of %s!",
             /* FIXME: "steam" is wrong if this cloud is just the trail of
                a fog cloud's movement; changing to "vapor" would handle
                that but seems a step backward when it really is steam */
-            damage ? "noxious gas" : "steam");
+            description);
         iflags.last_msg = PLNMSG_ENVELOPED_IN_GAS;
     }
+}
+
+char *
+reg_descr(NhRegion *reg, char *description) {
+    if (!is_gasregion(reg)) {
+        Sprintf(description, "%s", "bonfire");
+    } else if (REGION_OTYP(reg)) {
+         /* Technically many types of vapor could be noticed even if the
+           player cannot see them, but that's too complicated to worry about. */
+        if (Blind)
+            Sprintf(description, "strange vapor");
+        else
+            Sprintf(description, "%s vapors", OBJ_DESCR(objects[REGION_OTYP(reg)]));
+    } else if (REGION_DAMAGE(reg)) {
+        Sprintf(description, "%s", "poison gas");
+    } else {
+        Sprintf(description, "%s", "vapor");
+    }
+    return description;
 }
 
 /* Create a gas cloud which starts at (x,y) and grows outward from it via
@@ -1313,6 +1360,7 @@ NhRegion *
 create_gas_cloud(
     coordxy x, coordxy y,
     int cloudsize,
+    struct obj *otmp,
     int damage)
 {
     NhRegion *cloud;
@@ -1404,7 +1452,7 @@ create_gas_cloud(
     /* If cloud was constrained in small space, give it more time to live. */
     cloud->ttl = (cloud->ttl * cloudsize) / newidx;
 
-    make_gas_cloud(cloud, damage, inside_cloud);
+    make_gas_cloud(cloud, otmp, damage, inside_cloud);
     return cloud;
 }
 
@@ -1431,7 +1479,7 @@ create_gas_cloud_selection(
                 add_rect_to_reg(cloud, &tmprect);
             }
 
-    make_gas_cloud(cloud, damage, inside_cloud);
+    make_gas_cloud(cloud, 0, damage, inside_cloud);
     return cloud;
 }
 
@@ -1518,6 +1566,7 @@ region_safety(void)
     if (BlindedTimeout == 1L)
         make_blinded(0L, TRUE);
 }
+#endif /* !SFCTOOL */
 
 boolean
 is_gasregion(NhRegion *reg) {
@@ -1537,13 +1586,13 @@ expire_bonfire(genericptr_t p1, genericptr_t p2 UNUSED)
     int damage;
 
     reg = (NhRegion *) p1;
-    damage = reg->arg.a_int;
+    damage = REGION_DAMAGE(reg);
 
-    /* If it was a thick cloud, it dissipates a little first */
+    /* If it was a thick bonfire, it dissipates a little first */
     if (damage >= 5) {
         damage /= 2; /* It dissipates, let's do less damage */
-        reg->arg = cg.zeroany;
-        reg->arg.a_int = damage;
+        REGION_OTYP(reg) = 0;
+        REGION_DAMAGE(reg) = damage;
         reg->ttl = 2L; /* Here's the trick : reset ttl */
         return FALSE;  /* THEN return FALSE, means "still there" */
     }
@@ -1563,7 +1612,7 @@ inside_bonfire(genericptr_t p1, genericptr_t p2)
     NhRegion *reg = (NhRegion *) p1;
     struct monst *mtmp = (struct monst *) p2;
     struct monst *umon = mtmp ? mtmp : &gy.youmonst;
-    int dam = reg->arg.a_int;
+    int dam = REGION_DAMAGE(reg);
 
     if (reg->ttl < 20 && umon && umon->data == &mons[PM_FIRE_ELEMENTAL])
         reg->ttl += 5;
@@ -1605,6 +1654,7 @@ inside_bonfire(genericptr_t p1, genericptr_t p2)
         mtmp = (struct monst *) p2;
         if (m_bonfire_ok(mtmp) == M_BONFIRE_OK)
             return FALSE;
+        wakeup(mtmp, heros_fault(reg));
         /* Message and complete burning */
         if (completelyburns(mtmp->data)) {
             if (heros_fault(reg))
@@ -1658,9 +1708,9 @@ create_bonfire(coordxy x, coordxy y, int lifetime, int damage)
         set_heros_fault(flames); /* assume player has created it */
     flames->inside_f = INSIDE_BONFIRE;
     flames->expire_f = EXPIRE_BONFIRE;
-    flames->arg = cg.zeroany;
-    flames->arg.a_int = damage;
+    REGION_DAMAGE(flames) = damage;
     flames->visible = TRUE;
+    flames->blocking = FALSE;
     flames->glyph = cmap_to_glyph(S_bonfire);
     add_region(flames);
 
@@ -1669,6 +1719,17 @@ create_bonfire(coordxy x, coordxy y, int lifetime, int damage)
         iflags.last_msg = PLNMSG_ENVELOPED_IN_FLAMES;
     }
     return flames;
+}
+
+const char *
+region_string(NhRegion *reg) {
+    if (!is_gasregion(reg)) {
+        return "a bonfire";
+    } else if (reg_damg(reg)) {
+        return "a cloud of poison gas";
+    } else {
+        return "a cloud of vapor";
+    }
 }
 
 /*region.c*/

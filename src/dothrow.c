@@ -932,6 +932,12 @@ hurtle_step(genericptr_t arg, coordxy x, coordxy y)
         }
     } else if (is_lava(x, y) && !stopping_short) {
         Norep("You move over some lava.");
+    } else if (has_coating(x, y, COAT_MUD) && !(Levitation || Flying)) {
+        Norep("You skid through the mud.");
+    } else if (has_coating(x, y, COAT_POTION) && !(Levitation || Flying)) {
+        Norep("You skid across the surface of the liquid.");
+    } else if (has_coating(x, y, COAT_BLOOD) && !(Levitation || Flying)) {
+        Norep("You skid through the blood.");
     }
 
     /* FIXME:
@@ -1341,7 +1347,7 @@ toss_up(struct obj *obj, boolean hitsroof)
                 artimsg = FALSE;
         int dmg = dmgval(obj, &gy.youmonst);
 
-        if (obj->oartifact && !harmless)
+        if ((obj->oartifact || obj->booster) && !harmless)
             /* need a fake die roll here; rn1(18,2) avoids 1 and 20 */
             artimsg = artifact_hit((struct monst *) 0, &gy.youmonst, obj,
                                    &dmg, rn1(18, 2));
@@ -1716,7 +1722,7 @@ throwit(
                                     : "%s back toward you, hitting your %s!",
                               Tobjnam(obj, Blind ? "hit" : "fly"),
                               body_part(ARM));
-                        if (obj->oartifact)
+                        if (obj->oartifact || obj->booster)
                             (void) artifact_hit((struct monst *) 0,
                                                 &gy.youmonst, obj, &dmg, 0);
                         losehp(Maybe_Half_Phys(dmg), killer_xname(obj),
@@ -2493,10 +2499,11 @@ breakobj(
                         Your("%s %s.", eyes, vtense(eyes, "water"));
                     }
                 }
-                potionbreathe(obj);
             }
         }
+        potion_fumigate(x, y, obj);
         /* monster breathing isn't handled... [yet?] */
+        /* oh YES IT IS. - K */
         break;
     case EXPENSIVE_CAMERA:
         release_camera_demon(obj, x, y);
@@ -2571,9 +2578,17 @@ breaktest(struct obj *obj)
     if (obj->oclass == ARMOR_CLASS && objects[obj->otyp].oc_material == GLASS)
         nonbreakchance = 90;
 
+    if (obj->otyp == SKELETON) {
+        if (obj->owt < 50)
+            return TRUE;
+        else
+            nonbreakchance = 90;
+    }
+
     if (obj_resists(obj, nonbreakchance, 99))
         return FALSE;
-    if (objects[obj->otyp].oc_material == GLASS && !obj->oartifact)
+    if ((objects[obj->otyp].oc_material == GLASS
+        || objects[obj->otyp].oc_material == BLUEICE) && !obj->oartifact)
         return TRUE;
     if (obj->oclass == GEM_CLASS && objects[obj->otyp].oc_material != MINERAL)
         return TRUE;
@@ -2611,6 +2626,7 @@ breakmsg(struct obj *obj, boolean in_view)
         /*FALLTHRU*/
     case LENSES:
     case SUNGLASSES:
+    case MIRRORED_GLASSES:
     case MIRROR:
     case CRYSTAL_BALL:
     case EXPENSIVE_CAMERA:
@@ -2618,6 +2634,7 @@ breakmsg(struct obj *obj, boolean in_view)
         FALLTHROUGH;
     /*FALLTHRU*/
     case BOTTLE:
+    case ICICLE:
     case WORTHLESS_VIOLET_GLASS:
     case POT_WATER: /* really, all potions */
         if (!in_view)
@@ -2625,6 +2642,13 @@ breakmsg(struct obj *obj, boolean in_view)
         else
             pline("%s shatter%s%s!", Doname2(obj),
                   (obj->quan == 1L) ? "s" : "", to_pieces);
+        break;
+    case SKELETON:
+        if (!in_view) You_hear(Hallucination
+                                ? "Bones troussling!" : "A crash!");
+        else
+            pline("%s fall%s apart!", Doname2(obj),
+                  (obj->quan == 1L) ? "s" : "");
         break;
     case EGG:
     case MELON:

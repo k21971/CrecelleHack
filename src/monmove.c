@@ -132,10 +132,17 @@ mon_yells(struct monst *mon, const char *shout)
 boolean
 m_can_break_boulder(struct monst *mtmp)
 {
-    return (is_rider(mtmp->data)
-            || (!mtmp->mspec_used
-                && (mtmp->isshk || mtmp->ispriest
-                    || (mtmp->data->msound == MS_LEADER))));
+    return (!mtmp->mpeaceful
+            && (is_rider(mtmp->data)
+                || (MON_WEP(mtmp) && is_pick(MON_WEP(mtmp)))
+                || (!mtmp->mspec_used
+                    && (is_dprince(mtmp->data)
+                        || is_dlord(mtmp->data)
+                        || mtmp->isshk
+                        || mtmp->ispriest
+                        || mtmp->data->msound == MS_LEADER
+                        || mtmp->data->msound == MS_NEMESIS
+                        || mtmp->data == &mons[PM_ORACLE]))));
 }
 
 /* monster mtmp breaks boulder at x,y */
@@ -143,17 +150,35 @@ void
 m_break_boulder(struct monst *mtmp, coordxy x, coordxy y)
 {
     struct obj *otmp;
+    boolean using_pick = (MON_WEP(mtmp) && is_pick(MON_WEP(mtmp)));
 
     if (m_can_break_boulder(mtmp) && ((otmp = sobj_at(BOULDER, x, y)) != 0)) {
         if (!is_rider(mtmp->data)) {
             if (!Deaf && (mdistu(mtmp) < 4*4)) {
                 if (canspotmon(mtmp))
                     set_msg_xy(mtmp->mx, mtmp->my);
-                pline("%s mutters %s.",
-                      Monnam(mtmp),
-                      mtmp->ispriest ? "a prayer" : "an incantation");
+                if (using_pick) {
+                    if (cansee(x, y))
+                        pline("%s swings %s %s.",
+                            Monnam(mtmp), mhis(mtmp),
+                            simpleonames(MON_WEP(mtmp)));
+                    else if (!Deaf)
+                        You_hear("a crumbling sound.");
+                } else {
+                    pline("%s mutters %s.",
+                        Monnam(mtmp),
+                        mtmp->ispriest ? "a prayer" : "an incantation");
+                }
             }
-            mtmp->mspec_used += rn1(20, 10);
+            /* TODO: create a new timer specifically for
+                breaking boulders, as mspec_used affects
+                monster spellcasting */
+            if (!is_rider(mtmp->data)) {
+                if (unique_corpstat(mtmp->data))
+                    mtmp->mspec_used += rn1(4, 2);
+                else
+                    mtmp->mspec_used += rn1(20, 10);
+            }
         }
         if (cansee(x, y)) {
             set_msg_xy(x, y);
@@ -513,7 +538,7 @@ monflee(
 
         if (mtmp->data == &mons[PM_VROCK] && !mtmp->mspec_used) {
             mtmp->mspec_used = 75 + rn2(25);
-            (void) create_gas_cloud(mtmp->mx, mtmp->my, 5, 8);
+            (void) create_gas_cloud(mtmp->mx, mtmp->my, 5, 0, 8);
         }
 
         mtmp->mflee = 1;
@@ -651,7 +676,7 @@ m_everyturn_effect(struct monst *mtmp)
            present, or when flowing under closed doors so that visibility
            changes aren't mixed with messages about doing such */
         if (!closed_door(x, y) && !visible_region_at(x, y))
-            create_gas_cloud(x, y, 1, 0); /* harmless vapor */
+            create_gas_cloud(x, y, 1, 0, 0); /* harmless vapor */
     }
     if (mtmp->data == &mons[PM_HELLCAT] && !is_u) {
         if (levl[x][y].lit) {
@@ -661,6 +686,23 @@ m_everyturn_effect(struct monst *mtmp)
             mtmp->minvis = 0;
             mtmp->perminvis = 0;
         }
+    }
+    /* Yellow dragons do this every turn */
+    if (mtmp->data == &mons[PM_YELLOW_DRAGON] ||
+        mtmp->data == &mons[PM_BABY_YELLOW_DRAGON] ||
+        (is_u && uarm && 
+            (uarm->otyp == YELLOW_DRAGON_SCALES || 
+                uarm->otyp == YELLOW_DRAGON_SCALE_MAIL))) {
+        floor_alchemy(x, y, POT_ACID, NON_PM);
+    }
+    /* Drip liquids */
+    if (is_u && Dripping && !rn2(3)) {
+        if (flags.verbose) You("drip some liquid.");
+        if (u.udriptype > 0) floor_alchemy(x, y, u.udriptype, NON_PM);
+        else add_coating(x, y, COAT_BLOOD, -1 * u.udriptype);
+    } else if (!is_u && mtmp->mdripping) {
+        if (mtmp->mdriptype > 0) floor_alchemy(x, y, mtmp->mdriptype, NON_PM);
+        else add_coating(x, y, COAT_BLOOD, -1 * mtmp->mdriptype);
     }
 }
 
@@ -679,16 +721,16 @@ m_postmove_effect(struct monst *mtmp)
 
     /* Hezrous create clouds of stench. This does not cost a move. */
     if (mtmp->data == &mons[PM_HEZROU]) /* stench */
-        create_gas_cloud(x, y, 1, 8);
+        create_gas_cloud(x, y, 1, 0, 8);
     else if (mtmp->data == &mons[PM_SKUNK_APE] && !mtmp->mspec_used) {
         mtmp->mspec_used = rnd(20);
-        (void) create_gas_cloud(mtmp->mx, mtmp->my, rnd(6), 3);
+        (void) create_gas_cloud(mtmp->mx, mtmp->my, rnd(6), 0, 3);
     } else if (mtmp->data == &mons[PM_STEAM_VORTEX] && !mtmp->mcan)
-        create_gas_cloud(x, y, 1, 0); /* harmless vapor */
-    else if (mtmp->data == &mons[PM_FIRE_ELEMENTAL] && !mtmp->mcan) {
+        create_gas_cloud(x, y, 1, 0, 0); /* harmless vapor */
+    else if (likes_fire(mtmp->data) && !mtmp->mcan) {
         /* Lets off smoke / vapor in the rain, otherwise starts things on fire. */
         if (IS_RAINING)
-            create_gas_cloud(x, y, 1, 0);
+            create_gas_cloud(x, y, 1, 0, 0);
         else
             create_bonfire(x, y, 1, rnd(4));
     } else if (mtmp->data == &mons[PM_ACID_BLOB] 
@@ -703,6 +745,9 @@ m_postmove_effect(struct monst *mtmp)
         if (touch_petrifies(&mons[pm]))
             pm = PM_ELF;
         add_coating(x, y, COAT_BLOOD, has_blood(&mons[pm]) ? pm : PM_HUMAN);
+    } else if (mtmp->data == &mons[PM_SALT_GOLEM]) {
+        remove_coating(x, y, COAT_BLOOD);
+        remove_coating(x, y, COAT_POTION);
     } else if (mtmp->data == &mons[PM_TORNADO]) {
         /* tornados suck up everything */
         remove_coating(x, y, COAT_ALL);
@@ -769,6 +814,10 @@ dochug(struct monst *mtmp)
     if (mtmp->mstun && !rn2(10))
         mtmp->mstun = 0;
 
+    /* dripping monsters stop dripping with a very large probability */
+    if (mtmp->mdripping && !rn2(6))
+        mtmp->mdripping = 0;
+
     /* Some monsters teleport. Teleportation costs a turn. */
     if (mtmp->mflee && !rn2(40) && can_teleport(mdat) && !mtmp->iswiz
         && !noteleport_level(mtmp)) {
@@ -777,31 +826,8 @@ dochug(struct monst *mtmp)
         return 0;
     }
 
-    /* Erinyes will inform surrounding monsters of your crimes */
-    if (mdat == &mons[PM_ERINYS] && !mtmp->mpeaceful && m_canseeu(mtmp))
-        aggravate();
-
-    /* Illusions may disappear in order to prevent flooding the level */
-    if (mdat == &mons[PM_ILLUSION] && !rn2(10))
-        mongone(mtmp);
-
-    /* Tornados make noise */
-    if (mdat == &mons[PM_TORNADO] && !Deaf && !rn2(30))
-        You_hear("a horrible sucking noise.");
-
-    /* Shriekers and Medusa have irregular abilities which must be
-       checked every turn. These abilities do not cost a turn when
-       used. */
-    if (mdat->msound == MS_SHRIEK && !um_dist(mtmp->mx, mtmp->my, 1))
-        m_respond(mtmp);
-    if (mtmp->data == &mons[PM_CATERWAUL] && !um_dist(mtmp->mx, mtmp->my, 1))
-        m_respond(mtmp);
-    if (mdat == &mons[PM_MEDUSA] && couldsee(mtmp->mx, mtmp->my))
-        m_respond(mtmp);
-    if (does_callouts(mdat) && !mtmp->mpeaceful && couldsee(mtmp->mx, mtmp->my)
-        && !rn2(10) 
-        && !um_dist(mtmp->mx, mtmp->my, 5))
-        m_respond(mtmp);
+    /* some monsters have special abilities */
+    m_respond(mtmp);
     if (DEADMONSTER(mtmp))
         return 1; /* m_respond gaze can kill medusa */
 
@@ -1854,7 +1880,8 @@ m_move(struct monst *mtmp, int after)
         } else {
             mmoved = MMOVE_NOTHING;
         }
-        return postmov(mtmp, ptr, omx, omy, mmoved,
+        if (distu(mtmp->mx, mtmp->my) > 8)
+            return postmov(mtmp, ptr, omx, omy, mmoved,
                        seenflgs, can_tunnel, can_unlock, can_open);
     }
 

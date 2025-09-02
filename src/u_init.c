@@ -176,7 +176,7 @@ static struct trobj Wizard[] = {
     { MAGIC_MARKER, 19, TOOL_CLASS, 1, 0 }, /* actually spe = 18 + d4 */
     { 0, 0, 0, 0, 0 }
 };
-static struct trobj Wrestler[] = {
+static struct trobj Grappler[] = {
     { UNDEF_TYP, UNDEF_SPE, POTION_CLASS, 3, UNDEF_BLESS },
     { FOOD_RATION, 0, FOOD_CLASS, 3, 0 },
     { APPLE, 0, FOOD_CLASS, 5, UNDEF_BLESS },
@@ -273,6 +273,7 @@ static const struct def_skill Skill_A[] = {
     { P_BARE_HANDED_COMBAT, P_EXPERT },
     { P_TRIPPING, P_EXPERT },
     { P_GRAPPLING, P_BASIC },
+    { P_IMPROV, P_BASIC },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_B[] = {
@@ -300,6 +301,7 @@ static const struct def_skill Skill_B[] = {
     { P_BARE_HANDED_COMBAT, P_MASTER },
     { P_TRIPPING, P_SKILLED },
     { P_GRAPPLING, P_SKILLED },
+    { P_IMPROV, P_SKILLED },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_C[] = {
@@ -325,6 +327,28 @@ static const struct def_skill Skill_C[] = {
     { P_BARE_HANDED_COMBAT, P_MASTER },
     { P_TRIPPING, P_SKILLED },
     { P_GRAPPLING, P_BASIC },
+    { P_IMPROV, P_SKILLED },
+    { P_NONE, 0 }
+};
+static const struct def_skill Skill_Grp[] = {
+    { P_DAGGER, P_BASIC },
+    { P_KNIFE, P_BASIC },
+    { P_PICK_AXE, P_BASIC },
+    { P_CLUB, P_BASIC },
+    { P_MACE, P_BASIC },
+    { P_MORNING_STAR, P_BASIC },
+    { P_FLAIL, P_BASIC },
+    { P_HAMMER, P_BASIC },
+    { P_QUARTERSTAFF, P_BASIC },
+    { P_POLEARMS, P_BASIC },
+    { P_SPEAR, P_BASIC },
+    { P_TRIDENT, P_SKILLED },
+    { P_BOOMERANG, P_EXPERT },
+    { P_UNICORN_HORN, P_BASIC },
+    { P_MARTIAL_ARTS, P_MASTER },
+    { P_TRIPPING, P_EXPERT },
+    { P_GRAPPLING, P_GRAND_MASTER },
+    { P_IMPROV, P_MASTER },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_H[] = {
@@ -445,6 +469,7 @@ static const struct def_skill Skill_R[] = {
     { P_BARE_HANDED_COMBAT, P_EXPERT },
     { P_TRIPPING, P_EXPERT },
     { P_GRAPPLING, P_BASIC },
+    { P_IMPROV, P_SKILLED },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_Ran[] = {
@@ -474,6 +499,7 @@ static const struct def_skill Skill_Ran[] = {
     { P_BARE_HANDED_COMBAT, P_BASIC },
     { P_TRIPPING, P_SKILLED },
     { P_GRAPPLING, P_BASIC },
+    { P_IMPROV, P_BASIC },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_S[] = {
@@ -534,6 +560,7 @@ static const struct def_skill Skill_T[] = {
     { P_BARE_HANDED_COMBAT, P_SKILLED },
     { P_TRIPPING, P_SKILLED },
     { P_GRAPPLING, P_SKILLED },
+    { P_IMPROV, P_SKILLED },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_V[] = {
@@ -561,27 +588,6 @@ static const struct def_skill Skill_V[] = {
     { P_GRAPPLING, P_BASIC },
     { P_NONE, 0 }
 };
-static const struct def_skill Skill_Wre[] = {
-    { P_DAGGER, P_BASIC },
-    { P_KNIFE, P_BASIC },
-    { P_PICK_AXE, P_BASIC },
-    { P_CLUB, P_BASIC },
-    { P_MACE, P_BASIC },
-    { P_MORNING_STAR, P_BASIC },
-    { P_FLAIL, P_BASIC },
-    { P_HAMMER, P_BASIC },
-    { P_QUARTERSTAFF, P_BASIC },
-    { P_POLEARMS, P_BASIC },
-    { P_SPEAR, P_BASIC },
-    { P_TRIDENT, P_SKILLED },
-    { P_BOOMERANG, P_EXPERT },
-    { P_UNICORN_HORN, P_BASIC },
-    { P_MARTIAL_ARTS, P_MASTER },
-    { P_TRIPPING, P_EXPERT },
-    { P_GRAPPLING, P_GRAND_MASTER },
-    { P_NONE, 0 }
-};
-
 static const struct def_skill Skill_W[] = {
     { P_DAGGER, P_EXPERT },
     { P_KNIFE, P_SKILLED },
@@ -825,9 +831,9 @@ u_init_role(void)
         knows_class(ARMOR_CLASS);
         skill_init(Skill_V);
         break;
-    case PM_WRESTLER:
-        ini_inv(Wrestler);
-        skill_init(Skill_Wre);
+    case PM_GRAPPLER:
+        ini_inv(Grappler);
+        skill_init(Skill_Grp);
         break;
     case PM_WIZARD:
         ini_inv(Wizard);
@@ -839,6 +845,10 @@ u_init_role(void)
     default: /* impossible */
         break;
     }
+    /* Everyone should know water, and this prevents us from having
+       to modify the potion macro (especially if we decide to revert
+       this later) */
+    knows_object(POT_WATER, FALSE);
 }
 
 /* race-specific initializations */
@@ -858,7 +868,8 @@ u_init_race(void)
          */
         if (Role_if(PM_CLERIC) || Role_if(PM_WIZARD)) {
             static int trotyp[] = { WOODEN_FLUTE, TOOLED_HORN, WOODEN_HARP,
-                                    BELL,         BUGLE,       LEATHER_DRUM };
+                                    BELL,         BUGLE,       LEATHER_DRUM,
+                                    ACOUSTIC_GUITAR };
             Instrument[0].trotyp = ROLL_FROM(trotyp);
             ini_inv(Instrument);
         }
@@ -970,7 +981,7 @@ pauper_reinit(void)
     case PM_BARBARIAN:
     case PM_RANGER:
     case PM_VALKYRIE:
-    case PM_WRESTLER:
+    case PM_GRAPPLER:
         break;
     }
     if (preknown != STRANGE_OBJECT)
@@ -1025,6 +1036,7 @@ u_init(void)
     u.uevent.uheard_tune = 0;
     u.uevent.uopened_dbridge = 0;
     u.uevent.udemigod = 0;              /* not a demi-god yet... */
+    u.uevent.amulet_wish = 0;
     u.udg_cnt = 0;
     u.mh = u.mhmax = u.mtimedone = 0;
     u.uz.dnum = u.uz0.dnum = 0;
@@ -1158,8 +1170,8 @@ restricted_spell_discipline(int otyp)
     case PM_WIZARD:
         skills = Skill_W;
         break;
-    case PM_WRESTLER:
-        skills = Skill_Wre;
+    case PM_GRAPPLER:
+        skills = Skill_Grp;
         break;
     default:
         skills = 0; /* lint suppression */
@@ -1210,7 +1222,7 @@ ini_inv_mkobj_filter(int oclass, boolean got_level1_spellbook)
            /* orcs start with poison resistance */
            || (otyp == RIN_POISON_RESISTANCE && Race_if(PM_ORC))
            /* Monks don't use weapons */
-           || (otyp == SCR_ENCHANT_WEAPON && (Role_if(PM_MONK) || Role_if(PM_WRESTLER)))
+           || (otyp == SCR_ENCHANT_WEAPON && (Role_if(PM_MONK) || Role_if(PM_GRAPPLER)))
            /* wizard patch -- they already have one */
            || (otyp == SPE_FORCE_BOLT && Role_if(PM_WIZARD))
            /* powerful spells are either useless to
@@ -1219,7 +1231,8 @@ ini_inv_mkobj_filter(int oclass, boolean got_level1_spellbook)
            || (obj->oclass == SPBOOK_CLASS
                && (objects[otyp].oc_level > (got_level1_spellbook ? 3 : 1)
                    || restricted_spell_discipline(otyp)))
-           || otyp == SPE_NOVEL) {
+           || otyp == SPE_NOVEL
+           || otyp == SPE_BESTIARY) {
         dealloc_obj(obj);
         if (++trycnt > 1000) {
             /* This lonely pancake's potential will never be realized.
@@ -1278,6 +1291,7 @@ ini_inv_adjust_obj(struct trobj *trop, struct obj *obj)
             obj->otrapped = 0;
         }
         obj->cursed = 0;
+        obj->booster = 0;
         if (obj->opoisoned && u.ualign.type != A_CHAOTIC)
             obj->opoisoned = 0;
         if (obj->oclass == WEAPON_CLASS || obj->oclass == TOOL_CLASS) {

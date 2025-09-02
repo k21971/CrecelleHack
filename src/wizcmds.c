@@ -235,6 +235,7 @@ wiz_weather(void)
     putstr(win, 0, buf);
     display_nhwindow(win, FALSE);
     destroy_nhwindow(win);
+    if (y_n("Change the weather?") == 'y') weather_choice_menu();
     return ECMD_OK;
 }
 
@@ -794,6 +795,8 @@ wiz_map_levltyp(void)
             Strcat(dsc, " hive");
         if (svl.level.flags.has_swamp)
             Strcat(dsc, " swamp");
+        if (svl.level.flags.has_scilab)
+            Strcat(dsc, "lab");
         /* level flags */
         if (svl.level.flags.noteleport)
             Strcat(dsc, " noTport");
@@ -832,6 +835,8 @@ wiz_map_levltyp(void)
             Strcat(dsc, " quest");
         else if (Is_knox(&u.uz))
             Strcat(dsc, " ludios");
+        else if (Is_magicmaze(&u.uz))
+            Strcat(dsc, "maze");
         else if (u.uz.dnum == 1)
             Strcat(dsc, " gehennom");
         else if (u.uz.dnum == tower_dnum)

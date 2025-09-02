@@ -11,7 +11,7 @@
 #define quest_mon_represents_role(mptr, role_pm) \
     (mptr->mlet == S_HUMAN && Role_if(role_pm)   \
      && (mptr->msound == MS_LEADER || mptr->msound == MS_NEMESIS))
-#define MIDBOSS_CHANCE 30
+#define MIDBOSS_CHANCE 25
 
 staticfn boolean uncommon(int);
 staticfn int align_shift(struct permonst *);
@@ -25,6 +25,7 @@ staticfn void m_initgrp(struct monst *, coordxy, coordxy, int, mmflags_nht);
 staticfn void m_initthrow(struct monst *, int, int);
 staticfn void m_initweap(struct monst *);
 staticfn void m_initinv(struct monst *);
+staticfn xint8 hd_size(struct permonst *);
 staticfn boolean makemon_rnd_goodpos(struct monst *, mmflags_nht, coord *);
 staticfn void init_mextra(struct mextra *);
 
@@ -183,7 +184,7 @@ m_initthrow(struct monst *mtmp, int otyp, int oquan)
     otmp = mksobj(otyp, TRUE, FALSE);
     otmp->quan = (long) rn1(oquan, 3);
     otmp->owt = weight(otmp);
-    if (otyp == ORCISH_ARROW)
+    if (otyp == ORCISH_ARROW || is_roguish(mtmp->data))
         otmp->opoisoned = TRUE;
     (void) mpickobj(mtmp, otmp);
 }
@@ -302,7 +303,6 @@ m_initweap(struct monst *mtmp)
             (void) mongets(mtmp, rn2(4) ? SHURIKEN : DART);
             (void) mongets(mtmp, rn2(4) ? SHORT_SWORD : AXE);
         } else if (mm == PM_MASTER_KAEN) {
-            (void) mongets(mtmp, BOLAS);
             (void) mongets(mtmp, SHURIKEN);
         } else if (ptr->msound == MS_GUARDIAN) {
             /* quest "guardians" */
@@ -387,7 +387,7 @@ m_initweap(struct monst *mtmp)
             /* make long sword be +0 to +3, mace be +3 to +6 to compensate
                for being significantly weaker against large opponents */
             otmp->spe = rn2(4);
-            if (typ == MACE)
+            if (typ == SILVER_MACE)
                 otmp->spe += 3;
             (void) mpickobj(mtmp, otmp);
 
@@ -445,7 +445,7 @@ m_initweap(struct monst *mtmp)
         /* create Keystone Kops with cream pies to
            throw. As suggested by KAA.     [MRS] */
         if (!rn2(4))
-            m_initthrow(mtmp, CREAM_PIE, 2);
+            m_initthrow(mtmp, rn2(3) ? CREAM_PIE : BANANA_PEEL, 2);
         if (!rn2(3))
             (void) mongets(mtmp, (rn2(2)) ? CLUB : RUBBER_HOSE);
         break;
@@ -456,7 +456,7 @@ m_initweap(struct monst *mtmp)
                 : rn2(2) ? PM_FEN_ORC : PM_FELL_ORC) {
         case PM_FEN_ORC:
             if (!rn2(3))
-                (void) mongets(mtmp, SCIMITAR);
+                (void) mongets(mtmp, rn2(4)? SCIMITAR : DUAL_AXE);
             if (!rn2(3))
                 (void) mongets(mtmp, ORCISH_SHIELD);
             if (!rn2(5))
@@ -516,18 +516,16 @@ m_initweap(struct monst *mtmp)
         break;
 
     case S_CENTAUR:
-        if (rn2(2)) {
-            if (ptr == &mons[PM_FOREST_CENTAUR]) {
-                (void) mongets(mtmp, BOW);
-                m_initthrow(mtmp, ARROW, 12);
-            } else {
-                (void) mongets(mtmp, CROSSBOW);
-                m_initthrow(mtmp, CROSSBOW_BOLT, 12);
-            }
+        if (ptr == &mons[PM_FOREST_CENTAUR]) {
+            (void) mongets(mtmp, BOW);
+            m_initthrow(mtmp, ARROW, 30);
+        } else {
+            (void) mongets(mtmp, CROSSBOW);
+            m_initthrow(mtmp, CROSSBOW_BOLT, 30);
         }
         break;
     case S_WRAITH:
-        (void) mongets(mtmp, KNIFE);
+        (void) mongets(mtmp, rn2(9) ? KNIFE : ICICLE);
         (void) mongets(mtmp, LONG_SWORD);
         break;
     case S_ZOMBIE:
@@ -583,7 +581,7 @@ m_initweap(struct monst *mtmp)
             break;
         case 2:
             if (strongmonst(ptr))
-                (void) mongets(mtmp, TWO_HANDED_SWORD);
+                (void) mongets(mtmp, rn2(4) ? TWO_HANDED_SWORD : BROADSWORD);
             else {
                 (void) mongets(mtmp, CROSSBOW);
                 m_initthrow(mtmp, CROSSBOW_BOLT, 12);
@@ -597,11 +595,12 @@ m_initweap(struct monst *mtmp)
             if (strongmonst(ptr))
                 (void) mongets(mtmp, LONG_SWORD);
             else
-                m_initthrow(mtmp, DAGGER, 3);
+                m_initthrow(mtmp, (svl.level.flags.temperature == -1)
+                                    ? ICICLE : DAGGER, 3);
             break;
         case 5:
             if (strongmonst(ptr))
-                (void) mongets(mtmp, LUCERN_HAMMER);
+                (void) mongets(mtmp, PARTISAN + rn1(BEC_DE_CORBIN - PARTISAN + 1, PARTISAN));
             else
                 (void) mongets(mtmp, AKLYS);
             break;
@@ -696,7 +695,8 @@ m_initinv(struct monst *mtmp)
             if (mac < 10 && rn2(3))
                 otmp = mongets(mtmp, HELMET);
             else if (mac < 10 && rn2(2))
-                otmp = mongets(mtmp, DENTED_POT);
+                otmp = mongets(mtmp, (svl.level.flags.temperature == -1)
+                                        ? WINTER_HAT : YENDORIAN_BASCINET);
             add_ac(otmp);
 
             /* round 3: shields */
@@ -760,7 +760,7 @@ m_initinv(struct monst *mtmp)
                 FALLTHROUGH;
                 /*FALLTHRU*/
             case 3:
-                (void) mongets(mtmp, WAN_STRIKING);
+                (void) mongets(mtmp, rn2(3) ? WAN_STRIKING : WAN_WATER);
             }
         } else if (ptr->msound == MS_PRIEST
                    || quest_mon_represents_role(ptr, PM_CLERIC)) {
@@ -800,6 +800,8 @@ m_initinv(struct monst *mtmp)
             otmp->quan = (long) rn1(2, 2);
             otmp->owt = weight(otmp);
             (void) mpickobj(mtmp, otmp);
+        } else if (ptr == &mons[PM_COLOSSUS]) {
+            (void) mongets(mtmp, BOULDER);
         }
         break;
     case S_WRAITH:
@@ -867,12 +869,23 @@ m_initinv(struct monst *mtmp)
             if (!mpickobj(mtmp, otmp) && !levl[mtmp->mx][mtmp->my].lit)
                 begin_burn(otmp, FALSE);
         }
+        /* Tinkers are outlanders */
+        if (!rn2((In_mines(&u.uz) && gi.in_mklev) ? 100 : 40)) {
+            otmp = mksobj(TINKER_GOGGLES, TRUE, FALSE);
+            (void) mpickobj(mtmp, otmp);
+        }
         if (ptr == &mons[PM_GWTWOD]) {
             otmp = mksobj(WAN_DEATH, FALSE, FALSE);
             otmp->quan = 1;
             otmp->spe = 0;
             otmp->recharged = 6;
             (void) mpickobj(mtmp, otmp);
+        }
+        break;
+    case S_FELINE:
+        if (ptr == &mons[PM_PUSS_IN_BOOTS]) {
+            (void) mongets(mtmp, SILVER_SABER);
+            (void) mongets(mtmp, rn2(2) ? SPEED_BOOTS : IRON_SHOES);
         }
         break;
     default:
@@ -1041,29 +1054,97 @@ propagate(int mndx, boolean tally, boolean ghostly)
     return result;
 }
 
+/* Hit dice size of a monster, based on its size. (Max HP is then usually
+ * calculated by rolling a die of this size for each level the monster has.)
+ * It used to be 8 for all monsters, but it makes more sense for, say, a mumak
+ * to be beefier than a killer bee of the same level. */
+staticfn xint8
+hd_size(struct permonst * ptr)
+{
+    switch(ptr->msize) {
+    case MZ_TINY:
+        return 5;
+    case MZ_SMALL:
+        return 7;
+    case MZ_MEDIUM:
+        return 8;
+    case MZ_LARGE:
+        return 10;
+    case MZ_HUGE:
+        return 14;
+    case MZ_GIGANTIC:
+        return 18;
+    default:
+        impossible("hd_size: unknown monster size %d", ptr->msize);
+        return 8;
+    }
+}
+
 /* amount of HP to lose from level drain (or gain from Stormbringer) */
 int
 monhp_per_lvl(struct monst *mon)
 {
     struct permonst *ptr = mon->data;
-    int hp = rnd(8); /* default is d8 */
+    int hp = rnd(hd_size(ptr)); /* default is d8 */
 
     /* like newmonhp, but home elementals are ignored, riders use normal d8 */
-    if (is_golem(ptr)) {
+    if (is_golem(ptr) || ptr == &mons[PM_BLOB]) {
         /* draining usually won't be applicable for these critters */
         hp = golemhp(monsndx(ptr)) / (int) ptr->mlevel;
     } else if (ptr->mlevel > 49) {
         /* arbitrary; such monsters won't be involved in draining anyway */
         hp = 4 + rnd(4); /* 5..8 */
-    } else if (ptr->mlet == S_DRAGON && monsndx(ptr) >= PM_GRAY_DRAGON) {
-        /* adult dragons; newmonhp() uses In_endgame(&u.uz) ? 8 : 4 + rnd(4)
-         */
-        hp = 4 + rn2(5); /* 4..8 */
-    } else if (!mon->m_lev) {
+    } else if (mon->m_lev == 0) {
         /* level 0 monsters use 1d4 instead of Nd8 */
         hp = rnd(4);
     }
     return hp;
+}
+
+/* Compute an appropriate maximum HP for a given monster type and level. */
+int
+monmaxhp(struct permonst *ptr,
+         uchar m_lev) /* not just a struct mon because polyself code also uses
+                       * this */
+{
+    int basehp = 0;
+    int hpmax = 0;
+
+    if (is_golem(ptr)) {
+        /* golems have a fixed amount of HP, varying by golem type */
+        return golemhp(monsndx(ptr));
+    } else if (ptr == &mons[PM_ILLUSION]) {
+        return 1;
+    } else if (ptr == &mons[PM_TORNADO]){
+        return rn1(30, 10);
+    } else if (is_rider(ptr)) {
+        /* we want low HP, but a high mlevel so they can attack well */
+        /* the fake basehp (weaker level) is 10, but we guarantee at least 10 HP
+         * by having 40 here */
+        return 40 + d(8, 8);
+    } else if (ptr->mlevel > 49) {
+        /* "special" fixed hp monster
+         * the hit points are encoded in the mlevel in a somewhat strange
+         * way to fit in the 50..127 positive range of a signed character
+         * above the 1..49 that indicate "normal" monster levels */
+        return 2 * (ptr->mlevel - 6);
+    } else if (m_lev == 0) {
+        basehp = 1; /* minimum is 1, increased to 2 below */
+        hpmax = rnd(4);
+    } else {
+        basehp = m_lev; /* minimum possible is one per level */
+        hpmax = d(m_lev, hd_size(ptr));
+        if (is_home_elemental(ptr))
+            hpmax *= 2;
+    }
+
+    /* if d(X,8) rolled a 1 all X times, give a boost;
+       most beneficial for level 0 and level 1 monsters, making mhpmax
+       and starting mhp always be at least 2 */
+    if (hpmax == basehp) {
+        hpmax += 1;
+    }
+    return hpmax;
 }
 
 /* set up a new monster's initial level and hit points;
@@ -1072,48 +1153,12 @@ void
 newmonhp(struct monst *mon, int mndx)
 {
     struct permonst *ptr = &mons[mndx];
-    int basehp = 0;
 
     mon->m_lev = adj_lev(ptr);
-    if (is_golem(ptr)) {
-        /* golems have a fixed amount of HP, varying by golem type */
-        mon->mhpmax = mon->mhp = golemhp(mndx);
-    } else if (mon->data == &mons[PM_ILLUSION]) {
-        mon->mhpmax = mon->mhp = 1;
-    } else if (mon->data == &mons[PM_TORNADO]){
-        mon->mhpmax = mon->mhp = rn1(30, 10);
-    } else if (is_rider(ptr)) {
-        /* we want low HP, but a high mlevel so they can attack well */
-        basehp = 10; /* minimum is 1 per false (weaker) level */
-        mon->mhpmax = mon->mhp = d(basehp, 8);
-    } else if (ptr->mlevel > 49) {
-        /* "special" fixed hp monster
-         * the hit points are encoded in the mlevel in a somewhat strange
-         * way to fit in the 50..127 positive range of a signed character
-         * above the 1..49 that indicate "normal" monster levels */
-        mon->mhpmax = mon->mhp = 2 * (ptr->mlevel - 6);
+    mon->mhpmax = mon->mhp = monmaxhp(ptr, mon->m_lev);
+    if (ptr->mlevel > 49) {
+        /* Second half of the "special" fixed hp monster code: adjust level */
         mon->m_lev = mon->mhp / 4; /* approximation */
-    } else if (ptr->mlet == S_DRAGON && mndx >= PM_GRAY_DRAGON) {
-        /* adult dragons; N*(4+rnd(4)) before endgame, N*8 once there */
-        basehp = (int) mon->m_lev; /* not really applicable; isolates cast */
-        mon->mhpmax = mon->mhp = In_endgame(&u.uz) ? (8 * basehp)
-                                 : (4 * basehp + d(basehp, 4));
-    } else if (!mon->m_lev) {
-        basehp = 1; /* minimum is 1, increased to 2 below */
-        mon->mhpmax = mon->mhp = rnd(4);
-    } else {
-        basehp = (int) mon->m_lev; /* minimum possible is one per level */
-        mon->mhpmax = mon->mhp = d(basehp, 8);
-        if (is_home_elemental(ptr))
-            mon->mhpmax = (mon->mhp *= 3); /* leave 'basehp' as-is */
-    }
-
-    /* if d(X,8) rolled a 1 all X times, give a boost;
-       most beneficial for level 0 and level 1 monsters, making mhpmax
-       and starting mhp always be at least 2 */
-    if (mon->mhpmax == basehp) {
-        mon->mhpmax += 1;
-        mon->mhp = mon->mhpmax;
     }
 }
 
@@ -1570,8 +1615,10 @@ makemon(
             }
             if (what) {
                 set_msg_xy(mtmp->mx, mtmp->my);
-                Norep("%s%s appears%s%c", what,
+                Norep("%s%s %s%s%c", what,
                       exclaim ? " suddenly" : "",
+                      /* 'what' might be "gold pieces" so need plural verb */
+                      vtense(what, "appear"),
                       next2u(x, y) ? " next to you"
                       : (distu(x, y) <= (BOLT_LIM * BOLT_LIM)) ? " close by"
                         : "",
@@ -1674,9 +1721,7 @@ uncommon(int mndx)
 {
     if (mons[mndx].geno & (G_NOGEN | G_UNIQ)) {
         if (mons[mndx].geno & (G_MIDBOSS)){
-            if (rn2(MIDBOSS_CHANCE)) {
-                return TRUE;
-            } else {
+            if (!rn2(MIDBOSS_CHANCE)) {
                 goto not_nogen_or_uniq;
             }
         }
@@ -2196,6 +2241,7 @@ grow_up(struct monst *mtmp, struct monst *victim)
         lev_limit = 50;   /* recalc below */
     }
 
+    mtmp->mbaby = 0;
     mtmp->mhpmax += max_increase;
     mtmp->mhp += cur_increase;
     if (mtmp->mhpmax <= hp_threshold)
@@ -2312,6 +2358,25 @@ mongets(struct monst *mtmp, int otyp)
                 otmp->spe = 0;
         }
 
+        /* roguish monsters can get poisoned items */
+        if (is_roguish(mtmp->data) && is_poisonable(otmp))
+            otmp->opoisoned = rn2(2);
+
+        /* powerful monsters have a good chance of getting
+           some kind of boosted weapon related to their
+           abilities */
+        if (!otmp->booster &&
+            (otmp->oclass == WEAPON_CLASS
+                || otmp->oclass == ARMOR_CLASS
+                || is_weptool(otmp))) {
+            if ((is_prince(mtmp->data) && !rn2(3))
+                || (is_lord(mtmp->data) && !rn2(4))
+                || (extra_nasty(mtmp->data) && !rn2(8))
+                || ((mons[mtmp->mnum].geno & G_UNIQ) != 0)) {
+                boost_object(otmp, mtmp->data->mboost);
+            }
+        }
+
         if (mpickobj(mtmp, otmp)) {
             /* otmp was freed via merging with something else */
             otmp = (struct obj *) 0;
@@ -2342,14 +2407,20 @@ golemhp(int type)
         return 65;
     case PM_CLAY_GOLEM:
         return 70;
+    case PM_SALT_GOLEM:
+        return 80;
     case PM_BLOOD_GOLEM:
         return 90;
     case PM_STONE_GOLEM:
         return 100;
     case PM_GLASS_GOLEM:
         return 80;
+    case PM_BLOB:
+        return 100;
     case PM_IRON_GOLEM:
         return 120;
+    case PM_COLOSSUS:
+        return 400;
     default:
         return 0;
     }

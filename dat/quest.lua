@@ -132,7 +132,7 @@ Go now!  You are banished from this place.]],
          "\"Hold! Thy face is a most exquisite torture!\"",
          "\"I should fart in thy direction, but it might improve thy smell!\"",
       },
-      crecelle = {
+      crecelle_legacy = {
          synopsis = "[%dC has chosen you to recover the Amulet of Yendor for %dI.]",
          output = "menu",
          text = [[Late-Yendorian-style roofs with shingles that dangle like rotting teeth
@@ -144,16 +144,12 @@ underground sea. The minarets of a castle, improbably large.
 
 According to legend, somewhere beneath the sprawl is an unassuming
 staircase. It spirals deep into the earth, where the air turns to poison
-and even %d dares not tread. Somewhere in that hell, the object of your
-quest awaits you.
+and even %d dares not tread. Somewhere in that hell,
+the object of your quest awaits you.
 
 As you descend toward the complex, the air is filled with the peal of
 tocsins and the clang of church bells, announcing your arrival alongside
-the sun's. War has come to Yendor, and it shall not be caught unprepared.
-The cantor of bells continues, growing faint only when you cross the first
-threshold.
-
-The eye of Moloch is upon you, and his song shall follow you into the deep.]],
+the sun's. War has come to Yendor, and it shall not be caught unprepared.]],
       },
       legacy = {
          synopsis = "[%dC has chosen you to recover the Amulet of Yendor for %dI.]",
@@ -3107,7 +3103,7 @@ You have an odd feeling this may be the last time you ever come here.]],
 So, have you succeeded in your quest for the Amulet of Yendor?"]],
       },
    },
-   Wre = {
+   Grp = {
       assignquest = {
          synopsis = "[Travel to %i; beat %n a wrestling match; return with %o.]",
          output = "text",
@@ -3143,8 +3139,10 @@ Get out of here, and do not come back until you are truly ready."]],
       badlevel = {
          synopsis = "[Return when you are %Ra.]",
          output = "text",
-         text = [["Sorry %p, but you have to be at least %ra in order to have a chance
-against %n. Get out there and start training!"]],
+         text = [["Sorry %p, but you have to be at least %r in order to have a chance
+against %n.
+A %ra just won't cut it!
+Get out there and start training!"]],
       },
       discourage = {
          "\"I'd fathom you can't block this one!\"",
@@ -3175,8 +3173,9 @@ not as you remember it. Furniture has been overturned, equipment smolders,
 and bodies lie in repose across the ground. Even your fearless mentor,
 %l, is nowhere to be seen.
 
-You can make out the silhouettes of wrestlers in the distance, but their forms
-are twisted and inhuman. You may have a fight on your hands.]],
+You can make out the silhouettes of wrestlers in the distance,
+but their forms are twisted and inhuman. You may have a fight
+on your hands.]],
       },
       goal_alt = {
          text = "You have returned to %ns lair.",

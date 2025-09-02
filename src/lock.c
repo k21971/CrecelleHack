@@ -712,7 +712,7 @@ doforce(void)
         return ECMD_OK;
     }
     if (!can_reach_floor(TRUE)) {
-        cant_reach_floor(u.ux, u.uy, FALSE, TRUE);
+        cant_reach_floor(u.ux, u.uy, FALSE, TRUE, FALSE);
         return ECMD_OK;
     }
 
@@ -1129,6 +1129,7 @@ doorlock(struct obj *otmp, coordxy x, coordxy y)
         case SPE_KNOCK:
         case WAN_STRIKING:
         case SPE_FORCE_BOLT:
+        case WAN_WATER:
             door->typ = DOOR;
             door->doormask = D_CLOSED | (door->doormask & D_TRAPPED);
             newsym(x, y);
@@ -1213,6 +1214,7 @@ doorlock(struct obj *otmp, coordxy x, coordxy y)
         break;
     case WAN_STRIKING:
     case SPE_FORCE_BOLT:
+    case WAN_WATER:
         if (door->doormask & (D_LOCKED | D_CLOSED)) {
             /* sawit: closed door location is more visible than open */
             boolean sawit, seeit;
@@ -1294,8 +1296,10 @@ chest_shatter_msg(struct obj *otmp)
 
     if (otmp->oclass == POTION_CLASS) {
         You("%s %s shatter!", Blind ? "hear" : "see", an(bottlename()));
-        if (!breathless(gy.youmonst.data) || haseyes(gy.youmonst.data))
-            potionbreathe(otmp);
+        if (!breathless(gy.youmonst.data) || haseyes(gy.youmonst.data)) {
+            potion_splatter(u.ux, u.uy, otmp->otyp, otmp->corpsenm);
+            potion_fumigate(u.ux, u.uy, otmp);
+        }
         return;
     }
     /* We have functions for distant and singular names, but not one */

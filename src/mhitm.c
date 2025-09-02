@@ -284,6 +284,9 @@ mdisplacem(
  * Each successive attack has a lower probability of hitting.  Some rely on
  * success of previous attacks.  ** this doesn't seem to be implemented -dl **
  *
+ * Attacker has targeted <bhitpos.x,bhitpos.y> rather than
+ * <mdef->mx,mdef->my>; matters for long worms.
+ *
  * In the case of exploding monsters, the monster dies as well.
  */
 int
@@ -353,7 +356,7 @@ mattackm(
 
     /* Set up the visibility of action */
     gv.vis = ((cansee(magr->mx, magr->my) && canspotmon(magr))
-             || (cansee(mdef->mx, mdef->my) && canspotmon(mdef)));
+              || (cansee(mdef->mx, mdef->my) && canspotmon(mdef)));
 
     /* Set flag indicating monster has moved this turn.  Necessary since a
      * monster might get an attack out of sequence (i.e. before its move) in
@@ -371,6 +374,12 @@ mattackm(
     /* Now perform all attacks for the monster. */
     for (i = 0; i < NATTK; i++) {
         res[i] = M_ATTK_MISS;
+
+        /* target might no longer be there */
+        if (i > 0 && (m_at(gb.bhitpos.x, gb.bhitpos.y) != mdef
+                      || DEADMONSTER(magr) || DEADMONSTER(mdef)))
+            continue;
+
         mattk = getmattk(magr, mdef, i, res, &alt_attk);
         /* reduce verbosity for mind flayer attacking creature without a
            head (or worm's tail); this is similar to monster with multiple
@@ -405,9 +414,6 @@ mattackm(
                     mswingsm(magr, mdef, mwep);
                 tmp += hitval(mwep, mdef);
             }
-            if (mwep) {
-                magr->movement += objects[mwep->otyp].oc_hspeed;
-            }
             FALLTHROUGH;
             /*FALLTHRU*/
         case AT_CLAW:
@@ -417,6 +423,8 @@ mattackm(
         case AT_TUCH:
         case AT_BUTT:
         case AT_TENT:
+            if (mattk->aatyp == AT_KICK && mtrapped_in_pit(magr))
+                    continue;
             /* Nymph that teleported away on first attack? */
             if (distmin(magr->mx, magr->my, mdef->mx, mdef->my) > 1)
                 /* Continue because the monster may have a ranged attack. */
@@ -565,6 +573,10 @@ mattackm(
             && distmin(magr->mx, magr->my, mdef->mx, mdef->my) <= 1)
             res[i] = passivemm(magr, mdef, strike,
                                (res[i] & M_ATTK_DEF_DIED), mwep);
+        
+        if (((res[i] & M_ATTK_HIT) || mattk->aatyp == AT_GAZE)
+            && canspotmon(magr))
+            learn_mattack(magr->mnum, i);
 
         if (res[i] & M_ATTK_DEF_DIED)
             return res[i];
@@ -647,6 +659,9 @@ hitmm(
                          && objects[mwep->otyp].oc_material == SILVER);
 
     pre_mm_attack(magr, mdef);
+
+    if (boost_effects_pre(magr, mdef))
+        return M_ATTK_HIT; /* mdef died */
 
     compat = !magr->mcan ? could_seduce(magr, mdef, mattk) : 0;
     if (!compat && shade_miss(magr, mdef, mwep, FALSE, gv.vis))
@@ -900,7 +915,9 @@ gulpmm(
     newsym(ax, ay); /* erase old position */
     newsym(dx, dy); /* update new position */
 
+    gm.mswallower = magr; /* corpse_chance() wants this */
     status = mdamagem(magr, mdef, mattk, (struct obj *) 0, 0);
+    gm.mswallower = (struct monst *) 0; /* reset */
 
     if ((status & (M_ATTK_AGR_DIED | M_ATTK_DEF_DIED))
         == (M_ATTK_AGR_DIED | M_ATTK_DEF_DIED)) {
@@ -1025,8 +1042,10 @@ mdamagem(
     mhm.dieroll = dieroll;
     mhm.done = FALSE;
 
+#ifdef MON_HARMONICS
     if (mon_boosted(magr, magr->data->mboost))
         mhm.damage += d((int) mattk->damn, (int) mattk->damd);
+#endif
 
     if ((touch_petrifies(pd) /* or flesh_petrifies() */
          || (mattk->adtyp == AD_DGST && pd == &mons[PM_MEDUSA]))
@@ -1285,7 +1304,7 @@ mswingsm(
     struct obj *otemp)  /* attacker's weapon */
 {
     if (flags.verbose && !Blind && mon_visible(magr)) {
-        boolean bash = (is_pole(otemp)
+        boolean bash = (is_pole(otemp) && !is_art(otemp, ART_SNICKERSNEE)
                         && (dist2(magr->mx, magr->my, mdef->mx, mdef->my)
                             <= 2));
 

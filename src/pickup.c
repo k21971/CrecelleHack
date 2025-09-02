@@ -2060,7 +2060,7 @@ able_to_loot(
         if (u.usteed && P_SKILL(P_RIDING) < P_BASIC)
             rider_cant_reach(); /* not skilled enough to reach */
         else
-            cant_reach_floor(x, y, FALSE, TRUE);
+            cant_reach_floor(x, y, FALSE, TRUE, FALSE);
         return FALSE;
     } else if ((is_pool(x, y) && (looting || !Underwater)) || is_lava(x, y)) {
         /* at present, can't loot in water even when Underwater;
@@ -3664,11 +3664,15 @@ dotip(void)
     }
     /* anything not covered yet */
     if (cobj->oclass == POTION_CLASS && (IS_COATABLE(levl[u.ux][u.uy].typ))) { /* CAN pour potions... :) */
-        You("pour the %s out onto the %s.", xname(cobj), surface(u.ux, u.uy));
+        if (y_n("Douse yourself with the potion?") == 'y') {
+            make_dripping(rn1(10, 10), cobj->otyp, cobj->corpsenm);
+            You("carefully douse yourself with the %s.", xname(cobj));
+        } else
+            You("pour the %s out onto the %s.", xname(cobj), surface(u.ux, u.uy));
         if (Levitation)
-            potion_splatter(u.ux, u.uy, cobj->otyp, NON_PM);
+            potion_splatter(u.ux, u.uy, cobj->otyp, cobj->corpsenm);
         else
-            floor_alchemy(u.ux, u.uy, cobj->otyp, NON_PM);
+            floor_alchemy(u.ux, u.uy, cobj->otyp, cobj->corpsenm);
         debottle_potion(cobj);
     } else if (cobj->oclass == POTION_CLASS) {
         You("waste the %s.", xname(cobj));

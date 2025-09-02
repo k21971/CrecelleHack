@@ -62,6 +62,7 @@ dungeon = {
             bonetag = "O",
             base = 5,
             range = 5,
+            nlevels = 3,
             alignment = "neutral"
          },
          {
@@ -180,7 +181,7 @@ dungeon = {
             bonetag = "T",
             base = 3,
             range = 2,
-            nlevels = 7,
+            nlevels = 9,
             flags = "town"
          },
          {
@@ -330,4 +331,23 @@ dungeon = {
          },
       }
    },
+   {
+      name = "The Maze",
+      base = 2,
+      bonetag = "M",
+      flags = { "mazelike", "unconnected" },
+      alignment = "unaligned",
+      levels = {
+         {
+            name = "maze-1",
+            bonetag = "M",
+            base = 1,
+         },
+         {
+            name = "maze-2",
+            bonetag = "M",
+            base = 2,
+         }
+      }
+   }
 }

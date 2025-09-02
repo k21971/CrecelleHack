@@ -11,7 +11,7 @@
 --
 des.level_init({ style = "solidfill", fg = "." });
 
-des.level_flags("mazelevel", "noteleport", "hardfloor", "arboreal")
+des.level_flags("mazelevel", "noteleport", "hardfloor", "arboreal", "outdoors")
 
 des.level_init({ style="mines", fg=".", bg=".", smoothed=true, joined=true, lit=1, walled=false })
 des.replace_terrain({ region={00,00, 76,19}, fromterrain=".", toterrain="T", chance=5 })
@@ -45,6 +45,8 @@ des.region(selection.area(00,00,40,20), "lit")
 des.stair("down", 10,10)
 -- Portal arrival point; just about anywhere on the right hand side of the map
 des.levregion({ region = {51,2,77,18}, region_islev = 1, type="branch" })
+-- Grasses
+des.replace_terrain({ region={00,00, 79,20}, fromterrain=".", toterrain=".", coat="grass", chance=90 })
 -- Orion
 des.monster({ id = "Orion", coord = {20, 10}, inventory = function()
    des.object({ id = "leather armor", spe = 4 });

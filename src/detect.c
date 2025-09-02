@@ -1701,6 +1701,7 @@ findone(coordxy zx, coordxy zy, genericptr_t whatfound)
             found_p->num_mons++;
         } else if (mtmp->mundetected && (is_hider(mtmp->data)
                                          || hides_under(mtmp->data)
+                                         || mud_hider(mtmp->data)
                                          || mtmp->data->mlet == S_EEL)) {
             flash_glyph_at(zx, zy, mon_to_glyph(mtmp, rn2_on_display_rng),
                            FOUND_FLASH_COUNT);
@@ -1978,6 +1979,7 @@ mfind0(struct monst *mtmp, boolean via_warning)
            but that failed to bring sensed monsters out of hiding */
         found_something = !canspotmon(mtmp);
         if (mtmp->mundetected && (is_hider(mtmp->data)
+                                  || mud_hider(mtmp->data)
                                   || hides_under(mtmp->data)
                                   || mtmp->data->mlet == S_EEL)) {
             if (via_warning && found_something) {
@@ -2161,7 +2163,8 @@ premap_detect(void)
 /* used to see under visible gas/cloud regions; caller must declare cmaptmp */
 #define glyph_is_gascloud(glyph) \
     (glyph_is_cmap(glyph) && ((cmaptmp = glyph_to_cmap(glyph)) == S_cloud \
-                              || cmaptmp == S_poisoncloud))
+                              || cmaptmp == S_poisoncloud \
+                              || cmaptmp == S_potioncloud))
 
 staticfn int
 reveal_terrain_getglyph(

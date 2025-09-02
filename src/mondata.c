@@ -249,6 +249,7 @@ boolean
 resists_blnd(struct monst *mon)
 {
     struct permonst *ptr = mon->data;
+    struct obj *obj;
     boolean is_you = (mon == &gy.youmonst);
 
     if (is_you ? (Blind || Unaware)
@@ -264,8 +265,12 @@ resists_blnd(struct monst *mon)
     /* Sunsword */
     if (resists_blnd_by_arti(mon))
         return TRUE;
-    if (is_you && ublindf && ublindf->otyp == SUNGLASSES)
+    if (is_you && ublindf && (ublindf->otyp == SUNGLASSES || ublindf->otyp == TINKER_GOGGLES))
         return TRUE;
+    if (!is_you) {
+        obj = which_armor(mon, WORN_BLINDF);
+        return (obj && (obj->otyp == SUNGLASSES || obj->otyp == TINKER_GOGGLES));
+    }
     /* catchall */
     if (is_you && Blnd_resist) {
         impossible("'Blnd_resist' but not resists_blnd()?");
@@ -477,10 +482,16 @@ mstrength(struct permonst *ptr)
         n += ((int) (ptr->mattk[i].damd * ptr->mattk[i].damn) > 23);
     }
 
-    /* Leprechauns are special cases.  They have many hit dice so they
-       can hit and are hard to kill, but they don't really do much damage. */
+    /* Leprechauns are a special case.  They have many hit dice so they can
+       hit and are hard to kill, but they don't really do much damage. */
     if (!strcmp(ptr->pmnames[NEUTRAL], "leprechaun"))
         n -= 2;
+
+    /* despite group and poison increments, soldier ants and killer bees are
+       underestimated by the formula, so have an artificial +1 difficulty */
+    if (!strcmp(ptr->pmnames[NEUTRAL], "killer bee") ||
+        !strcmp(ptr->pmnames[NEUTRAL], "soldier ant"))
+        n += 2; /* +1 after 'tmp += n/2' below */
 
     /* finally, adjust the monster level  0 <= n <= 24 (approx.) */
     if (n == 0)
@@ -1293,7 +1304,7 @@ static const short grownups[][2] = {
     { PM_PAGE, PM_KNIGHT },
     { PM_ACOLYTE, PM_CLERIC },
     { PM_APPRENTICE, PM_WIZARD },
-    { PM_TRAINEE, PM_WRESTLER },
+    { PM_TRAINEE, PM_GRAPPLER },
     { PM_MANES, PM_LEMURE },
     { PM_KEYSTONE_KOP, PM_KOP_SERGEANT },
     { PM_KOP_SERGEANT, PM_KOP_LIEUTENANT },

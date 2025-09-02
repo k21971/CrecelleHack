@@ -195,7 +195,7 @@ mk_mplayer(struct permonst *ptr, coordxy x, coordxy y, boolean special)
             if (rn2(2))
                 armor = rnd_class(PLATE_MAIL, CHAIN_MAIL);
             break;
-        case PM_WRESTLER:
+        case PM_GRAPPLER:
             weapon = rn2(5) ? STRANGE_OBJECT : KNIFE;
             armor = STRANGE_OBJECT;
             cloak = OILSKIN_CLOAK;

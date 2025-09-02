@@ -35,7 +35,6 @@ staticfn void show_achievements(int);
 staticfn int QSORTCALLBACK vanqsort_cmp(const genericptr, const genericptr);
 staticfn int num_extinct(void);
 staticfn int num_gone(int, int *);
-staticfn char *size_str(int);
 staticfn void item_resistance_message(int, const char *, int);
 
 extern const char *const hu_stat[];  /* hunger status from eat.c */
@@ -596,6 +595,8 @@ background_enlightenment(int unused_mode UNUSED, int final)
         Sprintf(buf, "on the %s level", svd.dungeons[u.uz.dnum].dname);
         /* TODO? maybe phrase it differently when actually inside the fort,
            if we're able to determine that (not trivial) */
+    } else if (Is_magicmaze(&u.uz)) {
+        Sprintf(buf, "in an otherworldly maze");
     } else {
         char dgnbuf[QBUFSZ];
 
@@ -1189,6 +1190,16 @@ status_enlightenment(int mode, int final)
     if (Fumbling) {
         if (magic || cause_known(FUMBLING))
             enl_msg(You_, "fumble", "fumbled", "", from_what(FUMBLING));
+    }
+    if (Dripping) {
+        potion_coating_text(buf, (u.udriptype > 0) ? u.udriptype : POT_BLOOD);
+        if (wizard) {
+            long dripping_timeout = (HDripping & TIMEOUT);
+
+            if (dripping_timeout)
+                Sprintf(eos(buf), " (%ld)", dripping_timeout);
+        }
+        enl_msg(You_, "drip ", "dripped ", "with ", buf);
     }
     if (Sleepy) {
         if (magic || cause_known(SLEEPY)) {
@@ -2114,6 +2125,10 @@ youhiding(boolean via_enlghtmt, /* enlightenment line vs topl message */
 
                 Sprintf(bp, " in a %spit",
                         (t && t->ttyp == SPIKED_PIT) ? "spiked " : "");
+            } else if (has_coating(u.ux, u.uy, COAT_GRASS)) {
+                Sprintf(bp, " in the grass");
+            } else if (has_coating(u.ux, u.uy, COAT_MUD)) {
+                Sprintf(bp, " in the mud");
             } else
                 Sprintf(bp, " on the %s", surface(u.ux, u.uy));
         }
@@ -3271,7 +3286,7 @@ align_str(aligntyp alignment)
     return "unknown";
 }
 
-staticfn char *
+char *
 size_str(int msize)
 {
     static char outbuf[40];
@@ -3348,6 +3363,12 @@ mstatusline(struct monst *mtmp)
 {
     aligntyp alignment = mon_aligntyp(mtmp);
     char info[BUFSZ], monnambuf[BUFSZ];
+
+    /* learn something about the monster's abilities, perhaps? */
+    for (int i = 0; i < NATTK; i++) {
+        if (mtmp->mtame || !rn2(3)) learn_mattack(mtmp->mnum, i);
+    }
+    svm.mvitals[mtmp->mnum].know_stats = 1;
 
     info[0] = 0;
     if (mtmp->mtame) {
@@ -3551,8 +3572,8 @@ ustatusline(void)
     if (!u.uswallow
         && (reg = visible_region_at(u.ux, u.uy)) != 0
         && (ln = strlen(info)) < sizeof info)
-        Snprintf(eos(info), sizeof info - ln, ", in a cloud of %s",
-                 reg_damg(reg) ? "poison gas" : "vapor");
+        Snprintf(eos(info), sizeof info - ln, ", in a %s",
+                 region_string(reg));
 
     pline("Status of %s (%s):  Level %d  HP %d(%d)  AC %d%s.", svp.plname,
           piousness(FALSE, align_str(u.ualign.type)),

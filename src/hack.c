@@ -42,6 +42,7 @@ staticfn boolean avoid_trap_andor_region(coordxy, coordxy);
 staticfn boolean move_out_of_bounds(coordxy, coordxy);
 staticfn boolean carrying_too_much(void);
 staticfn boolean escape_from_sticky_mon(coordxy, coordxy);
+staticfn boolean grappling_finisher(coordxy, coordxy, struct monst *) NONNULLARG3;
 staticfn void domove_core(void);
 staticfn void maybe_smudge_engr(coordxy, coordxy, coordxy, coordxy);
 staticfn struct monst *monstinroom(struct permonst *, int) NONNULLARG1;
@@ -1689,7 +1690,7 @@ notice_mon(struct monst *mtmp)
 {
     if (a11y.mon_notices && !a11y.mon_notices_blocked) {
         boolean spot = canspotmon(mtmp)
-            && !(is_hider(mtmp->data)
+            && !((is_hider(mtmp->data) || mud_hider(mtmp->data))
                  && (mtmp->mundetected
                      || M_AP_TYPE(mtmp) == M_AP_FURNITURE
                      || M_AP_TYPE(mtmp) == M_AP_OBJECT));
@@ -2302,6 +2303,14 @@ domove_fight_empty(coordxy x, coordxy y)
             Strcpy(buf, "thin air");
         }
 
+        /* Ice harmonic weapons can fire icicles even when force attacking */
+        if (uwep && (uwep->booster & BST_ICE)
+            && (has_coating(u.ux, u.uy, COAT_FROST) || levl[u.ux][u.uy].typ == ICE)) {
+            struct obj *otmp = mksobj(ICICLE, FALSE, FALSE);
+            otmp->spe = 1;
+            throwit(otmp, 0L, FALSE, (struct obj *) 0);
+        }
+
  futile:
         You("%s%s %s.",
             !(boulder || solid) ? "" : !explo ? "harmlessly " : "futilely ",
@@ -2382,7 +2391,7 @@ water_turbulence(coordxy *x, coordxy *y)
 staticfn void
 slippery_ice_fumbling(void)
 {
-    boolean on_ice = !Levitation && is_ice(u.ux, u.uy);
+    boolean on_ice = !Levitation && (is_ice(u.ux, u.uy) || has_coating(u.ux, u.uy, COAT_FROST));
     struct monst *iceskater = u.usteed ? u.usteed : &gy.youmonst;
 
     if (on_ice) {
@@ -2526,7 +2535,8 @@ avoid_trap_andor_region(coordxy x, coordxy y)
         if (is_gasregion(newreg))
             Snprintf(qbuf, sizeof qbuf, "%s into that %s cloud?",
                     u_locomotion("step"),
-                    (reg_damg(newreg) > 0) ? "poison gas" : "vapor");
+                    newreg->arg.otyp ? OBJ_DESCR(objects[newreg->arg.otyp])
+                    : (reg_damg(newreg) > 0) ? "poison gas" : "vapor");
         else
             Snprintf(qbuf, sizeof qbuf, "%s into those raging flames?",
                     u_locomotion("step"));
@@ -2626,6 +2636,7 @@ carrying_too_much(void)
 staticfn boolean
 escape_from_sticky_mon(coordxy x, coordxy y)
 {
+    int escape_chance;
     if (u.ustuck && (x != u.ustuck->mx || y != u.ustuck->my)) {
         struct monst *mtmp;
 
@@ -2633,12 +2644,21 @@ escape_from_sticky_mon(coordxy x, coordxy y)
             /* perhaps it fled (or was teleported or ... ) */
             set_ustuck((struct monst *) 0);
         } else if (u.usticker) {
+            mtmp = u.ustuck;
             /* When polymorphed into a sticking monster,
              * u.ustuck means it's stuck to you, not you to it.
              */
-            mtmp = u.ustuck;
-            set_ustuck((struct monst *) 0);
-            You("release %s.", y_monnam(mtmp));
+            if (Role_if(PM_GRAPPLER)) {
+                grappling_finisher(x, y, mtmp);
+                if (m_at(x, y) == mtmp) {
+                    nomul(0);
+                    return TRUE;
+                }
+                return FALSE;
+            } else {
+                set_ustuck((struct monst *) 0);
+                You("release %s.", y_monnam(mtmp));
+            }
         } else {
             /* If holder is asleep or paralyzed:
              *      37.5% chance of getting away,
@@ -2649,9 +2669,13 @@ escape_from_sticky_mon(coordxy x, coordxy y)
              * If holder is tame and there is no conflict,
              * guaranteed escape.
              */
-            switch (rn2(!u.ustuck->mcanmove ? 
-                        (P_SKILL(P_GRAPPLING) >= P_BASIC ? 2 : 8) 
-                        : min(2, 40 - 12 * max(0, P_SKILL(P_GRAPPLING) - 1)))) {
+            if (u.ustuck->mcanmove)
+                escape_chance = 40;
+            else
+                escape_chance = 8;
+            if (P_SKILL(P_GRAPPLING) >= P_BASIC)
+                escape_chance -= P_SKILL(P_GRAPPLING);
+            switch (escape_chance) {
             case 3:
                 if (!u.ustuck->mcanmove) {
                     /* it's free to move on next turn */
@@ -2679,6 +2703,69 @@ escape_from_sticky_mon(coordxy x, coordxy y)
         }
     }
     return FALSE;
+}
+
+/* Move executed by a grappler when moving while holding a monster. Returns
+   true if the grapple is maintained. */
+staticfn boolean
+grappling_finisher(coordxy x, coordxy y, struct monst *mtmp)
+{
+    coord cc;
+    char kbuf[BUFSZ];
+    int future_dist = dist2(x, y, mtmp->mx, mtmp->my);
+    boolean bare_hit = FALSE;
+    boolean break_grapple = TRUE;
+    
+    if (future_dist == 1 && (x == mtmp->mx || y == mtmp->my)) {
+        pline_mon(mtmp, "You hit %s with a lariat!", mon_nam(mtmp));
+        make_mon_prone(mtmp);
+    } else if (future_dist == 2) {
+        pline_mon(mtmp, "You spin-kick %s!", mon_nam(mtmp));
+        if (rn2(8 - P_SKILL(P_GRAPPLING))) {
+            mtmp->mconf = 1;
+            if (canseemon(mtmp))
+                pline_mon(mtmp, "%s looks confused!", Monnam(mtmp));
+        }
+        bare_hit = TRUE;
+    } else if (future_dist == 5) {
+        if (enexto(&cc, x, y, mtmp->data)) {
+            rloc_to(mtmp, cc.x, cc.y);
+            pline_mon(mtmp, "You %s drag %s!",  mbodypart(mtmp, LEG), mon_nam(mtmp));
+            bare_hit = TRUE;
+        } else {
+            pline("Your move fails!");
+        }
+        break_grapple = FALSE;
+    } else if (goodpos(x, y, mtmp, 0)) {
+        pline_mon(mtmp, "You suplex %s!", mon_nam(mtmp));
+        rloc_to(mtmp, x, y);
+        bare_hit = TRUE;
+        mtmp->mhp -= rnd(8);
+    } else {
+        pline_mon(mtmp, "You pummel %s!", mon_nam(mtmp));
+        bare_hit = TRUE;
+    }
+    /* Now do some damage */
+    if (bare_hit) {
+        mtmp->mhp -= rnd(!martial_bonus() ? 2 : 4);
+        if (DEADMONSTER(mtmp)) {
+            killed(mtmp);
+            return TRUE;
+        }
+        if (touch_petrifies(mtmp->data)) {
+            Sprintf(kbuf, "grappling %s", mon_nam(mtmp));
+            instapetrify(kbuf);
+        }
+    }
+    /* Decide whether the grapple is maintained */
+    if (break_grapple && P_SKILL(P_GRAPPLING) > P_BASIC) {
+        break_grapple = !rn2(P_SKILL(P_GRAPPLING));
+    }
+    if (break_grapple || mdistu(mtmp) > 1) {
+        set_ustuck((struct monst *) 0);
+        pline_mon(mtmp, "Your grip on %s is broken.", mon_nam(mtmp));
+    }
+    return break_grapple;
 }
 
 void
@@ -2783,6 +2870,12 @@ domove_core(void)
 
         if (domove_bump_mon(mtmp, glyph))
             return;
+
+        if (Role_if(PM_GRAPPLER) && u.usticker && mtmp == u.ustuck) {
+            You("are already grappling %s!", mon_nam(mtmp));
+            nomul(0);
+            return;
+        }
 
         /* attack monster */
         if (domove_attackmon_at(mtmp, x, y, &displaceu))
@@ -2908,7 +3001,7 @@ domove_core(void)
          * be caught by the normal falling-monster code.
          */
         } else if (is_safemon(mtmp)
-                   && !(is_hider(mtmp->data) && mtmp->mundetected)) {
+                   && !((is_hider(mtmp->data) || mud_hider(mtmp->data)) && mtmp->mundetected)) {
             if (!domove_swap_with_pet(mtmp, x, y)) {
                 u.ux = u.ux0, u.uy = u.uy0; /* didn't move after all */
                 /* could skip this since we're about to call u_on_newpos() */
@@ -3169,6 +3262,8 @@ pooleffects(
                 docrt();
                 gv.vision_full_recalc = 1;
             }
+            if (was_underwater)
+                make_dripping(rn1(10, 10), POT_WATER, NON_PM);
         }
     }
 
@@ -3349,6 +3444,9 @@ spoteffects(boolean pick)
                 You("surprise %s!",
                     Blind && !sensemon(mtmp) ? something : a_monnam(mtmp));
                 mtmp->mpeaceful = 0;
+            } else if (mud_hider(mtmp->data)
+                        && has_coating(mtmp->mx, mtmp->my, COAT_MUD)) {
+                pline("%s bursts out of the mud!", Amonnam(mtmp));
             } else
                 pline("%s attacks you by surprise!", Amonnam(mtmp));
             break;
@@ -3601,6 +3699,9 @@ check_special_room(boolean newlev)
         case ANTHOLE:
             You("enter an anthole!");
             break;
+        case SCILAB:
+            You("enter a laboratory!");
+            break;
         case BARRACKS:
             if (monstinroom(&mons[PM_SOLDIER], roomno)
                 || monstinroom(&mons[PM_SERGEANT], roomno)
@@ -3661,6 +3762,9 @@ check_special_room(boolean newlev)
                     break;
                 case BEEHIVE:
                     svl.level.flags.has_beehive = 0;
+                    break;
+                case SCILAB:
+                    svl.level.flags.has_scilab = 0;
                     break;
                 }
             }

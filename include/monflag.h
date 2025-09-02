@@ -196,7 +196,7 @@ enum ms_sounds {
 
 /* Boosts */
 #define BST_GRASS 0x0001
-#define BST_DIRT  0x0002
+#define BST_MUD  0x0002
 #define BST_ROCK  0x0004
 #define BST_WATER 0x0008
 #define BST_ICE   0x0010

@@ -27,6 +27,7 @@ staticfn boolean chk_okdoor(coordxy, coordxy);
 staticfn void mklev_sanity_check(void);
 staticfn void makelevel(void);
 staticfn void coat_floors(void);
+staticfn boolean water_has_kelp(coordxy, coordxy, int, int);
 staticfn boolean bydoor(coordxy, coordxy);
 staticfn void mktrap_victim(struct trap *);
 staticfn int traptype_rnd(unsigned);
@@ -769,7 +770,7 @@ makeniche(int trap_type)
                         ttmp->once = 1;
                     if (trap_engravings[trap_type]) {
                         make_engr_at(xx, yy - dy,
-                                     trap_engravings[trap_type], 0L,
+                                     trap_engravings[trap_type], NULL, 0L,
                                      DUST);
                         wipe_engr_at(xx, yy - dy, 5,
                                      FALSE); /* age it a little */
@@ -886,6 +887,7 @@ clear_level_structures(void)
     svl.level.flags.has_barracks = 0;
     svl.level.flags.has_temple = 0;
     svl.level.flags.has_swamp = 0;
+    svl.level.flags.has_scilab = 0;
     svl.level.flags.noteleport = 0;
     svl.level.flags.hardfloor = 0;
     svl.level.flags.nommap = 0;
@@ -904,6 +906,7 @@ clear_level_structures(void)
     svl.level.flags.noautosearch = 0;
     svl.level.flags.fumaroles = 0;
     svl.level.flags.stormy = 0;
+    svl.level.flags.outdoors = 0;
 
     svn.nroom = 0;
     svr.rooms[0].hx = -1;
@@ -1147,8 +1150,8 @@ fill_ordinary_room(
 
     /* maybe make some graffiti */
     if (!rn2(27 + 3 * abs(depth(&u.uz)))) {
-        char buf[BUFSZ];
-        const char *mesg = random_engraving(buf);
+        char buf[BUFSZ], pristinebuf[BUFSZ];
+        const char *mesg = random_engraving(buf, pristinebuf);
 
         if (mesg) {
             do {
@@ -1157,7 +1160,7 @@ fill_ordinary_room(
                 y = pos.y;
             } while (levl[x][y].typ != ROOM && !rn2(40));
             if (levl[x][y].typ == ROOM)
-                make_engr_at(x, y, mesg, 0L, MARK);
+                make_engr_at(x, y, mesg, pristinebuf, 0L, MARK);
         }
     }
 
@@ -1165,6 +1168,8 @@ fill_ordinary_room(
     coatings = COAT_GRASS;
     if (svl.level.flags.has_swamp || (u.uz.dlevel >= 5 && !rn2(u.uz.dlevel)))
         coatings |= COAT_FUNGUS;
+    if (svl.level.flags.has_swamp)
+        coatings |= COAT_MUD;
     coat_room(croom, coatings);
 
  skip_nonrogue:
@@ -1191,14 +1196,17 @@ coat_room(struct mkroom *croom, unsigned char coat_type) {
     int ly = croom->ly;
     int hx = croom->hx;
     int hy = croom->hy;
+
+    if (croom->rtype >= VAULT && croom->rtype <= CANDLESHOP)
+        return;
     
     for (x = lx - 1; x <= hx + 1; x++) {
         for (y = ly - 1; y <= hy + 1; y++) {
             if (croom->irregular && 
                 (IS_STWALL(levl[x][y].typ) || levl[x][y].typ == CORR))
                 continue;
-            if ((coat_type & COAT_GRASS) != 0 &&
-                x >= lx && x <= hx && y >= ly && y <= hy) {
+            if ((coat_type & COAT_GRASS) != 0 && !In_mines(&u.uz)
+                && x >= lx && x <= hx && y >= ly && y <= hy) {
                 if (grass_chance ? rn2(4) : !rn2(u.uz.dlevel)) {
                     add_coating(x, y, COAT_GRASS, 0);
                     if (IS_SUBMASKABLE(levl[x][y].typ)) {
@@ -1212,13 +1220,12 @@ coat_room(struct mkroom *croom, unsigned char coat_type) {
                     levl[x][y].submask = SM_DIRT;
                 }
             }
-            if ((coat_type & COAT_FUNGUS) != 0) {
+            if ((coat_type & COAT_FUNGUS) != 0)
                 if (!rn2(max(2, abs(13 - u.uz.dlevel)))) add_coating(x, y, COAT_FUNGUS, 0);
-            }
+            if ((coat_type & COAT_MUD) != 0)
+                if (!rn2(2)) add_coating(x, y, COAT_MUD, 0);
             if (svl.level.flags.temperature == 1)
                 if (rn2(4)) add_coating(x, y, COAT_ASHES, 0);
-            if (svl.level.flags.has_swamp)
-                if (rn2(5)) add_coating(x, y, COAT_POTION, POT_WATER);
         }
     }
 }
@@ -1404,7 +1411,7 @@ makelevel(void)
             do_mkroom(SHOPBASE);
         else if (u_depth > 4 && !rn2(6))
             do_mkroom(COURT);
-        else if (u_depth > 5 && !rn2(8)
+        else if (u_depth > 5 && !rn2(9)
                  && !(svm.mvitals[PM_LEPRECHAUN].mvflags & G_GONE))
             do_mkroom(LEPREHALL);
         else if (u_depth > 6 && !rn2(7))
@@ -1414,6 +1421,8 @@ makelevel(void)
         else if (u_depth > 9 && !rn2(5)
                  && !(svm.mvitals[PM_KILLER_BEE].mvflags & G_GONE))
             do_mkroom(BEEHIVE);
+        else if (u_depth > 10 && !rn2(7))
+            do_mkroom(SCILAB);
         else if (u_depth > 11 && !rn2(6))
             do_mkroom(MORGUE);
         else if (u_depth > 12 && !rn2(8) && antholemon())
@@ -1480,6 +1489,18 @@ makelevel(void)
     }
 }
 
+/* return TRUE if water location at (x,y) should have kelp. */
+staticfn boolean
+water_has_kelp(coordxy x, coordxy y, int kelp_pool, int kelp_moat)
+{
+    if ((kelp_pool && (levl[x][y].typ == POOL
+                       || (levl[x][y].typ == WATER && !Is_waterlevel(&u.uz)))
+         && !rn2(kelp_pool))
+        || (kelp_moat && levl[x][y].typ == MOAT && !rn2(kelp_moat)))
+        return TRUE;
+    return FALSE;
+}
+
 /*
  *      Place deposits of minerals (gold and misc gems) in the stone
  *      surrounding the rooms on the map.
@@ -1505,8 +1526,7 @@ mineralize(int kelp_pool, int kelp_moat, int goldprob, int gemprob,
         return;
     for (x = 2; x < (COLNO - 2); x++)
         for (y = 1; y < (ROWNO - 1); y++)
-            if ((kelp_pool && levl[x][y].typ == POOL && !rn2(kelp_pool))
-                || (kelp_moat && levl[x][y].typ == MOAT && !rn2(kelp_moat)))
+            if (water_has_kelp(x, y, kelp_pool, kelp_moat))
                 (void) mksobj_at(KELP_FROND, x, y, TRUE, FALSE);
 
     /* determine if it is even allowed;
@@ -1589,25 +1609,15 @@ coat_floors(void)
         for (int y = 0; y < ROWNO; y++) {
             if (!IS_COATABLE(levl[x][y].typ) || IS_STWALL(levl[x][y].typ))
                 continue;
-            if (Is_juiblex_level(&u.uz) && !rn2(3))
-                add_coating(x, y, COAT_FUNGUS, 0);
-            if (svl.level.flags.arboreal) {
-                if (rn2(4)) {
-                    if (IS_SUBMASKABLE(levl[x][y].typ)) {
-                        levl[x][y].submask = SM_DIRT;
-                    }
-                    add_coating(x, y, COAT_GRASS, 0);
-                }
-            } else if (svl.level.flags.temperature == 1) {
-                if (rn2(3))
-                    add_coating(x, y, COAT_ASHES, 0);
-            } else if (IS_SUBMASKABLE(levl[x][y].typ)) {
-                if (rn2(3)) {
+            if (IS_SUBMASKABLE(levl[x][y].typ)) {
+                if (Is_medusa_level(&u.uz))
+                    levl[x][y].submask = SM_SAND;
+                else if (rn2(3)) {
                     levl[x][y].submask = SM_DIRT;
                 } else if (rn2(2)) {
                     levl[x][y].submask = SM_SAND;
                 }
-                if (!Is_valley(&u.uz) && !Inhell && !rn2(7))
+                if (!has_ceiling(&u.uz) && !rn2(3)) 
                     add_coating(x, y,  COAT_GRASS, 0);
             }
         }
@@ -1622,7 +1632,8 @@ level_finalize_topology(void)
 
     bound_digging();
     mineralize(-1, -1, -1, -1, FALSE);
-    if (svl.level.flags.is_maze_lev)
+    if (!In_endgame(&u.uz) && !In_hell(&u.uz) && !In_sokoban(&u.uz)
+        && (svl.level.flags.is_maze_lev || In_mines(&u.uz)))
         coat_floors();
     gi.in_mklev = FALSE;
     /* avoid coordinates in future lua-loads for this level being thrown off
@@ -2004,7 +2015,8 @@ mktrap_victim(struct trap *ttmp)
        instead (always human); no role-specific equipment is provided */
     if (victim_mnum == PM_HUMAN && rn2(25))
         victim_mnum = rn1(PM_WIZARD - PM_ARCHEOLOGIST, PM_ARCHEOLOGIST);
-    otmp = mkcorpstat(CORPSE, NULL, &mons[victim_mnum], x, y, CORPSTAT_INIT);
+    otmp = mkcorpstat(rn2(9) ? SKELETON : CORPSE, NULL, &mons[victim_mnum],
+                        x, y, CORPSTAT_INIT);
     otmp->age -= (TAINT_AGE + 1); /* died too long ago to safely eat */
 }
 
@@ -2066,6 +2078,10 @@ traptype_rnd(unsigned mktrapflags)
     case HOLE:
         /* make these much less often than other traps */
         if (rn2(7))
+            kind = NO_TRAP;
+        break;
+    case ROCKTRAP:
+        if (!has_ceiling(&u.uz))
             kind = NO_TRAP;
         break;
     }
@@ -2152,7 +2168,7 @@ mktrap(
     }
 
     if (is_hole(kind) && !Can_fall_thru(&u.uz))
-        kind = ROCKTRAP;
+        kind = has_ceiling(&u.uz) ? ROCKTRAP : PIT;
 
     if (tm) {
         m = *tm;

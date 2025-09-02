@@ -1,4 +1,4 @@
-/* NetHack 3.7	dog.c	$NHDT-Date: 1737287993 2025/01/19 03:59:53 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.178 $ */
+/* NetHack 3.7	dog.c	$NHDT-Date: 1753856387 2025/07/29 22:19:47 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.190 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2011. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -66,6 +66,9 @@ initedog(struct monst *mtmp, boolean everything)
         edogp->revivals = 0;
         edogp->mhpmax_penalty = 0;
         edogp->killed_by_u = 0;
+    } else {
+        if (edogp->apport <= 0)
+            edogp->apport = 1;
     }
     /* always set for newly tamed pet or feral former pet; hungrytime might
        already be higher when taming magic affects already tame monst */
@@ -130,7 +133,10 @@ pick_familiar_pm(struct obj *otmp, boolean quietly)
     } else if (!rn2(3)) {
         pm = &mons[pet_type()];
     } else {
-        pm = rndmonst();
+        int skill = spell_skilltype(SPE_CREATE_FAMILIAR);
+        int max = 3 * P_SKILL(skill);
+
+        pm = rndmonst_adj(0, max);
         if (!pm && !quietly)
             There("seems to be nothing available for a familiar.");
     }
@@ -217,7 +223,7 @@ make_familiar(struct obj *otmp, coordxy x, coordxy y, boolean quietly)
     return mtmp;
 }
 
-/* used exclusively for hero's starting pet */
+/* despite rather general name, used exclusively for hero's starting pet */
 struct monst *
 makedog(void)
 {
@@ -225,10 +231,13 @@ makedog(void)
     const char *petname;
     int pettype;
 
-    if (gp.preferred_pet == 'n')
+    if (gp.preferred_pet == 'n') {
+        /* static init yields 0 (PM_GIANT_ANT); fix that up now */
+        svc.context.startingpet_typ = NON_PM;
         return ((struct monst *) 0);
+    }
 
-    pettype = pet_type();
+    pettype = svc.context.startingpet_typ = pet_type();
     petname = (pettype == PM_LITTLE_DOG) ? gd.dogname
               : (pettype == PM_KITTEN) ? gc.catname
                 : (pettype == PM_PONY) ? gh.horsename
@@ -257,6 +266,9 @@ makedog(void)
     if (!mtmp)
         return ((struct monst *) 0); /* pets were genocided [how?] */
 
+    /* chance that the pet is a baby. has no impact on gameplay */
+    if (!rn2(6)) mtmp->mbaby = 1;
+
     if (!svc.context.startingpet_mid) {
         svc.context.startingpet_mid = mtmp->m_id;
         if (!u.uroleplay.pauper) {
@@ -267,6 +279,11 @@ makedog(void)
                 put_saddle_on_mon((struct obj *) 0, mtmp);
             }
         }
+        /* starting pet's type has been seen up close (unless PermaBlind)
+           and for tourist treat it as having already been photographed */
+        gb.bhitpos.x = mtmp->mx, gb.bhitpos.y = mtmp->my;
+        gn.notonhead = FALSE;
+        see_monster_closeup(mtmp, carrying(EXPENSIVE_CAMERA) ? TRUE : FALSE);
     } else {
         impossible("makedog() when startingpet_mid is already non-zero?");
     }
@@ -554,8 +571,9 @@ mon_arrive(struct monst *mtmp, int when)
             /* debugfuzzer returns from or enters another branch */
             xlocale = stway->sx, ylocale = stway->sy;
             break;
-        } else if (!(u.uevent.qexpelled
-                     && (Is_qstart(&u.uz0) || Is_qstart(&u.uz)))) {
+        } else if ((u.uevent.qexpelled
+                && (Is_qstart(&u.uz0) || Is_qstart(&u.uz)))
+                || (Is_magicmaze(&u.uz0) || Is_magicmaze(&u.uz))) {
             impossible("mon_arrive: no corresponding portal?");
         }
         FALLTHROUGH;
@@ -1093,6 +1111,8 @@ dogfood(struct monst *mon, struct obj *obj)
             return (mptr->mlet == S_YETI && herbi) ? DOGFOOD
                    : (herbi || starving) ? ACCFOOD
                      : MANFOOD;
+        case SKELETON:
+            return MANFOOD;
         default:
             if (starving)
                 return ACCFOOD;

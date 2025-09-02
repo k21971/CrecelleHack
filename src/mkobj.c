@@ -938,8 +938,8 @@ mksobj_init(struct obj **obj, boolean artif)
             otmp = mk_artifact(otmp, (aligntyp) A_NONE, 99, TRUE);
             *obj = otmp;
         }
-        /* 1/10 chance of making the object harmonic. */
-        if (!rn2(10)) {
+        /* Small chance of making the object harmonic. */
+        if (!rn2(16)) {
             boost_object(otmp, 0);
         }
         break;
@@ -947,6 +947,7 @@ mksobj_init(struct obj **obj, boolean artif)
         otmp->oeaten = 0;
         switch (otmp->otyp) {
         case CORPSE:
+        case SKELETON:
             /* possibly overridden by mkcorpstat() */
             tryct = 50;
             do
@@ -1018,6 +1019,7 @@ mksobj_init(struct obj **obj, boolean artif)
             start_glob_timeout(otmp, 0L);
         } else {
             if (otmp->otyp != CORPSE && otmp->otyp != MEAT_RING
+                && otmp->otyp != SKELETON
                 && otmp->otyp != KELP_FROND && !rn2(6)) {
                 otmp->quan = 2L;
             }
@@ -1076,6 +1078,7 @@ mksobj_init(struct obj **obj, boolean artif)
             otmp->spe = rn1(70, 30);
             break;
         case CAN_OF_GREASE:
+        case DUCT_TAPE:
             otmp->spe = rn1(21, 5); /* 0..20 + 5 => 5..25 */
             blessorcurse(otmp, 10);
             break;
@@ -1112,6 +1115,7 @@ mksobj_init(struct obj **obj, boolean artif)
         case MAGIC_HARP:
         case FROST_HORN:
         case FIRE_HORN:
+        case ELECTRIC_GUITAR:
         case DRUM_OF_EARTHQUAKE:
             otmp->spe = rn1(5, 4);
             break;
@@ -1173,13 +1177,13 @@ mksobj_init(struct obj **obj, boolean artif)
 #endif
         }
         /* Armor has a slightly higher chance than weapons of being harmonic */
-        if (!rn2(8)) {
+        if (!rn2(14)) {
             boost_object(otmp, 0);
         }
         break;
     case WAND_CLASS:
         if (otmp->otyp == WAN_WISHING)
-            otmp->spe = rnd(3);
+            otmp->spe = 1;
         else
             otmp->spe = rn1(5,
                             (objects[otmp->otyp].oc_dir == NODIR) ? 11 : 4);
@@ -1273,12 +1277,15 @@ mksobj(int otyp, boolean init, boolean artif)
         /*FALLTHRU*/
     case SKULL:
     case SKULL_HELM:
+    case SKELETON:
     case CORPSE:
         if (otmp->corpsenm == NON_PM) {
             otmp->corpsenm = undead_to_corpse(rndmonnum());
             if ((svm.mvitals[otmp->corpsenm].mvflags & (G_NOCORPSE | G_GONE))
                 || ((otmp->otyp == SKULL || otmp->otyp == SKULL_HELM) 
-                    && !has_skull(&mons[otmp->corpsenm])))
+                    && !has_skull(&mons[otmp->corpsenm]))
+                || (otmp->otyp == SKELETON
+                    && !has_bones(&mons[otmp->corpsenm])))
                 otmp->corpsenm = gu.urole.mnum;
         }
         FALLTHROUGH;
@@ -1437,6 +1444,7 @@ set_corpsenm(struct obj *obj, int id)
         obj->owt = weight(obj);
         break;
     case SKULL:
+    case SKELETON:
         obj->owt = weight(obj);
         break;
     case EGG:
@@ -1484,6 +1492,9 @@ start_corpse_timeout(struct obj *body)
 
     /* lizards and lichen don't rot or revive */
     if (body->corpsenm == PM_LIZARD || body->corpsenm == PM_LICHEN)
+        return;
+    /* skeletons do not use corpse timers */
+    if (body->otyp == SKELETON)
         return;
 
     action = ROT_CORPSE;               /* default action: rot away */
@@ -2051,6 +2062,8 @@ weight(struct obj *obj)
     } else if ((obj->otyp == SKULL || obj->otyp == SKULL_HELM) && ismnum(obj->corpsenm)) {
         /* Yuck */
         return max(obj->otyp == SKULL ? 1 : 10, mons[obj->corpsenm].cwt / 50);
+    } else if (obj->otyp == SKELETON && ismnum(obj->corpsenm)) {
+        return max(10, mons[obj->corpsenm].cwt / 3);
     } else if (obj->oclass == FOOD_CLASS && obj->oeaten) {
         return eaten_stat((int) obj->quan * wt, obj);
     } else if (obj->oclass == COIN_CLASS) {
@@ -2152,7 +2165,7 @@ mkcorpstat(
     struct obj *otmp;
     boolean init = ((corpstatflags & CORPSTAT_INIT) != 0);
 
-    if (objtype != CORPSE && objtype != STATUE)
+    if (objtype != CORPSE && objtype != STATUE && objtype != SKELETON)
         impossible("making corpstat type %d", objtype);
     if (x == 0 && y == 0) { /* special case - random placement */
         otmp = mksobj(objtype, init, FALSE);
@@ -2209,6 +2222,8 @@ corpse_revive_type(struct obj *obj)
     int revivetype = obj->corpsenm;
     struct monst *mtmp;
 
+    if (obj->otyp == SKELETON)
+        return PM_SKELETON;
     if (has_omonst(obj) && ((mtmp = get_mtraits(obj, FALSE)) != 0)) {
         /* mtmp is a temporary pointer to a monster's stored
         attributes, not a real monster */
@@ -2251,6 +2266,7 @@ save_mtraits(struct obj *obj, struct monst *mtmp)
         mtmp2->nmon = (struct monst *) 0;
         mtmp2->data = (struct permonst *) 0;
         mtmp2->minvent = (struct obj *) 0;
+        MON_NOWEP(mtmp2); /* mtmp2->mw = (struct obj *) 0; */
         if (mtmp->mextra)
             copy_mextra(mtmp2, mtmp);
         /* if mtmp is a long worm with segments, its saved traits will
@@ -3285,7 +3301,7 @@ mon_obj_sanity(struct monst *monlist, const char *mesg)
     for (mon = monlist; mon; mon = mon->nmon) {
         if (DEADMONSTER(mon))
             continue;
-        mwep = MON_WEP(mon);
+        mwep = MON_WEP(mon); /* mon->mw */
         if (mwep) {
             if (!mcarried(mwep))
                 insane_object(mwep, mfmt1, mesg, mon);
@@ -3305,6 +3321,18 @@ mon_obj_sanity(struct monst *monlist, const char *mesg)
             if (obj->in_use || obj->bypass || obj->nomerge
                 || (obj->otyp == BOULDER && obj->next_boulder))
                 insane_obj_bits(obj, mon);
+            if (obj == mwep)
+                mwep = (struct obj *) 0;
+        }
+        if (mwep) {
+            /* this is a monster check rather than an object check, but doing
+               it here avoids making an extra pass through mon's minvent;
+               if the full pass through that list hasn't reset mwep to Null,
+               then mwep isn't in that list where it should be */
+            impossible("monst (%s: %u) wielding %s (%u) not in %s inventory",
+                       pmname(mon->data, Mgender(mon)), mon->m_id,
+                       safe_typename(mwep->otyp), mwep->o_id, mhis(mon));
+
         }
     }
 }
@@ -3670,7 +3698,7 @@ sanity_check_worn(struct obj *obj)
                 what = "ring";
         } else if (owornmask & W_TOOL) {
             if (obj->otyp != BLINDFOLD && obj->otyp != TOWEL
-                && obj->otyp != LENSES && obj->otyp != SUNGLASSES)
+                && !is_glasses(obj))
                 what = "blindfold";
         } else if (owornmask & W_BALL) {
             if (obj->oclass != BALL_CLASS)

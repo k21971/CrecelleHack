@@ -30,8 +30,9 @@ enum obj_material_types {
     MITHRIL     = 17,
     PLASTIC     = 18,
     GLASS       = 19,
-    GEMSTONE    = 20,
-    MINERAL     = 21
+    BLUEICE     = 20,
+    GEMSTONE    = 21,
+    MINERAL     = 22
 };
 
 enum obj_armor_types {
@@ -99,7 +100,6 @@ struct objclass {
     schar oc_wsdam, oc_wldam; /* max small/large monster damage */
     schar oc_oc1, oc_oc2;
 #define oc_hitbon oc_oc1 /* weapons: "to hit" bonus */
-#define oc_hspeed oc_oc2 /* weapons: "speed" bonus */
 
 #define a_ac oc_oc1     /* armor class, used in ARM_BONUS in do.c */
 #define a_can oc_oc2    /* armor: used in mhitu.c */
@@ -196,8 +196,9 @@ extern NEARDATA struct objdescr obj_descr[NUM_OBJECTS + 1];
 /* is_flammable(otmp), is_rottable(otmp) in mkobj.c */
 #define is_rustprone(otmp) (objects[otmp->otyp].oc_material == IRON)
 #define is_crackable(otmp) \
-    (objects[(otmp)->otyp].oc_material == GLASS         \
-     && (otmp)->oclass == ARMOR_CLASS) /* erosion_matters() */
+    ((objects[(otmp)->otyp].oc_material == GLASS \
+        || objects[(otmp)->otyp].oc_material == ICE) \
+     && ((otmp)->oclass == ARMOR_CLASS || (otmp)->oclass == TOOL_CLASS)) /* erosion_matters() */
 /* secondary damage: rot/acid/acid */
 #define is_corrodeable(otmp) \
     (objects[otmp->otyp].oc_material == COPPER          \

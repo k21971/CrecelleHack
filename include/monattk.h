@@ -8,25 +8,29 @@
 /*      Add new attack types below - ordering affects experience (exper.c).
  *      Attacks > AT_BUTT are worth extra experience.
  */
-#define AT_ANY (-1) /* fake attack; dmgtype_fromattack wildcard */
-#define AT_NONE 0   /* passive monster (ex. acid blob) */
-#define AT_CLAW 1   /* claw (punch, hit, etc.) */
-#define AT_BITE 2   /* bite */
-#define AT_KICK 3   /* kick */
-#define AT_BUTT 4   /* head butt (ex. a unicorn) */
-#define AT_TUCH 5   /* touches */
-#define AT_STNG 6   /* sting */
-#define AT_HUGS 7   /* crushing bearhug */
-#define AT_SPIT 10  /* spits substance - ranged */
-#define AT_ENGL 11  /* engulf (swallow or by a cloud) */
-#define AT_BREA 12  /* breath - ranged */
-#define AT_EXPL 13  /* explodes - proximity */
-#define AT_BOOM 14  /* explodes when killed */
-#define AT_GAZE 15  /* gaze - ranged */
-#define AT_TENT 16  /* tentacles */
 
-#define AT_WEAP 254 /* uses weapon */
-#define AT_MAGC 255 /* uses magic spell(s) */
+#define MATK_LIST MATK(AT_NONE, "passive"), \
+    MATK(AT_CLAW, "claw"), \
+    MATK(AT_BITE, "bite"), \
+    MATK(AT_KICK, "kick"), \
+    MATK(AT_BUTT, "butt"), \
+    MATK(AT_TUCH, "touch"), \
+    MATK(AT_STNG, "sting"), \
+    MATK(AT_HUGS, "hug"), \
+    MATK(AT_SPIT, "spit"), \
+    MATK(AT_ENGL, "engulf"), \
+    MATK(AT_BREA, "breath"), \
+    MATK(AT_EXPL, "explode"), \
+    MATK(AT_BOOM, "death throes"), \
+    MATK(AT_GAZE, "gaze"), \
+    MATK(AT_TENT, "tentacle"), \
+    MATK(AT_WEAP, "weapon"), \
+    MATK(AT_MAGC, "spell"),
+#define MATK(id, nam) id
+enum mattk_ids { AT_ANY = -1, MATK_LIST };
+#undef MATK
+#define MATK(id, nam) nam
+static const char *const mattk_names[] = { MATK_LIST };
 
 #define DISTANCE_ATTK_TYPE(atyp) ((atyp) == AT_SPIT \
                                   || (atyp) == AT_BREA \
@@ -38,60 +42,63 @@
  *      Note that 1-10 correspond to the types of attack used in buzz().
  *      Please don't disturb the order unless you rewrite the buzz() code.
  */
-#define AD_ANY (-1) /* fake damage; attacktype_fordmg wildcard */
-#define AD_PHYS 0   /* ordinary physical */
-#define AD_MAGM 1   /* magic missiles */
-#define AD_FIRE 2   /* fire damage */
-#define AD_COLD 3   /* frost damage */
-#define AD_SLEE 4   /* sleep ray */
-#define AD_DISN 5   /* disintegration (death ray) */
-#define AD_ELEC 6   /* shock damage */
-#define AD_DRST 7   /* drains str (poison) */
-#define AD_ACID 8   /* acid damage */
-#define AD_SPC1 9   /* for extension of buzz() */
-#define AD_SPC2 10  /* for extension of buzz() */
-#define AD_BLND 11  /* blinds (yellow light) */
-#define AD_STUN 12  /* stuns */
-#define AD_SLOW 13  /* slows */
-#define AD_PLYS 14  /* paralyses */
-#define AD_DRLI 15  /* drains life levels (Vampire) */
-#define AD_DREN 16  /* drains magic energy */
-#define AD_LEGS 17  /* damages legs (xan) */
-#define AD_STON 18  /* petrifies (Medusa, cockatrice) */
-#define AD_STCK 19  /* sticks to you (mimic) */
-#define AD_SGLD 20  /* steals gold (leppie) */
-#define AD_SITM 21  /* steals item (nymphs) */
-#define AD_SEDU 22  /* seduces & steals multiple items */
-#define AD_TLPT 23  /* teleports you (Quantum Mech.) */
-#define AD_RUST 24  /* rusts armour (Rust Monster)*/
-#define AD_CONF 25  /* confuses (Umber Hulk) */
-#define AD_DGST 26  /* digests opponent (trapper, etc.) */
-#define AD_HEAL 27  /* heals opponent's wounds (nurse) */
-#define AD_WRAP 28  /* special "stick" for eels */
-#define AD_WERE 29  /* confers lycanthropy */
-#define AD_DRDX 30  /* drains dexterity (quasit) */
-#define AD_DRCO 31  /* drains constitution */
-#define AD_DRIN 32  /* drains intelligence (mind flayer) */
-#define AD_DISE 33  /* confers diseases */
-#define AD_DCAY 34  /* decays organics (brown Pudding) */
-#define AD_SSEX 35  /* Succubus seduction (extended) */
-#define AD_HALU 36  /* causes hallucination */
-#define AD_DETH 37  /* for Death only */
-#define AD_PEST 38  /* for Pestilence only */
-#define AD_FAMN 39  /* for Famine only */
-#define AD_SLIM 40  /* turns you into green slime */
-#define AD_ENCH 41  /* remove enchantment (disenchanter) */
-#define AD_CORR 42  /* corrode armor (black pudding) */
-#define AD_POLY 43  /* polymorph the target (genetic engineer) */
-#define AD_WORM 44  /* infects you with a virus (mail worm) */
-#define AD_HONY 45  /* spreads honey (bees) */
-
-#define AD_CLRC 240 /* random clerical spell */
-#define AD_SPEL 241 /* random magic spell */
-#define AD_RBRE 242 /* random breath weapon */
-
-#define AD_SAMU 252 /* hits, may steal Amulet (Wizard) */
-#define AD_CURS 253 /* random curse (ex. gremlin) */
+#define MAD_LIST MAD(AD_PHYS, "physical"), \
+    MAD(AD_MAGM, "magic missiles"), \
+    MAD(AD_FIRE, "fire"), \
+    MAD(AD_COLD, "cold"), \
+    MAD(AD_SLEE, "sleep"), \
+    MAD(AD_DISN, "disintegration"), \
+    MAD(AD_ELEC, "shock"), \
+    MAD(AD_DRST, "strength poison"), \
+    MAD(AD_ACID, "acid"), \
+    MAD(AD_SPC1, ""), \
+    MAD(AD_SPC2, ""), \
+    MAD(AD_BLND, "blind"), \
+    MAD(AD_STUN, "stun"), \
+    MAD(AD_SLOW, "slow"), \
+    MAD(AD_PLYS, "paralyze"), \
+    MAD(AD_DRLI, "drain life"), \
+    MAD(AD_DREN, "drain energy"), \
+    MAD(AD_LEGS, "wound legs"), \
+    MAD(AD_STON, "petrify"), \
+    MAD(AD_STCK, "sticky"), \
+    MAD(AD_SGLD, "pickpocket"), \
+    MAD(AD_SITM, "theft"), \
+    MAD(AD_SEDU, "seduce"), \
+    MAD(AD_TLPT, "teleport"), \
+    MAD(AD_RUST, "rust"), \
+    MAD(AD_CONF, "confuse"), \
+    MAD(AD_DGST, "digest"), \
+    MAD(AD_HEAL, "heal"), \
+    MAD(AD_WRAP, "wrap"), \
+    MAD(AD_WERE, "lycanthropy"), \
+    MAD(AD_DRDX, "dexterity poison"), \
+    MAD(AD_DRCO, "constitution poison"), \
+    MAD(AD_DRIN, "eat brains"), \
+    MAD(AD_DISE, "disease"), \
+    MAD(AD_DCAY, "decay"), \
+    MAD(AD_SSEX, "flirtation"), \
+    MAD(AD_HALU, "hallucination"), \
+    MAD(AD_DETH, "death"), \
+    MAD(AD_PEST, "pestilence"), \
+    MAD(AD_FAMN, "famine"), \
+    MAD(AD_SLIM, "slime"), \
+    MAD(AD_ENCH, "disenchant"), \
+    MAD(AD_CORR, "corrode"), \
+    MAD(AD_POLY, "polymorph"), \
+    MAD(AD_WORM, "spam mail"), \
+    MAD(AD_HONY, "spread honey"), \
+    MAD(AD_SOAK, "soak"), \
+    MAD(AD_CLRC, "clerical"), \
+    MAD(AD_SPEL, "arcane"), \
+    MAD(AD_RBRE, "random"), \
+    MAD(AD_SAMU, "steal amulet"), \
+    MAD(AD_CURS, "curse"),
+#define MAD(id, nam) id
+enum mad_ids { AD_ANY = -1, MAD_LIST };
+#undef MAD
+#define MAD(id, nam) nam
+static const char *const mad_names[] = { MAD_LIST };
 
 struct mhitm_data {
     int damage;

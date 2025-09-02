@@ -251,6 +251,11 @@ drinkfountain(void)
         return;
     }
 
+    if (FOUNTAIN_IS_FROZEN(u.ux, u.uy)) {
+        pline("The water is frozen!");
+        return;
+    }
+
     if (mgkftn && u.uluck >= 0 && fate >= 10) {
         int i, ii, littleluck = (u.uluck < 4);
 
@@ -410,6 +415,11 @@ dipfountain(struct obj *obj)
         return;
     }
 
+    if (FOUNTAIN_IS_FROZEN(u.ux, u.uy)) {
+        pline("The water is frozen!");
+        return;
+    }
+
     if (obj->otyp == LONG_SWORD && u.ulevel >= 5
         && !rn2(Role_if(PM_KNIGHT) ? 6 : 30)
         /* once upon a time it was possible to poly N daggers into N swords */
@@ -460,6 +470,12 @@ dipfountain(struct obj *obj)
         er = wash_hands();
     } else {
         er = water_damage(obj, NULL, TRUE);
+    }
+
+    if (is_art(obj, ART_FROST_BRAND)) {
+        SET_FOUNTAIN_FROZEN(u.ux, u.uy);
+        pline("Frost spreads across the surface of the water.");
+        return;
     }
 
     if (er == ER_DESTROYED || (er != ER_NOTHING && !rn2(2))) {
@@ -536,6 +552,7 @@ dipfountain(struct obj *obj)
                 CLEAR_FOUNTAIN_LOOTED(u.ux, u.uy);
                 exercise(A_WIS, FALSE);
             }
+            make_dripping(rnd(20), POT_WATER, NON_PM);
         }
         break;
     case 29: /* You see coins */
@@ -584,6 +601,7 @@ wash_hands(void)
        compare the result to ER_DESTROYED and ER_NOTHING, so it works */
     if (was_glib && res == ER_NOTHING)
         res = ER_GREASED;
+    make_dripping(rnd(5), POT_WATER, NON_PM);
     return res;
 }
 
@@ -705,7 +723,7 @@ drinksink(void)
         break;
     case 13:
         pline("Ew, what a stench!");
-        create_gas_cloud(u.ux, u.uy, 1, 4);
+        create_gas_cloud(u.ux, u.uy, 1, 0, 4);
         break;
     case 19:
         if (Hallucination) {

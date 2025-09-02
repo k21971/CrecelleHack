@@ -6,8 +6,15 @@
 -- "Bustling Town" by Kelly Bailey
 
 des.level_init({ style = "solidfill", fg = " " });
+local winter_town;
 
-des.level_flags("mazelevel", "inaccessibles")
+if (percent(90)) then
+    des.level_flags("mazelevel", "inaccessibles")
+    winter_town = false
+else
+    des.level_flags("mazelevel", "inaccessibles", "cold")
+    winter_town = true
+end
 
 des.level_init({ style="mines", fg=".", bg="-", smoothed=true, joined=true,lit=1,walled=true })
 
@@ -92,3 +99,7 @@ des.monster({ id = "watchman", peaceful = 1 })
 des.monster({ id = "watch captain", peaceful = 1 })
 des.monster({ id = "watch captain", peaceful = 1 })
 
+-- Winter variant
+if (winter_town) then
+    des.replace_terrain({ region={00,00, 79,20}, fromterrain=".", toterrain=".", coat="frost", chance=30 })
+end

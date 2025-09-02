@@ -771,6 +771,7 @@ cast_monster_spell(struct monst *mtmp, int dmg, int spellnum)
         water_damage_chain(level.objects[u.ux][u.uy], TRUE);
 #endif
         add_coating(u.ux, u.uy, COAT_POTION, POT_WATER);
+        make_dripping(rnd(20), POT_WATER, NON_PM);
         break;
     case MCU_TELEPORT: {
         /* Warp the monster directly next to the player, or teleport them
@@ -810,6 +811,8 @@ cast_monster_spell(struct monst *mtmp, int dmg, int spellnum)
         ignite_items(gi.invent);
         /* burn up flammable items on the floor, melt ice terrain */
         mon_spell_hits_spot(mtmp, AD_FIRE, u.ux, u.uy);
+        evaporate_potion_puddles(u.ux, u.uy);
+        make_dripping(0, 0, NON_PM);
         break;
     case MCU_LIGHTNING: {
         boolean reflects;
@@ -1078,6 +1081,9 @@ spell_would_be_useless(struct monst *mtmp, int spellnum)
         && (spellnum == MCU_AGGRAVATION || spellnum == MCU_SUMMON_MONS
             || spellnum == MCU_CLONE_WIZ || spellnum == MCU_GRAVITY
             || spellnum == MCU_RAISE_DEAD || spellnum == MCU_MIRROR_IMAGE))
+        return TRUE;
+    /* illusiory armies play absolute hell with fuzzing. */
+    if (iflags.debug_fuzzer && spellnum == MCU_MIRROR_IMAGE)
         return TRUE;
     /* haste self when already fast */
     if (mtmp->permspeed == MFAST && spellnum == MCU_HASTE_SELF)

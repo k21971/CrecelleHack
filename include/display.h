@@ -525,7 +525,8 @@ enum glyph_offsets {
     GLYPH_CMAP_B_OFF = (5 + GLYPH_ALTAR_OFF),
     GLYPH_ZAP_OFF = ((S_arrow_trap + MAXTCHARS - S_grave) + GLYPH_CMAP_B_OFF),
     GLYPH_CMAP_C_OFF = ((NUM_ZAP << 2) + GLYPH_ZAP_OFF),
-    GLYPH_SWALLOW_OFF = (((S_goodpos - S_digbeam) + 1) + GLYPH_CMAP_C_OFF),
+    GLYPH_POTIONCLOUD_OFF = (((S_goodpos - S_digbeam) + 1) + GLYPH_CMAP_C_OFF),
+    GLYPH_SWALLOW_OFF = (GLYPH_POTIONCLOUD_OFF + POT_WATER - POT_GAIN_ABILITY),
     GLYPH_EXPLODE_OFF = ((NUMMONS << 3) + GLYPH_SWALLOW_OFF),
     GLYPH_EXPLODE_DARK_OFF = (GLYPH_EXPLODE_OFF),
     GLYPH_EXPLODE_NOXIOUS_OFF = (MAXEXPCHARS + GLYPH_EXPLODE_DARK_OFF),
@@ -631,6 +632,7 @@ enum glyph_offsets {
     : ((cmap_idx) == S_altar)   ? altar_to_glyph(AM_NEUTRAL)                \
     : ((cmap_idx) <  S_arrow_trap + MAXTCHARS) ? cmap_b_to_glyph(cmap_idx)  \
     : ((cmap_idx) <= S_goodpos) ? cmap_c_to_glyph(cmap_idx)                 \
+    : ((cmap_idx) == S_potioncloud) ? GLYPH_POTIONCLOUD_OFF \
       : NO_GLYPH )
 
 #define trap_to_glyph(trap)                                \
@@ -711,6 +713,8 @@ enum glyph_offsets {
 #define glyph_is_cmap_c(glyph) \
     ((glyph) >= GLYPH_CMAP_C_OFF                                        \
      && (glyph) < (((S_goodpos - S_digbeam) + 1) + GLYPH_CMAP_C_OFF))
+#define glyph_is_cmap_potioncloud(glyph) \
+    ((glyph) >= GLYPH_POTIONCLOUD_OFF && (glyph) < GLYPH_POTIONCLOUD_OFF + POT_WATER - POT_GAIN_ABILITY)
 #define glyph_is_swallow(glyph) \
     ((glyph) >= GLYPH_SWALLOW_OFF                                       \
      && (glyph) < (((NUMMONS << 3) + GLYPH_SWALLOW_OFF)))
@@ -728,11 +732,12 @@ enum glyph_offsets {
      || glyph_is_cmap_a(glyph)         \
      || glyph_is_cmap_altar(glyph)     \
      || glyph_is_cmap_b(glyph)         \
-     || glyph_is_cmap_c(glyph))
+     || glyph_is_cmap_c(glyph) \
+     || glyph_is_cmap_potioncloud(glyph))
 #endif
 #define glyph_is_cmap(glyph) \
     ((glyph) >= GLYPH_CMAP_STONE_OFF \
-     && (glyph) < (GLYPH_CMAP_C_OFF + ((S_goodpos - S_digbeam) + 1)))
+     && (glyph) < (GLYPH_POTIONCLOUD_OFF + POT_WATER - POT_GAIN_ABILITY))
 #define glyph_is_cmap_coatable(glyph) \
     ((glyph) >= GLYPH_CMAP_STONE_OFF \
      && (glyph) < (((S_brdnladder - S_ndoor) + 1) + GLYPH_CMAP_A_OFF))

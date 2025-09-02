@@ -610,6 +610,7 @@ do_improvisation(struct obj *instr)
         break;
     case FIRE_HORN:  /* Idem wand of fire */
     case FROST_HORN: /* Idem wand of cold */
+    case ELECTRIC_GUITAR:
         consume_obj_charge(instr, TRUE);
 
         if (!getdir((char *) 0)) {
@@ -619,16 +620,18 @@ do_improvisation(struct obj *instr)
             if ((damage = zapyourself(instr, TRUE)) != 0) {
                 char buf[BUFSZ];
 
-                Sprintf(buf, "using a magical horn on %sself", uhim());
+                Sprintf(buf, "using a magical instrument on %sself", uhim());
                 Hero_playnotes(obj_to_instr(&itmp), improvisation, 50);
                 losehp(damage, buf, KILLED_BY); /* fire or frost damage */
             }
         } else {
-            int type = BZ_OFS_AD((instr->otyp == FROST_HORN) ? AD_COLD
-                                                             : AD_FIRE);
+            int type = BZ_OFS_AD((instr->otyp == FROST_HORN) ? AD_COLD :
+                                    (instr->otyp == ELECTRIC_GUITAR) ?
+                                                        AD_ELEC : AD_FIRE);
 
             if (!Blind)
-                pline("A %s blasts out of the horn!", flash_str(type, FALSE));
+                pline("A %s blasts out of the %s!", flash_str(type, FALSE),
+                        instr->otyp == ELECTRIC_GUITAR ? "guitar" : "horn");
             Hero_playnotes(obj_to_instr(&itmp), improvisation, 50);
             gc.current_wand = instr;
             ubuzz(BZ_U_WAND(type), rn1(6, 6));
@@ -683,6 +686,14 @@ do_improvisation(struct obj *instr)
         Hero_playnotes(obj_to_instr(&itmp), improvisation, 50);
         if (do_spec)
             calm_nymphs(u.ulevel * 3);
+        exercise(A_DEX, TRUE);
+        break;
+    case ACOUSTIC_GUITAR:
+        if (!Deaf)
+            pline("%s produces a sublime chord.", Yname2(instr));
+        else
+            You_feel("like a rock star.");
+        Hero_playnotes(obj_to_instr(&itmp), improvisation, 50);
         exercise(A_DEX, TRUE);
         break;
     case DRUM_OF_EARTHQUAKE: /* create several pits */
@@ -923,9 +934,11 @@ obj_to_instr(struct obj *obj SOUNDLIBONLY) {
             ret_instr = ins_trumpet;
             break;
         case WOODEN_HARP:
+        case ACOUSTIC_GUITAR:
             ret_instr = ins_orchestral_harp;
             break;
         case MAGIC_HARP:
+        case ELECTRIC_GUITAR:
             ret_instr = ins_cello;
             break;
         case BELL:

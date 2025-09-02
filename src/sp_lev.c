@@ -2767,6 +2767,7 @@ fill_special_room(struct mkroom *croom)
         case BEEHIVE:
         case ANTHOLE:
         case BARRACKS:
+        case SCILAB:
             fill_zoo(croom);
             break;
         case DELPHI:
@@ -2798,6 +2799,9 @@ fill_special_room(struct mkroom *croom)
         break;
     case SWAMP:
         svl.level.flags.has_swamp = TRUE;
+        break;
+    case SCILAB:
+        svl.level.flags.has_scilab = TRUE;
         break;
     }
 }
@@ -2954,7 +2958,8 @@ fill_empty_maze(void)
         }
         for (x = rn2(2); x; x--) {
             maze1xy(&mm, DRY);
-            (void) makemon(&mons[PM_MINOTAUR], mm.x, mm.y, NO_MM_FLAGS);
+            if (!Is_magicmaze(&u.uz))
+                (void) makemon(&mons[PM_MINOTAUR], mm.x, mm.y, NO_MM_FLAGS);
         }
         for (x = rnd((int) (12 * mapfact) / 100); x; x--) {
             maze1xy(&mm, DRY);
@@ -3812,6 +3817,8 @@ lspo_level_flags(lua_State *L)
             svl.level.flags.fumaroles = 1;
         else if (!strcmpi(s, "stormy"))
             svl.level.flags.stormy = 1;
+        else if (!strcmpi(s, "outdoors"))
+            svl.level.flags.outdoors = 1;
         else {
             char buf[BUFSZ];
 
@@ -3918,7 +3925,7 @@ lspo_engraving(lua_State *L)
         ecoord = SP_COORD_PACK(x, y);
 
     get_location_coord(&x, &y, DRY, gc.coder->croom, ecoord);
-    make_engr_at(x, y, txt, 0L, etyp);
+    make_engr_at(x, y, txt, NULL, 0L, etyp);
     Free(txt);
     ep = engr_at(x, y);
     if (ep) {
@@ -3963,6 +3970,7 @@ static const struct {
     { "delphi", DELPHI },
     { "temple", TEMPLE },
     { "anthole", ANTHOLE },
+    { "laboratory", SCILAB },
     { "cocknest", COCKNEST },
     { "leprehall", LEPREHALL },
     { "shop", SHOPBASE },
@@ -4895,6 +4903,7 @@ lspo_feature(lua_State *L)
     default:
         break;
     case FOUNTAIN:
+        l_table_getset_feature_flag(L, x, y, "frozen", F_FROZEN);
         l_table_getset_feature_flag(L, x, y, "looted", F_LOOTED);
         l_table_getset_feature_flag(L, x, y, "warned", F_WARNED);
         break;
@@ -4945,7 +4954,7 @@ lspo_gas_cloud(lua_State *L)
         damage = get_table_int_opt(L, "damage", 0);
         ttl = get_table_int_opt(L, "ttl", -2);
         if (!sel) {
-            reg = create_gas_cloud(x, y, 1, damage);
+            reg = create_gas_cloud(x, y, 1, 0, damage);
         } else
             reg = create_gas_cloud_selection(sel, damage);
         if (ttl > -2)
@@ -5051,6 +5060,10 @@ lspo_replace_terrain(lua_State *L)
     lua_Integer x1, y1, x2, y2;
     int chance;
     int tolit;
+    int coat_type = 0;
+    char *coat_str, *mon_str, *obj_str;
+    int gender = NEUTRAL;
+    int montype = 0, objtype = 0;
     NhRect rect = cg.zeroNhRect;
 
     create_des_coder();
@@ -5058,6 +5071,22 @@ lspo_replace_terrain(lua_State *L)
     lcheck_param_table(L);
 
     totyp = get_table_mapchr(L, "toterrain");
+
+    coat_str = get_table_str_opt(L, "coat", NULL);
+    mon_str = get_table_str_opt(L, "montype", NULL);
+    obj_str = get_table_str_opt(L, "objtype", NULL);
+    if (mon_str)
+        montype = find_montype(L, mon_str, &gender);
+    if (obj_str)
+        objtype = find_objtype(L, obj_str);
+    if (coat_str) {
+        for (int i = 0; i < NUM_COATINGS; i++) {
+            if (!strcmp(all_coatings[i].name, coat_str)) {
+                coat_type = all_coatings[i].val;
+                break;
+            }
+        }
+    }
 
     if (totyp >= MAX_TYPE)
         return 0;
@@ -5122,8 +5151,11 @@ lspo_replace_terrain(lua_State *L)
                 } else {
                     if (((fromtyp == MATCH_WALL && IS_STWALL(levl[x][y].typ))
                          || levl[x][y].typ == fromtyp)
-                        && rn2(100) < chance)
+                        && rn2(100) < chance) {
+                        if (coat_type)
+                            (void) add_coating(x, y, coat_type, montype ? montype : objtype);
                         (void) set_levltyp_lit(x, y, totyp, tolit);
+                    }
                 }
             }
 

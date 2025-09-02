@@ -35,21 +35,24 @@ cost(struct obj *otmp)
     case SCR_PUNISHMENT:
         return 10;
     case SCR_CONFUSE_MONSTER:
+    case SCR_CONTROL_WEATHER:
         return 12;
     case SCR_IDENTIFY:
         return 14;
-    case SCR_ENCHANT_ARMOR:
     case SCR_REMOVE_CURSE:
-    case SCR_ENCHANT_WEAPON:
     case SCR_CHARGING:
         return 16;
     case SCR_SCARE_MONSTER:
     case SCR_STINKING_CLOUD:
     case SCR_TAMING:
     case SCR_TELEPORTATION:
+    case SCR_MAZE:
         return 20;
     case SCR_GENOCIDE:
         return 30;
+    case SCR_ENCHANT_ARMOR:
+    case SCR_ENCHANT_WEAPON:
+        return 40;
     case SCR_BLANK_PAPER:
     default:
         impossible("You can't write such a weird scroll!");
@@ -129,7 +132,7 @@ dowrite(struct obj *pen)
         return ECMD_CANCEL;
     /* can't write on a novel (unless/until it's been converted into a blank
        spellbook), but we want messages saying so to avoid "spellbook" */
-    typeword = (paper->otyp == SPE_NOVEL) ? "book"
+    typeword = (paper->otyp == SPE_NOVEL || paper->otyp == SPE_BESTIARY) ? "book"
                : (paper->oclass == SPBOOK_CLASS) ? "spellbook"
                  : "scroll";
     if (Blind) {

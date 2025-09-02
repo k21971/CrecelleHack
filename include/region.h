@@ -29,6 +29,13 @@ typedef boolean (*callback_proc)(genericptr_t, genericptr_t);
  *       to reflect the changes.
  */
 
+struct region_arg {
+    int damage;
+    int otyp;
+    boolean blessed;
+    boolean cursed;
+};
+
 typedef struct {
     NhRect bounding_box;   /* Bounding box of the region */
     NhRect *rects;         /* Rectangles composing the region */
@@ -57,9 +64,9 @@ typedef struct {
     /* Should probably do the same thing about objects */
 
     boolean visible;       /* Is the region visible ? */
+    boolean blocking;      /* Does the region block sight? */
     int glyph;             /* Which glyph to use if visible */
-    anything arg;          /* Optional user argument (Ex: strength of
-                            * force field, damage of a fire zone, ...*/
+    struct region_arg arg; /* user arguments (force field strength, fire zone damage, etc.)*/
 } NhRegion;
 
 #endif /* REGION_H */

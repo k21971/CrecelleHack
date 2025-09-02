@@ -330,6 +330,7 @@ mquaffmsg(struct monst *mtmp, struct obj *otmp)
 #define MUSE_COAT_ASHES 21
 #define MUSE_POT_BLOOD 22
 #define MUSE_COAT_BLOOD 23
+#define MUSE_SCR_MAZE 24
 /*
 #define MUSE_INNATE_TPT 9999
  * We cannot use this.  Since monsters get unlimited teleportation, if they
@@ -721,6 +722,14 @@ find_defensive(struct monst *mtmp, boolean tryescape)
                 gm.m.has_defense = MUSE_SCR_TELEPORTATION;
             }
         }
+        nomore(MUSE_SCR_MAZE);
+        if (obj->otyp == SCR_MAZE && mtmp->mcansee
+            && haseyes(mtmp->data)
+            && (!is_rider(mtmp->data) || (!(mtmp->isshk && inhishop(mtmp))
+                                 && !mtmp->isgd && !mtmp->ispriest))) {
+            gm.m.defensive = obj;
+            gm.m.has_defense = MUSE_SCR_MAZE;
+        }
 
         if (mtmp->data != &mons[PM_PESTILENCE]) {
             nomore(MUSE_POT_FULL_HEALING);
@@ -933,6 +942,23 @@ use_defensive(struct monst *mtmp)
         if (otmp->dknown && iflags.last_msg != PLNMSG_enum)
             trycall(otmp);
         /* already removed from mtmp->minvent so not 'm_useup(mtmp, otmp)' */
+        obfree(otmp, (struct obj *) 0);
+        return 2;
+    }
+    case MUSE_SCR_MAZE: {
+        if (!otmp)
+            panic(MissingDefensiveItem, "scroll of maze");
+        if (mtmp->isshk || mtmp->isgd || mtmp->ispriest)
+            return 2;
+        m_flee(mtmp);
+        if (otmp->quan > 1L)
+            otmp = splitobj(otmp, 1L);
+        extract_from_minvent(mtmp, otmp, FALSE, FALSE);
+        iflags.last_msg = PLNMSG_enum;
+        mreadmsg(mtmp, otmp);
+        pline_mon(mtmp, "Spectral tendrils drag %s into another reality!", mon_nam(mtmp));
+            migrate_to_level(mtmp, ledger_no(&maze_level), MIGR_RANDOM,
+                                (coord *) 0);
         obfree(otmp, (struct obj *) 0);
         return 2;
     }
@@ -1340,8 +1366,12 @@ rnd_defensive_item(struct monst *mtmp)
 #define MUSE_POT_SLEEPING 16
 #define MUSE_SCR_EARTH 17
 #define MUSE_CAMERA 18
+#define MUSE_POT_HAZARDOUS_WASTE 19
 /*#define MUSE_WAN_UNDEAD_TURNING 20*/ /* also a defensive item so don't
                                      * redefine; nonconsecutive value is ok */
+#define MUSE_FLOOR_ALCHEMY 21
+#define MUSE_SCR_MAZE_OFFENSIVE 22
+#define MUSE_WAN_WATER 23
 
 staticfn boolean
 linedup_chk_corpse(coordxy x, coordxy y)
@@ -1533,6 +1563,11 @@ find_offensive(struct monst *mtmp)
             gm.m.offensive = obj;
             gm.m.has_offense = MUSE_WAN_STRIKING;
         }
+        nomore(MUSE_WAN_WATER);
+        if (obj->otyp == WAN_WATER && obj->spe > 0) {
+            gm.m.offensive = obj;
+            gm.m.has_offense = MUSE_WAN_WATER;
+        }
         nomore(MUSE_WAN_TELEPORTATION);
         if (obj->otyp == WAN_TELEPORTATION && obj->spe > 0
             /* don't give controlled hero a free teleport */
@@ -1551,6 +1586,19 @@ find_offensive(struct monst *mtmp)
         if (obj->otyp == POT_PARALYSIS && gm.multi >= 0) {
             gm.m.offensive = obj;
             gm.m.has_offense = MUSE_POT_PARALYSIS;
+        }
+        nomore(MUSE_POT_HAZARDOUS_WASTE);
+        if (obj->otyp == POT_HAZARDOUS_WASTE) {
+            gm.m.offensive = obj;
+            gm.m.has_offense = MUSE_POT_HAZARDOUS_WASTE;
+        }
+        nomore(MUSE_FLOOR_ALCHEMY);
+        if (obj->otyp >= POT_GAIN_ABILITY && obj->otyp <= POT_OIL
+            && has_coating(u.ux, u.uy, COAT_POTION)
+            && levl[u.ux][u.uy].pindex != POT_WATER
+            && (levl[u.ux][u.uy].pindex == POT_HAZARDOUS_WASTE || !rn2(10))) {
+            gm.m.offensive = obj;
+            gm.m.has_offense = MUSE_FLOOR_ALCHEMY;
         }
         nomore(MUSE_POT_BLINDNESS);
         if (obj->otyp == POT_BLINDNESS && !attacktype(mtmp->data, AT_GAZE)) {
@@ -1599,6 +1647,13 @@ find_offensive(struct monst *mtmp)
             && obj->spe > 0 && !rn2(6)) {
             gm.m.offensive = obj;
             gm.m.has_offense = MUSE_CAMERA;
+        }
+        nomore(MUSE_SCR_MAZE_OFFENSIVE);
+        if (obj->otyp == SCR_MAZE && !Blind && !In_magicmaze(&u.uz)
+            && !obj->cursed && !rn2(10)
+            && dist2(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy) <= 2) {
+            gm.m.offensive = obj;
+            gm.m.has_offense = MUSE_SCR_MAZE_OFFENSIVE;
         }
 #if 0
         nomore(MUSE_SCR_FIRE);
@@ -1674,6 +1729,33 @@ mbhitm(struct monst *mtmp, struct obj *otmp)
         if (learnit && gz.zap_oseen && (hits_you
                                         || cansee(mtmp->mx, mtmp->my)))
             makeknown(WAN_STRIKING);
+        break;
+    case WAN_WATER:
+        reveal_invis = TRUE;
+        if (hits_you) {
+            if (rnd(20) < 10 + u.uac) {
+                pline_The("jet of %s hits you!", hliquid("water"));
+                tmp = d(2, 12);
+                if (Half_spell_damage)
+                    tmp = (tmp + 1) / 2;
+                losehp(tmp, "jet of water", KILLED_BY_AN);
+                learnit = TRUE;
+            } else {
+                pline_The("jet of %s misses you.", hliquid("water"));
+            }
+            stop_occupation();
+            nomul(0);
+        } else if (rnd(20) < 10 + find_mac(mtmp)) {
+            tmp = d(2, 12);
+            hit("jet of water", mtmp, exclam(tmp));
+            (void) resist(mtmp, otmp->oclass, tmp, TELL);
+            learnit = TRUE;
+        } else {
+            miss("jet of water", mtmp);
+        }
+        if (learnit && gz.zap_oseen && (hits_you
+                                        || cansee(mtmp->mx, mtmp->my)))
+            makeknown(WAN_WATER);
         break;
     case WAN_TELEPORTATION:
         if (hits_you) {
@@ -1816,6 +1898,7 @@ mbhit(
             case WAN_OPENING:
             case WAN_LOCKING:
             case WAN_STRIKING:
+            case WAN_WATER:
                 if (doorlock(obj, gb.bhitpos.x, gb.bhitpos.y)) {
                     if (gz.zap_oseen)
                         makeknown(otyp);
@@ -1847,6 +1930,7 @@ use_offensive(struct monst *mtmp)
     int i;
     struct obj *otmp = gm.m.offensive;
     boolean oseen;
+    int intentional_miss = 0;
 
     /* offensive potions are not drunk, they're thrown */
     if (otmp->oclass != POTION_CLASS && (i = precheck(mtmp, otmp)) != 0)
@@ -1890,6 +1974,7 @@ use_offensive(struct monst *mtmp)
     case MUSE_WAN_TELEPORTATION:
     case MUSE_WAN_UNDEAD_TURNING:
     case MUSE_WAN_STRIKING:
+    case MUSE_WAN_WATER:
         gz.zap_oseen = oseen;
         mzapwand(mtmp, otmp, FALSE);
         gm.m_using = TRUE;
@@ -1962,6 +2047,11 @@ use_offensive(struct monst *mtmp)
         otmp->spe--;
         return 1;
     } /* case MUSE_CAMERA */
+    case MUSE_SCR_MAZE_OFFENSIVE: {
+        mreadmsg(mtmp, otmp);
+        player_to_magic_maze();
+        return 1;
+    }
 #if 0
     case MUSE_SCR_FIRE: {
         boolean vis = cansee(mtmp->mx, mtmp->my);
@@ -2011,11 +2101,16 @@ use_offensive(struct monst *mtmp)
         return 2;
     }
 #endif /* 0 */
+    case MUSE_FLOOR_ALCHEMY:
+        intentional_miss = 1;
+        FALLTHROUGH;
+        /* FALLTHRU */
     case MUSE_POT_PARALYSIS:
     case MUSE_POT_BLINDNESS:
     case MUSE_POT_CONFUSION:
     case MUSE_POT_SLEEPING:
     case MUSE_POT_ACID:
+    case MUSE_POT_HAZARDOUS_WASTE:
         /* Note: this setting of dknown doesn't suffice.  A monster
          * which is out of sight might throw and it hits something _in_
          * sight, a problem not existing with wands because wand rays
@@ -2030,7 +2125,7 @@ use_offensive(struct monst *mtmp)
             verbalize("Fire in the hole!");
         m_throw(mtmp, mtmp->mx, mtmp->my, sgn(mtmp->mux - mtmp->mx),
                 sgn(mtmp->muy - mtmp->my),
-                distmin(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy), otmp);
+                distmin(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy) - intentional_miss, otmp);
         return 2;
     case 0:
         return 0; /* i.e. an exploded wand */
@@ -2060,11 +2155,13 @@ rnd_offensive_item(struct monst *mtmp)
         if (hard_helmet(mtmp_helmet) || amorphous(pm)
             || passes_walls(pm) || noncorporeal(pm) || unsolid(pm))
             return SCR_EARTH;
+        if (is_roguish(pm))
+            return POT_SICKNESS;
     }
     FALLTHROUGH;
     /* FALLTHRU */
     case 1:
-        return WAN_STRIKING;
+        return ((difficulty < 8 || rn2(difficulty) < 6)) ? WAN_STRIKING : WAN_WATER;
     case 2:
         return POT_ACID;
     case 3:
@@ -2076,8 +2173,9 @@ rnd_offensive_item(struct monst *mtmp)
     case 6:
         return POT_PARALYSIS;
     case 7:
-    case 8:
         return WAN_MAGIC_MISSILE;
+    case 8:
+        return POT_HAZARDOUS_WASTE;
     case 9:
         return WAN_SLEEP;
     case 10:
@@ -2102,6 +2200,8 @@ rnd_offensive_item(struct monst *mtmp)
 #define MUSE_POT_POLYMORPH 9
 #define MUSE_BAG 10
 #define MUSE_GREASE 11
+#define MUSE_DIP_WEAPON 12
+#define MUSE_BURY_BONES 13
 
 boolean
 find_misc(struct monst *mtmp)
@@ -2114,6 +2214,7 @@ find_misc(struct monst *mtmp)
     int pmidx = NON_PM;
     boolean immobile = (mdat->mmove == 0);
     boolean stuck = (mtmp == u.ustuck);
+    struct obj *mwep = MON_WEP(mtmp);
 
     gm.m.misc = (struct obj *) 0;
     gm.m.has_misc = 0;
@@ -2220,6 +2321,21 @@ find_misc(struct monst *mtmp)
                         }
                     }
                 }
+        }
+        nomore(MUSE_DIP_WEAPON);
+        if ((mtmp->data != &mons[PM_PESTILENCE] && obj->otyp == POT_SICKNESS
+                && mwep && !mwep->opoisoned && is_poisonable(mwep))
+            ||  (mwep && mwep->cursed && obj->otyp == POT_WATER && obj->blessed)) {
+                gm.m.misc = obj;
+                gm.m.has_misc = MUSE_DIP_WEAPON;
+        }
+        nomore(MUSE_BURY_BONES);
+        if (likes_bones(mtmp->data)
+            && mtmp->data != &mons[PM_SKELETON]
+            && objects[obj->otyp].oc_material == BONE
+            && IS_ROOM(levl[mtmp->mx][mtmp->my].typ)) {
+            gm.m.misc = obj;
+            gm.m.has_misc = MUSE_BURY_BONES;
         }
         nomore(MUSE_WAN_MAKE_INVISIBLE);
         if (obj->otyp == WAN_MAKE_INVISIBLE && obj->spe > 0 && !mtmp->minvis
@@ -2563,6 +2679,23 @@ use_misc(struct monst *mtmp)
         if (!otmp)
             panic(MissingMiscellaneousItem, "container");
         return mloot_container(mtmp, otmp, vismon);
+    case MUSE_DIP_WEAPON:
+        otmp2 = MON_WEP(mtmp);
+        if (!MON_WEP(mtmp))
+            panic("mon attempting to poison a nonexistent weapon?");
+        if (canseemon(mtmp)) {
+            pline_mon(mtmp, "%s dips %s in %s.", Monnam(mtmp),
+                        an(xname(otmp2)), an(xname(otmp)));
+        }
+        if (otmp->otyp == POT_SICKNESS)
+            otmp2->opoisoned = 1;
+        else if (otmp->otyp == POT_WATER)
+            otmp2->cursed = 0;
+        m_useup(mtmp, otmp);
+        return 0;
+    case MUSE_BURY_BONES:
+        mon_bury_obj(mtmp, otmp);
+        return 0;
     case MUSE_GREASE:
         for (otmp2 = mtmp->minvent; otmp2; otmp2 = otmp2->nobj) {
             if ((otmp2->owornmask & mtmp->misc_worn_check) && !otmp2->greased) {
@@ -2751,6 +2884,8 @@ searches_for_item(struct monst *mon, struct obj *obj)
                           && !attacktype(mon->data, AT_GAZE));
     if (typ == WAN_SPEED_MONSTER || typ == POT_SPEED)
         return (boolean) (mon->mspeed != MFAST);
+    if (objects[obj->otyp].oc_material == BONE)
+            return (likes_bones(mon->data));
 
     switch (obj->oclass) {
     case WAND_CLASS:
@@ -2762,6 +2897,7 @@ searches_for_item(struct monst *mon, struct obj *obj)
             return (boolean) (mons[monsndx(mon->data)].difficulty < 6);
         if (objects[typ].oc_dir == RAY || typ == WAN_STRIKING
             || typ == WAN_UNDEAD_TURNING
+            || typ == WAN_WATER
             || typ == WAN_TELEPORTATION || typ == WAN_CREATE_MONSTER)
             return TRUE;
         break;
@@ -2769,22 +2905,26 @@ searches_for_item(struct monst *mon, struct obj *obj)
         if (typ == POT_HEALING || typ == POT_EXTRA_HEALING
             || typ == POT_FULL_HEALING || typ == POT_POLYMORPH
             || typ == POT_GAIN_LEVEL || typ == POT_PARALYSIS
-            || typ == POT_SLEEPING || typ == POT_ACID || typ == POT_CONFUSION)
+            || typ == POT_SLEEPING || typ == POT_ACID || typ == POT_CONFUSION
+            || typ == POT_SICKNESS
+            || typ == POT_HAZARDOUS_WASTE)
             return TRUE;
         if (typ == POT_BLINDNESS && !attacktype(mon->data, AT_GAZE))
+            return TRUE;
+        if (typ == POT_WATER && obj->blessed)
             return TRUE;
         if (typ == POT_BLOOD && is_vampire(mon->data))
             return TRUE;
         break;
     case SCROLL_CLASS:
         if (typ == SCR_TELEPORTATION || typ == SCR_CREATE_MONSTER
-            || typ == SCR_EARTH || typ == SCR_FIRE)
+            || typ == SCR_EARTH || typ == SCR_FIRE || typ == SCR_MAZE)
             return TRUE;
         break;
     case AMULET_CLASS:
         if (typ == AMULET_OF_LIFE_SAVING)
             return (boolean) !(nonliving(mon->data) || is_vampshifter(mon));
-        if (typ == AMULET_OF_REFLECTION || typ == AMULET_OF_GUARDING)
+        if (typ == AMULET_OF_REFLECTION || typ == AMULET_OF_GUARDING || typ == AMULET_OF_CHANGE)
             return TRUE;
         break;
     case TOOL_CLASS:
@@ -2800,6 +2940,8 @@ searches_for_item(struct monst *mon, struct obj *obj)
             return TRUE;
         if (typ == EXPENSIVE_CAMERA || typ == CAN_OF_GREASE)
             return (obj->spe > 0);
+        if (is_glasses(obj) && typ != LENSES)
+            return TRUE;
         break;
     case FOOD_CLASS:
         if (typ == CORPSE)
@@ -2846,6 +2988,13 @@ mon_reflects(struct monst *mon, const char *str)
             makeknown(AMULET_OF_REFLECTION);
         }
         return TRUE;
+    } else if ((orefl = which_armor(mon, WORN_BLINDF))
+                && orefl->otyp == MIRRORED_GLASSES) {
+        if (str) {
+            pline(str, s_suffix(mon_nam(mon)), "glasses");
+            makeknown(MIRRORED_GLASSES);
+        }
+        return TRUE;
     } else if ((orefl = which_armor(mon, W_ARM))
                && (orefl->otyp == SILVER_DRAGON_SCALES
                    || orefl->otyp == SILVER_DRAGON_SCALE_MAIL)) {
@@ -2886,6 +3035,12 @@ ureflects(const char *fmt, const char *str)
     } else if (EReflecting & W_ARM) {
         if (fmt && str)
             pline(fmt, str, uskin ? "luster" : "armor");
+        return TRUE;
+    } else if (EReflecting & W_TOOL) {
+        if (fmt && str) {
+            pline(fmt, str, "glasses");
+            makeknown(MIRRORED_GLASSES);
+        }
         return TRUE;
     } else if (gy.youmonst.data == &mons[PM_SILVER_DRAGON]) {
         if (fmt && str)
@@ -3206,7 +3361,7 @@ muse_unslime(
          * Monsters don't start with oil and don't actively pick up oil
          * so this may never occur in a real game.  (Possible though;
          * nymph can steal potions of oil; shapechanger could take on
-         * nymph form or vacuum up stuff as a g.cube and then eventually
+         * nymph form or vacuum up stuff as a gel.cube and then eventually
          * engage with a green slime.)
          */
 

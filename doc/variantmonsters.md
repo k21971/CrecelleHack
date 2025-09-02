@@ -80,6 +80,7 @@
 - **Scrolem**: Scrolems are similar to paper golems, but are instead made up of
   scrolls. They are capable of reading the scrolls on their body, spawning
   with several scrolls in their inventory.
+- **Salt Golem**: Soaks up liquids as it moves.
 
 # Demons (&)
 - **Shadow Fiend**: Shadow fiends are fast, insubstantial demons. They have the

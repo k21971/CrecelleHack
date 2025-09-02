@@ -179,11 +179,15 @@ themeroom_fills = {
                      "samurai", "rogue", "ranger", "priestess",
                      "priest", "monk", "knight", "healer",
                      "cavewoman", "caveman", "barbarian",
-                     "archeologist", "wrestler" };
+                     "archeologist", "grappler" };
          local idx = math.random(#mon);
          for i = 1, d(5,5) do
             if (percent(10)) then idx = math.random(#mon); end
-            des.object({ id = "corpse", montype = mon[idx] });
+            if (percent(50)) then
+               des.object({ id = "skeleton", montype = mon[idx] });
+            else
+               des.object({ id = "corpse", montype = mon[idx] });
+            end
          end
       end,
    },
@@ -430,7 +434,7 @@ themerooms = {
                                        shuffle(mons);
                                        des.monster({ class = mons[1], x=0,y=0, waiting = 1 });
                                     else
-                                       des.object({ id = "corpse", montype = "@", coord = {0,0} });
+                                       des.object({ id = "skeleton", montype = "@", coord = {0,0} });
                                     end
                                     if (percent(20)) then
                                        des.door({ state="secret", wall="all" });
@@ -1073,6 +1077,8 @@ function make_garden_walls(data)
    local sel = data.sel:grow();
    -- change walls to trees
    des.replace_terrain({ selection = sel, fromterrain="w", toterrain = "T" });
+   -- add grass to floor
+   des.replace_terrain({ selection = sel, fromterrain=".", toterrain = ".", coat = "grass" });
    -- update secret doors; attempting to change to AIR will set arboreal flag
    des.replace_terrain({ selection = sel, fromterrain="S", toterrain = "A" });
 end

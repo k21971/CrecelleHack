@@ -445,6 +445,8 @@ container_impact_dmg(
         if (objects[otmp->otyp].oc_material == GLASS
             && otmp->oclass != GEM_CLASS && !obj_resists(otmp, 33, 100)) {
             result = "shatter";
+        } else if (objects[otmp->otyp].oc_material == BLUEICE) {
+            result = "tinkling";
         } else if (otmp->otyp == EGG && !rn2(3)) {
             result = "cracking";
         }
@@ -1098,6 +1100,7 @@ kick_nondoor(coordxy x, coordxy y, int avrg_attrib)
         if (uarmf && rn2(3))
             if (water_damage(uarmf, "metal boots", TRUE) == ER_NOTHING) {
                 Your("boots get wet.");
+                make_dripping(rnd(5), POT_WATER, NON_PM);
                 /* could cause short-lived fumbling here */
             }
         exercise(A_DEX, TRUE);
@@ -1343,7 +1346,7 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
     tmp = P_SKILL(P_TRIPPING) - 1;
 
     if (magr == &gy.youmonst) {
-        You("attempt to trip %s.", Monnam(mdef));
+        You("attempt to trip %s.", mon_nam(mdef));
         display_nhwindow(WIN_MESSAGE, TRUE);
         trip_diff -= tmp;
         trip_diff += (magr->m_lev / 10);
@@ -1351,19 +1354,10 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
             trip_diff += 5;
         /* Make trip */
         if (trip_roll > trip_diff) {
-            newsym(mdef->mx, mdef->my);
-            pline_mon(mdef, "%s is knocked to the %s!",
-                    Monnam(mdef), surface(mdef->mx, mdef->my));
-            mdef->mprone = 1;
             setmangry(mdef, TRUE);
             if (mdef->mtame) abuse_dog(mdef);
-            mselftouch(mdef, "Falling, ", TRUE);
             use_skill(P_TRIPPING, 1);
-            if (!DEADMONSTER(mdef)) {
-                if (t_at(mdef->mx, mdef->my))
-                    (void) mintrap(mdef, FORCEBUNGLE);
-                /* TODO: TRIPPING DOWN STAIRS */
-            }
+            make_mon_prone(mdef);
         } else if (wep) {
             pline_mon(mdef, "%s avoids the sweep of %s.",
                 Monnam(mdef), the(xname(wep)));
@@ -1422,6 +1416,20 @@ make_prone(void) {
         newlevel.dnum = stway->tolev.dnum;
         newlevel.dlevel = stway->tolev.dlevel;
         schedule_goto(&newlevel, UTOTYPE_ATSTAIRS, (char *) 0, (char *) 0);
+    }
+}
+
+void
+make_mon_prone(struct monst *mdef) {
+    newsym(mdef->mx, mdef->my);
+    mdef->mprone = 1;
+    pline_mon(mdef, "%s is knocked to the %s!",
+            Monnam(mdef), surface(mdef->mx, mdef->my));
+    mselftouch(mdef, "Falling, ", TRUE);
+    if (!DEADMONSTER(mdef)) {
+        if (t_at(mdef->mx, mdef->my))
+            (void) mintrap(mdef, FORCEBUNGLE);
+        /* TODO: TRIPPING DOWN STAIRS */
     }
 }
 
@@ -1896,6 +1904,8 @@ ship_object(struct obj *otmp, coordxy x, coordxy y, boolean shop_floor_obj)
             if (otmp->otyp == MIRROR)
                 change_luck(-2);
             result = "crash";
+        } else if (objects[otmp->otyp].oc_material == ICE) {
+            result = "tinkling";
         } else {
             /* penalty for breaking eggs laid by you */
             if (otmp->otyp == EGG && otmp->spe && ismnum(otmp->corpsenm))
@@ -2149,8 +2159,10 @@ dograpple(void)
     struct monst *target;
     boolean touched = FALSE;
     char kbuf[BUFSZ];
-    if (u.usticker && P_SKILL(P_GRAPPLING) >= P_BASIC) {
-        return grapple_move(u.ustuck);
+    if (u.usticker) {
+        pline_mon(u.ustuck, "You stop grappling %s.", mon_nam(u.ustuck));
+        set_ustuck((struct monst *) 0);
+        return ECMD_CANCEL;
     } else if (u.usticker) {
         You("do not know any special moves.");
         return ECMD_CANCEL;
@@ -2211,170 +2223,6 @@ dograpple(void)
         }
     }
     return ECMD_TIME;
-}
-
-/* Display a menu and use some kind of grappling move */
-int grapple_move(struct monst *mon) {
-    winid menuwin;
-    anything any;
-    menu_item *selected;
-    int res, n, cost;
-    struct obj *otmp;
-
-    menuwin = create_nhwindow(NHW_MENU);
-    any = cg.zeroany;
-    start_menu(menuwin, MENU_BEHAVE_STANDARD);
-    add_menu_str(menuwin, "Which technique do you want to use?");
-    if (P_SKILL(P_GRAPPLING) >= P_BASIC) {
-        if (Role_if(PM_WRESTLER)) {
-            any.a_int = 1;
-            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Pummel", MENU_ITEMFLAGS_NONE);
-        }
-        any.a_int = 2;
-        add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Heel Hook", MENU_ITEMFLAGS_NONE);
-    }
-    if (P_SKILL(P_GRAPPLING) >= P_SKILLED) {
-        if (Role_if(PM_WRESTLER)) {
-            any.a_int = 3;
-            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Limb Lock", MENU_ITEMFLAGS_NONE);
-        }
-        any.a_int = 4;
-        add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Eye Gouge", MENU_ITEMFLAGS_NONE);
-    }
-    if (P_SKILL(P_GRAPPLING) >= P_EXPERT) {
-        any.a_int = 5;
-        add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Throw", MENU_ITEMFLAGS_NONE);
-    }
-    if (P_SKILL(P_GRAPPLING) >= P_MASTER) {
-        if (Role_if(PM_ELF)) {
-            any.a_int = 6;
-            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Sleeper Lock", MENU_ITEMFLAGS_NONE);
-        }
-        if (Role_if(PM_DWARF)) {
-            any.a_int = 7;
-            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Boat Murder", MENU_ITEMFLAGS_NONE);
-        }
-        if (Role_if(PM_ORC)) {
-            any.a_int = 8;
-            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Crimson Cradle", MENU_ITEMFLAGS_NONE);
-        }
-        if (Role_if(PM_GNOME)) {
-            any.a_int = 9;
-            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Tinker Trap", MENU_ITEMFLAGS_NONE);
-        }
-        if (Role_if(PM_HUMAN)) {
-            any.a_int = 10;
-            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Power Slam", MENU_ITEMFLAGS_NONE);
-        }
-    }
-    if (P_SKILL(P_GRAPPLING) >= P_GRAND_MASTER) {
-        if (u.ualign.type == A_CHAOTIC) {
-            any.a_int = 11;
-            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Soko Stunner", MENU_ITEMFLAGS_NONE);
-        } else if (u.ualign.type == A_NEUTRAL) {
-            any.a_int = 12;
-            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Yendorian's Elbow", MENU_ITEMFLAGS_NONE);
-        } else {
-            any.a_int = 13;
-            add_menu(menuwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "Heartless Angel", MENU_ITEMFLAGS_NONE);
-        }
-    }
-    end_menu(menuwin, "Special Techniques");
-    res = select_menu(menuwin, PICK_ONE, &selected);
-    destroy_nhwindow(menuwin);
-    if (res <= 0) return ECMD_CANCEL;
-    n = selected[res - 1].item.a_int;
-    if (n <= 2) cost = 5;
-    else if (n <=  4) cost = 10;
-    else if (n <= 5) cost = 15;
-    else if (n <= 10) cost = 20;
-    else cost = 30;
-    if (cost > u.uen) {
-        pline("Not enough energy!");
-        return ECMD_CANCEL;
-    } else {
-        u.uen -= cost;
-        disp.botl = TRUE;
-    }
-    switch (n) {
-        case 1:
-            You("pummel %s!", mon_nam(mon));
-            if (canseemon(mon))
-                pline("%s looks confused.", Monnam(mon));
-            mon->mconf = 1;
-            unstuck(mon);
-            break;
-        case 2:
-            You("take %s down!", mon_nam(mon));
-            mon->mprone = 1;
-            break;
-        case 3:
-            otmp = MON_WEP(mon);
-            if (otmp) {
-                You("force %s to drop %s weapon!", mon_nam(mon), mhis(mon));
-                obj_extract_self(otmp);
-                possibly_unwield(mon, FALSE);
-                setmnotwielded(mon, otmp);
-                obj_no_longer_held(otmp);
-                place_object(otmp, mon->mx, mon->my);
-                stackobj(otmp);
-            } else {
-                You("put pressure on %s.", mon_nam(mon));
-            }
-            break;
-        case 4:
-            if (haseyes(mon->data)) {
-                You("blind %s!", mon_nam(mon));
-                mon->mblinded = rn1(10, 10);
-            } else {
-                You("try to blind %s, but you can't find anything to gouge.", mon_nam(mon));
-            }
-            break;
-        case 5: {
-            int dx = sgn(mon->mx - u.ux);
-            int dy = sgn(mon->my - u.uy);
-            unstuck(mon);
-            You("throw %s!", mon_nam(mon));
-            mhurtle(mon, dx, dy, rn1(2, 3));
-            break;
-        } case 6:
-            if (resists_sleep(mon)) {
-                pline("%s resists the hold!", Monnam(mon));
-            } else {
-                You("put %s to sleep.", mon_nam(mon));
-                mon->msleeping = 1;
-            }
-            unstuck(mon);
-            break;
-        case 7:
-        case 8:
-        case 9:
-        case 10:
-            You("suplex %s!", mon_nam(mon));
-            maketrap(mon->mx, mon->my, PIT);
-            if (t_at(mon->mx, mon->my))
-                (void) mintrap(mon, FORCEBUNGLE);
-            break;
-        case 11:
-            You("hit %s with the Soko Stunner! %s is stunned!", mon_nam(mon), Monnam(mon));
-            mon->mstun = 1;
-            mon->mconf = 1;
-            mon->msleeping = 1;
-            break;
-        case 12:
-            urgent_pline("It's the most shocking move in the dungeon...");
-            urgent_pline("The Yendorian's Elbow!");
-            explode(u.ux, u.uy, -(WAN_LIGHTNING), d(30, 4), WAND_CLASS, EXPL_MAGICAL);
-            break;
-        case 13:
-            You("execute a brutal submission!");
-            pline("%s is about to die.", Monnam(mon));
-            mon->mhp = 1;
-            break;
-        default:
-            return ECMD_CANCEL;
-    }
-    return ECMD_OK;
 }
 
 /*dokick.c*/

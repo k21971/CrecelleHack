@@ -32,6 +32,8 @@ des.map([[
 -- Dungeon Description
 des.region(selection.area(00,00,14,19), "lit")
 des.region(selection.area(15,00,75,19), "unlit")
+-- Blood discussed in quest dialogue
+des.replace_terrain({ region={00,00, 14,19}, fromterrain=".", toterrain=".", coat="blood", montype="knight", chance=10 })
 -- Stairs
 des.stair("up", 03,08)
 -- Non diggable walls

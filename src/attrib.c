@@ -1,4 +1,4 @@
-/* NetHack 3.7	attrib.c	$NHDT-Date: 1726168587 2024/09/12 19:16:27 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.129 $ */
+/* NetHack 3.7	attrib.c	$NHDT-Date: 1754979443 2025/08/11 22:17:23 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.134 $ */
 /*      Copyright 1988, 1989, 1990, 1992, M. Stephenson           */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -86,7 +86,7 @@ static const struct innate {
   wiz_abil[] = { { 15, &(HWarning), "sensitive", "" },
                  { 17, &(HTeleport_control), "controlled", "uncontrolled" },
                  { 0, 0, 0, 0 } },
-  wre_abil[] = { { 5, &(HFast), "quick", "slow" },
+  grp_abil[] = { { 5, &(HFast), "quick", "slow" },
                  { 15, &(HStealth), "stealthy", "" },
                  { 0, 0, 0, 0 } },
 
@@ -704,7 +704,9 @@ init_attr_role_redist(int np, boolean addition)
     while ((addition ? (np > 0) : (np < 0)) && tryct < 100) {
         int i = rnd_attr();
 
-        if (i >= A_MAX || ABASE(i) >= ATTRMAX(i)) {
+        if (i >= A_MAX
+            || (addition ? (ABASE(i) >= ATTRMAX(i))
+                         : (ABASE(i) <= ATTRMIN(i)))) {
             tryct++;
             continue;
         }
@@ -802,7 +804,7 @@ role_abil(int r)
         { PM_SAMURAI, sam_abil },
         { PM_TOURIST, tou_abil },
         { PM_VALKYRIE, val_abil },
-        { PM_WRESTLER, wre_abil },
+        { PM_GRAPPLER, grp_abil },
         { PM_WIZARD, wiz_abil },
         { 0, 0 }
     };

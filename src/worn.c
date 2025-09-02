@@ -252,8 +252,7 @@ wearslot(struct obj *obj)
             res |= W_QUIVER;
         break;
     case TOOL_CLASS:
-        if (otyp == BLINDFOLD || otyp == TOWEL || otyp == LENSES
-            || otyp == SUNGLASSES)
+        if (otyp == BLINDFOLD || otyp == TOWEL || is_glasses(obj))
             res = W_TOOL; /* WORN_BLINDF */
         else if (is_weptool(obj) || otyp == TIN_OPENER)
             res = W_WEP | W_SWAPWEP;
@@ -718,6 +717,7 @@ m_dowear(struct monst *mon, boolean creation)
     if (!MON_WEP(mon) || !bimanual(MON_WEP(mon)))
         m_dowear_type(mon, W_ARMS, creation, FALSE);
     m_dowear_type(mon, W_ARMG, creation, FALSE);
+    m_dowear_type(mon, W_TOOL, creation, FALSE);
     if (!slithy(mon->data) && mon->data->mlet != S_CENTAUR)
         m_dowear_type(mon, W_ARMF, creation, FALSE);
     if (can_wear_armor)
@@ -760,7 +760,8 @@ m_dowear_type(
             if (obj->oclass != AMULET_CLASS
                 || (obj->otyp != AMULET_OF_LIFE_SAVING
                     && obj->otyp != AMULET_OF_REFLECTION
-                    && obj->otyp != AMULET_OF_GUARDING))
+                    && obj->otyp != AMULET_OF_GUARDING
+                    && obj->otyp != AMULET_OF_CHANGE))
                 continue;
             /* for 'best' to be non-Null, it must be an amulet of guarding;
                life-saving and reflection don't get here due to early return
@@ -816,6 +817,10 @@ m_dowear_type(
             if (!is_suit(obj))
                 continue;
             if (racialexception && (racial_exception(mon, obj) < 1))
+                continue;
+            break;
+        case W_TOOL:
+            if (!is_glasses(obj))
                 continue;
             break;
         }
@@ -930,6 +935,14 @@ m_dowear_type(
          *     pline("%s suddenly appears!", Amonnam(mon)); */
         }
     }
+    if (best->otyp == AMULET_OF_CHANGE) {
+        if (canseemon(mon)) {
+            pline("%s goes through a remarkable transformation!", Monnam(mon));
+            makeknown(obj->otyp);
+        }
+        mon->female = !mon->female;
+        m_useup(mon, obj);
+    }
 }
 #undef RACE_EXCEPTION
 
@@ -952,6 +965,8 @@ which_armor(struct monst *mon, long flag)
             return uarmf;
         case W_ARMU:
             return uarmu;
+        case W_TOOL:
+            return ublindf;
         default:
             impossible("bad flag in which_armor");
             return 0;

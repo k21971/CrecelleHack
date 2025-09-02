@@ -17,6 +17,7 @@
 
 #include "hack.h"
 
+#ifndef SFCTOOL
 staticfn boolean isbig(struct mkroom *);
 staticfn struct mkroom *pick_room(boolean);
 staticfn void mkshop(void), mkzoo(int), mkswamp(void);
@@ -24,9 +25,14 @@ staticfn struct monst *mk_zoo_thronemon(coordxy, coordxy);
 staticfn void mktemple(void);
 staticfn coord *shrine_pos(int);
 staticfn struct permonst *morguemon(void);
+staticfn struct permonst *scilabmon(void);
 staticfn struct permonst *squadmon(void);
+#endif /* SFCTOOL */
+
 staticfn void save_room(NHFILE *, struct mkroom *);
 staticfn void rest_room(NHFILE *, struct mkroom *);
+
+#ifndef SFCTOOL
 staticfn boolean invalid_shop_shape(struct mkroom *sroom);
 
 #define sq(x) ((x) * (x))
@@ -80,6 +86,9 @@ do_mkroom(int roomtype)
         case ANTHOLE:
             mkzoo(ANTHOLE);
             break;
+        case  SCILAB:
+            mkzoo(SCILAB);
+            break;
         default:
             impossible("Tried to make a room of type %d.", roomtype);
         }
@@ -119,6 +128,10 @@ mkshop(void)
             }
             if (*ep == 'a' || *ep == 'A') {
                 mkzoo(ANTHOLE);
+                return;
+            }
+            if (*ep == 's') {
+                mkzoo(SCILAB);
                 return;
             }
             if (*ep == 'c' || *ep == 'C') {
@@ -302,6 +315,7 @@ fill_zoo(struct mkroom *sroom)
  throne_placed:
         throne_mon = mk_zoo_thronemon(tx, ty);
         break;
+    case SCILAB:
     case BEEHIVE:
         tx = sroom->lx + (sroom->hx - sroom->lx + 1) / 2;
         ty = sroom->ly + (sroom->hy - sroom->ly + 1) / 2;
@@ -341,6 +355,15 @@ fill_zoo(struct mkroom *sroom)
             /* don't place monster on explicitly placed throne */
             if (type == COURT && IS_THRONE(levl[sx][sy].typ))
                 continue;
+            /* Laboratories are not as crowded */
+            if (type == SCILAB) {
+                if (rn2(5)) {
+                    int pot = POT_GAIN_ABILITY + rn2(POT_OIL - POT_GAIN_ABILITY);
+                    add_coating(sx, sy, COAT_POTION, pot);
+                }
+                if (rn2(3))
+                    continue;
+            }
             mon = makemon((type == COURT)
                            ? courtmon(throne_mon)
                            : (type == BARRACKS)
@@ -357,6 +380,8 @@ fill_zoo(struct mkroom *sroom)
                                              ? &mons[PM_COCKATRICE]
                                              : (type == ANTHOLE)
                                                  ? antholemon()
+                                                 : (type == SCILAB)
+                                                 ? scilabmon()
                                                  : (struct permonst *) 0,
                           sx, sy, MM_ASLEEP | MM_NOGRP);
             if (mon) {
@@ -394,7 +419,6 @@ fill_zoo(struct mkroom *sroom)
                     (void) mksobj_at(LUMP_OF_ROYAL_JELLY, sx, sy, TRUE,
                                      FALSE);
                 add_coating(sx, sy, COAT_HONEY, 0);
-                remove_coating(sx, sy, COAT_ALL);
                 break;
             case BARRACKS:
                 if (!rn2(20)) /* the payroll and some loot */
@@ -449,6 +473,10 @@ fill_zoo(struct mkroom *sroom)
         break;
     case BEEHIVE:
         svl.level.flags.has_beehive = 1;
+        break;
+    case SCILAB:
+        svl.level.flags.has_scilab = 1;
+        levl[tx][ty].typ = SINK;
         break;
     }
 }
@@ -527,6 +555,15 @@ antholemon(void)
 
     return ((svm.mvitals[mtyp].mvflags & G_GONE) ? (struct permonst *) 0
                                              : &mons[mtyp]);
+}
+
+struct permonst *
+scilabmon(void)
+{
+    if (rn2(5))
+        return mkclass(S_QUANTMECH, 0);
+    else
+        return &mons[PM_FLESH_GOLEM];
 }
 
 staticfn void
@@ -858,9 +895,7 @@ save_room(NHFILE *nhfp, struct mkroom *r)
      * of writing the whole structure. That is I should not write
      * the gs.subrooms pointers, but who cares ?
      */
-    if (nhfp->structlevel) {
-        bwrite(nhfp->fd, (genericptr_t) r, sizeof (struct mkroom));
-    }
+    Sfo_mkroom(nhfp, r, "room-mkroom");
     for (i = 0; i < r->nsubrooms; i++) {
         save_room(nhfp, r->sbrooms[i]);
     }
@@ -875,21 +910,18 @@ save_rooms(NHFILE *nhfp)
     short i;
 
     /* First, write the number of rooms */
-    if (nhfp->structlevel) {
-        bwrite(nhfp->fd, (genericptr_t) &svn.nroom, sizeof svn.nroom);
-    }
+    Sfo_int(nhfp, &svn.nroom, "room-nroom");
     for (i = 0; i < svn.nroom; i++)
         save_room(nhfp, &svr.rooms[i]);
 }
+#endif /* !SFCTOOL */
 
 staticfn void
 rest_room(NHFILE *nhfp, struct mkroom *r)
 {
     short i;
 
-    if (nhfp->structlevel) {
-        mread(nhfp->fd, (genericptr_t) r, sizeof (struct mkroom));
-    }
+    Sfi_mkroom(nhfp, r, "room-mkroom");
 
     for (i = 0; i < r->nsubrooms; i++) {
         r->sbrooms[i] = &gs.subrooms[gn.nsubroom];
@@ -907,9 +939,7 @@ rest_rooms(NHFILE *nhfp)
 {
     short i;
 
-    if (nhfp->structlevel) {
-        mread(nhfp->fd, (genericptr_t) &svn.nroom, sizeof svn.nroom);
-    }
+    Sfi_int(nhfp, &svn.nroom, "room-nroom");
 
     gn.nsubroom = 0;
     for (i = 0; i < svn.nroom; i++) {
@@ -920,6 +950,7 @@ rest_rooms(NHFILE *nhfp)
     gs.subrooms[gn.nsubroom].hx = -1;
 }
 
+#ifndef SFCTOOL
 /* convert a display symbol for terrain into topology type;
    used for remembered terrain when mimics pose as furniture */
 int
@@ -1108,5 +1139,6 @@ invalid_shop_shape(struct mkroom *sroom)
     }
     return FALSE;
 }
+#endif /* !SFCTOOL */
 
 /*mkroom.c*/

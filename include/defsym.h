@@ -161,7 +161,7 @@
     PCHAR( 53, '^',  S_bear_trap, "bear trap", HI_METAL)
     PCHAR( 54, '^',  S_land_mine, "land mine", CLR_RED)
     PCHAR( 55, '^',  S_rolling_boulder_trap, "rolling boulder trap", CLR_GRAY)
-    PCHAR( 56, '^',  S_sleeping_gas_trap, "sleeping gas trap", HI_ZAP)
+    PCHAR( 56, '^',  S_sleeping_gas_trap, "gas trap", HI_ZAP)
     PCHAR( 57, '^',  S_rust_trap, "rust trap", CLR_BLUE)
     PCHAR( 58, '^',  S_fire_trap, "fire trap", CLR_ORANGE)
     PCHAR( 59, '^',  S_pit, "pit", CLR_BLACK)
@@ -207,6 +207,7 @@
        default keystroke for getpos() to toggle goodpos glyphs on or off */
     PCHAR( 88, '$',  S_goodpos, "valid position", HI_ZAP)
     /* end cmap C */
+    PCHAR( 89, '#',  S_potioncloud, "potion vapors", CLR_BRIGHT_MAGENTA)
     /*                                                             */
     /* The 8 swallow symbols.  Do NOT separate.                    */
     /* To change order or add, see the function swallow_to_glyph() */
@@ -219,14 +220,14 @@
     /*      4 5 6                                                  */
     /*      7 8 9                                                  */
     /*                                                             */
-    PCHAR2(89, '/',  S_sw_tl, "swallow top left", "", CLR_GREEN)      /*1*/
-    PCHAR2(90, '-',  S_sw_tc, "swallow top center", "", CLR_GREEN)    /*2*/
-    PCHAR2(91, '\\', S_sw_tr, "swallow top right", "", CLR_GREEN)     /*3*/
-    PCHAR2(92, '|',  S_sw_ml, "swallow middle left", "", CLR_GREEN)   /*4*/
-    PCHAR2(93, '|',  S_sw_mr, "swallow middle right", "", CLR_GREEN)  /*6*/
-    PCHAR2(94, '\\', S_sw_bl, "swallow bottom left", "", CLR_GREEN)   /*7*/
-    PCHAR2(95, '-',  S_sw_bc, "swallow bottom center", "", CLR_GREEN) /*8*/
-    PCHAR2(96, '/',  S_sw_br, "swallow bottom right", "", CLR_GREEN)  /*9*/
+    PCHAR2(90, '/',  S_sw_tl, "swallow top left", "", CLR_GREEN)      /*1*/
+    PCHAR2(91, '-',  S_sw_tc, "swallow top center", "", CLR_GREEN)    /*2*/
+    PCHAR2(92, '\\', S_sw_tr, "swallow top right", "", CLR_GREEN)     /*3*/
+    PCHAR2(93, '|',  S_sw_ml, "swallow middle left", "", CLR_GREEN)   /*4*/
+    PCHAR2(94, '|',  S_sw_mr, "swallow middle right", "", CLR_GREEN)  /*6*/
+    PCHAR2(95, '\\', S_sw_bl, "swallow bottom left", "", CLR_GREEN)   /*7*/
+    PCHAR2(96, '-',  S_sw_bc, "swallow bottom center", "", CLR_GREEN) /*8*/
+    PCHAR2(97, '/',  S_sw_br, "swallow bottom right", "", CLR_GREEN)  /*9*/
     /*                                                             */
     /* explosion colors are changed by reset_glyphmap() to match   */
     /* the type of expl.                                           */
@@ -237,15 +238,15 @@
     /*      |@|                                                    */
     /*      \-/                                                    */
     /*                                                             */
-    PCHAR2(97, '/',  S_expl_tl, "explosion top left", "", CLR_ORANGE)
-    PCHAR2(98, '-',  S_expl_tc, "explosion top center", "", CLR_ORANGE)
-    PCHAR2(99, '\\', S_expl_tr, "explosion top right", "", CLR_ORANGE)
-    PCHAR2(100, '|',  S_expl_ml, "explosion middle left", "", CLR_ORANGE)
-    PCHAR2(101, ' ',  S_expl_mc, "explosion middle center", "", CLR_ORANGE)
-    PCHAR2(102, '|',  S_expl_mr, "explosion middle right", "", CLR_ORANGE)
-    PCHAR2(103, '\\', S_expl_bl, "explosion bottom left", "", CLR_ORANGE)
-    PCHAR2(104, '-', S_expl_bc, "explosion bottom center", "", CLR_ORANGE)
-    PCHAR2(105, '/', S_expl_br, "explosion bottom right", "", CLR_ORANGE)
+    PCHAR2(98, '/',  S_expl_tl, "explosion top left", "", CLR_ORANGE)
+    PCHAR2(99, '-',  S_expl_tc, "explosion top center", "", CLR_ORANGE)
+    PCHAR2(100, '\\', S_expl_tr, "explosion top right", "", CLR_ORANGE)
+    PCHAR2(101, '|',  S_expl_ml, "explosion middle left", "", CLR_ORANGE)
+    PCHAR2(102, ' ',  S_expl_mc, "explosion middle center", "", CLR_ORANGE)
+    PCHAR2(103, '|',  S_expl_mr, "explosion middle right", "", CLR_ORANGE)
+    PCHAR2(104, '\\', S_expl_bl, "explosion bottom left", "", CLR_ORANGE)
+    PCHAR2(105, '-', S_expl_bc, "explosion bottom center", "", CLR_ORANGE)
+    PCHAR2(106, '/', S_expl_br, "explosion bottom right", "", CLR_ORANGE)
 #undef PCHAR
 #undef PCHAR2
 #endif /* PCHAR_S_ENUM || PCHAR_PARSE || PCHAR_DRAWING || PCHAR_TILES
@@ -299,11 +300,11 @@
     MONSYM( 4, 'd', DOG, S_DOG, "dog or other canine")
     MONSYM( 5, 'e', EYE, S_EYE, "eye or sphere")
     MONSYM( 6, 'f', FELINE, S_FELINE, "cat or other feline")
-    MONSYM( 7, 'g', GREMLIN, S_GREMLIN, "gremlin")
+    MONSYM( 7, 'g', GREMLIN, S_GREMLIN, "grotesque")
     /* small humanoids: hobbit, dwarf */
     MONSYM( 8, 'h', HUMANOID, S_HUMANOID, "humanoid")
     /* minor demons */
-    MONSYM( 9, 'i', IMP, S_IMP, "imp or minor demon")
+    MONSYM( 9, 'i', IMP, S_IMP, "minor demon")
     MONSYM(10, 'j', JELLY, S_JELLY, "jelly")
     MONSYM(11, 'k', KOBOLD, S_KOBOLD, "kobold")
     MONSYM(12, 'l', LEPRECHAUN, S_LEPRECHAUN, "leprechaun")
@@ -315,17 +316,17 @@
     MONSYM(17, 'q', QUADRUPED, S_QUADRUPED, "quadruped")
     MONSYM(18, 'r', RODENT, S_RODENT, "rodent")
     MONSYM(19, 's', SPIDER, S_SPIDER, "arachnid or centipede")
-    MONSYM(20, 't', TRAPPER, S_TRAPPER, "trapper or lurker above")
+    MONSYM(20, 't', TRAPPER, S_TRAPPER, "ambusher")
     /* unicorn, horses */
-    MONSYM(21, 'u', UNICORN, S_UNICORN, "unicorn or horse")
+    MONSYM(21, 'u', UNICORN, S_UNICORN, "ungulate")
     MONSYM(22, 'v', VORTEX, S_VORTEX, "vortex")
     MONSYM(23, 'w', WORM, S_WORM, "worm")
-    MONSYM(24, 'x', XAN, S_XAN, "xan or other mythical/fantastic insect")
+    MONSYM(24, 'x', XAN, S_XAN, "fantastic insect")
     /* yellow light, black light */
     MONSYM(25, 'y', LIGHT, S_LIGHT, "light")
     MONSYM(26, 'z', ZRUTY, S_ZRUTY, "zruty")
     MONSYM(27, 'A', ANGEL, S_ANGEL, "angelic being")
-    MONSYM(28, 'B', BAT, S_BAT, "bat or bird")
+    MONSYM(28, 'B', BAT, S_BAT, "winged creature")
     MONSYM(29, 'C', CENTAUR, S_CENTAUR, "centaur")
     MONSYM(30, 'D', DRAGON, S_DRAGON, "dragon")
     /* elemental includes invisible stalker */
@@ -342,8 +343,8 @@
     MONSYM(40, 'N', NAGA, S_NAGA, "naga")
     MONSYM(41, 'O', OGRE, S_OGRE, "ogre")
     MONSYM(42, 'P', PUDDING, S_PUDDING, "pudding or ooze")
-    MONSYM(43, 'Q', QUANTMECH, S_QUANTMECH, "quantum mechanic")
-    MONSYM(44, 'R', RUSTMONST, S_RUSTMONST, "rust monster or disenchanter")
+    MONSYM(43, 'Q', QUANTMECH, S_QUANTMECH, "scientist")
+    MONSYM(44, 'R', RUSTMONST, S_RUSTMONST, "objevore")
     MONSYM(45, 'S', SNAKE, S_SNAKE, "snake")
     MONSYM(46, 'T', TROLL, S_TROLL, "troll")
     /* umber hulk */
@@ -357,10 +358,10 @@
     MONSYM(53, '@', HUMAN, S_HUMAN, "human or elf")
     /* space symbol*/
     MONSYM(54, ' ', GHOST, S_GHOST, "ghost")
-    MONSYM(55, '\'', GOLEM, S_GOLEM, "golem")
+    MONSYM(55, '\'', GOLEM, S_GOLEM, "construct")
     MONSYM(56, '&', DEMON, S_DEMON, "major demon")
     /* fish */
-    MONSYM(57, ';', EEL, S_EEL,  "sea monster")
+    MONSYM(57, ';', EEL, S_EEL,  "sea dweller")
     /* reptiles */
     MONSYM(58, ':', LIZARD, S_LIZARD, "lizard")
     MONSYM(59, '~', WORM_TAIL, S_WORM_TAIL, "long worm tail")
@@ -480,7 +481,7 @@
     OBJCLASS2(12, '$', COIN,   GOLD_SYM, S_coin, "coins", "pile of coins")
     OBJCLASS(13,  '*', GEM,    S_gem, "rocks", "gem or rock")
     OBJCLASS(14,  '`', ROCK,   S_rock, "large stones", "boulder or statue")
-    OBJCLASS(15,  ',', BOTTLE, S_bottle, "bottles", "bottle")
+    OBJCLASS(15,  '-', BOTTLE, S_bottle, "bottles", "bottle")
     OBJCLASS(16,  '0', BALL,   S_ball, "iron balls", "iron ball")
     OBJCLASS(17,  '_', CHAIN,  S_chain, "chains", "iron chain")
     OBJCLASS(18,  '.', VENOM,  S_venom, "venoms", "splash of venom")

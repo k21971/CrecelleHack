@@ -44,6 +44,9 @@ des.levregion({ type="stair-up", region={01,03,21,19}, region_islev=1,
 des.levregion({ type="stair-down", region={57,03,75,19}, region_islev=1,
 		exclude={00,01,36,17} })
 
+-- add some blood for a real massacre
+des.replace_terrain({ region={02,02, 34,15}, fromterrain=".", toterrain=".", coat="blood", montype="gnome", chance=5 })
+
 -- shame we can't make polluted fountains
 des.feature("fountain",16,09)
 des.feature("fountain",25,09)

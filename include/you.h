@@ -52,6 +52,9 @@ struct u_event {
     Bitfield(udemigod, 1);          /* killed the wiz */
     Bitfield(uvibrated, 1);         /* stepped on "vibrating square" */
     Bitfield(ascended, 1);          /* has offered the Amulet */
+
+    Bitfield(amulet_wish, 1);       /* has gained a wish from the Amulet */
+    /* 7 free bits */
 };
 
 
@@ -530,6 +533,7 @@ struct you {
     long ucleansed;          /* to record moves when player was cleansed */
     long usleep;             /* sleeping; monstermove you last started */
     int uinvault;
+    int udriptype;           /* type of liquid you are dripping */
     struct monst *ustuck;    /* engulfer or grabber, maybe grabbee if Upolyd */
     struct monst *usteed;    /* mount when riding */
     unsigned ustuck_mid;     /* u.ustuck->m_id, used during save/restore */

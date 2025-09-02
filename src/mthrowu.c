@@ -449,7 +449,7 @@ ohitmon(
             if (resists_ston(mtmp))
                 damage = 0;
         }
-        if (otmp->otyp == BOLAS) {
+        if (otmp->otyp == BANANA_PEEL) {
             mtmp->mprone = 1;
             use_skill(P_TRIPPING, 1);
         }
@@ -759,7 +759,7 @@ m_throw(
                         Your("%s %s.", eyes, vtense(eyes, "sting"));
                 }
             }
-            if (hitu && singleobj->otyp == BOLAS) {
+            if (hitu && singleobj->otyp == BANANA_PEEL) {
                 You("tumble to the %s!", surface(u.ux, u.uy));
                 make_prone();
             }
@@ -919,7 +919,7 @@ return_from_mtoss(
     }
     if (otmp) {
         if (hits_thrower) {
-            if (otmp->oartifact)
+            if (otmp->oartifact || otmp->booster)
                 (void) artifact_hit((struct monst *) 0, magr, otmp, &dmg, 0);
             magr->mhp -= dmg;
             if (DEADMONSTER(magr))
@@ -1511,8 +1511,7 @@ hits_bars(
         case TOOL_CLASS:
             hits = (obj_type != SKELETON_KEY && obj_type != LOCK_PICK
                     && obj_type != CREDIT_CARD && obj_type != TALLOW_CANDLE
-                    && obj_type != WAX_CANDLE && obj_type != LENSES
-                    && obj_type != SUNGLASSES
+                    && obj_type != WAX_CANDLE && !is_glasses(otmp)
                     && obj_type != TIN_WHISTLE && obj_type != MAGIC_WHISTLE);
             break;
         case ROCK_CLASS: /* includes boulder */

@@ -194,6 +194,9 @@ moveloop_core(void)
     if (iflags.sanity_check || iflags.debug_fuzzer)
         sanity_check();
 
+    if (svc.context.resume_wish)
+        makewish(); /* clears resume_wish */
+
     if (svc.context.move) {
         /* actual time passed */
         u.umovement -= NORMAL_SPEED;
@@ -447,6 +450,13 @@ moveloop_core(void)
     /****************************************/
 
     clear_splitobjs();
+
+    /* the Amulet of Yendor gives a wish when initially picked up */
+    if (u.uhave.amulet && !u.uevent.amulet_wish) {
+        u.uevent.amulet_wish = 1;
+        makewish();
+    }
+
     find_ac();
     if (!svc.context.mv || Blind) {
         /* redo monsters if hallu or wearing a helm of telepathy */
@@ -811,7 +821,7 @@ newgame(void)
 
     if (flags.legacy) {
         flush_screen(1);
-        com_pager("crecelle");
+        com_pager("crecelle_legacy");
     }
     
     adj_midbosses();
@@ -875,7 +885,6 @@ welcome(boolean new_game) /* false => restoring an old game */
     pline(new_game ? "%s %s, welcome to CrecelleHack.  You are a%s."
                    : "%s %s, the%s, welcome back to CrecelleHack.",
           Hello((struct monst *) 0), svp.plname, buf);
-    timechange_message(new_game);
 
     if (new_game) {
         /* guarantee that 'major' event category is never empty */

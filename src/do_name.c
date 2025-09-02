@@ -12,6 +12,8 @@ staticfn boolean alreadynamed(struct monst *, char *, char *) NONNULLPTRS;
 staticfn void do_oname(struct obj *) NONNULLARG1;
 staticfn char *docall_xname(struct obj *) NONNULLARG1;
 staticfn void namefloorobj(void);
+staticfn void namefloorliquid(void);
+staticfn const char *baby_name(struct monst *) NONNULLARG1;
 
 #define NUMMBUF 5
 
@@ -294,7 +296,7 @@ do_oname(struct obj *obj)
     short objtyp = STRANGE_OBJECT;
 
     /* Do this now because there's no point in even asking for a name */
-    if (obj->otyp == SPE_NOVEL) {
+    if (obj->otyp == SPE_NOVEL || obj->otyp == SPE_BESTIARY) {
         pline("%s already has a published name.", Ysimple_name2(obj));
         return;
     }
@@ -469,7 +471,7 @@ name_ok(struct obj *obj)
     if (!obj || obj->oclass == COIN_CLASS)
         return GETOBJ_EXCLUDE;
 
-    if (!obj->dknown || obj->oartifact || obj->otyp == SPE_NOVEL)
+    if (!obj->dknown || obj->oartifact || obj->otyp == SPE_NOVEL || obj->otyp == SPE_BESTIARY)
         return GETOBJ_DOWNPLAY;
 
     return GETOBJ_SUGGEST;
@@ -547,6 +549,10 @@ docallcmd(void)
     add_menu(win, &nul_glyphinfo, &any, abc ? 0 : any.a_char, 'l',
              ATR_NONE, clr, "record an annotation for the current level",
              MENU_ITEMFLAGS_NONE);
+    any.a_char = 't'; /* group accelerator ',' (or ':' instead?) */
+    add_menu(win, &nul_glyphinfo, &any, abc ? 0 : any.a_char, ',',
+             ATR_NONE, clr, "the type of a tonic upon the floor",
+             MENU_ITEMFLAGS_NONE);
     end_menu(win, "What do you want to name?");
     if (select_menu(win, PICK_ONE, &pick_list) > 0) {
         ch = pick_list[0].item.a_char;
@@ -589,6 +595,9 @@ docallcmd(void)
         break;
     case 'f': /* name a type of object visible on the floor */
         namefloorobj();
+        break;
+    case 't': /* name a visible liquid on the floor */
+        namefloorliquid();
         break;
     case 'd': /* name a type of object on the discoveries list */
         rename_disco();
@@ -754,6 +763,31 @@ namefloorobj(void)
     }
 }
 
+staticfn void
+namefloorliquid(void)
+{
+    coord cc;
+    char buf[BUFSZ];
+    struct obj fakeobj;
+
+    cc.x = u.ux, cc.y = u.uy;
+    Sprintf(buf, "tonic coating on map (or '.' for one under you)");
+    if (getpos(&cc, FALSE, buf) < 0 || cc.x <= 0)
+        return;
+
+    if (!has_coating(cc.x, cc.y, COAT_POTION)) {
+        There("does not seem to be a tonic coating %s.",
+                u_at(cc.x, cc.y) ? "under you" : "there");
+        return;
+    }
+    fakeobj = cg.zeroobj;
+    fakeobj.dknown = 1;
+    fakeobj.otyp = levl[cc.x][cc.y].pindex;
+    fakeobj.oclass = POTION_CLASS;
+    docall(&fakeobj);
+}
+
+
 static const char *const ghostnames[] = {
     /* these names should have length < PL_NSIZ */
     /* Capitalize the names for aesthetics -dgk */
@@ -779,6 +813,29 @@ static const char *const dog_breeds[] = {
     "great dane", "samoyed",   "malamute",    "pit bull",
     "poodle",     "labrador",   "rottweiler", "basset hound",
 };
+
+static const char *const mustelid_types[] = {
+    "weasel",   "sable",    "otter",    "ferret",
+    "stoat",    "badger",   "fisher",   "polecat",
+    "wolverine",
+};
+
+/* Get a baby name for a young monster */
+staticfn const char *
+baby_name(struct monst *mtmp)
+{
+    if (humanoid(mtmp->data))
+        return (mtmp->data->mlet == S_GREMLIN) ? "unfinished " : "young ";
+    switch (mtmp->data->mlet) {
+        case S_DRAGON:
+            return "wyrmling ";
+        case S_BAT:
+        case S_VAMPIRE:
+            return "fledgling ";
+        default:
+            return "baby ";
+    }
+}
 
 /*
  * Monster naming functions:
@@ -909,12 +966,15 @@ x_monnam(
     }
 
     /* 'pm_name' is the base part of most names */
-    if (mtmp->data == &mons[PM_DOG] || mtmp->data == &mons[PM_LARGE_DOG]) {
-        if (mtmp->data == &mons[PM_LARGE_DOG]) strcat(buf, "large ");
-        pm_name = dog_breeds[mtmp->m_id % SIZE(dog_breeds)];
-    } else if (do_mappear) {
+    if (do_mappear) {
         /*assert(ismnum(mtmp->mappearance));*/
         pm_name = pmname(&mons[mtmp->mappearance], Mgender(mtmp));
+    } else if (mtmp->data == &mons[PM_DOG] || mtmp->data == &mons[PM_LARGE_DOG]) {
+        if (mtmp->data == &mons[PM_LARGE_DOG]) strcat(buf, "large ");
+        pm_name = dog_breeds[mtmp->m_id % SIZE(dog_breeds)];
+    } else if (mtmp->data == &mons[PM_MUSTELID] || mtmp->data == &mons[PM_GIANT_MUSTELID]) {
+        if (mtmp->data == &mons[PM_GIANT_MUSTELID]) strcat(buf, "giant ");
+        pm_name = mustelid_types[mtmp->m_id % SIZE(mustelid_types)];
     } else {
         pm_name = mon_pmname(mtmp);
     }
@@ -953,6 +1013,9 @@ x_monnam(
     if (do_saddle && (mtmp->misc_worn_check & W_SADDLE) && !Blind
         && !Hallucination)
         Strcat(buf, "saddled ");
+    if (mtmp->mbaby) {
+        Strcat(buf, baby_name(mtmp));
+    }
     has_adjectives = (buf[0] != '\0');
 
     /* Put the actual monster name or type into the buffer now.
@@ -1341,7 +1404,8 @@ obj_pmname(struct obj *obj)
     }
 #endif
     if ((obj->otyp == CORPSE || obj->otyp == STATUE || obj->otyp == FIGURINE
-        || obj->otyp == SKULL || obj->otyp == SKULL_HELM)
+        || obj->otyp == SKULL || obj->otyp == SKULL_HELM
+        || obj->otyp == SKELETON)
         && ismnum(obj->corpsenm)) {
         int cgend = (obj->spe & CORPSTAT_GENDER),
             mgend = ((cgend == CORPSTAT_MALE) ? MALE

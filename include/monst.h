@@ -117,6 +117,7 @@ struct monst {
     unsigned short mextrinsics; /* low 8 correspond to mresists */
     unsigned long seen_resistance; /* M_SEEN_x; saw you resist an effect */
     int mspec_used;       /* monster's special ability attack timeout */
+    int mdriptype;         /* type of liquid the monster is temporarily dripping */
 
     Bitfield(female, 1);      /* is female */
     Bitfield(minvis, 1);      /* currently invisible */
@@ -165,6 +166,8 @@ struct monst {
     Bitfield(mtraitor, 1);  /* mon has turned traitor */
     Bitfield(mprone, 1);    /* mon is prone after being tripped */
     Bitfield(maware, 1);    /* mon is aware of you */
+    Bitfield(mbaby, 1);
+    Bitfield(mdripping, 1); /* mon is dripping with liquid */
 
     unsigned long mstrategy; /* for monsters with mflag3: current strategy */
 #ifdef NHSTDC

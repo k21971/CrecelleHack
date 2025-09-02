@@ -210,6 +210,23 @@ bhitm(struct monst *mtmp, struct obj *otmp)
             learn_it = FALSE;
         }
         break;
+    case WAN_WATER:
+        zap_type_text = "jet of water";
+        reveal_invis = TRUE;
+        if (disguised_mimic)
+            seemimic(mtmp);
+        learn_it = cansee(gb.bhitpos.x, gb.bhitpos.y);
+        if (u.uswallow || rnd(20) < 10 + find_mac(mtmp)) {
+            dmg = d(2, 12);
+            if (dbldam)
+                dmg *= 2;
+            hit(zap_type_text, mtmp, exclam(dmg));
+            (void) resist(mtmp, otmp->oclass, dmg, TELL);
+        } else {
+            miss(zap_type_text, mtmp);
+            learn_it = FALSE;
+        }
+        break;
     case WAN_SLOW_MONSTER:
     case SPE_SLOW_MONSTER:
         if (!resist(mtmp, otmp->oclass, 0, NOTELL)) {
@@ -628,6 +645,11 @@ probe_objchain(struct obj *otmp)
 void
 probe_monster(struct monst *mtmp)
 {
+    /* learn monster capabilities */
+    for (int i = 0; i < NATTK; i++)
+        learn_mattack(mtmp->mnum, i);
+    svm.mvitals[mtmp->mnum].know_pcorpse = 1;
+
     mstatusline(mtmp);
     if (gn.notonhead)
         return; /* don't show minvent for long worm tail */
@@ -896,7 +918,7 @@ revive(struct obj *corpse, boolean by_hero)
     int montype, cgend, container_nesting = 0;
     boolean is_zomb;
 
-    if (corpse->otyp != CORPSE) {
+    if (corpse->otyp != CORPSE && corpse->otyp != SKELETON) {
         impossible("Attempting to revive %s?", xname(corpse));
         return (struct monst *) 0;
     }
@@ -1304,7 +1326,7 @@ cancel_item(struct obj *obj)
         || otyp == POT_SICKNESS
         || (otyp == POT_WATER && (obj->blessed || obj->cursed))
         /* not magic; cancels to blank spellbook */
-        || otyp == SPE_NOVEL) {
+        || otyp == SPE_NOVEL || otyp == SPE_BESTIARY) {
         int cancelled_spe = (obj->oclass == WAND_CLASS
                              || otyp == CRYSTAL_BALL) ? -1 : 0;
 
@@ -1472,7 +1494,9 @@ obj_resists(struct obj *obj,
         || obj->otyp == BELL_OF_OPENING
         || (obj->otyp == CORPSE && is_rider(&mons[obj->corpsenm]))) {
         return TRUE;
-    } else if (obj->otyp == SKULL 
+    } else if ((obj->otyp == SKULL
+                || obj->otyp == SKULL_HELM
+                || obj->otyp == SKELETON)
                 && (obj->corpsenm == PM_BLACK_DRAGON 
                     || obj->corpsenm == PM_BABY_BLACK_DRAGON)) {
         return TRUE;
@@ -1583,6 +1607,9 @@ create_polymon(struct obj *obj, int okind)
         material = "metal ";
         break;
     case COPPER:
+        pm_index = rn2(7) ? PM_CLAY_GOLEM : PM_COLOSSUS;
+        material = "bronze ";
+        break;
     case SILVER:
     case PLATINUM:
     case GEMSTONE:
@@ -1593,7 +1620,7 @@ create_polymon(struct obj *obj, int okind)
     case 0:
     case FLESH:
         /* there is no flesh type, but all food is type 0, so we use it */
-        pm_index = PM_FLESH_GOLEM;
+        pm_index = rn2(2) ? PM_FLESH_GOLEM : PM_SALT_GOLEM;
         material = "organic ";
         break;
     case WOOD:
@@ -1621,7 +1648,7 @@ create_polymon(struct obj *obj, int okind)
         material = "glassy ";
         break;
     case PAPER:
-        pm_index = rn2(2) ? PM_PAPER_GOLEM : PM_SCROLEM;
+        pm_index = (obj->oclass != SPBOOK_CLASS) ? PM_PAPER_GOLEM : PM_SCROLEM;
         material = "paper ";
         break;
     default:
@@ -1629,6 +1656,18 @@ create_polymon(struct obj *obj, int okind)
         pm_index = PM_STRAW_GOLEM;
         material = "";
         break;
+    }
+
+    /* Floor coatings */
+    if (!rn2(2)) {
+        if (has_coating(obj->ox, obj->oy, COAT_BLOOD)
+            || obj->otyp == POT_BLOOD) {
+            pm_index = PM_BLOOD_GOLEM;
+            material = "bloody ";
+        } else if (has_coating(obj->ox, obj->oy, COAT_SHARDS)) {
+            pm_index = PM_GLASS_GOLEM;
+            material = "glassy ";
+        }
     }
 
     if (!(svm.mvitals[pm_index].mvflags & G_GENOD))
@@ -2347,7 +2386,7 @@ bhito(struct obj *obj, struct obj *otmp)
         case SPE_TURN_UNDEAD:
             if (obj->otyp == EGG) {
                 revive_egg(obj);
-            } else if (obj->otyp == CORPSE) {
+            } else if (obj->otyp == CORPSE || obj->otyp == SKELETON) {
                 struct monst *mtmp;
                 coordxy ox, oy;
                 unsigned save_norevive;
@@ -2427,6 +2466,7 @@ bhito(struct obj *obj, struct obj *otmp)
         case WAN_NOTHING:
         case SPE_HEALING:
         case SPE_EXTRA_HEALING:
+        case WAN_WATER:
             res = 0;
             break;
         case SPE_STONE_TO_FLESH:
@@ -2737,7 +2777,14 @@ zapyourself(struct obj *obj, boolean ordinary)
         }
         break;
 
+    case WAN_WATER:
+        You("douse yourself in %s!", hliquid("water"));
+        learn_it = TRUE;
+        water_damage_chain(gi.invent, FALSE);
+        break;
+
     case WAN_LIGHTNING:
+    case ELECTRIC_GUITAR:
         learn_it = TRUE;
         orig_dmg = d(12, 6);
         if (!Shock_resistance) {
@@ -3028,6 +3075,13 @@ zapyourself(struct obj *obj, boolean ordinary)
        that the wand itself has been seen */
     if (learn_it)
         learnwand(obj);
+    /* Handle chained zaps */
+    if (obj->cobj) {
+        pline("The wands taped to %s go off!", yname(obj));
+        for (struct obj *otmp = obj->cobj; otmp; otmp = otmp->nobj) {
+            zapyourself(otmp, ordinary);
+        }
+    }
     return damage;
 }
 
@@ -3148,6 +3202,7 @@ zap_steed(struct obj *obj) /* wand or spell */
     case SPE_DRAIN_LIFE:
     case WAN_OPENING:
     case SPE_KNOCK:
+    case WAN_WATER:
         (void) bhitm(u.usteed, obj);
         steedhit = TRUE;
         break;
@@ -3327,6 +3382,14 @@ zap_updown(struct obj *obj) /* wand or spell, nonnull */
             else if (!Blind)
                 pline("Some grass grows.");
             add_coating(x, y, COAT_GRASS, 0);
+        }
+        break;
+    case WAN_WATER:
+        if (u.dz > 0) {
+            pline("Water sprays downward.");
+            add_coating(x, y, COAT_POTION, POT_WATER);
+        } else if (u.dz < 0) {
+            pline("You make it rain!");
         }
         break;
     case WAN_STRIKING:
@@ -3514,6 +3577,13 @@ weffects(struct obj *obj)
         if (was_unkn)
             more_experienced(0, 10);
     }
+    /* Dear god... */
+    if (obj->cobj) {
+        pline("The wands taped to %s go off!", yname(obj));
+        for (struct obj *otmp = obj->cobj; otmp; otmp = otmp->nobj) {
+            weffects(otmp);
+        }
+    }
     return;
 }
 
@@ -3685,7 +3755,7 @@ zap_map(
     ttmp = t_at(x, y); /* refresh in case trap was altered or is gone */
 
     if (u.dz > 0) { /* zapping down */
-        char ebuf[BUFSZ];
+        char ebuf[BUFSZ], pristinebuf[BUFSZ], *etxt;
         struct engr *e = engr_at(x, y);
 
         /* subset of engraving effects; none sets `disclose' */
@@ -3694,7 +3764,8 @@ zap_map(
             case WAN_POLYMORPH:
             case SPE_POLYMORPH:
                 del_engr(e);
-                make_engr_at(x, y, random_engraving(ebuf), svm.moves, 0);
+                etxt = random_engraving(ebuf, pristinebuf);
+                make_engr_at(x, y, etxt, pristinebuf, svm.moves, 0);
                 break;
             case WAN_CANCELLATION:
             case SPE_CANCELLATION:
@@ -3714,8 +3785,12 @@ zap_map(
                     wipe_engr_at(x, y, d(2, 4), TRUE);
                 }
                 break;
+            case SPE_DRAIN_LIFE:
+                remove_coating(x, y, COAT_FUNGUS | COAT_GRASS);
+                break;
             case WAN_STRIKING:
             case SPE_FORCE_BOLT:
+            case WAN_WATER:
                 wipe_engr_at(x, y, d(2, 4), TRUE);
                 break;
             default:
@@ -3759,9 +3834,14 @@ zap_map(
         if (obj->otyp == WAN_FECUNDITY) {
             if (cansee(x, y) && !has_coating(x, y, COAT_GRASS)
                 && add_coating(x, y, COAT_GRASS, 0)) {
-                You_see("some grass grow.");
+                Norep("You see some grass grow.");
                 learn_it = TRUE;
             }
+        } else if (obj->otyp == WAN_WATER) {
+            if (cansee(x, y))
+                Norep("The %s gets wet.", surface(x, y));
+            floor_alchemy(x, y, POT_WATER, 0);
+            learn_it = TRUE;
         }
     } /* !u.uz */
 
@@ -3842,6 +3922,27 @@ zap_map(
             }
         } /* t_at() */
     } /* probing */
+    /* Handle coating mutations */
+    /* TODO: Messages? */
+    if (obj->otyp == WAN_POLYMORPH) {
+        if (has_coating(x, y, COAT_POTION) && levl[x][y].pindex != POT_WATER) {
+            add_coating(x, y, COAT_POTION,
+                        POT_GAIN_ABILITY + rn2(POT_OIL - POT_GAIN_ABILITY));
+        } else if (has_coating(x, y, COAT_BLOOD)) {
+            do {
+                levl[x][y].pindex =rndmonnum();
+            } while (!has_blood(&mons[levl[x][y].pindex]));   
+        }
+    } else if (obj->otyp == WAN_CANCELLATION && has_coating(x, y, COAT_POTION)) {
+        if (levl[x][y].pindex == POT_SICKNESS || levl[x][y].pindex == POT_SEE_INVISIBLE)
+            add_coating(x, y, COAT_POTION, POT_FRUIT_JUICE);
+        else
+            add_coating(x, y, COAT_POTION, POT_WATER);
+    } else if (obj->otyp == WAN_MAKE_INVISIBLE && has_coating(x, y, COAT_POTION)) {
+        add_coating(x, y, COAT_POTION, POT_INVISIBILITY);
+    } else if (obj->otyp == SPE_DRAIN_LIFE) {
+        remove_coating(x, y, COAT_FUNGUS | COAT_GRASS);
+    }
 
     if (learn_it)
         learnwand(obj);
@@ -3917,6 +4018,7 @@ bhit(
 
     while (range-- > 0) {
         coordxy x, y;
+        int xyglyph;
 
         gb.bhitpos.x += ddx;
         gb.bhitpos.y += ddy;
@@ -4034,9 +4136,20 @@ bhit(
            give message and skip it in order to keep going;
            if attack is light and mtmp is a mimic pretending to be an
            object, behave as if there is no monster here (if pretending
-           to be furniture, it will be revealed by flash_hits_mon()) */
+           to be furniture, it will be revealed by flash_hits_mon());
+           thrown objects don't hit mimics pretending to be objects (both
+           because the hero is likely aiming to throw over what seems to
+           be an object rather than at it, and for balance because
+           otherwise mimics are too easy to identify by throwing gold at
+           them); exception: if the hero knows there is a monster there,
+           they will be aiming at the monster */
+        xyglyph = glyph_at(x, y);
         if (mtmp && (((weapon == THROWN_WEAPON || weapon == KICKED_WEAPON)
-                      && shade_miss(&gy.youmonst, mtmp, obj, TRUE, TRUE))
+                      && (shade_miss(&gy.youmonst, mtmp, obj, TRUE, TRUE)
+                          || (M_AP_TYPE(mtmp) == M_AP_OBJECT
+                              && !glyph_is_monster(xyglyph)
+                              && !glyph_is_warning(xyglyph)
+                              && !glyph_is_invisible(xyglyph))))
                      || (weapon == FLASHED_LIGHT
                          && M_AP_TYPE(mtmp) == M_AP_OBJECT)))
             mtmp = (struct monst *) 0;
@@ -4109,6 +4222,7 @@ bhit(
             case WAN_LOCKING:
             case WAN_STRIKING:
             case SPE_KNOCK:
+            case WAN_WATER:
             case SPE_WIZARD_LOCK:
             case SPE_FORCE_BOLT:
                 if (doorlock(obj, x, y)) {
@@ -4930,6 +5044,8 @@ dobuzz(
                                 /* paper golem or straw golem */
                                 && completelyburns(mon->data))
                                 xkflags |= XKILL_NOCORPSE;
+                            if (damgtype == ZT_DEATH)
+                                xkflags |= XKILL_SKELETONIZE;
                             xkilled(mon, xkflags);
                         }
                     } else {
@@ -5186,6 +5302,7 @@ zap_over_floor(
     boolean see_it = cansee(x, y), yourzap;
     int rangemod = 0, damgtype = zaptype(type) % 10;
     boolean lavawall = (lev->typ == LAVAWALL);
+    struct obj fakeobj = cg.zeroobj;
 
     if (type == PHYS_EXPL_TYPE) {
         /* this won't have any effect on the floor */
@@ -5216,7 +5333,7 @@ zap_over_floor(
             /* don't create steam clouds on Plane of Water; air bubble
                movement and gas regions don't understand each other */
             if (!on_water_level) {
-                create_gas_cloud(x, y, rnd(5), 0); /* 1..5, no damg */
+                create_gas_cloud(x, y, rnd(5), 0, 0); /* 1..5, no damg */
                 if (iflags.last_msg == PLNMSG_ENVELOPED_IN_GAS)
                     msggiven = TRUE;
             }
@@ -5260,11 +5377,17 @@ zap_over_floor(
                 }
             }
         } else if (IS_FOUNTAIN(lev->typ)) {
-            create_gas_cloud(x, y, rnd(3), 0); /* 1..3, no damage */
-            if (see_it)
-                pline("Steam billows from the fountain.");
-            rangemod -= 1;
-            dryup(x, y, type > 0);
+            if (FOUNTAIN_IS_FROZEN(x, y)) {
+                CLEAR_FOUNTAIN_FROZEN(x, y);
+                if (see_it)
+                    pline("The frozen fountain thaws.");
+            } else {
+                create_gas_cloud(x, y, rnd(3), 0, 0); /* 1..3, no damage */
+                if (see_it)
+                    pline("Steam billows from the fountain.");
+                rangemod -= 1;
+                dryup(x, y, type > 0);
+            }
         } else {
             if (has_coating(x, y, COAT_GRASS)) {
                 remove_coating(x, y, COAT_GRASS);
@@ -5282,10 +5405,16 @@ zap_over_floor(
             } else if (has_coating(x, y, COAT_POTION)
                         && levl[x][y].pindex == POT_HAZARDOUS_WASTE) {
                 remove_coating(x, y, COAT_POTION);
-                explode(x, y, 11, d(4, 6), 0, EXPL_NOXIOUS);
+                explode(x, y, 11, d(1, 10), 0, EXPL_NOXIOUS);
+            } else if (has_coating(x, y, COAT_FROST)) {
+                add_coating(x, y, COAT_POTION, POT_WATER);
             }
-            if (IS_SUBMASKABLE(levl[x][y].typ) && levl[x][y].submask == SM_SAND) {
-                add_coating(x, y, COAT_SHARDS, 0);
+            if (IS_SUBMASKABLE(levl[x][y].typ)) {
+                if (has_coating(x, y, COAT_MUD)) {
+                    remove_coating(x, y, COAT_MUD);
+                    levl[x][y].submask = SM_DIRT;
+                } else if (levl[x][y].submask == SM_SAND)
+                    add_coating(x, y, COAT_SHARDS, 0);
             }
             evaporate_potion_puddles(x, y);
         }
@@ -5386,6 +5515,13 @@ zap_over_floor(
                 spot_stop_timers(x, y, MELT_ICE_AWAY);
                 start_melt_ice_timeout(x, y, melt_time);
             }
+        } else {
+            add_coating(x, y, COAT_FROST, 0);
+        }
+        if (IS_FOUNTAIN(lev->typ) && !FOUNTAIN_IS_FROZEN(x, y)) {
+                SET_FOUNTAIN_FROZEN(x, y);
+                if (see_it)
+                    pline("The fountain freezes over.");
         }
         break; /* ZT_COLD */
 
@@ -5394,11 +5530,19 @@ zap_over_floor(
            caller is placing a series of 1x1 clouds along the zap's path;
            <x,y> for wall locations might be included--reject those */
         if (ZAP_POS(lev->typ))
-            (void) create_gas_cloud(x, y, 1, 8);
+            (void) create_gas_cloud(x, y, 1, 0, 8);
+        break;
+    case ZT_SLEEP:
+        if (ZAP_POS(lev->typ) && zaptype(type) == ZT_BREATH(ZT_SLEEP)) {
+            fakeobj.otyp = POT_SLEEPING;
+            fakeobj.cursed = TRUE;
+            (void) create_gas_cloud(x, y, 1, &fakeobj, 8);
+        }
         break;
     case ZT_DEATH:
         /* Kill any grass on a surface. */
-        remove_coating(x, y, COAT_GRASS);
+        remove_coating(x, y, ((zaptype(type)) == ZT_BREATH(ZT_DEATH))
+                                ? COAT_ALL : COAT_GRASS);
         break;
 
     case ZT_LIGHTNING:
@@ -5462,8 +5606,8 @@ zap_over_floor(
                     && levl[x][y].pindex == POT_HAZARDOUS_WASTE) {
             remove_coating(x, y, COAT_POTION);
             explode(x, y, 11, d(4, 6), 0, EXPL_NOXIOUS);
-        } else {
-            add_coating(x, y, COAT_POTION, POT_ACID);
+        } else if (damgtype == ZT_ACID) {
+            floor_alchemy(x, y, POT_ACID, 0);
         }
         break; /* ZT_ACID */
 
@@ -5724,7 +5868,8 @@ destroyable(struct obj *obj, int adtyp)
             return FALSE;
         }
         if (obj->otyp == GLOB_OF_GREEN_SLIME || obj->oclass == POTION_CLASS
-            || obj->oclass == SCROLL_CLASS || obj->oclass == SPBOOK_CLASS) {
+            || obj->oclass == SCROLL_CLASS || obj->oclass == SPBOOK_CLASS
+            || objects[obj->otyp].oc_material == BLUEICE) {
             return TRUE;
         }
     } else if (adtyp == AD_COLD) {
@@ -5882,6 +6027,7 @@ const char *const destroy_strings[][3] = {
     { "catches fire and burns", "", "burning book" },
     { "turns to dust and vanishes", "", "" },
     { "breaks apart and explodes", "", "exploding wand" },
+    { "melts into a puddle", "melt", "melting icicle" },
 };
 
 /* guts of destroy_items();
@@ -5952,6 +6098,12 @@ maybe_destroy_item(
             dmg = (obj->owt + 19) / 20;
             break;
         }
+        /* Handle ice separately */
+        if (objects[obj->otyp].oc_material == BLUEICE) {
+            dindx = 7;
+            dmg = 0;
+            break;
+        }
         break;
     case AD_ELEC:
         xresist = (obj->oclass != RING_CLASS
@@ -6012,7 +6164,7 @@ maybe_destroy_item(
             if (osym == POTION_CLASS && dmgtyp != AD_COLD
                 && (!breathless(gy.youmonst.data)
                     || haseyes(gy.youmonst.data))) {
-                potionbreathe(obj);
+                potionbreathe(obj); /* Should we maybe create a cloud of gas? */
             }
             if (obj->owornmask) { /* m_useup handles these for monster */
                 if (obj->owornmask & W_RING) /* ring being worn */
@@ -6328,6 +6480,7 @@ makewish(void)
     int tries = 0;
     long oldwisharti = u.uconduct.wisharti;
 
+    svc.context.resume_wish = 0;
     promptbuf[0] = '\0';
     nothing = cg.zeroobj; /* lint suppression; only its address matters */
     if (flags.verbose)
@@ -6338,6 +6491,12 @@ makewish(void)
         Strcat(promptbuf, " (enter 'help' for assistance)");
     Strcat(promptbuf, "?");
     getlin(promptbuf, buf);
+
+    if (iflags.term_gone) {
+        svc.context.resume_wish = 1;
+        return;
+    }
+
     (void) mungspaces(buf);
     if (buf[0] == '\033') {
         buf[0] = '\0';

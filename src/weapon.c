@@ -24,17 +24,18 @@ staticfn void skill_advance(int);
 #define PN_RIDING (-3)
 #define PN_TRIPPING (-4)
 #define PN_GRAPPLING (-5)
-#define PN_POLEARMS (-6)
-#define PN_SABER (-7)
-#define PN_HAMMER (-8)
-#define PN_WHIP (-9)
-#define PN_ATTACK_SPELL (-10)
-#define PN_HEALING_SPELL (-11)
-#define PN_DIVINATION_SPELL (-12)
-#define PN_ENCHANTMENT_SPELL (-13)
-#define PN_CLERIC_SPELL (-14)
-#define PN_ESCAPE_SPELL (-15)
-#define PN_MATTER_SPELL (-16)
+#define PN_IMPROV (-6)
+#define PN_POLEARMS (-7)
+#define PN_SABER (-8)
+#define PN_HAMMER (-9)
+#define PN_WHIP (-10)
+#define PN_ATTACK_SPELL (-11)
+#define PN_HEALING_SPELL (-12)
+#define PN_DIVINATION_SPELL (-13)
+#define PN_ENCHANTMENT_SPELL (-14)
+#define PN_CLERIC_SPELL (-15)
+#define PN_ESCAPE_SPELL (-16)
+#define PN_MATTER_SPELL (-17)
 
 static NEARDATA const short skill_names_indices[P_NUM_SKILLS] = {
     /* Weapon */
@@ -46,13 +47,16 @@ static NEARDATA const short skill_names_indices[P_NUM_SKILLS] = {
     PN_ATTACK_SPELL, PN_HEALING_SPELL, PN_DIVINATION_SPELL,
     PN_ENCHANTMENT_SPELL, PN_CLERIC_SPELL, PN_ESCAPE_SPELL, PN_MATTER_SPELL,
     /* Other */
-    PN_BARE_HANDED, PN_TWO_WEAPONS, PN_RIDING, PN_TRIPPING, PN_GRAPPLING
+    PN_BARE_HANDED, PN_TWO_WEAPONS, PN_RIDING, PN_TRIPPING, PN_GRAPPLING,
+    PN_IMPROV
 };
 
 /* note: entry [0] isn't used */
 static NEARDATA const char *const odd_skill_names[] = {
     "no skill", "bare hands", /* use barehands_or_martial[] instead */
-    "two weapon combat", "riding", "tripping", "grappling", "polearms", "saber", "hammer", "whip",
+    "two weapon combat", "riding", "tripping", "grappling",
+    "improvised weaponry",
+    "polearms", "saber", "hammer", "whip",
     "attack spells", "healing spells", "divination spells",
     "enchantment spells", "clerical spells", "escape spells", "matter spells",
 };
@@ -356,6 +360,65 @@ dmgval(struct obj *otmp, struct monst *mon)
     return  tmp;
 }
 
+const char *
+stringify_dmgval(int otyp, boolean large) {
+    if (large) {
+        switch (otyp) {
+        case IRON_CHAIN:
+        case CROSSBOW_BOLT:
+        case MORNING_STAR:
+        case PARTISAN:
+        case RUNESWORD:
+        case ELVEN_BROADSWORD:
+        case BROADSWORD:
+            return "1";
+        case FLAIL:
+        case RANSEUR:
+        case VOULGE:
+            return "+1d4";
+        case ACID_VENOM:
+        case HALBERD:
+        case SPETUM:
+            return "+1d6";
+        case BATTLE_AXE:
+        case BARDICHE:
+        case TRIDENT:
+            return "+2d4";
+        case TSURUGI:
+        case DWARVISH_MATTOCK:
+        case TWO_HANDED_SWORD:
+            return "+2d6";
+        }
+    } else {
+        switch (otyp) {
+        case IRON_CHAIN:
+        case CROSSBOW_BOLT:
+        case MACE:
+        case SILVER_MACE:
+        case WAR_HAMMER:
+        case FLAIL:
+        case SPETUM:
+        case TRIDENT:
+            return "+1";
+        case BATTLE_AXE:
+        case BARDICHE:
+        case BILL_GUISARME:
+        case GUISARME:
+        case LUCERN_HAMMER:
+        case MORNING_STAR:
+        case RANSEUR:
+        case BROADSWORD:
+        case ELVEN_BROADSWORD:
+        case RUNESWORD:
+        case VOULGE:
+            return "+1d4";
+        case ACID_VENOM:
+            return "+1d6";
+        }
+    }
+    return "";
+}
+
 /* check whether blessed and/or silver damage applies for *non-weapon* hit;
    return value is the amount of the extra damage */
 int
@@ -500,9 +563,9 @@ oselect(struct monst *mtmp, int type)
 
 static NEARDATA const int rwep[] = {
     DWARVISH_SPEAR, SILVER_SPEAR, ELVEN_SPEAR, SPEAR, ORCISH_SPEAR, JAVELIN,
-    BOLAS, SHURIKEN, YA, SILVER_ARROW, ELVEN_ARROW, ARROW, ORCISH_ARROW,
+    SHURIKEN, YA, SILVER_ARROW, ELVEN_ARROW, ARROW, ORCISH_ARROW,
     CROSSBOW_BOLT, SILVER_DAGGER, ELVEN_DAGGER, DAGGER, ORCISH_DAGGER, KNIFE,
-    FLINT, ROCK, LOADSTONE, LUCKSTONE, DART, CREAM_PIE, BOTTLE
+    FLINT, ROCK, LOADSTONE, LUCKSTONE, DART, BANANA_PEEL, CREAM_PIE, BOTTLE
 };
 
 /* polearms */
@@ -564,6 +627,11 @@ select_rwep(struct monst *mtmp)
     mweponly = (mwelded(mwep) && mtmp->weapon_check == NO_WEAPON_WANTED);
     if (dist2(mtmp->mx, mtmp->my, mtmp->mux, mtmp->muy) <= 13
         && couldsee(mtmp->mx, mtmp->my)) {
+        if (is_art(mwep, ART_SNICKERSNEE)) {
+            gp.propellor = mwep;
+            return mwep;
+        }
+
         for (i = 0; i < SIZE(pwep); i++) {
             /* Only strong monsters can wield big (esp. long) weapons.
              * Big weapon is basically the same as bimanual.
@@ -697,7 +765,9 @@ static const NEARDATA short hwep[] = {
     DWARVISH_SPEAR, SILVER_SPEAR, ELVEN_SPEAR, SPEAR, ORCISH_SPEAR, FLAIL,
     BULLWHIP, SHEPHERD_S_CROOK, QUARTERSTAFF, JAVELIN, AKLYS, CLUB, PICK_AXE, RUBBER_HOSE,
     WAR_HAMMER, SILVER_DAGGER, ELVEN_DAGGER, DAGGER, ORCISH_DAGGER, ATHAME,
-    SCALPEL, KNIFE, WORM_TOOTH, BOTTLE
+    SCALPEL, KNIFE, WORM_TOOTH, ICICLE,
+    /* plausible improvisational weapons */
+    BOTTLE, ELECTRIC_GUITAR, ACOUSTIC_GUITAR
 };
 
 /* select a hand to hand weapon for the monster */
@@ -1486,7 +1556,7 @@ weapon_type(struct obj *obj)
         return P_BARE_HANDED_COMBAT; /* Not using a weapon */
     if (obj->oclass != WEAPON_CLASS && obj->oclass != TOOL_CLASS
         && obj->oclass != GEM_CLASS)
-        return P_NONE; /* Not a weapon, weapon-tool, or ammo */
+        return P_IMPROV; /* Not a weapon, weapon-tool, or ammo */
     type = objects[obj->otyp].oc_skill;
     return (type < 0) ? -type : type;
 }
@@ -1518,7 +1588,7 @@ weapon_hit_bonus(struct obj *weapon)
                : wep_type;
     if (type == P_NONE) {
         bonus = 0;
-    } else if (type <= P_LAST_WEAPON) {
+    } else if (type <= P_LAST_WEAPON || type == P_IMPROV) {
         switch (P_SKILL(type)) {
         default:
             impossible(bad_skill, P_SKILL(type));
@@ -1618,7 +1688,7 @@ weapon_dam_bonus(struct obj *weapon)
                : wep_type;
     if (type == P_NONE) {
         bonus = 0;
-    } else if (type <= P_LAST_WEAPON) {
+    } else if (type <= P_LAST_WEAPON || type == P_IMPROV) {
         switch (P_SKILL(type)) {
         default:
             impossible("weapon_dam_bonus: bad skill %d", P_SKILL(type));
@@ -1723,7 +1793,7 @@ skill_init(const struct def_skill *class_skill)
             continue;
 
         skill = weapon_type(obj);
-        if (skill != P_NONE)
+        if (skill != P_NONE && skill != P_IMPROV)
             P_SKILL(skill) = P_BASIC;
     }
 
@@ -1752,7 +1822,7 @@ skill_init(const struct def_skill *class_skill)
         P_SKILL(P_BARE_HANDED_COMBAT) = P_BASIC;
 
     /* Wrestlers have trained in grappling */
-    if (Role_if(PM_WRESTLER))
+    if (Role_if(PM_GRAPPLER))
         P_SKILL(P_GRAPPLING) = P_BASIC;
 
     /* Roles that start with a horse know how to ride it */

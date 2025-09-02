@@ -314,6 +314,8 @@ erode_obj(
                   : !vismon ? "The" /* visobj */
                     : s_suffix(Monnam(victim)),
                   ostr, actbuf);
+            if (crackers && carried(otmp) && objects[otmp->otyp].oc_material == GLASS)
+                add_coating(otmp->ox, otmp->oy, COAT_SHARDS, 0);
         }
         if (ef_flags & EF_PAY)
             costly_alteration(otmp, cost_type);
@@ -572,6 +574,16 @@ maketrap(coordxy x, coordxy y, int typ)
             if (ttmp->teledest.x == x && ttmp->teledest.y == y) {
                 impossible("making fixed-dest tele trap pointing to itself");
             }
+        }
+        break;
+    case SLP_GAS_TRAP:
+        static const int hellgas[] = { POT_SLEEPING, POT_HALLUCINATION, POT_PARALYSIS,
+                                        POT_POLYMORPH, POT_SICKNESS, POT_BLINDNESS,
+                                        POT_CONFUSION };
+        if (In_hell(&u.uz)) {
+            ttmp->launch_otyp = ROLL_FROM(hellgas);
+        } else {
+            ttmp->launch_otyp = POT_SLEEPING;
         }
         break;
     }
@@ -1125,7 +1137,8 @@ m_harmless_trap(struct monst *mtmp, struct trap *ttmp)
     case ROLLING_BOULDER_TRAP:
         break;
     case SLP_GAS_TRAP:
-        if (resists_sleep(mtmp) || defended(mtmp, AD_SLEE))
+        if ((!Inhell && (resists_sleep(mtmp) || defended(mtmp, AD_SLEE)))
+            || (Inhell && breathless(mtmp->data)))
             return TRUE;
         break;
     case RUST_TRAP:
@@ -1553,29 +1566,20 @@ trapeffect_slp_gas_trap(
     struct trap *trap,
     unsigned int trflags UNUSED)
 {
+    struct obj fakeobj;
     if (mtmp == &gy.youmonst) {
         seetrap(trap);
-        if (Sleep_resistance || breathless(gy.youmonst.data)) {
-            You("are enveloped in a cloud of gas!");
-            monstseesu(M_SEEN_SLEEP);
-        } else {
-            pline("A cloud of gas puts you to sleep!");
-            fall_asleep(-rnd(25), TRUE);
-            monstunseesu(M_SEEN_SLEEP);
-        }
-        (void) steedintrap(trap, (struct obj *) 0);
+        pline("Gas sprays from hidden vents in the %s!", surface(trap->tx, trap->ty));
     } else {
         boolean in_sight = canseemon(mtmp) || (mtmp == u.usteed);
-
-        if (!resists_sleep(mtmp) && !breathless(mtmp->data)
-            && !helpless(mtmp)) {
-            if (sleep_monst(mtmp, rnd(25), -1) && in_sight) {
-                pline_mon(mtmp,
-                          "%s suddenly falls asleep!", Monnam(mtmp));
-                seetrap(trap);
-            }
-        }
+        if (in_sight) {
+            pline_mon(mtmp, "%s is enveloped in a cloud of gas!", Monnam(mtmp));
+            seetrap(trap);
+        } else
+            You_hear("a whoomph!");
     }
+    fakeobj.otyp = trap->launch_otyp;
+    create_gas_cloud(trap->tx, trap->ty, 5, &fakeobj, 5);
     return Trap_Effect_Finished;
 }
 
@@ -1631,6 +1635,7 @@ trapeffect_rust_trap(
                 (void) water_damage(uarmu, "shirt", TRUE);
         }
         update_inventory();
+        make_dripping(rnd(20), POT_WATER, NON_PM);
 
         if (u.umonnum == PM_IRON_GOLEM) {
             int dam = u.mhmax;
@@ -1696,6 +1701,9 @@ trapeffect_rust_trap(
             else if ((target = which_armor(mtmp, W_ARMU)) != 0)
                 (void) water_damage(target, "shirt", TRUE);
         }
+
+        mtmp->mdripping = 1;
+        mtmp->mdriptype = POT_WATER;
 
         if (completelyrusts(mptr)) {
             if (in_sight)
@@ -1803,6 +1811,7 @@ trapeffect_fire_trap(
             trapkilled = TRUE;
         if (see_it && t_at(tx, ty))
             seetrap(t_at(tx, ty));
+        evaporate_potion_puddles(tx, ty);
 
         return trapkilled ? Trap_Killed_Mon : mtmp->mtrapped
             ? Trap_Caught_Mon : Trap_Effect_Finished;
@@ -2227,6 +2236,7 @@ trapeffect_web(
         case PM_PURPLE_WORM:
         case PM_JABBERWOCK:
         case PM_IRON_GOLEM:
+        case PM_COLOSSUS:
         case PM_BALROG:
         case PM_KRAKEN:
         case PM_MASTODON:
@@ -2758,9 +2768,9 @@ immune_to_trap(struct monst *mon, unsigned ttype)
     case SLP_GAS_TRAP:
         if (breathless(pm))
             return TRAP_CLEARLY_IMMUNE;
-        else if (!is_you && resists_sleep(mon))
+        else if (!is_you && resists_sleep(mon) && !Inhell)
             return TRAP_CLEARLY_IMMUNE;
-        else if (is_you && Sleep_resistance)
+        else if (is_you && Sleep_resistance && !Inhell)
             return TRAP_HIDDEN_IMMUNE;
         return TRAP_NOT_IMMUNE;
     case LEVEL_TELEP:
@@ -4213,6 +4223,7 @@ dofiretrap(
     else
         losehp(num, tower_of_flame, KILLED_BY_AN); /* fire damage */
     burn_away_slime();
+    evaporate_potion_puddles(u.ux, u.uy);
 
     if (burnarmor(&gy.youmonst) || rn2(3)) {
         (void) destroy_items(&gy.youmonst, AD_FIRE, orig_dmg);
@@ -5073,6 +5084,7 @@ drown(void)
         if (succ) {
             pline("Pheew!  That was close.");
             teleds(x, y, TELEDS_ALLOW_DRAG);
+            make_dripping(rnd(20), POT_WATER, NON_PM);
             return TRUE;
         }
         /* still too much weight */
@@ -6208,6 +6220,7 @@ chest_trap(
     boolean disarm)
 {
     struct obj *otmp = obj, *otmp2;
+    struct obj fakeobj = cg.zeroobj;
     char buf[80];
     const char *msg;
     coord cc;
@@ -6331,7 +6344,7 @@ chest_trap(
                 poisoned("gas cloud", A_STR, "cloud of poison gas", 15,
                          FALSE);
             else
-                create_gas_cloud(obj->ox, obj->oy, 1, 8);
+                create_gas_cloud(obj->ox, obj->oy, 1, 0, 8);
             exercise(A_CON, FALSE);
             break;
         case 16:
@@ -6382,21 +6395,13 @@ chest_trap(
         case 2:
         case 1:
         case 0:
+            /* TODO: Update with new cloud code */
             pline("A cloud of %s gas billows from %s.",
                   Blind ? ROLL_FROM(blindgas) : rndcolor(),
                   the(xname(obj)));
-            if (!Stunned) {
-                if (Hallucination)
-                    pline("What a groovy feeling!");
-                else
-                    You("%s%s...", stagger(gy.youmonst.data, "stagger"),
-                        Halluc_resistance ? ""
-                                          : Blind ? " and get dizzy"
-                                                  : " and your vision blurs");
-            }
-            make_stunned((HStun & TIMEOUT) + (long) rn1(7, 16), FALSE);
-            (void) make_hallucinated(
-                (HHallucination & TIMEOUT) + (long) rn1(5, 16), FALSE, 0L);
+            fakeobj.otyp = POT_HALLUCINATION;
+            fakeobj.cursed = TRUE;
+            create_gas_cloud(obj->ox, obj->oy, 1, &fakeobj, 8);
             break;
         default:
             impossible("bad chest trap");
