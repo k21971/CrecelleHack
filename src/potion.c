@@ -2036,7 +2036,8 @@ do_illness:
     case POT_SLEEPING:
         /* wakeup() doesn't rouse victims of temporary sleep */
         if (sleep_monst(mon, rnd(12), POTION_CLASS)) {
-            pline("%s falls asleep.", Monnam(mon));
+            if (canseemon(mon))
+                pline("%s falls asleep.", Monnam(mon));
             slept_monst(mon);
         }
         break;
