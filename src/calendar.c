@@ -528,6 +528,8 @@ weatherchange_message(boolean rain)
 void
 timechange_message(boolean new_game)
 {
+    struct monst *mtmp;
+    boolean guards_called = FALSE;
     if (has_no_tod_cycles(&u.uz)) return;
     if (u.uenvirons.tod == TOD_MORNING) {
         if (Blind)
@@ -551,6 +553,27 @@ timechange_message(boolean new_game)
         }
     } else {
         pline("It is midnight.");
+    }
+    /* Monster reactions. */
+    for (mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+        if (mtmp->mfrozen || !mtmp->mcanmove)
+            continue;
+        if (u.uenvirons.tod == TOD_EARLYNIGHT
+                && !guards_called && is_mercenary(mtmp->data)
+                && mtmp->data != &mons[PM_GUARD] && mtmp->mpeaceful
+                && in_town(u.ux, u.uy)) {
+            guards_called = TRUE;
+            if (Deaf && canseemon(mtmp))
+                pline_mon(mtmp, "%s waves to you.", Monnam(mtmp));
+            else
+                verbalize("Sunset come and all's well!");
+        } else if (!mtmp->female && mtmp->data->mlet == S_COCKATRICE) {
+            if (canseemon(mtmp))
+                pline_mon(mtmp, "%s crows at the rising sun.", Monnam(mtmp));
+            else
+                You_hear("a rooster crowing.");
+            wake_nearto(mtmp->mx, mtmp->my, 5 * 5);
+        }
     }
 }
 

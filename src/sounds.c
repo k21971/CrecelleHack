@@ -1026,11 +1026,12 @@ domonnoise(struct monst *mtmp)
         gn.nomovemsg = 0;
         break;
     case MS_LAUGH: {
-        static const char *const laugh_msg[4] = {
+        static const char *const laugh_msg[5] = {
             "giggles.", "chuckles.", "snickers.", "laughs.",
+            "chortles."
         };
         Soundeffect(se_laughter, 60);
-        pline_msg = laugh_msg[rn2(4)];
+        pline_msg = laugh_msg[rn2(5)];
         break;
     }
     case MS_MUMBLE:
@@ -1100,8 +1101,10 @@ domonnoise(struct monst *mtmp)
         } else if (mtmp->mhp < mtmp->mhpmax / 2)
             pline_msg = "asks for a tonic of healing.";
         else if (mtmp->mtame && !mtmp->isminion
-                 && svm.moves > EDOG(mtmp)->hungrytime)
+                 && svm.moves > EDOG(mtmp)->hungrytime) {
             verbl_msg = "I'm hungry.";
+        } else if (night() && !(mtmp->data->geno & G_NIGHT))
+            verbl_msg = "I'm tired. Can't we rest?";
         /* Specific monsters' interests */
         else if (is_elf(ptr))
             pline_msg = "curses orcs.";

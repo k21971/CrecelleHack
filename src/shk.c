@@ -5523,6 +5523,9 @@ shk_chat(struct monst *shkp)
     } else if (is_izchak(shkp, FALSE)) {
         if (!Deaf && !muteshk(shkp))
             pline(ROLL_FROM(Izchak_speaks), shkname(shkp));
+    } else if (night()) {
+        if (!Deaf && !muteshk(shkp))
+            pline("%s complains about having to keep the store open at these hours.", Shknam(shkp));
     } else {
         if (!Deaf && !muteshk(shkp))
             pline("%s talks about the problem of shoplifters.", Shknam(shkp));

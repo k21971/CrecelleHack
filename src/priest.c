@@ -645,7 +645,7 @@ priest_talk(struct monst *priest)
             if (money_cnt(gi.invent) < (offer * 2L)) {
                 if (coaligned && u.ualign.record <= ALGN_SINNED)
                     adjalign(1);
-                verbalize("I bestow upon thee a blessing.");
+                verbalize("%s I bestow upon thee a blessing.", night() ? "Tonight" : "Today");
                 incr_itimeout(&HClairvoyant, rn1(500, 500));
             }
         } else if (offer < (u.ulevel * 600)

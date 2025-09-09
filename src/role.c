@@ -2181,9 +2181,13 @@ Hello(struct monst *mtmp)
                (mtmp && mtmp->data == &mons[PM_MAIL_DAEMON]) ? "Hallo" :
 #endif
                "Velkommen"; /* Norse */
-    default:
-        return "Hello";
     }
+    /* TOD-Specific Greetings */
+    if (u.uenvirons.tod == TOD_EVENING)
+        return "Good evening";
+    else if (u.uenvirons.tod == TOD_MORNING)
+        return (mtmp && is_vampire(mtmp->data)) ? "Good morrow" : "Good morning";
+    return "Hello";
 }
 
 const char *
@@ -2198,9 +2202,10 @@ Goodbye(void)
         return "Aloha"; /* Hawaiian */
     case PM_VALKYRIE:
         return "Farvel"; /* Norse */
-    default:
-        return "Goodbye";
     }
+    if (night())
+        return "Good night";
+    return "Goodbye";
 }
 
 /* if pmindex is any player race (not necessarily the hero's),

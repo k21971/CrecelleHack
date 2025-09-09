@@ -3414,7 +3414,7 @@ djinni_from_bottle(struct obj *obj)
         mongone(mtmp);
         break;
     default:
-        verbalize("You disturbed me, fool!");
+        verbalize("You disturbed %s, fool!", night() ? "my sleep" : "me");
         mtmp->mpeaceful = FALSE;
         set_malign(mtmp);
         break;
