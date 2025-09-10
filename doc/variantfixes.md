@@ -2,6 +2,7 @@
 ## Monster Changes
 - Monsters can gain water walking and jumping.
   From SpliceHack, code ported directly from Evil and updated to 3.7.
+- Monsters can gain telepathy from items.
 
 # 1.2
 

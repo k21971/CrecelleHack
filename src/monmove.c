@@ -1972,7 +1972,9 @@ m_move(struct monst *mtmp, int after)
                               && (levl[ggx][ggy].lit || !levl[omx][omy].lit)
                               && (dist2(omx, omy, ggx, ggy) <= 36));
         #endif
-        boolean should_see = (distmin(omx, omy, ggx, ggy) <= 1);
+        boolean should_see = (distmin(omx, omy, ggx, ggy) <= 1)
+                                || (has_telepathy(mtmp)
+                                    && mdistu(mtmp) <= u.unblind_telepat_range);
         if (mtmp->mcansee) {
             if (couldsee(omx, omy)) {
                 if (infravision(mtmp->data)
