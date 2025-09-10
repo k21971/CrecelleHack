@@ -370,6 +370,7 @@ dosounds(void)
             };
             You_hear1(IS_RAINING ? rainy_shop_msg[rn2(2) + hallu]
                                  : shop_msg[rn2(2) + hallu]);
+            noisy_shop(sroom);
         }
         return;
     }

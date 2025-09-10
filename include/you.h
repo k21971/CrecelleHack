@@ -589,6 +589,7 @@ struct _hitmon_data {
     boolean needpoismsg;
     boolean poiskilled;
     boolean already_killed;
+    boolean offmap;
     boolean destroyed;
     boolean dryit;
     boolean doreturn;

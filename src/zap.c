@@ -190,14 +190,16 @@ bhitm(struct monst *mtmp, struct obj *otmp)
     /*FALLTHRU*/
     case SPE_FORCE_BOLT:
         reveal_invis = TRUE;
-        if (disguised_mimic)
-            seemimic(mtmp);
         learn_it = cansee(gb.bhitpos.x, gb.bhitpos.y);
         if (resists_magm(mtmp)) { /* match effect on player */
+            if (disguised_mimic && !disguised_as_mon(mtmp))
+                seemimic(mtmp);
             shieldeff(mtmp->mx, mtmp->my);
             pline("Boing!");
             /* 3.7: used to 'break' to avoid setting learn_it here */
         } else if (u.uswallow || rnd(20) < 10 + find_mac(mtmp)) {
+            if (disguised_mimic)
+                seemimic(mtmp);
             dmg = d(2, 12);
             if (dbldam)
                 dmg *= 2;
@@ -206,7 +208,8 @@ bhitm(struct monst *mtmp, struct obj *otmp)
             hit(zap_type_text, mtmp, exclam(dmg));
             (void) resist(mtmp, otmp->oclass, dmg, TELL);
         } else {
-            miss(zap_type_text, mtmp);
+            if (!disguised_mimic)
+                miss(zap_type_text, mtmp);
             learn_it = FALSE;
         }
         break;
@@ -4874,13 +4877,13 @@ disintegrate_mon(
 void
 ubuzz(int type, int nd)
 {
-    dobuzz(type, nd, u.ux, u.uy, u.dx, u.dy, TRUE);
+    dobuzz(type, nd, u.ux, u.uy, u.dx, u.dy, TRUE, FALSE);
 }
 
 void
 buzz(int type, int nd, coordxy sx, coordxy sy, int dx, int dy)
 {
-    dobuzz(type, nd, sx, sy, dx, dy, TRUE);
+    dobuzz(type, nd, sx, sy, dx, dy, TRUE, FALSE);
 }
 
 /*
@@ -4898,7 +4901,7 @@ dobuzz(
     int nd,                 /* damage strength ('number of dice') */
     coordxy sx, coordxy sy, /* starting point */
     int dx, int dy,         /* direction delta */
-    boolean say)    /* announce out of sight hit/miss events if true */
+    boolean sayhit, boolean saymiss)    /* announce out of sight hit/miss events if true */
 {
     int range, fltyp = zaptype(type), damgtype = fltyp % 10;
     coordxy lsx, lsy;
@@ -5051,7 +5054,7 @@ dobuzz(
                     } else {
                         if (!otmp) {
                             /* normal non-fatal hit */
-                            if (say || canseemon(mon))
+                            if (sayhit || canseemon(mon))
                                 hit(flash_str(fltyp, FALSE), mon, exclam(tmp));
                         } else {
                             /* some armor was destroyed; no damage done */
@@ -5069,7 +5072,8 @@ dobuzz(
                 }
                 range -= 2;
             } else {
-                if (say || canseemon(mon))
+                if (saymiss
+                    || (canseemon(mon) && !disguised_as_non_mon(mon)))
                     miss(flash_str(fltyp, FALSE), mon);
             }
         } else if (u_at(sx, sy) && range >= 0) {
@@ -5573,7 +5577,7 @@ zap_over_floor(
                         pline_The("water conducts the %s!", flash_str(zaptype(type), FALSE));
                 }
                 rangemod -= 7;
-                dobuzz(type, 1, x, y, dx, dy, FALSE);
+                dobuzz(type, 1, x, y, dx, dy, FALSE, FALSE);
             }
         }
     }

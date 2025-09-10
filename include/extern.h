@@ -2990,6 +2990,8 @@ extern void globby_bill_fixup(struct obj *, struct obj *) NONNULLARG12;
 extern void credit_report(struct monst *shkp, int idx,
                           boolean silent) NONNULLARG1;
 extern void use_unpaid_trapobj(struct obj *, coordxy, coordxy) NONNULLARG1;
+extern void noisy_shop(struct mkroom *);
+
 
 /* ### shknam.c ### */
 
@@ -3490,6 +3492,8 @@ extern int passive(struct monst *, struct obj *, boolean, boolean, uchar,
 extern void passive_obj(struct monst *, struct obj *, struct attack *) NONNULLARG1;
 extern void that_is_a_mimic(struct monst *, unsigned) NONNULLARG1;
 extern void stumble_onto_mimic(struct monst *) NONNULLARG1;
+extern boolean disguised_as_non_mon(struct monst *) NONNULLARG1;
+extern boolean disguised_as_mon(struct monst *) NONNULLARG1;
 extern int flash_hits_mon(struct monst *, struct obj *) NONNULLARG12;
 extern void light_hits_gremlin(struct monst *, int) NONNULLARG1;
 extern boolean boost_effects_pre(struct monst *, struct monst *);
@@ -4030,7 +4034,7 @@ extern int zhitm(struct monst *, int, int, struct obj **) NONNULLPTRS;
 extern int burn_floor_objects(coordxy, coordxy, boolean, boolean);
 extern void ubuzz(int, int);
 extern void buzz(int, int, coordxy, coordxy, int, int);
-extern void dobuzz(int, int, coordxy, coordxy, int, int, boolean);
+extern void dobuzz(int, int, coordxy, coordxy, int, int, boolean, boolean);
 extern void melt_ice(coordxy, coordxy, const char *) NO_NNARGS;
 extern void start_melt_ice_timeout(coordxy, coordxy, long);
 extern void melt_ice_away(union any *, long) NONNULLARG1;
