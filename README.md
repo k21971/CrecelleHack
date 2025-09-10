@@ -6,6 +6,8 @@ Amulet of Yendor for your god.
 
 The first release of CrecelleHack is forthcoming.
 
+[An example config file is included.](sys/windows/crecellehackrc.template)
+
 ## Documentation
 
 Note that many of the following documentation files contain spoilers.
