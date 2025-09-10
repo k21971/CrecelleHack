@@ -1317,7 +1317,8 @@ movemon_singlemon(struct monst *mtmp)
 
     if (is_hider(mtmp->data)
         || (mud_hider(mtmp->data)
-                && has_coating(mtmp->mx, mtmp->my, COAT_MUD))) {
+                && has_coating(mtmp->mx, mtmp->my, COAT_MUD)
+                && !(mtmp->mtame || mtmp->mpeaceful))) {
         /* unwatched mimics and piercers may hide again  [MRS] */
         if (restrap(mtmp))
             return FALSE;
