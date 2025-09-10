@@ -2385,7 +2385,7 @@ mcallout(struct monst *mtmp)
             } else if (ltyp == CORR && !rn2(4)) {
                 Sprintf(fbuf, "In the corridors!");
             } else if (is_orc(mtmp->data) && !rn2(10)) {
-                Sprintf(fbuf, "Look' like meat's back on the menu, %s!",
+                Sprintf(fbuf, "Looks like meat's back on the menu, %s!",
                         mtmp->female ? "girls" : "boys");
             } else if (rtyp > THEMEROOM && !rn2(5)) {
                 Sprintf(fbuf, "In the %s!", get_mkroom_name(rtyp));
