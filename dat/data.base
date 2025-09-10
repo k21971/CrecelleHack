@@ -599,6 +599,12 @@ ooze
 	penguins and slithering over the glistening floor that it and its
 	kind had swept so evilly free of all litter.
 		[ At the Mountains of Madness, by H.P. Lovecraft ]
+blood
+potion of blood
+tonic of blood
+bloody *
+	Love will have its sacrifices. No sacrifice without blood.
+		[ Carmilla, by J. Sheridan Le Fanu ]
 blue jelly
 ochre jelly
 spotted jelly
@@ -2075,6 +2081,7 @@ gelatinous cube
 		[ Wikipedia, the free encyclopedia ]
 *gem
 gem or rock
+glass*
 	The difference between false memories and true ones is the
 	same as for jewels:  it is always the false ones that look the
 	most real, the most brilliant.
@@ -2345,6 +2352,7 @@ potion of hallucination
 		[ Fifteen Years in Hell, by Luther Benson ]
 harmony
 harmonic*
+grassy*
 	I awoke to the Bells of Yendor. Do you know what it is for
 	something to be so loud that it hurts you? Their toll resonated
 	in my chest, so heavy and deep that I feared they would shake me
@@ -2727,6 +2735,7 @@ ice
 * ice
 # hallucinating: "frozen <hallucination liquid>"
 frozen *
+icy *
 	Ice, white ice, like a winding-sheet, sheathing each smoke-grimed wall;
 	Ice on the stove-pipe, ice on the bed, ice gleaming over all;
 	Sparkling ice on the dead man's chest, glittering ice in his hair,
@@ -3216,6 +3225,7 @@ land mine
 # citation is a descriptive passage from the original text adventure game
 lava
 * lava
+ashy *
 	You are on the edge of a breath-taking view.  Far below you
 	is an active volcano, from which great gouts of molten lava
 	come surging out, cascading back down into the depths.  The
@@ -4814,6 +4824,7 @@ rothe
 	an aversion to light.  It prefers to live underground near
 	lichen and moss.
 *royal jelly
+sticky *
 	"'Royal Jelly,'" he read aloud, "'must be a substance of
 	tremendous nourishing power, for on this diet alone, the
 	honey-bee larva increases in weight fifteen hundred times in
@@ -6164,6 +6175,7 @@ woodchuck
 long worm tail
 worm tooth
 crysknife
+*wurm
 	[The crysknife] is manufactured in two forms from teeth taken
 	from dead sandworms.  The two forms are "fixed" and "unfixed".
 	An unfixed knife requires proximity to a human body's
