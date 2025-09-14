@@ -214,6 +214,8 @@ static struct trobj Veggies[] = { { APPLE, UNDEF_SPE, FOOD_CLASS, 10, 0 },
                                     { 0, 0, 0, 0, 0 } };
 static struct trobj Sunglasses[] = { { SUNGLASSES, 0, TOOL_CLASS, 1, 0 },
                                     { 0, 0, 0, 0, 0 } };
+static struct trobj Darts[] = { { DART, 0, WEAPON_CLASS, 12, 0 },
+                                     { 0, 0, 0, 0, 0 } };
 
 /* race-based substitutions for initial inventory;
    the weaker cloak for elven rangers is intentional--they shoot better */
@@ -248,6 +250,10 @@ static struct inv_sub {
     { PM_DWARF, LEMBAS_WAFER, CRAM_RATION },
     { PM_GNOME, BOW, CROSSBOW },
     { PM_GNOME, ARROW, CROSSBOW_BOLT },
+    { PM_KOBOLD, BOW, CROSSBOW },
+    { PM_KOBOLD, ARROW, CROSSBOW_BOLT },
+    { PM_KOBOLD, CRAM_RATION, TRIPE_RATION },
+    { PM_KOBOLD, FOOD_RATION, TRIPE_RATION },
     { NON_PM, STRANGE_OBJECT, STRANGE_OBJECT }
 };
 
@@ -899,6 +905,11 @@ u_init_race(void)
         knows_object(DWARVISH_ROUNDSHIELD, FALSE);
         break;
 
+    case PM_KOBOLD:
+        if (!Role_if(PM_TOURIST))
+            ini_inv(Darts);
+        break;
+
     case PM_GNOME:
         break;
 
@@ -1110,7 +1121,7 @@ u_init(void)
     u.umoney0 += hidden_gold(TRUE); /* in case sack has gold in it */
 
     find_ac();     /* get initial ac value */
-    init_attr(75); /* init attribute values */
+    init_attr(Race_if(PM_KOBOLD) ? 60 : 75); /* init attribute values */
     vary_init_attr(); /* minor variation to attrs */
     u_init_carry_attr_boost();
     max_rank_sz(); /* set max str size for class ranks */
@@ -1220,7 +1231,7 @@ ini_inv_mkobj_filter(int oclass, boolean got_level1_spellbook)
            || otyp == RIN_HUNGER
            || otyp == WAN_NOTHING
            /* orcs start with poison resistance */
-           || (otyp == RIN_POISON_RESISTANCE && Race_if(PM_ORC))
+           || (otyp == RIN_POISON_RESISTANCE && (Race_if(PM_ORC) || Race_if(PM_KOBOLD) ))
            /* Monks don't use weapons */
            || (otyp == SCR_ENCHANT_WEAPON && (Role_if(PM_MONK) || Role_if(PM_GRAPPLER)))
            /* wizard patch -- they already have one */

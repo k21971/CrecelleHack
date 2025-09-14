@@ -74,6 +74,7 @@ struct permonst {
         mflags2,                /* more boolean bitflags */
         mflags3;                /* yet more boolean bitflags */
     unsigned short mboost;      /* boosts on this terrain */
+    unsigned long mhflags;      /* race flags */
     uchar difficulty;           /* toughness (formerly from  makedefs -m) */
     uchar mcolor;               /* color to use */
 };

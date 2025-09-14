@@ -2130,7 +2130,8 @@ fprefx(struct obj *otmp)
     case TRIPE_RATION:
         if (carnivorous(gy.youmonst.data) && !humanoid(gy.youmonst.data)) {
             pline("This tripe ration is surprisingly good!");
-        } else if (maybe_polyd(is_orc(gy.youmonst.data), Race_if(PM_ORC))) {
+        } else if (maybe_polyd(is_orc(gy.youmonst.data), Race_if(PM_ORC))
+                    || maybe_polyd(is_kobold(gy.youmonst.data), Race_if(PM_KOBOLD))) {
             pline(Hallucination ? "Tastes great!  Less filling!"
                                 : "Mmm, tripe... not bad!");
         } else {

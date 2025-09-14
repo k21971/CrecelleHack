@@ -2235,7 +2235,7 @@ polysense(void)
         break;
     case PM_VAMPIRE:
     case PM_VAMPIRE_LEADER:
-        svc.context.warntype.polyd = M2_HUMAN | M2_ELF;
+        svc.context.warntype.polyd = MH_HUMAN | MH_ELF;
         HWarn_of_mon |= FROMRACE;
         return;
     }

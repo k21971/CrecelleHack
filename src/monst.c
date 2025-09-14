@@ -18,10 +18,10 @@ extern const struct attack c_sa_no[NATTK];
 
 /* monster type with single name */
 #define MON(nam, sym, lvl, gen, atk, siz, mr1, mr2, \
-            flg1, flg2, flg3, flgb, d, col, bn)           \
+            flg1, flg2, flg3, flgb, flgh, d, col, bn)           \
     {                                                                   \
         nam, PM_##bn,                                                   \
-        sym, lvl, gen, atk, siz, mr1, mr2, flg1, flg2, flg3, flgb, d, col     \
+        sym, lvl, gen, atk, siz, mr1, mr2, flg1, flg2, flg3, flgb, flgh, d, col     \
     }
 
 /* LVL() and SIZ() collect several fields to cut down on number of args
@@ -47,16 +47,16 @@ static struct permonst mons_init[NUMMONS + 1] = {
      */
 #undef MON
 #define MON(nam, sym, lvl, gen, atk, siz, mr1, mr2, \
-            flg1, flg2, flg3, flgb, d, col, bn)           \
+            flg1, flg2, flg3, flgb, flgh, d, col, bn)           \
     {                                                                   \
         nam, NON_PM,                                                    \
-        sym, lvl, gen, atk, siz, mr1, mr2, flg1, flg2, flg3, flgb, d, col     \
+        sym, lvl, gen, atk, siz, mr1, mr2, flg1, flg2, flg3, flgb, flgh, d, col     \
     }
     MON(NAM(""), 0,
         LVL(0, 0, 0, 0, 0), G_NOGEN | G_NOCORPSE,
         A(NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK, NO_ATTK),
         SIZ(0, 0, 0, 0), 0, 0,
-        0L,  M2_NOPOLY, 0, 0,
+        0L,  M2_NOPOLY, 0, 0, 0,
         0, 0, 0),
 };
 

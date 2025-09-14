@@ -97,6 +97,9 @@ pet_type(void)
         else if (Race_if(PM_ELF))
             gu.urole.petnum = PM_JAGUAR;
     }
+    if (Race_if(PM_KOBOLD)) {
+        gu.urole.petnum = PM_KOBOLD;
+    }
 
     /* Standard pets */
     if (gu.urole.petnum != NON_PM)
@@ -238,7 +241,7 @@ makedog(void)
     }
 
     pettype = svc.context.startingpet_typ = pet_type();
-    petname = (pettype == PM_LITTLE_DOG) ? gd.dogname
+    petname = (pettype == PM_LITTLE_DOG || pettype == PM_KOBOLD) ? gd.dogname
               : (pettype == PM_KITTEN) ? gc.catname
                 : (pettype == PM_PONY) ? gh.horsename
                   : "";
@@ -268,6 +271,11 @@ makedog(void)
 
     /* chance that the pet is a baby. has no impact on gameplay */
     if (!rn2(6)) mtmp->mbaby = 1;
+
+    /* Kobolds are usually very slow */
+    if (pettype == PM_KOBOLD) {
+        mon_adjust_speed(mtmp, 2, (struct obj *) 0);
+    }
 
     if (!svc.context.startingpet_mid) {
         svc.context.startingpet_mid = mtmp->m_id;

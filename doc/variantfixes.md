@@ -3,6 +3,19 @@
 - Monsters can gain water walking and jumping.
   From SpliceHack, code ported directly from Evil and updated to 3.7.
 - Monsters can gain telepathy from items.
+- Kobolds have been altered to skew closer to their appearance in early
+  editions of D&D as well as anime like Record of Lodoss War. This is
+  to say that their doglike features have been emphasized.
+
+## Races
+- New Race: Kobold
+  - Although kobolds are playable in Grunt and SlashTHEM, their appearance
+    here is distinct.
+  - Kobolds are a challenge race, with overall poor ability scores. They
+    always start with a kobold companion. Tame kobolds will never betray
+    a kobold player.
+  - Kobolds start with poison resistance, and like orcs they may eat
+    tripe rations without penalty.
 
 # 1.2
 

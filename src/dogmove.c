@@ -970,6 +970,7 @@ betrayed(struct monst *mtmp)
 
     if (has_edog && udist < 4 && !rn2(3)
 		    && is_traitor(mtmp->data)
+            && !(Race_if(PM_KOBOLD) && is_kobold(mtmp->data))
 		    && !mindless(mtmp->data)
 		    && mtmp->mhp >= u.uhp	/* Pet is buff enough */
 		    && rn2(22) > mtmp->mtame	/* Roll against tameness */

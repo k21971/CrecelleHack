@@ -774,7 +774,7 @@ struct role_filter {
     boolean roles[NUM_ROLES + 1];
     short mask;
 };
-#define NUM_RACES (5)
+#define NUM_RACES (6)
 
 struct selectionvar {
     int wid, hei;
@@ -1121,7 +1121,7 @@ typedef struct nh_file NHFILE;
       /* quest artifact object index */         \
       STRANGE_OBJECT,                           \
       /* Bitmasks */                            \
-      0,                                        \
+      0, 0,                                     \
       /* Attributes */                          \
       {0}, {0}, {0}, {0}, 0, 0,                 \
       /* spell statistics */                    \
@@ -1144,8 +1144,8 @@ typedef struct nh_file NHFILE;
 
 #define MATCH_WARN_OF_MON(mon) \
     (Warn_of_mon                                                        \
-     && ((svc.context.warntype.obj & (mon)->data->mflags2) != 0           \
-         || (svc.context.warntype.polyd & (mon)->data->mflags2) != 0      \
+     && ((svc.context.warntype.obj & (mon)->data->mhflags) != 0           \
+         || (svc.context.warntype.polyd & (mon)->data->mhflags) != 0      \
          || (svc.context.warntype.species                                 \
              && (svc.context.warntype.species == (mon)->data))))
 

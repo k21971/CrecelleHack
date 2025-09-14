@@ -104,6 +104,8 @@ static const struct innate {
   orc_abil[] = { { 1, &HInfravision, "", "" },
                  { 1, &HPoison_resistance, "", "" },
                  { 0, 0, 0, 0 } },
+  kob_abil[] = { { 1, &HPoison_resistance, "", "" },
+                 { 0, 0, 0, 0 } },
 
   hum_abil[] = { { 0, 0, 0, 0 } };
 
@@ -836,6 +838,9 @@ check_innate_abil(long *ability, long frommask)
         case PM_ORC:
             abil = orc_abil;
             break;
+        case PM_KOBOLD:
+            abil = kob_abil;
+            break;
         case PM_HUMAN:
             abil = hum_abil;
             break;
@@ -1021,6 +1026,7 @@ adjabil(int oldlevel, int newlevel)
     case PM_HUMAN:
     case PM_DWARF:
     case PM_GNOME:
+    case PM_KOBOLD:
     default:
         rabil = 0;
         break;
