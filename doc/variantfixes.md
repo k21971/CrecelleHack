@@ -17,6 +17,9 @@
   - Kobolds start with poison resistance, and like orcs they may eat
     tripe rations without penalty.
 
+## Roles
+- Jumping is now the grappler special spell.
+
 # 1.2
 
 ## Dungeon Changes

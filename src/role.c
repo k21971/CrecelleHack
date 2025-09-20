@@ -190,7 +190,7 @@ const struct Role roles[NUM_ROLES+1] = {
       3,
       10,
       A_WIS,
-      SPE_CHAIN_LIGHTNING,
+      SPE_JUMPING,
       -4 },
     { { "Healer", 0 },
       { { "Rhizotomist", 0 },
