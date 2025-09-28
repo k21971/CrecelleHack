@@ -2716,6 +2716,8 @@ grappling_finisher(coordxy x, coordxy y, struct monst *mtmp)
     boolean bare_hit = FALSE;
     boolean break_grapple = TRUE;
     
+    use_skill(P_GRAPPLING, 1);
+    
     if (future_dist == 1 && (x == mtmp->mx || y == mtmp->my)) {
         pline_mon(mtmp, "You hit %s with a lariat!", mon_nam(mtmp));
         make_mon_prone(mtmp);
