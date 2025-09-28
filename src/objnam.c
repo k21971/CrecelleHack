@@ -3509,6 +3509,13 @@ static const struct alt_spellings {
     { "load stone", LOADSTONE },
     { "touch stone", TOUCHSTONE },
     { "flintstone", FLINT },
+    /* Community Abbreviations */
+    { "BoH", BAG_OF_HOLDING },
+    { "SDSM", SILVER_DRAGON_SCALE_MAIL },
+    { "GDSM", GRAY_DRAGON_SCALE_MAIL },
+    /* Easily confused objects */
+    { "protection from illusions", RIN_PROTECTION_FROM_SHAPE_CHAN },
+    /* Objects renamed by variant */
     { "dented pot", YENDORIAN_BASCINET },
     { "small shield", ROUNDSHIELD },
     { "large shield", KITE_SHIELD },
