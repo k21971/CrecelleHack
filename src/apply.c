@@ -1045,6 +1045,12 @@ use_mirror(struct obj *obj)
             pline("%s", nothing_seems_to_happen);
         return ECMD_TIME;
     }
+    if (obj->greased && !rn2(5)) {
+        if (!Blind)
+            pline_The("%s is too greasy to reflect anything!", mirror);
+        else
+            pline("%s", nothing_seems_to_happen);
+    }
     if (!u.dx && !u.dy && !u.dz) {
         if (!useeit) {
             You_cant("see your %s %s.", uvisage, body_part(FACE));
@@ -1077,6 +1083,10 @@ use_mirror(struct obj *obj)
                 You(look_str, "undernourished");
             } else if (Upolyd) {
                 You("look like %s.", an(pmname(&mons[u.umonnum], Ugender)));
+            } else if (obj->greased) {
+                You("look very greasy.");
+            } else if (obj->oeroded) {
+                pline("Your reflection is cracked and warped.");
             } else {
                 You("look as %s as ever.", uvisage);
             }
@@ -1141,6 +1151,10 @@ use_mirror(struct obj *obj)
     } else if (monable && mtmp->data == &mons[PM_MEDUSA]) {
         if (mon_reflects(mtmp, "The gaze is reflected away by %s %s!"))
             return ECMD_TIME;
+        if (obj->oeroded) {
+            if (vis) pline("%s does not recognize %s reflection.", Monnam(mtmp), mhis(mtmp));
+            return ECMD_TIME;
+        }
         if (vis)
             pline("%s is turned to stone!", Monnam(mtmp));
         gs.stoned = TRUE;
@@ -1160,23 +1174,33 @@ use_mirror(struct obj *obj)
         mtmp->mconf = 1;
     } else if (monable && (mlet == S_NYMPH
                            || mtmp->data == &mons[PM_AMOROUS_DEMON])) {
-        if (vis) {
-            char buf[BUFSZ]; /* "She" or "He" */
+        if (obj->oeroded) {
+            if (vis) {
+                pline("%s is repulsed by %s warped reflection!",
+                        Monnam(mtmp), mhis(mtmp));
+            } else {
+                pline("%s", nothing_seems_to_happen);
+            }
+            setmangry(mtmp, FALSE);
+        } else {
+            if (vis) {
+                char buf[BUFSZ]; /* "She" or "He" */
 
-            pline("%s in your %s.", /* "<mon> admires self in your mirror " */
-                  monverbself(mtmp, Monnam(mtmp), "admire", (char *) 0),
-                  mirror);
-            pline("%s takes it!", upstart(strcpy(buf, mhe(mtmp))));
-        } else
-            pline("It steals your %s!", mirror);
-        setnotworn(obj); /* in case mirror was wielded */
-        freeinv(obj);
-        (void) mpickobj(mtmp, obj);
-        if (!tele_restrict(mtmp))
-            (void) rloc(mtmp, RLOC_MSG);
+                pline("%s in your %s.", /* "<mon> admires self in your mirror " */
+                    monverbself(mtmp, Monnam(mtmp), "admire", (char *) 0),
+                    mirror);
+                pline("%s takes it!", upstart(strcpy(buf, mhe(mtmp))));
+            } else
+                pline("It steals your %s!", mirror);
+            setnotworn(obj); /* in case mirror was wielded */
+            freeinv(obj);
+            (void) mpickobj(mtmp, obj);
+            if (!tele_restrict(mtmp))
+                (void) rloc(mtmp, RLOC_MSG);
+        }
     } else if (!is_unicorn(mtmp->data) && !humanoid(mtmp->data)
                && !is_demon(mtmp->data)
-               && (!mtmp->minvis || perceives(mtmp->data)) && rn2(5)) {
+               && (!mtmp->minvis || perceives(mtmp->data)) && rn2(obj->oeroded ? 4 : 5)) {
         boolean do_react = TRUE;
 
         if (mtmp->mfrozen) {
@@ -1189,7 +1213,8 @@ use_mirror(struct obj *obj)
         }
         if (do_react) {
             if (vis)
-                pline("%s is frightened by its reflection.", Monnam(mtmp));
+                pline("%s is frightened by %s%s reflection.", Monnam(mtmp), mhis(mtmp),
+                        obj->oeroded ? " warped" : "");
             monflee(mtmp, d(2, 4), FALSE, FALSE);
         }
     } else if (!Blind) {

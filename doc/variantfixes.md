@@ -1,4 +1,10 @@
 # 1.3
+
+## Misc
+- Reverted changes to reflection from 1.0.
+- New feedback for cracked and greasy mirrors. Cracked mirrors scare
+  monsters more easily.
+
 ## Monster Changes
 - Monsters can gain water walking and jumping.
   From SpliceHack, code ported directly from Evil and updated to 3.7.
