@@ -3509,6 +3509,13 @@ static const struct alt_spellings {
     { "load stone", LOADSTONE },
     { "touch stone", TOUCHSTONE },
     { "flintstone", FLINT },
+    { "dented pot", YENDORIAN_BASCINET },
+    { "small shield", ROUNDSHIELD },
+    { "large shield", KITE_SHIELD },
+    /* I would like to eliminate all mentions of this from the game entirely,
+       but unfortunately this is muscle memory for a lot of strong players
+       and will lead to wasted wishes. */
+    { "genocide", SCR_GENOCIDE },
     { (const char *) 0, 0 },
 };
 
