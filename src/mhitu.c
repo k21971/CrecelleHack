@@ -1763,11 +1763,9 @@ gazemu(struct monst *mtmp, struct attack *mattk)
                 break;
             }
             if (useeit)
-                pline("%s closes %s eyes.", Monnam(mtmp), mhis(mtmp));
-            mtmp->mblinded = rnd(7);
-            mtmp->mcansee = 0;
-            // gs.stoned = TRUE;
-            // killed(mtmp);
+                pline("%s is turned to stone!", Monnam(mtmp));
+            gs.stoned = TRUE;
+            killed(mtmp);
 
             if (!DEADMONSTER(mtmp))
                 break;

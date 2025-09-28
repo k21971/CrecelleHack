@@ -4913,7 +4913,6 @@ dobuzz(
     struct obj *otmp;
     int spell_type;
     int hdmgtype = Hallucination ? rn2(6) : damgtype;
-    int n = (rn2(2) ? -1 : 1);
 
     /* if it's a Hero Spell then get its SPE_TYPE */
     spell_type = is_hero_spell(type) ? SPE_MAGIC_MISSILE + damgtype : 0;
@@ -4997,9 +4996,8 @@ dobuzz(
                                             "But it reflects from %s %s!");
                         gas_hit = FALSE;
                     }
-                    dx = n * dx;
-                    dy = -1 * n * dy;
-                    tmp_at(DISP_CHANGE, zapdir_to_glyph(dx, dy, hdmgtype));
+                    dx = -dx;
+                    dy = -dy;
                 } else {
                     boolean mon_could_move = mon->mcanmove;
                     int tmp = zhitm(mon, type, nd, &otmp);
@@ -5092,9 +5090,8 @@ dobuzz(
                     } else
                         pline("For some reason you are not affected.");
                     monstseesu(M_SEEN_REFL);
-                    dx = n * dx;
-                    dy = -1 * n * dy;
-                    tmp_at(DISP_CHANGE, zapdir_to_glyph(dx, dy, hdmgtype));
+                    dx = -dx;
+                    dy = -dy;
                     shieldeff(sx, sy);
                     gas_hit = FALSE;
                 } else {
