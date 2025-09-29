@@ -1300,11 +1300,11 @@ XTRA_SCROLL_LABEL(            "ERMACS", SC02), /* Mortal Kombat */
 XTRA_SCROLL_LABEL(          "HERAKLES", SC03), /* Vagrant Story */
 XTRA_SCROLL_LABEL(            "DOTNFO", SC04),
 XTRA_SCROLL_LABEL( "VEEBLUNK EN TRUPT", SC05), /* Gameboy */
-XTRA_SCROLL_LABEL(    "DOLOR SIT AMET", SC06),
+XTRA_SCROLL_LABEL(    "DOLOR SIT AMET", SC06), /* Lorem Ipsum */
 XTRA_SCROLL_LABEL(          "CQ CQ CQ", SC07), /* Amateur Radio */
 XTRA_SCROLL_LABEL(           "ELOMCWE", SC08), /* Dwarven sin, also "Welcome" (Mud Sorcerer) */
 XTRA_SCROLL_LABEL(          "ALAKAZAM", SC09), /* traditional incantation */
-XTRA_SCROLL_LABEL(      "KOOPY NAMTAR", SC10), 
+XTRA_SCROLL_LABEL(      "KOOPY NAMTAR", SC10), /* Omikron */
 XTRA_SCROLL_LABEL( "MLIT WVC TEKU SFC", SC11), /* Kid Icarus [sic] */
 XTRA_SCROLL_LABEL(      "NARPAS SWORD", SC12), /* Metroid */
 XTRA_SCROLL_LABEL(         "BATTLE999", SC13), /* Final Fantasy 7 Debug Code */
@@ -1316,6 +1316,8 @@ XTRA_SCROLL_LABEL(      "VAS KAL CORP", SC18), /* Ultima */
 XTRA_SCROLL_LABEL(            "H POKE", SC19), /* Glitch Pokemon */
 XTRA_SCROLL_LABEL( "SQUEMISH OSIFRAGE", SC20), /* RSA Cipher [sic] */
 XTRA_SCROLL_LABEL(          "FLVR TXT", SC21), /* suggested by my wife */
+XTRA_SCROLL_LABEL(          "BAFANADA", SC22), /* Fictional Language (Hollow Knight) */
+XTRA_SCROLL_LABEL(        "FEEBEE LAY", SC23), /* Fictional Language (The Sims)*/
 
 #undef XTRA_SCROLL_LABEL
     /* These must come last because they have special fixed descriptions.
