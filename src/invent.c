@@ -3178,6 +3178,8 @@ itemactions(struct obj *otmp)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Use this tool to pick a lock");
     else if (otmp->otyp == TINNING_KIT)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Use this kit to tin a corpse");
+    else if (otmp->otyp == UPGRADE_KIT)
+        ia_addmenu(win, IA_APPLY_OBJ, 'a', "Use this kit to resize an object");
     else if (otmp->otyp == LEASH)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Tie a pet to this leash");
     else if (otmp->otyp == SADDLE)
@@ -3471,7 +3473,7 @@ itemactions(struct obj *otmp)
     ((((obj)->oclass == WEAPON_CLASS)                           \
       ? !(is_launcher(obj) || is_ammo(obj) || is_missile(obj))  \
       : is_weptool(obj))                                        \
-     && !bimanual(obj))
+     && !u_bimanual(obj))
 
     /* X: Toggle two-weapon mode on or off */
     if ((otmp == uwep || otmp == uswapwep)
@@ -5008,6 +5010,12 @@ mergable(
     /* coins of the same kind will always merge */
     if (obj->oclass == COIN_CLASS)
         return TRUE;
+
+    if (otmp->otyp == obj->otyp
+        && (otmp->oclass == WEAPON_CLASS || otmp->oclass == ARMOR_CLASS
+            || is_weptool(otmp))
+        && otmp->osize != obj->osize)
+        return FALSE;
 
     if (obj->cursed != otmp->cursed || obj->blessed != otmp->blessed)
         return FALSE;

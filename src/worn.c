@@ -378,14 +378,14 @@ check_wornmask_slots(void)
             why = "uwep is not a weapon";
         else if (is_launcher(uwep) || is_ammo(uwep) || is_missile(uwep))
             why = "uwep is not a melee weapon";
-        else if (bimanual(uwep))
+        else if (u_bimanual(uwep))
             why = "uwep is two-handed";
         else if (uswapwep->oclass != WEAPON_CLASS && !is_weptool(uswapwep))
             why = "uswapwep is not a weapon";
         else if (is_launcher(uswapwep) || is_ammo(uswapwep)
                  || is_missile(uswapwep))
             why = "uswapwep is not a melee weapon";
-        else if (bimanual(uswapwep))
+        else if (u_bimanual(uswapwep))
             why = "uswapwep is two-handed";
         else if (!could_twoweap(gy.youmonst.data))
             why = "without two weapon attacks";
@@ -729,7 +729,7 @@ m_dowear(struct monst *mon, boolean creation)
     if (can_wear_armor || WrappingAllowed(mon->data))
         m_dowear_type(mon, W_ARMC, creation, FALSE);
     m_dowear_type(mon, W_ARMH, creation, FALSE);
-    if (!MON_WEP(mon) || !bimanual(MON_WEP(mon)))
+    if (!MON_WEP(mon) || !is_bimanual(MON_WEP(mon), mon->data))
         m_dowear_type(mon, W_ARMS, creation, FALSE);
     m_dowear_type(mon, W_ARMG, creation, FALSE);
     m_dowear_type(mon, W_TOOL, creation, FALSE);
@@ -841,6 +841,8 @@ m_dowear_type(
             break;
         }
         if (obj->owornmask)
+            continue;
+        if (wrong_size_armor(obj, mon->data))
             continue;
         /* I'd like to define a VISIBLE_ARM_BONUS which doesn't assume the
          * monster knows obj->spe, but if I did that, a monster would keep
@@ -1136,16 +1138,18 @@ nxt_unbypassed_loot(Loot *lootarray, struct obj *listhead)
 }
 
 void
-mon_break_armor(struct monst *mon, boolean polyspot)
+mon_break_armor(struct monst *mon, struct permonst *olddata, boolean polyspot)
 {
     struct obj *otmp;
     struct permonst *mdat = mon->data;
     boolean vis = cansee(mon->mx, mon->my),
-            handless_or_tiny = (nohands(mdat) || verysmall(mdat)),
             noride = FALSE;
     const char *pronoun = mhim(mon), *ppronoun = mhis(mon);
 
-    if (breakarm(mdat)) {
+    boolean breakage = breakarm(mdat) || (olddata->msize < mdat->msize);
+    boolean slippage = sliparm(mdat) || (olddata->msize > mdat->msize);
+
+    if (breakage) {
         if ((otmp = which_armor(mon, W_ARM)) != 0) {
             if ((Is_dragon_scales(otmp) && mdat == Dragon_scales_to_pm(otmp))
                 || (Is_dragon_mail(otmp) && mdat == Dragon_mail_to_pm(otmp))) {
@@ -1188,7 +1192,7 @@ mon_break_armor(struct monst *mon, boolean polyspot)
                 You_hear("a ripping sound.");
             m_useup(mon, otmp);
         }
-    } else if (sliparm(mdat)) {
+    } else if (slippage) {
         /* sliparm checks whirly, noncorporeal, and small or under */
         boolean passes_thru_clothes = !(mdat->msize <= MZ_SMALL);
 
@@ -1227,7 +1231,7 @@ mon_break_armor(struct monst *mon, boolean polyspot)
             m_lose_armor(mon, otmp, polyspot);
         }
     }
-    if (handless_or_tiny) {
+    if (nohands(mdat) || breakage || slippage) {
         /* [caller needs to handle weapon checks] */
         if ((otmp = which_armor(mon, W_ARMG)) != 0) {
             if (vis)
@@ -1246,10 +1250,10 @@ mon_break_armor(struct monst *mon, boolean polyspot)
             m_lose_armor(mon, otmp, polyspot);
         }
     }
-    if (handless_or_tiny || has_horns(mdat)) {
+    if (nohands(mdat) || has_horns(mdat) || breakage || slippage) {
         if ((otmp = which_armor(mon, W_ARMH)) != 0
             /* flimsy test for horns matches polyself handling */
-            && (handless_or_tiny || !is_flimsy(otmp))) {
+            && (nohands(mdat) || !is_flimsy(otmp))) {
             if (vis)
                 pline_mon(mon, "%s helmet falls to the %s!",
                           s_suffix(Monnam(mon)), surface(mon->mx, mon->my));
@@ -1258,7 +1262,8 @@ mon_break_armor(struct monst *mon, boolean polyspot)
             m_lose_armor(mon, otmp, polyspot);
         }
     }
-    if (handless_or_tiny || slithy(mdat) || mdat->mlet == S_CENTAUR) {
+    if (nohands(mdat) || slithy(mdat) || mdat->mlet == S_CENTAUR
+        || breakage || slippage) {
         if ((otmp = which_armor(mon, W_ARMF)) != 0) {
             if (vis) {
                 if (is_whirly(mon->data))

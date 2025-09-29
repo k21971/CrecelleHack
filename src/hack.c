@@ -4347,7 +4347,7 @@ weight_cap(void)
         if (gy.youmonst.data->mlet == S_NYMPH)
             carrcap = MAX_CARR_CAP;
         else if (!gy.youmonst.data->cwt)
-            carrcap = (carrcap * (long) gy.youmonst.data->msize) / MZ_HUMAN;
+            carrcap = (carrcap * (long) USIZE) / MZ_HUMAN;
         else if (!strongmonst(gy.youmonst.data)
                  || (strongmonst(gy.youmonst.data)
                      && (gy.youmonst.data->cwt > WT_HUMAN)))

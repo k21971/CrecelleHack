@@ -26,6 +26,7 @@ struct _readobjnam_data {
     int doorless, open, closed, looted;
     int tmp, tinv, tvariety, mgend;
     int wetness, gsize;
+    int osize;
     int ftype;
     int booster;
     boolean zombify;
@@ -693,6 +694,9 @@ xname_flags(
         /*FALLTHRU*/
     case VENOM_CLASS:
     case TOOL_CLASS:
+        if (size_matters(obj) && (!flags.implicit_medium || obj->osize != MZ_MEDIUM)){
+            Sprintf(buf, "%s ", size_str(obj->osize));
+        }
         /* note: lenses or towel prefix would overwrite poisoned weapon
            prefix if both were simultaneously possible, but they aren't */
         if (is_glasses(obj))
@@ -721,6 +725,9 @@ xname_flags(
         }
         break;
     case ARMOR_CLASS:
+        if (!flags.implicit_medium || obj->osize != MZ_MEDIUM){
+            Sprintf(buf, "%s ", size_str(obj->osize));
+        }
         /* depends on order of the dragon scales objects */
         if (typ >= GRAY_DRAGON_SCALES && typ <= YELLOW_DRAGON_SCALES) {
             Sprintf(buf, "set of %s", actualn);
@@ -1069,6 +1076,7 @@ minimal_xname(struct obj *obj)
     bareobj = cg.zeroobj;
     bareobj.otyp = otyp;
     bareobj.oclass = obj->oclass;
+    bareobj.osize = obj->osize;
     bareobj.dknown = (obj->dknown || iflags.override_ID) ? 1 : 0;
     /* suppress known except for amulets (needed for fakes and real A-of-Y) */
     bareobj.known = (obj->oclass == AMULET_CLASS)
@@ -1286,6 +1294,21 @@ erosion_matters(struct obj *obj)
         break;
     }
     return FALSE;
+}
+
+/* used to prevent resizing of items that should not be resized */
+boolean
+size_matters(struct obj *obj)
+{
+    switch(obj->oclass) {
+    case ARMOR_CLASS:
+    case WEAPON_CLASS:
+        return TRUE;
+    case TOOL_CLASS:
+        return is_weptool(obj);
+    default:
+        return FALSE;
+    }
 }
 
 #define DONAME_WITH_PRICE 1
@@ -1661,7 +1684,7 @@ doname_base(
             const char *hand_s = body_part(HAND);
             char *obufp, handsbuf[40];
 
-            if (bimanual(obj)) { /* "hands" */
+            if (u_bimanual(obj)) { /* "hands" */
                 hand_s = strcpy(handsbuf, obufp = makeplural(hand_s));
                 releaseobuf(obufp);
             } else { /* "right hand" or "left hand" */
@@ -3513,8 +3536,10 @@ static const struct alt_spellings {
     { "BoH", BAG_OF_HOLDING },
     { "SDSM", SILVER_DRAGON_SCALE_MAIL },
     { "GDSM", GRAY_DRAGON_SCALE_MAIL },
+    { "HoOA", HELM_OF_OPPOSITE_ALIGNMENT },
     /* Easily confused objects */
     { "protection from illusions", RIN_PROTECTION_FROM_SHAPE_CHAN },
+    { "resizing kit", UPGRADE_KIT },
     /* Objects renamed by variant */
     { "dented pot", YENDORIAN_BASCINET },
     { "small shield", ROUNDSHIELD },
@@ -4049,6 +4074,7 @@ readobjnam_init(char *bp, struct _readobjnam_data *d)
     d->actualn = d->dn = d->un = 0;
     d->wetness = 0;
     d->gsize = 0;
+    d->osize = MZ_MEDIUM;
     d->zombify = FALSE;
     d->bp = d->origbp = bp;
     d->p = (char *) 0;
@@ -4204,8 +4230,9 @@ readobjnam_preparse(struct _readobjnam_data *d)
                used for globs, it might be either "small glob of <foo>" or
                "small <foo> glob" and user might add 's' even though plural
                doesn't accomplish anything because globs don't stack */
-            if (strncmpi(d->bp + l, "glob", 4) && !strstri(d->bp + l, " glob"))
+            if (!strncmpi(d->bp + l, "mimic", 5))
                 break;
+            d->osize = MZ_SMALL;
             d->gsize = 1;
         } else if (!strncmpi(d->bp, "medium ", l = 7)) {
             /* 3.7: in 3.6, "medium" was only used during wishing and the
@@ -4214,14 +4241,22 @@ readobjnam_preparse(struct _readobjnam_data *d)
                combined globs of at least 5 individual ones (owt >= 100)
                and less than 15 (owt < 300) */
             d->gsize = 2;
+            d->osize = MZ_MEDIUM;
         } else if (!strncmpi(d->bp, "large ", l = 6)) {
             /* "large" might be part of monster name (dog, cat, kobold,
-               mimic) or object name (box, round shield) rather than
-               prefix for glob size */
-            if (strncmpi(d->bp + l, "glob", 4) && !strstri(d->bp + l, " glob"))
+               mimic) rather than prefix for glob size */
+            if (!strncmpi(d->bp + 1, "cat", 3) || !strncmpi(d->bp + 1, "dog", 3)
+                || !strncmpi(d->bp + 1, "kobold", 6) || !strncmpi(d->bp + 1, "mimic", 5))
                 break;
             /* "very large " had "very " peeled off on previous iteration */
+            d->osize = MZ_LARGE;
             d->gsize = (d->very != 1) ? 3 : 4;
+        } else if (!strncmpi(d->bp, "huge ", l = 5)) {
+            d->osize = MZ_HUGE;
+        } else if (!strncmpi(d->bp, "tiny ", l = 5)) {
+            d->osize = MZ_TINY;
+        } else if (!strncmpi(d->bp, "gigantic ", l = 9)) {
+            d->osize = MZ_GIGANTIC;
         } else if (!strncmpi(d->bp, "real ", l = 5)) {
             /* accept "real Amulet of Yendor" with "blessed" or "cursed"
                or useless "erodeproof" before or after "real" ... */
@@ -5137,6 +5172,10 @@ readobjnam(char *bp, struct obj *no_wish)
      */
     d.otmp = d.typ ? mksobj(d.typ, TRUE, FALSE) : mkobj(d.oclass, FALSE);
     d.typ = d.otmp->otyp, d.oclass = d.otmp->oclass; /* what we actually got */
+
+    /* set up the object size */
+    if (size_matters(d.otmp))
+        set_obj_size(d.otmp, d.osize);
 
     /* if player specified a reasonable count, maybe honor it;
        quantity for gold is handled elsewhere and d.cnt is 0 for it here */

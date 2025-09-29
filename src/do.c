@@ -730,7 +730,7 @@ canletgo(struct obj *obj, const char *word)
         if (*word) {
             const char *hand = body_part(HAND);
 
-            if (bimanual(uwep))
+            if (u_bimanual(uwep))
                 hand = makeplural(hand);
             Norep("You cannot %s %s welded to your %s.", word, something,
                   hand);

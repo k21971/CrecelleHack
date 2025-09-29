@@ -2340,12 +2340,12 @@ do_supplemental_item_info(struct obj *otmp)
         Sprintf(buf, "Type: %s%sweapon", objects[otmp->otyp].oc_bimanual ? "two-handed " : "one-handed ",
                                  objects[otmp->otyp].oc_finesse ? "finesse " : "");
         putstr(datawin, 0, buf);
-        Sprintf(buf, "Damage (S): 1d%d%s%s%s", objects[otmp->otyp].oc_wsdam,
+        Sprintf(buf, "Damage (S): 1d%d%s%s%s", objects[otmp->otyp].oc_wsdam + size_mult(otmp->osize),
                                             stringify_dmgval(otmp->otyp, FALSE),
                                             dbonus ? dam_buf : "",
                                             otmp->known ? "" : "?");
         putstr(datawin, 0, buf);
-        Sprintf(buf, "Damage (L): 1d%d%s%s%s", objects[otmp->otyp].oc_wldam,
+        Sprintf(buf, "Damage (L): 1d%d%s%s%s", objects[otmp->otyp].oc_wldam + size_mult(otmp->osize),
                                             stringify_dmgval(otmp->otyp, TRUE),
                                             dbonus ? dam_buf : "",
                                             otmp->known ? "" : "?");

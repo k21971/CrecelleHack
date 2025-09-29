@@ -11,6 +11,10 @@
 #################################
 # Custom Taunt
 OPTIONS=taunt:do a little dance.
+# Implicit Item Sizes
+OPTIONS=implicit_medium
+# Display item weights
+OPTIONS=invweight
 
 ##########################
 ####### Challenges #######

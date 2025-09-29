@@ -2274,6 +2274,12 @@ create_object(object *o, struct mkroom *croom)
         otmp->oeroded = otmp->oeroded2 = 0;
         otmp->oerodeproof = 0;
     }
+    if (o->osize) {
+        otmp->osize = o->osize;
+        if (otmp->osize > MZ_GIGANTIC) otmp->osize = MZ_GIGANTIC;
+        if (otmp->osize < MZ_TINY) otmp->osize = MZ_TINY;
+        if (otmp->osize > MZ_HUGE && otmp->osize < MZ_GIGANTIC) otmp->osize = MZ_HUGE;
+    }
     if (o->recharged)
         otmp->recharged = (o->recharged % 8);
     if (o->locked == 0 || o->locked == 1) {
@@ -2310,8 +2316,10 @@ create_object(object *o, struct mkroom *croom)
                 remove_object(otmp);
                 if (otmp->otyp == SADDLE && can_saddle(invent_carrying_monster->data))
                     put_saddle_on_mon(otmp, invent_carrying_monster);
-                else
+                else {
+                    set_obj_size(otmp, invent_carrying_monster->data->msize);
                     (void) mpickobj(invent_carrying_monster, otmp);
+                }
             }
         } else {
             struct obj *cobj = container_obj[container_idx - 1];
@@ -3565,7 +3573,7 @@ lspo_object(lua_State *L)
             0,       /* quan */
             0,       /* buried */
             0,       /* lit */
-            0, 0, 0, 0, 0, /* eroded, locked, trapped, tknown, recharged */
+            0, 0, 0, 0, 0, 0, /* eroded, osize, locked, trapped, tknown, recharged */
             0, 0, 0, 0, /* invis, greased, broken, achievement */
     };
 #if 0
@@ -3637,6 +3645,7 @@ lspo_object(lua_State *L)
         tmpobj.buried = get_table_boolean_opt(L, "buried", 0);
         tmpobj.lit = get_table_boolean_opt(L, "lit", 0);
         tmpobj.eroded = get_table_int_opt(L, "eroded", 0);
+        tmpobj.osize = get_table_int_opt(L, "osize", MZ_MEDIUM);
         tmpobj.locked = get_table_boolean_opt(L, "locked", -1);
         tmpobj.trapped = get_table_boolean_opt(L, "trapped", -1);
         tmpobj.tknown = get_table_boolean_opt(L, "trap_known", -1);

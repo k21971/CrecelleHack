@@ -470,7 +470,7 @@ steal(struct monst *mtmp, char *objnambuf)
                          cursed weapon but animals can't */
                       || (otmp == RING_ON_PRIMARY && welded(uwep))
                       || (otmp == RING_ON_SECONDARY && welded(uwep)
-                          && bimanual(uwep)));
+                          && u_bimanual(uwep)));
 
         if (ostuck || can_carry(mtmp, otmp) == 0) {
             static const char *const how[] = {
@@ -793,7 +793,7 @@ maybe_absorb_item(
         } else {
             const char *hand_s = body_part(HAND);
 
-            if (bimanual(obj))
+            if (u_bimanual(obj))
                 hand_s = makeplural(hand_s);
             pline("%s %s pulled from your %s!", upstart(yname(obj)),
                   otense(obj, "are"), hand_s);

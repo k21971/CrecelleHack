@@ -184,6 +184,7 @@ m_initthrow(struct monst *mtmp, int otyp, int oquan)
     otmp = mksobj(otyp, TRUE, FALSE);
     otmp->quan = (long) rn1(oquan, 3);
     otmp->owt = weight(otmp);
+    set_obj_size(otmp, mtmp->data->msize);
     if (otyp == ORCISH_ARROW || is_roguish(mtmp->data))
         otmp->opoisoned = TRUE;
     (void) mpickobj(mtmp, otmp);
@@ -2361,6 +2362,9 @@ mongets(struct monst *mtmp, int otyp)
         /* roguish monsters can get poisoned items */
         if (is_roguish(mtmp->data) && is_poisonable(otmp))
             otmp->opoisoned = rn2(2);
+
+        /* adjust the size of the object */
+        set_obj_size(otmp, mtmp->data->msize);
 
         /* powerful monsters have a good chance of getting
            some kind of boosted weapon related to their

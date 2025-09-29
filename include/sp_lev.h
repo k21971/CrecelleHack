@@ -161,7 +161,7 @@ typedef struct {
     int quan;
     short buried;
     short lit;
-    short eroded, locked, trapped, tknown, recharged, invis, greased, broken,
+    short eroded, osize, locked, trapped, tknown, recharged, invis, greased, broken,
           achievement;
 } object;
 

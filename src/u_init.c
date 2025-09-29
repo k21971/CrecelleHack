@@ -216,6 +216,8 @@ static struct trobj Sunglasses[] = { { SUNGLASSES, 0, TOOL_CLASS, 1, 0 },
                                     { 0, 0, 0, 0, 0 } };
 static struct trobj Darts[] = { { DART, 0, WEAPON_CLASS, 12, 0 },
                                      { 0, 0, 0, 0, 0 } };
+static struct trobj Upgrade[] = { { UPGRADE_KIT, 0, TOOL_CLASS, 1, 0 },
+                                { 0, 0, 0, 0, 0 } };
 
 /* race-based substitutions for initial inventory;
    the weaker cloak for elven rangers is intentional--they shoot better */
@@ -911,6 +913,8 @@ u_init_race(void)
         break;
 
     case PM_GNOME:
+        if (!rn2(10))
+            ini_inv(Upgrade);
         break;
 
     case PM_ORC:
@@ -1303,6 +1307,7 @@ ini_inv_adjust_obj(struct trobj *trop, struct obj *obj)
         }
         obj->cursed = 0;
         obj->booster = 0;
+        set_obj_size(obj, mons[gu.urace.mnum].msize);
         if (obj->opoisoned && u.ualign.type != A_CHAOTIC)
             obj->opoisoned = 0;
         if (obj->oclass == WEAPON_CLASS || obj->oclass == TOOL_CLASS) {
@@ -1341,7 +1346,7 @@ ini_inv_use_obj(struct obj *obj)
         discover_object(POT_OIL, TRUE, FALSE);
 
     if (obj->oclass == ARMOR_CLASS) {
-        if (is_shield(obj) && !uarms && !(uwep && bimanual(uwep))) {
+        if (is_shield(obj) && !uarms && !(uwep && u_bimanual(uwep))) {
             setworn(obj, W_ARMS);
             /* Prior to 3.6.2 this used to unset uswapwep if it was set,
                but wearing a shield doesn't prevent having an alternate
@@ -1368,7 +1373,7 @@ ini_inv_use_obj(struct obj *obj)
         if (is_ammo(obj) || is_missile(obj)) {
             if (!uquiver)
                 setuqwep(obj);
-        } else if (!uwep && (!uarms || !bimanual(obj))) {
+        } else if (!uwep && (!uarms || !u_bimanual(obj))) {
             setuwep(obj);
         } else if (!uswapwep) {
             setuswapwep(obj);

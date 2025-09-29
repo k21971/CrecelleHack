@@ -71,7 +71,7 @@ des.object({ coord = { 5, 10 }, id = "statue", montype = "squonk", historic = tr
 des.engraving({ coord = { 3, 5 }, type = "engrave", text = "You can leave the tutorial via the magic portal", degrade = false });
 des.trap({ type = "magic portal", coord = { 3, 4 }, seen = true });
 --
-des.engraving({ coord = { 3, 11 }, type = "engrave", text = "Welcome to the CrecelleHack Tutorial", degrade = false });
+des.engraving({ coord = { 3, 11 }, type = "engrave", text = "Welcome to the CrecelleHack Tutorial. This tutorial is modeled off the 3.7 tutorial", degrade = false });
 des.engraving({ coord = { 3, 13 }, type = "engrave", text = "This tutorial will walk you through a few key differences between this variant and vanilla", degrade = false });
 des.engraving({ coord = { 3, 15 }, type = "engrave", text = "If you have not played NetHack before, please familiarize yourself with NetHack 3.7 first", degrade = false });
 des.engraving({ coord = { 5, 16 }, type = "engrave", text = "Let's start with the floor coating system", degrade = false });
@@ -102,7 +102,12 @@ des.engraving({ coord = { 17, 6 }, type = "engrave", text = "Dexterity contribut
 des.object({ coord = { 17, 5 }, id = "tonic of gain ability", buc = "blessed", quantity = math.random(3, 5) });
 -- Niche
 des.engraving({ coord = { 19, 6 }, type = "engrave", text = "Scrolls of Genocide have been renamed to Scrolls of Erasure", degrade = false });
-des.object({ coord = { 19, 5 }, id = "scroll of light", buc = "not-cursed", name = "(Not a Real SoE)" });
+des.object({ coord = { 19, 5 }, id = "scroll of light", buc = "not-cursed", name = "(Not a Real Erasure Scroll)" });
+-- Niche
+des.engraving({ coord = { 19, 8 }, type = "engrave", text = "Weapons and armor can be of different sizes", degrade = false });
+des.object({ coord = { 17, 9 }, id = "stiletto", osize = 3, buc = "not-cursed" });
+des.object({ coord = { 17, 9 }, id = "two-handed sword", osize = 1, buc = "not-cursed" });
+des.object({ coord = { 17, 9 }, id = "scale mail", osize = 0, buc = "not-cursed" });
 -- Niche
 des.engraving({ coord = { 15, 8 }, type = "engrave", text = "Unlocking tools can break", degrade = false });
 des.object({ coord = { 15, 9 }, id = "lock pick", quantity = 5, buc = "not-cursed" });

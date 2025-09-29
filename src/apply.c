@@ -12,6 +12,8 @@ staticfn int use_stethoscope(struct obj *);
 staticfn void use_whistle(struct obj *);
 staticfn void use_magic_whistle(struct obj *);
 staticfn void magic_whistled(struct obj *);
+staticfn int resize_ok(struct obj *);
+staticfn int use_upgrade_kit(struct obj *);
 staticfn int use_leash(struct obj *);
 staticfn void use_leash_core(struct obj *, struct monst *, coord *, int);
 staticfn boolean mleashed_next2u(struct monst *);
@@ -693,6 +695,100 @@ magic_whistled(struct obj *obj)
     if (*buf)
         pline("%s.", buf);
     return;
+}
+
+staticfn int
+resize_ok(struct obj *obj)
+{
+    if (!obj)
+        return GETOBJ_EXCLUDE;
+    if (obj->oclass != ARMOR_CLASS && obj->oclass != WEAPON_CLASS
+        && !is_weptool(obj))
+        return GETOBJ_EXCLUDE;
+    return GETOBJ_SUGGEST;
+}
+
+staticfn int
+use_upgrade_kit(struct obj *obj)
+{
+    struct obj *otmp;
+    anything any;
+    menu_item *selected;
+    int clr = NO_COLOR;
+    int newsize;
+
+    any = cg.zeroany; 
+    any.a_int = 1; 
+
+    otmp = getobj("resize", resize_ok, GETOBJ_PROMPT);
+    if (resize_ok(otmp) != GETOBJ_SUGGEST)
+        return ECMD_OK;
+    if (otmp->oclass == ARMOR_CLASS && otmp->owornmask) {
+		You("are wearing that!");
+		return ECMD_OK;
+	} else if (uwep == otmp || uswapwep == otmp) {
+        You("are wielding that!");
+        return ECMD_OK;
+    }
+
+    /* MENU */
+    winid tmpwin = create_nhwindow(NHW_MENU);
+    start_menu(tmpwin, MENU_BEHAVE_STANDARD);
+    any.a_int++;
+    add_menu(tmpwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE,
+                clr, "Smaller", MENU_ITEMFLAGS_NONE);
+    any.a_int++;
+    add_menu(tmpwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE,
+                clr, "Larger", MENU_ITEMFLAGS_NONE);
+    any.a_int++;
+    add_menu(tmpwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, clr,
+                "Your Size", MENU_ITEMFLAGS_NONE);
+    end_menu(tmpwin, "Resize the item to be what?");
+    if (select_menu(tmpwin, PICK_ONE, &selected) > 0) {
+        newsize = selected[0].item.a_int - 1;
+    } else {
+        newsize = -1;
+    }
+    free((genericptr_t) selected);
+    destroy_nhwindow(tmpwin);
+    /* RESULT */
+    switch (newsize) {
+    case 1: /* Smaller */
+        newsize = otmp->osize - 1;
+        if (newsize > MZ_HUGE) newsize = MZ_HUGE;
+        if (newsize < MZ_TINY) {
+            pline("That's too small!");
+            return ECMD_OK;
+        }
+        break;
+    case 2: /* Larger  */
+        newsize = otmp->osize + 1;
+        if (newsize > MZ_GIGANTIC) {
+            pline("That's too large!");
+            return ECMD_OK;
+        }
+        if (newsize > MZ_HUGE) newsize = MZ_GIGANTIC;
+        break;
+    case 3: /* Your size */
+        if (otmp->osize == USIZE) {
+            pline("That would be pointless.");
+            return ECMD_OK;
+        }
+        newsize = USIZE;
+        break;
+    default:
+        pline("Never mind.");
+        return ECMD_OK;
+    }
+
+    /* RESIZE */
+    You("resize %s.", thesimpleoname(otmp));
+    set_obj_size(otmp, newsize);
+    if (otmp->osize == USIZE) pline("It's a perfect fit!");
+    if (erosion_matters(otmp))
+        otmp->oeroded = otmp->oeroded2 = 0;
+    useup(obj);
+    return ECMD_TIME;
 }
 
 #undef HowMany
@@ -3292,7 +3388,7 @@ use_whip(struct obj *obj)
             Strcpy(onambuf, cxname(otmp));
             if (gotit) {
                 mon_hand = mbodypart(mtmp, HAND);
-                if (bimanual(otmp))
+                if (is_bimanual(otmp, mtmp->data))
                     mon_hand = makeplural(mon_hand);
             } else
                 mon_hand = 0; /* lint suppression */
@@ -4439,6 +4535,9 @@ doapply(void)
         break;
     case TINNING_KIT:
         use_tinning_kit(obj);
+        break;
+    case UPGRADE_KIT:
+        use_upgrade_kit(obj);
         break;
     case LEASH:
         res = use_leash(obj);

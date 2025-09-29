@@ -929,7 +929,7 @@ MARKER(LAST_AMULET, AMULET_OF_YENDOR)
            0, TOOL_CLASS, prob, 0, wt, cost, sdam, ldam, hitbon, 0, wt, \
            clr, sn)
 /* containers */
-CONTAINER("large box",       NoDes, 1, 0, 0, 40, 350,   8, WOOD, HI_WOOD,
+CONTAINER("box",       NoDes, 1, 0, 0, 40, 350,   8, WOOD, HI_WOOD,
                                                                 LARGE_BOX),
 CONTAINER("chest",           NoDes, 1, 0, 0, 35, 600,  16, WOOD, HI_WOOD,
                                                                 CHEST),
@@ -1002,6 +1002,8 @@ TOOL("stethoscope",         NoDes, 1, 0, 0, 0, 25,  4, 75, IRON, HI_METAL,
                                                                 STETHOSCOPE),
 TOOL("tinning kit",         NoDes, 1, 0, 0, 1, 15,100, 30, IRON, HI_METAL,
                                                                 TINNING_KIT),
+TOOL("upgrade kit",         NoDes, 1, 0, 0, 0, 40,100, 30, COPPER, HI_COPPER,
+                                                                UPGRADE_KIT),
 TOOL("tin opener",          NoDes, 1, 0, 0, 0, 35,  4, 30, IRON, HI_METAL,
                                                                 TIN_OPENER),
 TOOL("can of grease",       NoDes, 1, 0, 0, 1, 15, 15, 20, IRON, HI_METAL,

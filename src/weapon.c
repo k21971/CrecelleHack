@@ -229,7 +229,7 @@ dmgval(struct obj *otmp, struct monst *mon)
 
     if (bigmonst(ptr)) {
         if (objects[otyp].oc_wldam)
-            tmp = rnd(objects[otyp].oc_wldam);
+            tmp = rnd(objects[otyp].oc_wldam + size_mult(otmp->osize));
         switch (otyp) {
         case IRON_CHAIN:
         case CROSSBOW_BOLT:
@@ -267,7 +267,7 @@ dmgval(struct obj *otmp, struct monst *mon)
         }
     } else {
         if (objects[otyp].oc_wsdam)
-            tmp = rnd(objects[otyp].oc_wsdam);
+            tmp = rnd(objects[otyp].oc_wsdam + size_mult(otmp->osize));
         switch (otyp) {
         case IRON_CHAIN:
         case CROSSBOW_BOLT:
@@ -545,7 +545,10 @@ oselect(struct monst *mtmp, int type)
         if (otmp->otyp != type && type != STRANGE_OBJECT)
             continue;
 
-        if (otmp->otyp == STRANGE_OBJECT) pline("BANG");
+        /* Don't wield weapons that are too big for us unless we
+           are really strong. TODO: Make this more complex? */
+        if (otmp->osize > mtmp->data->msize && !strongmonst(mtmp->data))
+            continue;
 
         /* never select non-cockatrice corpses */
         if ((type == CORPSE || type == EGG)
@@ -784,7 +787,7 @@ select_hwep(struct monst *mtmp)
         if (otmp->oclass == WEAPON_CLASS && otmp->oartifact
             && touch_artifact(otmp, mtmp)
             && ((strong && !wearing_shield)
-                || !objects[otmp->otyp].oc_bimanual))
+                || !is_bimanual(otmp, mtmp->data)))
             return otmp;
     }
 
@@ -933,7 +936,7 @@ mon_wield_item(struct monst *mon)
                 char welded_buf[BUFSZ];
                 const char *mon_hand = mbodypart(mon, HAND);
 
-                if (bimanual(mw_tmp))
+                if (is_bimanual(mw_tmp, mon->data))
                     mon_hand = makeplural(mon_hand);
                 Sprintf(welded_buf, "%s welded to %s %s",
                         otense(mw_tmp, "are"), mhis(mon), mon_hand);
@@ -977,7 +980,7 @@ mon_wield_item(struct monst *mon)
             if (newly_welded) {
                 const char *mon_hand = mbodypart(mon, HAND);
 
-                if (bimanual(obj))
+                if (is_bimanual(obj, mon->data))
                     mon_hand = makeplural(mon_hand);
                 pline("%s %s to %s %s!", Tobjnam(obj, "weld"),
                       is_plural(obj) ? "themselves" : "itself",

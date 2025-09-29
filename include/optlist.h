@@ -396,6 +396,9 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTB(implicit_uncursed, Advanced, 0, opt_out, set_in_game,
            On, Yes, No, No, NoAlias, &flags.implicit_uncursed, Term_False,
            "omit \"uncursed\" from inventory")
+    NHOPTB(implicit_medium, Advanced, 0, opt_out, set_in_game,
+           On, Yes, No, No, NoAlias, &flags.implicit_medium, Term_False,
+           "omit \"medium\" from inventory")
     NHOPTB(invweight, Advanced, 0, opt_out, set_in_game,
            On, Yes, No, No, NoAlias, &iflags.invweight, Term_False,
            "display weight of items" )

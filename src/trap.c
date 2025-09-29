@@ -1503,7 +1503,7 @@ trapeffect_bear_trap(
                   A_Your[trap->madeby_u]);
             return Trap_Effect_Finished;
         }
-        if (!u.usteed && gy.youmonst.data->msize <= MZ_SMALL) {
+        if (!u.usteed && USIZE <= MZ_SMALL) {
             pline("%s bear trap closes harmlessly over you.",
                   A_Your[trap->madeby_u]);
             return Trap_Effect_Finished;
@@ -1608,7 +1608,7 @@ trapeffect_rust_trap(
             pline("%s your left %s!", A_gush_of_water_hits, body_part(ARM));
             if (water_damage(uarms, "shield", TRUE) != ER_NOTHING)
                 break;
-            if (u.twoweap || (uwep && bimanual(uwep)))
+            if (u.twoweap || (uwep && u_bimanual(uwep)))
                 (void) water_damage(u.twoweap ? uswapwep : uwep, 0, TRUE);
  uglovecheck:
             (void) water_damage(uarmg, gloves_simple_name(uarmg), TRUE);
@@ -1671,7 +1671,7 @@ trapeffect_rust_trap(
             if (water_damage(target, "shield", TRUE) != ER_NOTHING)
                 break;
             target = MON_WEP(mtmp);
-            if (target && bimanual(target))
+            if (target && u_bimanual(target))
                 (void) water_damage(target, 0, TRUE);
  mglovecheck:
             target = which_armor(mtmp, W_ARMG);
@@ -5190,7 +5190,7 @@ could_untrap(boolean verbosely, boolean check_floor)
         Strcpy(buf, "And just how do you expect to do that?");
     } else if (u.ustuck && sticks(gy.youmonst.data)) {
         Sprintf(buf, "You'll have to let go of %s first.", mon_nam(u.ustuck));
-    } else if (u.ustuck || (welded(uwep) && bimanual(uwep))) {
+    } else if (u.ustuck || (welded(uwep) && u_bimanual(uwep))) {
         Sprintf(buf, "Your %s seem to be too busy for that.",
                 makeplural(body_part(HAND)));
     } else if (check_floor && !can_reach_floor(FALSE)) {

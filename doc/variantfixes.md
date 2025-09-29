@@ -13,6 +13,23 @@
   editions of D&D as well as anime like Record of Lodoss War. This is
   to say that their doglike features have been emphasized.
 
+## Item Changes
+- Implemented the weapon size system, extremely similar to the one that
+  exists in dnethack. The differences are as follows:
+  - Weapons larger than the player's size are always two-handed. Weapons
+    smaller than the player's size are always one-handed.
+  - Weight modifications are less drastic.
+  - implicit_medium is a config option that allows control over whether
+    "medium" is omitted from sized item descriptions. Defaults to true.
+
+## New Objects
+- Upgrade Kit
+  - As in dnethack, it can be used to resize objects. Unlike dnethack, it
+    offers more granular control over object size. Objects can be one
+    size larger, one size smaller, or the same size as the player's
+    current form. In addition, any object where size is a factor can
+    be resized.
+
 ## Races
 - New Race: Kobold
   - Although kobolds are playable in Grunt and SlashTHEM, their appearance
@@ -21,7 +38,7 @@
     always start with a kobold companion. Tame kobolds will never betray
     a kobold player.
   - Kobolds start with poison resistance, and like orcs they may eat
-    tripe rations without penalty.
+    tripe rations without penalty. They are of small size.
 
 ## Roles
 - Jumping is now the grappler special spell.

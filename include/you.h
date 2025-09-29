@@ -607,6 +607,7 @@ struct _hitmon_data {
 /* hero at (x,y)? */
 #define u_at(x,y) ((x) == u.ux && (y) == u.uy)
 
+#define USIZE (mons[Upolyd ? u.umonnum : gu.urace.mnum].msize)
 #define URIGHTY (u.uhandedness == RIGHT_HANDED)
 #define ULEFTY (u.uhandedness == LEFT_HANDED)
 #define RING_ON_PRIMARY (ULEFTY ? uleft : uright)

@@ -9,7 +9,6 @@ staticfn boolean may_generate_eroded(struct obj *);
 staticfn void mkobj_erosions(struct obj *);
 staticfn void mkbox_cnts(struct obj *);
 staticfn unsigned nextoid(struct obj *, struct obj *);
-staticfn void fuzz_weight(struct obj *);
 staticfn void mksobj_init(struct obj **, boolean);
 staticfn int item_on_ice(struct obj *);
 staticfn void shrinking_glob_gone(struct obj *);
@@ -28,6 +27,7 @@ staticfn void check_contained(struct obj *, const char *);
 staticfn void check_glob(struct obj *, const char *);
 staticfn void sanity_check_worn(struct obj *);
 staticfn void init_oextra(struct oextra *);
+staticfn void fuzz_weight(struct obj *);
 
 struct icp {
     int iprob;   /* probability of an item type */
@@ -891,26 +891,6 @@ unknow_object(struct obj *obj)
     obj->known = objects[obj->otyp].oc_uses_known ? 0 : 1;
 }
 
-/* Fuzz the weight of a non-stacking object. Cluster weights around the
-   object class weight, so that very heavy and very light versions of
-   an object are rarer. Assumes that the obj's weight has already been
-   initialized. */
-staticfn void
-fuzz_weight(struct obj *obj) {
-    int wt, orig_wt, fuzz_factor;
-
-    if (objects[obj->otyp].oc_merge)
-        return;
-    orig_wt = obj->owt;
-    fuzz_factor = orig_wt / 4;
-    if (!fuzz_factor)
-        return;
-    wt = orig_wt + (2 * fuzz_factor) + 2 -  d(4, fuzz_factor);
-    if (wt < 1)
-        wt = 1;
-    obj->owt = wt;
-}
-
 /* do some initialization to newly created object; otyp must already be set */
 staticfn void
 mksobj_init(struct obj **obj, boolean artif)
@@ -1037,6 +1017,12 @@ mksobj_init(struct obj **obj, boolean artif)
             otmp->quan = 1L;
         break;
     case TOOL_CLASS:
+        if (is_weptool(otmp)) {
+            if (otmp->otyp == UNICORN_HORN || rn2(100))
+                set_obj_size(otmp, MZ_MEDIUM);
+            else
+                set_obj_size(otmp, rn2(MZ_HUGE + 1));
+        }
         switch (otmp->otyp) {
         case TALLOW_CANDLE:
         case WAX_CANDLE:
@@ -1148,6 +1134,7 @@ mksobj_init(struct obj **obj, boolean artif)
         blessorcurse(otmp, 17);
         break;
     case ARMOR_CLASS:
+        set_obj_size(otmp, !rn2(100) ? rn2(MZ_HUGE + 1) : MZ_MEDIUM);
         if (rn2(10)
             && (otmp->otyp == FUMBLE_BOOTS
                 || otmp->otyp == LEVITATION_BOOTS
@@ -1446,6 +1433,7 @@ set_corpsenm(struct obj *obj, int id)
     case SKULL:
     case SKELETON:
         obj->owt = weight(obj);
+        set_obj_size(obj, mons[obj->corpsenm].msize);
         break;
     case EGG:
         if (obj->corpsenm != NON_PM && !dead_species(obj->corpsenm, TRUE))
@@ -1887,7 +1875,7 @@ curse(struct obj *otmp)
     otmp->blessed = 0;
     otmp->cursed = 1;
     /* welded two-handed weapon interferes with some armor removal */
-    if (otmp == uwep && bimanual(uwep))
+    if (otmp == uwep && is_bimanual(uwep, gy.youmonst.data))
         reset_remarm();
     /* rules at top of wield.c state that twoweapon cannot be done
        with cursed alternate weapon */
@@ -3938,6 +3926,91 @@ pudding_merge_message(struct obj *otmp, struct obj *otmp2)
         Soundeffect(se_faint_sloshing, 25);
         You_hear("a faint sloshing sound.");
     }
+}
+
+/* Fuzz the weight of a non-stacking object. Cluster weights around the
+   object class weight, so that very heavy and very light versions of
+   an object are rarer. Assumes that the obj's weight has already been
+   initialized. */
+staticfn void
+fuzz_weight(struct obj *obj) {
+    int wt, orig_wt, fuzz_factor;
+    boolean dofuzz = TRUE;
+    float shift = 0;
+
+    if (objects[obj->otyp].oc_merge)
+        dofuzz = FALSE;
+    orig_wt = obj->owt;
+    fuzz_factor = orig_wt / 4;
+    if (!fuzz_factor)
+        dofuzz = FALSE;
+    if (dofuzz)
+        wt = orig_wt + (2 * fuzz_factor) + 2 -  d(4, fuzz_factor);
+    else
+        wt = orig_wt;
+    /* size adjustments */
+    if (size_matters(obj)) {
+        switch (obj->osize) {
+            case MZ_TINY:
+            shift = 0.25;
+            break;
+        case MZ_SMALL:
+            shift = 0.5;
+            break;
+        case MZ_LARGE:
+            shift = 2;
+            break;
+        case MZ_HUGE:
+            shift = 3;
+            break;
+        case MZ_GIGANTIC:
+            shift = 4;
+            break;
+        case MZ_MEDIUM:
+        default:
+            shift = 1;
+            break;
+        }
+        wt = wt * shift;
+    }
+    /* finalize */
+    if (wt < 1)
+        wt = 1;
+    obj->owt = wt;
+}
+
+/* Assuming a base size of medium, pull a multiplier out
+   of the enum size passed in. Once again this would be
+   much easier if MZ_GIGANTIC was not defined as 7. */
+int
+size_mult(int sz) {
+    switch (sz) {
+    case MZ_TINY:
+        return -2;
+    case MZ_SMALL:
+        return -1;
+    case MZ_LARGE:
+        return 1;
+    case MZ_HUGE:
+        return 2;
+    case MZ_GIGANTIC:
+        return 3;
+    case MZ_MEDIUM:
+    default:
+        return 0;
+    }
+}
+
+/* set the size of the object and readjust the
+   weight */
+void set_obj_size(struct obj *obj, int size) {
+    /* Do not set an object to its own size. */
+    if (obj->osize == size || !size_matters(obj))
+        return;
+    obj->osize = size;
+    obj->owt = objects[obj->otyp].oc_weight;
+    obj->owt = weight(obj);
+    fuzz_weight(obj);
 }
 
 /*mkobj.c*/

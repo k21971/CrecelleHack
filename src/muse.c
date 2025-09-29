@@ -2726,7 +2726,7 @@ use_misc(struct monst *mtmp)
 
             Strcpy(the_weapon, the(xname(obj)));
             hand = body_part(HAND);
-            if (bimanual(obj))
+            if (u_bimanual(obj))
                 hand = makeplural(hand);
 
             if (vismon)

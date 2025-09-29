@@ -426,8 +426,12 @@ find_roll_to_hit(
      * or if kicking as martial artist
      */
     if (aatyp == AT_WEAP || aatyp == AT_CLAW) {
-        if (weapon)
+        if (weapon) {
             tmp += hitval(weapon, mtmp);
+            if (weapon->osize != USIZE) {
+                tmp -= (4 * abs(size_mult(weapon->osize) - weapon->osize));
+            }
+        }
         tmp += weapon_hit_bonus(weapon);
     } else if (aatyp == AT_KICK && martial_bonus()) {
         tmp += weapon_hit_bonus((struct obj *) 0);
@@ -976,7 +980,7 @@ hmon_hitmon_weapon_melee(
         hmd->hittxt = TRUE;
     } else if (hmd->dieroll == 2 && obj == uwep
                && obj->oclass == WEAPON_CLASS
-               && (bimanual(obj)
+               && (u_bimanual(obj)
                    || (Role_if(PM_SAMURAI) && obj->otyp == KATANA
                        && !uarms))
                && ((wtype = uwep_skill_type()) != P_NONE
@@ -1469,7 +1473,7 @@ hmon_hitmon_dmg_recalc(struct _hitmon_data *hmd, struct obj *obj)
             absbonus = abs(strbonus);
             if (hmd->twohits)
                 strbonus = ((3 * absbonus + 2) / 4) * sgn(strbonus);
-            else if (hmd->thrown == HMON_MELEE && uwep && bimanual(uwep))
+            else if (hmd->thrown == HMON_MELEE && uwep && u_bimanual(uwep))
                 strbonus = ((3 * absbonus + 1) / 2) * sgn(strbonus);
             dmgbonus += strbonus;
         }
@@ -5604,7 +5608,7 @@ hmonas(struct monst *mon)
                use weapons do not have this restriction, but they also
                never have the opportunity to use two weapons) */
             if (weapon_used && (sum[i - 1] > M_ATTK_MISS)
-                && uwep && bimanual(uwep))
+                && uwep && u_bimanual(uwep))
                 continue;
             /* Certain monsters don't use weapons when encountered as enemies,
              * but players who polymorph into them have hands or claws and
@@ -5624,7 +5628,7 @@ hmonas(struct monst *mon)
             if (uswapwep /* set up 'altwep' flag for next iteration */
                 /* only consider secondary when wielding one-handed primary */
                 && uwep && (uwep->oclass == WEAPON_CLASS || is_weptool(uwep))
-                && !bimanual(uwep)
+                && !u_bimanual(uwep)
                 /* only switch if not wearing shield and not at artifact;
                    shield limitation is iffy since still get extra swings
                    if polyform has them, but it matches twoweap behavior;
@@ -5637,7 +5641,7 @@ hmonas(struct monst *mon)
                 && !(is_launcher(uswapwep) || is_ammo(uswapwep)
                      || is_missile(uswapwep)) /* dart, shuriken, boomerang */
                 /* and not two-handed and not incapable of being wielded */
-                && !bimanual(uswapwep)
+                && !u_bimanual(uswapwep)
                 && !(objects[uswapwep->otyp].oc_material == SILVER
                      && Hate_silver))
                 altwep = !altwep; /* toggle for next attack */
@@ -6627,6 +6631,7 @@ boost_effects_pre(struct monst *magr, struct monst *mdef)
     if (is_u) {
         if ((weapon->booster & BST_ICE) && icy) {
             otmp = mksobj(ICICLE, FALSE, FALSE);
+            otmp->osize = MZ_MEDIUM;
             otmp->spe = 1;
             throwit(otmp, 0L, FALSE, (struct obj *) 0);
         }
@@ -6638,6 +6643,7 @@ boost_effects_pre(struct monst *magr, struct monst *mdef)
         if ((weapon->booster & BST_ICE) && icy) {
             (void) linedup(x, y, dx, dy, 0); /* set up gt.tbx and gt.tby */
             otmp = mksobj(ICICLE, FALSE, FALSE);
+            otmp->osize = MZ_MEDIUM;
             m_throw(magr, x, y, sgn(gt.tbx), sgn(gt.tby),
                     distmin(x, y, dx, dy), otmp);
         }

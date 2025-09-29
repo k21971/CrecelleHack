@@ -150,12 +150,12 @@ pick_can_reach(struct obj *pick, coordxy x, coordxy y)
     if (u.utrap && u.utraptype == TT_PIT) {
         if (target_in_pit)
             return conjoined_pits(t, t_at(u.ux, u.uy), FALSE);
-        return bimanual(pick);
+        return u_bimanual(pick);
     }
 
     /* when hero isn't in a pit, a mattock or flying hero w/ pick can reach
        whether or not the statue is in a pit */
-    if (bimanual(pick) || Flying)
+    if (u_bimanual(pick) || Flying)
         return TRUE;
     /* one-handed pick-axe can reach if statue isn't in a pit */
     if (!target_in_pit)

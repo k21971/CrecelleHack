@@ -639,8 +639,7 @@ can_track(struct permonst *ptr)
 boolean
 sliparm(struct permonst *ptr)
 {
-    return (boolean) (is_whirly(ptr) || ptr->msize <= MZ_SMALL
-                      || noncorporeal(ptr));
+    return (boolean) (is_whirly(ptr) || noncorporeal(ptr));
 }
 
 /* creature will break out of armor */
@@ -650,8 +649,7 @@ breakarm(struct permonst *ptr)
     if (sliparm(ptr))
         return FALSE;
 
-    return (boolean) (bigmonst(ptr)
-                      || (ptr->msize > MZ_SMALL && !humanoid(ptr))
+    return (boolean) (!humanoid(ptr)
                       /* special cases of humanoids that cannot wear suits */
                       || ptr == &mons[PM_MARILITH]
                       || ptr == &mons[PM_WINGED_GARGOYLE]);

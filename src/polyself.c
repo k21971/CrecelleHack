@@ -24,7 +24,7 @@
 staticfn void check_strangling(boolean);
 staticfn void polyman(const char *, const char *);
 staticfn void dropp(struct obj *);
-staticfn void break_armor(void);
+staticfn void break_armor(struct permonst *);
 staticfn void drop_weapon(int);
 staticfn int armor_to_dragon(int);
 staticfn void newman(void);
@@ -735,6 +735,7 @@ polymon(int mntmp)
             was_blind = !!Blind, dochange = FALSE, was_expelled = FALSE,
             was_hiding_under = u.uundetected && hides_under(gy.youmonst.data);
     int mlvl, newMaxStr;
+    struct permonst *olduasmon = &mons[Upolyd ? u.umonnum : gu.urace.mnum];
 
     if (svm.mvitals[mntmp].mvflags & G_GENOD) { /* allow G_EXTINCT */
         You_feel("rather %s-ish.",
@@ -869,7 +870,7 @@ polymon(int mntmp)
 
     if (uskin && mntmp != armor_to_dragon(uskin->otyp))
         skinback(FALSE);
-    break_armor();
+    break_armor(olduasmon);
     drop_weapon(1);
     find_ac(); /* (repeated below) */
     /* if hiding under something and can't hide anymore, unhide now;
@@ -1138,12 +1139,15 @@ dropp(struct obj *obj)
 }
 
 staticfn void
-break_armor(void)
+break_armor(struct permonst *old)
 {
     struct obj *otmp;
     struct permonst *uptr = gy.youmonst.data;
 
-    if (breakarm(uptr)) {
+    boolean breakage = breakarm(uptr) || (old->msize < uptr->msize);
+    boolean slippage = sliparm(uptr) || (old->msize > uptr->msize);
+
+    if (breakage) {
         if ((otmp = uarm) != 0) {
             if (donning(otmp))
                 cancel_don();
@@ -1174,7 +1178,7 @@ break_armor(void)
             Your("shirt rips to shreds!");
             useup(uarmu);
         }
-    } else if (sliparm(uptr)) {
+    } else if (slippage) {
         if ((otmp = uarm) != 0 && racial_exception(&gy.youmonst, otmp) < 1) {
             if (donning(otmp))
                 cancel_don();
@@ -1224,15 +1228,7 @@ break_armor(void)
             }
         }
     }
-    if (((otmp = uarmh) != 0) && otmp->otyp == SKULL 
-        && has_head(uptr) && uptr->msize > mons[otmp->corpsenm].msize) {
-        if (donning(otmp))
-            cancel_don();
-        Your("%s splinters!", helm_simple_name(otmp));
-        (void) Helmet_off();
-        useup(otmp);
-    }
-    if (nohands(uptr) || verysmall(uptr)) {
+    if (nohands(uptr) || slippage || breakage) {
         if ((otmp = uarmg) != 0) {
             if (donning(otmp))
                 cancel_don();
@@ -1243,7 +1239,7 @@ break_armor(void)
             /* Glib manipulation (ends immediately) handled by Gloves_off */
             dropp(otmp);
         }
-        if ((otmp = uarms) != 0) {
+        if ((otmp = uarms) != 0 && nohands(uptr)) {
             You("can no longer hold your shield!");
             (void) Shield_off();
             dropp(otmp);
@@ -1257,7 +1253,7 @@ break_armor(void)
             dropp(otmp);
         }
     }
-    if (nohands(uptr) || verysmall(uptr)
+    if (nohands(uptr) || slippage || breakage
         || slithy(uptr) || uptr->mlet == S_CENTAUR) {
         if ((otmp = uarmf) != 0) {
             if (donning(otmp))

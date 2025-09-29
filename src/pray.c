@@ -297,7 +297,7 @@ worst_cursed_item(void)
     }
     /* weapon takes precedence if it is interfering
        with taking off a ring or putting on a shield */
-    if (welded(uwep) && (uright || bimanual(uwep))) { /* weapon */
+    if (welded(uwep) && (uright || u_bimanual(uwep))) { /* weapon */
         otmp = uwep;
     /* gloves come next, due to rings */
     } else if (uarmg && uarmg->cursed) { /* gloves */
@@ -888,6 +888,7 @@ gcrownu(void)
         bless(obj);
         obj->bknown = 1; /* ok to skip set_bknown() */
         obj->dknown = 1;
+        set_obj_size(obj, USIZE);
         at_your_feet(upstart(ansimpleoname(obj)));
         dropy(obj);
         u.ugifts++;
@@ -1815,6 +1816,7 @@ bestow_artifact(uchar max_giftvalue)
                 otmp->spe = 0;
             if (otmp->cursed)
                 uncurse(otmp);
+            set_obj_size(otmp, USIZE);
             otmp->oerodeproof = TRUE;
             Strcpy(buf, (Hallucination ? "a doodad"
                             : Blind ? "an object"

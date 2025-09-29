@@ -462,7 +462,7 @@ int
 freehand(void)
 {
     return (!uwep || !welded(uwep)
-            || (!bimanual(uwep) && (!uarms || !uarms->cursed)));
+            || (!u_bimanual(uwep) && (!uarms || !uarms->cursed)));
 }
 
 /* getobj callback for an object to engrave with */

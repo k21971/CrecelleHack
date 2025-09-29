@@ -178,7 +178,7 @@ ready_weapon(struct obj *wep)
     } else if (wep->otyp == CORPSE && cant_wield_corpse(wep)) {
         /* hero must have been life-saved to get here; use a turn */
         res = ECMD_TIME; /* corpse won't be wielded */
-    } else if (uarms && bimanual(wep)) {
+    } else if (uarms && u_bimanual(wep)) {
         You("cannot wield a two-handed %s while wearing a shield.",
             is_sword(wep) ? "sword" : wep->otyp == BATTLE_AXE ? "axe"
                                                               : "weapon");
@@ -197,9 +197,9 @@ ready_weapon(struct obj *wep)
                 tmp = "";
             pline("%s%s %s to your %s%s!", tmp, aobjnam(wep, "weld"),
                   (wep->quan == 1L) ? "itself" : "themselves", /* a3 */
-                  bimanual(wep) ? "" :
+                  u_bimanual(wep) ? "" :
                       (URIGHTY ? "dominant right " : "dominant left "),
-                  bimanual(wep) ? (const char *) makeplural(body_part(HAND))
+                  u_bimanual(wep) ? (const char *) makeplural(body_part(HAND))
                                 : body_part(HAND));
             set_bknown(wep, 1);
         } else {
@@ -227,7 +227,7 @@ ready_weapon(struct obj *wep)
             /* skip this message if we already got "empty handed" one above;
                also, Null is not safe for neither TWOWEAPOK() or bimanual() */
             if (uwep)
-                You("%s.", ((TWOWEAPOK(uwep) && !bimanual(uwep))
+                You("%s.", ((TWOWEAPOK(uwep) && !u_bimanual(uwep))
                             ? are_no_longer_twoweap
                             : can_no_longer_twoweap));
         }
@@ -261,6 +261,8 @@ ready_weapon(struct obj *wep)
                       shkname(this_shkp), xname(wep));
             }
         }
+        if (size_matters(wep) && wep->osize != USIZE)
+            pline("%s awkward to wield due to your size.", Yobjnam2(wep, "are"));
     }
     if ((had_wep != (uwep != 0)) && condtests[bl_bareh].enabled)
         disp.botl = TRUE;
@@ -699,7 +701,7 @@ wield_tool(struct obj *obj,
         if (flags.verbose) {
             const char *hand = body_part(HAND);
 
-            if (bimanual(uwep))
+            if (u_bimanual(uwep))
                 hand = makeplural(hand);
             if (strstri(what, "pair of ") != 0)
                 more_than_1 = FALSE;
@@ -716,7 +718,7 @@ wield_tool(struct obj *obj,
         return FALSE;
     }
     /* check shield */
-    if (uarms && bimanual(obj)) {
+    if (uarms && u_bimanual(obj)) {
         You("cannot %s a two-handed %s while wearing a shield.", verb,
             (obj->oclass == WEAPON_CLASS) ? "weapon" : "tool");
         return FALSE;
@@ -778,8 +780,8 @@ can_twoweapon(void)
               is_plural(otmp) ? "aren't" : "isn't a",
               (otmp == uwep) ? "primary" : "secondary",
               plur(otmp->quan));
-    } else if (bimanual(uwep) || bimanual(uswapwep)) {
-        otmp = bimanual(uwep) ? uwep : uswapwep;
+    } else if (u_bimanual(uwep) || u_bimanual(uswapwep)) {
+        otmp = u_bimanual(uwep) ? uwep : uswapwep;
         pline("%s isn't one-handed.", Yname2(otmp));
     } else if (uarms) {
         You_cant("use two weapons while wearing a shield.");
@@ -1071,7 +1073,7 @@ weldmsg(struct obj *obj)
     long savewornmask;
     const char *hand = body_part(HAND);
 
-    if (bimanual(obj))
+    if (u_bimanual(obj))
         hand = makeplural(hand);
     savewornmask = obj->owornmask;
     obj->owornmask = 0L; /* suppress doname()'s "(weapon in hand)";
@@ -1089,6 +1091,31 @@ mwelded(struct obj *obj)
     if (obj && (obj->owornmask & W_WEP) && will_weld(obj))
         return TRUE;
     return FALSE;
+}
+
+/* This function uses the size of a monster to determine whether an item is
+   bimanual. Compare to bimanual(), which is a macro which simply pulls out
+   the bimanual flagg in a piece of equipment.*/
+boolean
+is_bimanual(struct obj *obj, struct permonst *ptr)
+{
+    int mon_size = ptr->msize;
+    int obj_size = obj->osize;
+    if (mon_size == obj_size)
+        return bimanual(obj);
+    else if (mon_size > obj_size)
+        return FALSE;
+    else
+        return TRUE;
+
+}
+
+/* Check if an object is bimanual for the player. Should be favored over
+   u_bimanual(obj). */
+boolean
+u_bimanual(struct obj *obj)
+{
+    return is_bimanual(obj, &mons[Upolyd ? u.umonnum : gu.urace.mnum]);
 }
 
 /*wield.c*/

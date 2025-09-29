@@ -782,6 +782,7 @@ extern void adj_abon(struct obj *, schar) NONNULLARG1;
 extern boolean inaccessible_equipment(struct obj *, const char *, boolean);
 extern int any_worn_armor_ok(struct obj *);
 extern int count_worn_armor(void);
+extern int wrong_size_armor(struct obj *, struct permonst *);
 
 /* ### dog.c ### */
 
@@ -1677,6 +1678,7 @@ extern void bill_dummy_object(struct obj *) NONNULLARG1;
 extern void costly_alteration(struct obj *, int) NONNULLARG1;
 extern void clear_dknown(struct obj *);
 extern void unknow_object(struct obj *);
+extern int size_mult(int);
 extern struct obj *mksobj(int, boolean, boolean) NONNULL;
 extern boolean stone_object_type(unsigned);
 extern boolean stone_furniture_type(unsigned);
@@ -1732,6 +1734,7 @@ extern struct obj *obj_absorb(struct obj **, struct obj **);
 extern struct obj *obj_meld(struct obj **, struct obj **);
 extern void pudding_merge_message(struct obj *, struct obj *) NONNULLARG12;
 extern struct obj *init_dummyobj(struct obj *, short, long);
+extern void set_obj_size(struct obj *, int) NONNULLARG1;
 
 /* ### mkroom.c ### */
 
@@ -2227,6 +2230,7 @@ extern char *mshot_xname(struct obj *) NONNULLARG1;
 extern boolean the_unique_obj(struct obj *) NONNULLARG1;
 extern boolean the_unique_pm(struct permonst *) NONNULLARG1;
 extern boolean erosion_matters(struct obj *) NONNULLARG1;
+extern boolean size_matters(struct obj *) NONNULLARG1;
 extern char *doname(struct obj *) NONNULLARG1;
 extern char *doname_with_price(struct obj *) NONNULLARG1;
 extern char *doname_vague_quan(struct obj *) NONNULLARG1;
@@ -3800,6 +3804,8 @@ extern int chwepon(struct obj *, int) NO_NNARGS;
 extern int welded(struct obj *) NO_NNARGS;
 extern void weldmsg(struct obj *) NONNULLARG1;
 extern boolean mwelded(struct obj *) NO_NNARGS;
+extern boolean is_bimanual(struct obj *, struct permonst *);
+extern boolean u_bimanual(struct obj *);
 
 /* ### windows.c ### */
 
@@ -3967,7 +3973,7 @@ extern void update_mon_extrinsics(struct monst *, struct obj *, boolean,
 extern int find_mac(struct monst *) NONNULLARG1;
 extern void m_dowear(struct monst *, boolean) NONNULLARG1;
 extern struct obj *which_armor(struct monst *, long) NONNULLARG1;
-extern void mon_break_armor(struct monst *, boolean) NONNULLARG1;
+extern void mon_break_armor(struct monst *, struct permonst *, boolean) NONNULLARG12;
 extern void bypass_obj(struct obj *) NONNULLARG1;
 extern void clear_bypasses(void);
 /* callers don't check gi.invent before passing to bypass_objlist */

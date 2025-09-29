@@ -153,7 +153,8 @@ struct obj {
                           * [maybe for remaining stack of used potion too] */
     /* 5 free bits */
 #else
-    /* 6 free bits */
+    Bitfield(osize, 3);   /* the size of the weapon or armor */
+    /* 3 free bits */
 #endif
 
     int corpsenm;         /* type of corpse is mons[corpsenm] */

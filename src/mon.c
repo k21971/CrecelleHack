@@ -5640,7 +5640,7 @@ newcham(
         mtmp->cham = pm_to_cham(monsndx(mdat));
 
     possibly_unwield(mtmp, polyspot); /* might lose use of weapon */
-    mon_break_armor(mtmp, polyspot);
+    mon_break_armor(mtmp, olddata, polyspot);
     if (!(mtmp->misc_worn_check & W_ARMG))
         mselftouch(mtmp, "No longer petrify-resistant, ",
                    !svc.context.mon_moving);

@@ -2072,7 +2072,7 @@ canwearobj(struct obj *otmp, long *mask, boolean noisy)
         /* same exception for cloaks as used in m_dowear() */
         && (which != c_cloak
             || ((otmp->otyp != MUMMY_WRAPPING)
-                ? gy.youmonst.data->msize != MZ_SMALL
+                ? USIZE != MZ_SMALL
                 : !WrappingAllowed(gy.youmonst.data)))
         && (racial_exception(&gy.youmonst, otmp) < 1)) {
         if (noisy)
@@ -2084,7 +2084,7 @@ canwearobj(struct obj *otmp, long *mask, boolean noisy)
         return 0;
     }
 
-    if (welded(uwep) && bimanual(uwep) && (is_suit(otmp) || is_shirt(otmp))) {
+    if (welded(uwep) && u_bimanual(uwep) && (is_suit(otmp) || is_shirt(otmp))) {
         if (noisy)
             You("cannot do that while holding your %s.",
                 is_sword(uwep) ? c_sword : c_weapon);
@@ -2110,7 +2110,7 @@ canwearobj(struct obj *otmp, long *mask, boolean noisy)
             if (noisy)
                 already_wearing(an(c_shield));
             err++;
-        } else if (uwep && bimanual(uwep)) {
+        } else if (uwep && u_bimanual(uwep)) {
             if (noisy)
                 You("cannot wear a shield while wielding a two-handed %s.",
                     is_sword(uwep) ? c_sword : (uwep->otyp == BATTLE_AXE)
@@ -2259,9 +2259,8 @@ accessory_or_armor_on(struct obj *obj)
             makeknown(obj->otyp);
             disp.botl = TRUE; /* for AC after zeroing u.ublessed */
             return ECMD_TIME;
-        } else if (obj->otyp == SKULL 
-                    && mons[obj->corpsenm].msize < gy.youmonst.data->msize) {
-            pline("The skull is too small to wear on your %s.", body_part(HEAD));
+        } else if (wrong_size_armor(obj, gy.youmonst.data)) {
+            pline("The %s is the wrong size for you.", xname(obj));
             return ECMD_OK;
         }
     } else {
@@ -2331,11 +2330,11 @@ accessory_or_armor_on(struct obj *obj)
                 res = !uwep->bknown; /* check this before calling welded() */
                 if (((mask == RIGHT_RING && URIGHTY)
                      || (mask == LEFT_RING  && ULEFTY)
-                     || bimanual(uwep)) && welded(uwep)) {
+                     || u_bimanual(uwep)) && welded(uwep)) {
                     const char *hand = body_part(HAND);
 
                     /* welded will set bknown */
-                    if (bimanual(uwep))
+                    if (u_bimanual(uwep))
                         hand = makeplural(hand);
                     You("cannot free your weapon %s to put on the ring.",
                         hand);
@@ -2588,13 +2587,13 @@ glibr(void)
 
     leftfall = (uleft && !uleft->cursed
                 && (!uwep || !(welded(uwep) && ULEFTY)
-                    || !bimanual(uwep)));
+                    || !u_bimanual(uwep)));
     rightfall = (uright && !uright->cursed
                 && (!uwep || !(welded(uwep) && URIGHTY)
-                    || !bimanual(uwep)));
+                    || !u_bimanual(uwep)));
 /*
     leftfall = (uleft && !uleft->cursed
-                && (!uwep || !welded(uwep) || !bimanual(uwep)));
+                && (!uwep || !welded(uwep) || !u_bimanual(uwep)));
     rightfall = (uright && !uright->cursed && (!welded(uwep)));
 */
 
@@ -2661,7 +2660,7 @@ glibr(void)
         }
         hand = body_part(HAND);
         which = "";
-        if (bimanual(otmp)) {
+        if (u_bimanual(otmp)) {
             hand = makeplural(hand);
         } else if (wastwoweap) {
             /* preceding msg was about non-dominant hand */
@@ -2721,7 +2720,7 @@ stuck_ring(struct obj *ring, int otyp)
         if (nolimbs(gy.youmonst.data) && uamul
             && uamul->otyp == AMULET_OF_UNCHANGING && uamul->cursed)
             return uamul;
-        if (welded(uwep) && ((ring == RING_ON_PRIMARY) || bimanual(uwep)))
+        if (welded(uwep) && ((ring == RING_ON_PRIMARY) || u_bimanual(uwep)))
             return uwep;
         if (uarmg && uarmg->cursed)
             return uarmg;
@@ -2766,7 +2765,7 @@ select_off(struct obj *otmp)
         }
         glibdummy = cg.zeroobj;
         why = 0; /* the item which prevents ring removal */
-        if (welded(uwep) && ((otmp == RING_ON_PRIMARY) || bimanual(uwep))) {
+        if (welded(uwep) && ((otmp == RING_ON_PRIMARY) || u_bimanual(uwep))) {
             Sprintf(buf, "free a weapon %s", body_part(HAND));
             why = uwep;
         } else if (uarmg && (uarmg->cursed || Glib)) {
@@ -2817,7 +2816,7 @@ select_off(struct obj *otmp)
         } else if (otmp == uarmu && uarm && uarm->cursed) {
             Sprintf(buf, "remove your %s", c_suit);
             why = uarm;
-        } else if (welded(uwep) && bimanual(uwep)) {
+        } else if (welded(uwep) && u_bimanual(uwep)) {
             Sprintf(buf, "release your %s",
                     is_sword(uwep) ? c_sword : (uwep->otyp == BATTLE_AXE)
                                                    ? c_axe
@@ -3489,6 +3488,21 @@ count_worn_armor(void)
     if (uarmu) ret++;
 
     return ret;
+}
+
+/* Return 1 if too big, -1 if too small. */
+int
+wrong_size_armor(struct obj *obj, struct permonst *ptr)
+{
+    int size = (ptr == gy.youmonst.data) ? USIZE : ptr->msize;
+    if (!obj || obj->otyp == MUMMY_WRAPPING || is_shield(obj))
+        return FALSE;
+    if (is_cloak(obj) && abs(size_mult(obj->osize) - size_mult(size) > 1)) {
+        return (obj->osize > size) ? 1 : -1;
+    } else if (!is_cloak(obj) && obj->osize != size) {
+        return (obj->osize > size) ? 1 : -1;
+    }
+    return FALSE;
 }
 
 /*do_wear.c*/
