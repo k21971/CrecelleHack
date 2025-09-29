@@ -3509,6 +3509,31 @@
         SIZ(1500, 400, MS_DJINNI, MZ_HUMAN), MR_POISON | MR_STONE, 0,
         M1_HUMANOID | M1_FLY | M1_POIS, M2_NOPOLY | M2_STALK | M2_COLLECT,
         M3_INFRAVISIBLE, BST_SAND | BST_ASHES | BST_GRASS, 0, 8, CLR_YELLOW, DJINNI),
+    /*      evil coins        */
+    MON(NAM("pile of killer coins"), S_BAD_COINS, 
+ 	      LVL(6, 9, 7, 0, 0), (G_NOHELL | G_GENO | G_NOCORPSE),
+ 	      A(ATTK(AT_BITE, AD_PHYS, 2, 6), NO_ATTK, NO_ATTK,
+          NO_ATTK, NO_ATTK, NO_ATTK),
+ 	      SIZ(100, 0, MS_SILENT, MZ_SMALL), MR_STONE, 0,
+ 	      M1_BREATHLESS | M1_NOEYES | M1_NOHEAD | M1_MINDLESS |
+ 	        M1_NOLIMBS | M1_CARNIVORE, M2_HOSTILE,
+        0, 0, 0, 7, CLR_YELLOW, PILE_OF_KILLER_COINS),
+    MON(NAM("heap of killer coins"), S_BAD_COINS, 
+        LVL(9, 12, 7, 0, 0), (G_NOHELL | G_GENO | G_NOCORPSE),
+        A(ATTK(AT_BITE, AD_PHYS, 3, 6), NO_ATTK, NO_ATTK,
+          NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(400, 0, MS_SILENT, MZ_MEDIUM), MR_STONE, 0,
+        M1_BREATHLESS | M1_NOEYES | M1_NOHEAD | M1_MINDLESS |
+        M1_NOLIMBS | M1_CARNIVORE, M2_HOSTILE,
+        0, 0, 0, 10, CLR_YELLOW, HEAP_OF_KILLER_COINS),
+    MON(NAM("hoard of killer coins"), S_BAD_COINS, 
+         LVL(11, 12, 7, 0, 0), (G_NOHELL | G_GENO | G_NOCORPSE),
+         A(ATTK(AT_BITE, AD_PHYS, 4, 6), NO_ATTK, NO_ATTK,
+                NO_ATTK, NO_ATTK, NO_ATTK),
+         SIZ(700, 0, MS_SILENT, MZ_LARGE), MR_STONE, 0,
+          M1_BREATHLESS | M1_NOEYES | M1_NOHEAD | M1_MINDLESS |
+            M1_NOLIMBS | M1_CARNIVORE, M2_HOSTILE,
+          0, 0, 0, 12, CLR_YELLOW, HOARD_OF_KILLER_COINS),
     /*
      * sea monsters
      *

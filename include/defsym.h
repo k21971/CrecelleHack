@@ -360,12 +360,13 @@
     MONSYM(54, ' ', GHOST, S_GHOST, "ghost")
     MONSYM(55, '\'', GOLEM, S_GOLEM, "construct")
     MONSYM(56, '&', DEMON, S_DEMON, "major demon")
+    MONSYM(57, '$', BAD_COINS, S_BAD_COINS, "pile of evil coins")
     /* fish */
-    MONSYM(57, ';', EEL, S_EEL,  "sea dweller")
+    MONSYM(58, ';', EEL, S_EEL,  "sea dweller")
     /* reptiles */
-    MONSYM(58, ':', LIZARD, S_LIZARD, "lizard")
-    MONSYM(59, '~', WORM_TAIL, S_WORM_TAIL, "long worm tail")
-    MONSYM(60, ']', MIMIC_DEF, S_MIMIC_DEF, "mimic")
+    MONSYM(59, ':', LIZARD, S_LIZARD, "lizard")
+    MONSYM(60, '~', WORM_TAIL, S_WORM_TAIL, "long worm tail")
+    MONSYM(61, ']', MIMIC_DEF, S_MIMIC_DEF, "mimic")
 
 #undef MONSYM
 #endif /* MONSYMS_S_ENUM || MONSYMS_DEFCHAR_ENUM || MONSYMS_PARSE

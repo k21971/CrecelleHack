@@ -911,6 +911,9 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_PAGE: case PM_ABBOT: case PM_ACOLYTE: case PM_HUNTER:
     case PM_THUG: case PM_NINJA: case PM_ROSHI: case PM_GUIDE:
     case PM_WARRIOR: case PM_TRAINEE: case PM_APPRENTICE:
+
+    case PM_PILE_OF_KILLER_COINS: case PM_HEAP_OF_KILLER_COINS:
+    case PM_HOARD_OF_KILLER_COINS:
 #else
     default:
 #endif
@@ -3297,11 +3300,21 @@ corpse_chance(
         return FALSE;
     }
 
+    if (mdat->mlet == S_BAD_COINS) {
+        if (canseemon(mon))
+            pline_mon(mon, "%s explodes in a shower of gold!", Monnam(mon));
+        (void) mkgold((long) rnd(mon->m_lev * 10), mon->mx, mon->my);
+        (void) scatter(mon->mx, mon->my, 5, MAY_DESTROY | MAY_HIT | MAY_FRACTURE
+                                           | VIS_EFFECTS, (struct obj *) 0);
+        return FALSE;
+    }
+
     if (mdat == &mons[PM_CRIMSON_DEATH]) {
         struct obj fakeobj = cg.zeroobj;
         fakeobj.cursed = TRUE;
         fakeobj.otyp = POT_BLOOD;
         create_gas_cloud(mon->mx, mon->my, 5, &fakeobj, 8);
+        return FALSE;
     }
 
     if (mdat == &mons[PM_ILLUSION]) {
@@ -6070,6 +6083,10 @@ usmellmon(struct permonst *mdat)
                     You("notice an attractive smell.");
                 else
                     pline("A foul stench makes you feel a little nauseated.");
+                msg_given = TRUE;
+                break;
+            case S_BAD_COINS:
+                You("smell something akin to gold.");
                 msg_given = TRUE;
                 break;
             default:

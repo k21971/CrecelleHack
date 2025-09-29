@@ -122,6 +122,8 @@ des.door("closed",63,14)
 des.door("closed",66,14)
 des.door("closed",04,03)
 des.door("closed",04,09)
+-- Evil coins
+des.monster("hoard of killer coins")
 -- Soldiers guarding the fort
 des.monster("soldier",12,14)
 des.monster("soldier",12,13)

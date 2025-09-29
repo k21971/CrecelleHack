@@ -22,6 +22,16 @@
   - implicit_medium is a config option that allows control over whether
     "medium" is omitted from sized item descriptions. Defaults to true.
 
+## New Monsters
+- Killer Coins
+  - These are from SLASH'EM, but have been substantially modified here,
+    because monsters should present interesting problems and ideas.
+  - Different size piles of killer coins have been renamed.
+  - When killed, killer coins explode into gold pieces, showering the
+    area with coins. As a side effect, any death drops are also scattered.
+  - Coins are additionally immune to stoning, have a weight, and can
+    be rarely generated when polypiling gold.
+
 ## New Objects
 - Upgrade Kit
   - As in dnethack, it can be used to resize objects. Unlike dnethack, it

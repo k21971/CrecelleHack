@@ -1643,7 +1643,7 @@ create_polymon(struct obj *obj, int okind)
         material = "bony ";
         break;
     case GOLD:
-        pm_index = PM_GOLD_GOLEM;
+        pm_index = rn2(6) ? PM_GOLD_GOLEM : PM_HOARD_OF_KILLER_COINS;
         material = "gold ";
         break;
     case GLASS:
