@@ -58,6 +58,15 @@ typedef struct exclusion_zone {
     struct exclusion_zone *next;
 } exclusion_zone;
 
+/* */
+typedef struct biome {
+    struct biome *next;
+    long coatflags;
+    char submask;
+    xint16 dlev_start;
+    xint16 dlev_end;
+} biome;
+
 typedef struct dungeon {   /* basic dungeon identifier */
     char dname[24];        /* name of the dungeon (eg. "Hell") */
     char proto[15];        /* name of prototype file (eg. "tower") */
@@ -71,7 +80,6 @@ typedef struct dungeon {   /* basic dungeon identifier */
     int ledger_start,      /* the starting depth in "real" terms */
         depth_start;       /* the starting depth in "logical" terms */
 } dungeon;
-
 /*
  * A branch structure defines the connection between two dungeons.  They
  * will be ordered by the dungeon number/level number of 'end1'.  Ties
