@@ -965,6 +965,9 @@ curses_print_glyph(
     if ((special & MG_BOOST)) {
         attr = A_UNDERLINE;
     }
+    if ((special & MG_SURFACE)) {
+        attr = A_BOLD;
+    }
     if ((special & MG_PET) && iflags.hilite_pet) {
         attr = curses_convert_attr(iflags.wc2_petattr);
     }

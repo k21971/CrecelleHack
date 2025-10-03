@@ -1,5 +1,11 @@
 # 1.3
 
+## Coating System
+- Improved descriptions for walls made of dirt and sand.
+- Added several options related to coating display that can be altered
+  via config file.
+- Improved messaging around coatings in several instances.
+
 ## Misc
 - Reverted changes to reflection from 1.0.
 - New feedback for cracked and greasy mirrors. Cracked mirrors scare

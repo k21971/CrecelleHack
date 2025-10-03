@@ -557,8 +557,7 @@ dosit(void)
     /* Extra sitting effects */
     if (has_coating(u.ux, u.uy, COAT_BLOOD)) {
         blood_data = &mons[levl[u.ux][u.uy].pindex];
-        You("sit in %s blood. How %s.", 
-            mons[levl[u.ux][u.uy].pindex].pmnames[NEUTRAL],
+        You("sit in blood. How %s.",
             is_vampire(gy.youmonst.data) ? "lovely" : "horrifying");
         if (!is_vampire(gy.youmonst.data))
             exercise(A_CHA, FALSE);

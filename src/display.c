@@ -1074,6 +1074,7 @@ newsym(coordxy x, coordxy y)
          * These checks and changes must be here and not in back_to_glyph().
          * They are dependent on the position being out of sight.
          */
+        /* TODO: Remember colors of walls? */
         } else if (Is_rogue_level(&u.uz)) {
             if (lev->glyph == cmap_to_glyph(S_litcorr) && lev->typ == CORR)
                 show_glyph(x, y, lev->glyph = cmap_to_glyph(S_corr));
@@ -2648,8 +2649,8 @@ map_glyphinfo(
     }
     /* If the floor has extra surface info, we need to track it to swap the color around. */
     if (IS_COATABLE(levl[x][y].typ)
-        && glyph_is_cmap_coatable(glyph) && cansee(x, y)
-        && levl[x][y].coat_info) {
+        && glyph_is_cmap_coatable(glyph) && levl[x][y].coat_info
+        && flags.color_coatings && cansee(x, y)) {
         /* Order matters here. Generally the more important the coating, the higher
             priority it gets. Potions are the highest because they could kill the player. */
         if ((levl[x][y].coat_info & COAT_POTION) != 0) {
@@ -2674,9 +2675,11 @@ map_glyphinfo(
         else if ((levl[x][y].coat_info & COAT_GRASS) != 0)
             glyphinfo->gm.sym.color = CLR_GREEN;
         /* indicator for colorless games */
-        if (!iflags.use_color)
+        if (!iflags.use_color || flags.bold_coatings)
             glyphinfo->gm.glyphflags |= MG_SURFACE;
-    } else if (IS_SUBMASKABLE(levl[x][y].typ) && glyph_is_cmap_a(glyph) && cansee(x, y))  {
+    } else if (IS_SUBMASKABLE(levl[x][y].typ)
+                && (glyph_is_cmap_a(glyph) || levl[x][y].typ == STONE)
+                && flags.color_surfaces && cansee(x, y))  {
         if (levl[x][y].submask == SM_DIRT)
             glyphinfo->gm.sym.color = CLR_BROWN;
         if (levl[x][y].submask == SM_SAND)

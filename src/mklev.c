@@ -1607,8 +1607,6 @@ coat_floors(void)
 {
     for (int x = 0; x < COLNO; x++) {
         for (int y = 0; y < ROWNO; y++) {
-            if (!IS_COATABLE(levl[x][y].typ) || IS_STWALL(levl[x][y].typ))
-                continue;
             if (IS_SUBMASKABLE(levl[x][y].typ)) {
                 if (Is_medusa_level(&u.uz))
                     levl[x][y].submask = SM_SAND;
@@ -1617,9 +1615,11 @@ coat_floors(void)
                 } else if (rn2(2)) {
                     levl[x][y].submask = SM_SAND;
                 }
-                if (!has_ceiling(&u.uz) && !rn2(3)) 
-                    add_coating(x, y,  COAT_GRASS, 0);
             }
+            if (!IS_COATABLE(levl[x][y].typ) || IS_STWALL(levl[x][y].typ))
+                continue;
+            if (!has_ceiling(&u.uz) && !rn2(3)) 
+                add_coating(x, y,  COAT_GRASS, 0);
         }
     }
 }

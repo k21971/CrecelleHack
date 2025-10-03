@@ -22,7 +22,10 @@ struct flag {
     boolean autoopen;        /* open doors by walking into them */
     boolean beginner;        /* True early in each game; affects feedback */
     boolean biff;            /* enable checking for mail */
+    boolean bold_coatings;   /* use bold to indicate coatings*/
     boolean bones;           /* allow saving/loading bones */
+    boolean color_coatings;  /* use colors to indicate floor coatings*/
+    boolean color_surfaces;   /* display dirt and sand with special colors */
     boolean confirm;         /* confirm before hitting tame monsters */
     boolean dark_room;       /* show shadows in lit rooms */
     boolean debug;           /* in debugging mode (aka wizard mode) */

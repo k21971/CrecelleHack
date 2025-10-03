@@ -621,11 +621,13 @@ waterbody_name(coordxy x, coordxy y)
 /* describe the floor itself */
 staticfn const char *
 floor_descr(coordxy x, coordxy y, short symidx) {
-    if (IS_SUBMASKABLE(levl[x][y].typ)) {
-        if (levl[x][y].submask == SM_DIRT) {
-            return "dirt";
-        } else if (levl[x][y].submask == SM_SAND) {
-            return "sand";
+    short sm = levl[x][y].submask;
+    int typ = levl[x][y].typ;
+    if (IS_SUBMASKABLE(typ)) {
+        if (sm == SM_DIRT) {
+            return (typ == CORR) ? "lit dirt" : "dirt";
+        } else if (sm == SM_SAND) {
+            return (typ == CORR) ? "lit sand" : "sand";
         } else if (svl.level.flags.outdoors) {
             return "earth";
         } else {
@@ -664,7 +666,7 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
     } else if ((levl[x][y].coat_info & COAT_BLOOD) != 0) {
         if (ismnum(levl[x][y].pindex)
                 && (Role_if(PM_HEALER) || touch_petrifies(&mons[levl[x][y].pindex])))
-            Sprintf(buf, "%s covered in %s blood", floor_descr(x, y, symidx),  mons[levl[x][y].pindex].pmnames[NEUTRAL]);
+            Sprintf(buf, "%s covered in %s blood", floor_descr(x, y, symidx), mons[levl[x][y].pindex].pmnames[NEUTRAL]);
         else
             Sprintf(buf, "%s covered in blood", floor_descr(x, y, symidx));
     } else
@@ -876,9 +878,6 @@ lookat(coordxy x, coordxy y, char *buf, char *monbuf)
                 /* "unknown" == previously mapped but not visible when
                    submerged; better terminology appreciated... */
                 Strcpy(buf, (next2u(x, y)) ? "land" : "unknown");
-                break;
-            } else if (levl[x][y].typ == STONE || levl[x][y].typ == SCORR) {
-                Strcpy(buf, "stone");
                 break;
             }
             FALLTHROUGH;

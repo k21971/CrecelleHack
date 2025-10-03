@@ -1041,7 +1041,7 @@ test_move(
                                                    : -1;
 
                     if (sym == S_stone)
-                        Strcpy(buf, "solid stone");
+                        Strcpy(buf, solid_stone(x, y));
                     else if (sym >= 0)
                         Strcpy(buf, an(defsyms[sym].explanation));
                     else
@@ -4600,6 +4600,16 @@ rounddiv(long x, int y)
         r++;
 
     return divsgn * r;
+}
+
+const char *
+solid_stone(int x, int y)
+{
+    if (levl[x][y].submask == SM_SAND)
+        return "packed sand";
+    if (levl[x][y].submask == SM_DIRT)
+        return "packed dirt";
+    return "solid stone";
 }
 
 

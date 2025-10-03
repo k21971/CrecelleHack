@@ -504,6 +504,7 @@ ask_do_tutorial(void)
             free((genericptr_t) sel);
         } else { /* ESC */
             dotut = FALSE;
+            pline("So be it. Press ? and select longer descriptions of game options to view variant-specific options.");
         }
     }
     return dotut;
@@ -5383,6 +5384,9 @@ optfn_boolean(
             break;
         case opt_lit_corridor:
         case opt_dark_room:
+        case opt_color_surfaces:
+        case opt_color_coatings:
+        case opt_bold_coatings:
             /*
              * All corridor squares seen via night vision or
              * candles & lamps change.  Update them by calling

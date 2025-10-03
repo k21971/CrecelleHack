@@ -486,7 +486,7 @@ dig(void)
                 if (Race_if(PM_ELF) || Role_if(PM_RANGER))
                     adjalign(-1);
             } else {
-                digtxt = "You succeed in cutting away some rock.";
+                digtxt = "You succeed in cutting a path.";
                 lev->typ = CORR, lev->flags = 0;
             }
         } else if (IS_WALL(lev->typ)) {
@@ -563,7 +563,13 @@ dig(void)
             return 0; /* statue or boulder got taken */
 
         if (!gd.did_dig_msg) {
-            You("hit the %s with all your might.", d_target[dig_target]);
+            if (dig_target == DIGTYP_ROCK && IS_SUBMASKABLE(levl[dpx][dpy].typ)) {
+                if (levl[dpx][dpy].submask == SM_DIRT)
+                    You("swing at the dirt with all your might.");
+                else if (levl[dpx][dpy].submask == SM_SAND)
+                    You("hack at the sand with all your might.");
+            } else
+                You("hit the %s with all your might.", d_target[dig_target]);
             wake_nearby(FALSE);
             gd.did_dig_msg = TRUE;
         }

@@ -207,6 +207,9 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTB(blind, Advanced, 0, opt_in, set_in_config,
            Off, Yes, No, No, "permablind", &u.uroleplay.blind, Term_False,
            "your character is permanently blind")
+    NHOPTB(bold_coatings, Advanced, 0, opt_out, set_in_game,
+           On, Yes, No, No, NoAlias, &flags.bold_coatings, Term_False,
+           "use color to indicate floor coatings")
     NHOPTB(bones, Advanced, 0, opt_out, set_in_config,
            On, Yes, No, No, NoAlias, &flags.bones, Term_False,
            "allow loading bones files")
@@ -230,6 +233,9 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTB(cmdassist, Behavior, 0, opt_out, set_in_game,
            On, Yes, No, No, NoAlias, &iflags.cmdassist, Term_False,
            "give help for errors on direction input")
+    NHOPTB(color_coatings, Advanced, 0, opt_out, set_in_game,
+           On, Yes, No, No, NoAlias, &flags.color_coatings, Term_False,
+           "use color to indicate floor coatings")
     NHOPTB(color, Map, 0, opt_in, set_in_game,
            On, Yes, No, No, "colour", &iflags.wc_color, Term_False,
            "use color in map")
@@ -734,6 +740,9 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTC(suppress_alert, Advanced, 8, opt_in, set_in_game,
                 No, Yes, Yes, No, NoAlias,
                 "suppress alerts about version-specific features")
+    NHOPTB(color_surfaces, Advanced, 0, opt_out, set_in_game,
+           On, Yes, No, No, NoAlias, &flags.color_surfaces, Term_False,
+           "use color to indicate dirt and sand")
     NHOPTC(symset, Map, 70, opt_in, set_in_game,
                 No, Yes, No, Yes, NoAlias,
                 "load a set of display symbols from symbols file")

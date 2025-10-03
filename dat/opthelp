@@ -1,3 +1,14 @@
+Crecelle-specific options are reproduced at the top of this value (with
+default values in [].)
+
+bold_coatings   visually indicate coated areas using bold        [True]
+color_coatings  visually indicate coated areas using color       [True]
+color_surfaces  visually indicate non-stone surfaces using color [True]
+implicit_medium omit "medium" from inventory, if possible        [True]
+invweight       display weight of objects                        [True]
+taunt           custom string for the taunt command, preceded by
+                "You"                 
+
 Boolean options not under specific compile flags (with default values in []):
 (You can learn which options exist in your version by checking your current
 option setting, which is reached via the 'O' command.)

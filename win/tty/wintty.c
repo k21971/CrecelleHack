@@ -3935,9 +3935,11 @@ tty_print_glyph(
                && iflags.use_inverse) {
         term_start_attr(ATR_INVERSE);
         inverse_on = TRUE;
-    } else if ((special & MG_SURFACE) != 0 && iflags.use_inverse) {
-        term_start_attr(ATR_INVERSE);
-        inverse_on = TRUE;
+    }
+
+    /* visual indicator for surfaces */
+    if ((special & MG_SURFACE) != 0) {
+        term_start_attr(ATR_BOLD);
     }
 
 #if defined(TILES_IN_GLYPHMAP) && defined(MSDOS)
