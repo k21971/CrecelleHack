@@ -58,6 +58,15 @@ typedef struct exclusion_zone {
     struct exclusion_zone *next;
 } exclusion_zone;
 
+/* */
+typedef struct biome {
+    struct biome *next;
+    long coatflags;
+    char submask;
+    xint16 dlev_start;
+    xint16 dlev_end;
+} biome;
+
 typedef struct dungeon {   /* basic dungeon identifier */
     char dname[24];        /* name of the dungeon (eg. "Hell") */
     char proto[15];        /* name of prototype file (eg. "tower") */
