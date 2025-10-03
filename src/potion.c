@@ -1880,13 +1880,14 @@ evaporate_potion_puddles(coordxy x, coordxy y) {
     if (!IS_COATABLE(levl[x][y].typ))
         return;
     if (levl[x][y].coat_info & COAT_POTION) {
-        fakeobj.otyp = levl[x][y].pindex == POT_WATER ? 0 : levl[x][y].pindex;
-        create_gas_cloud(x, y, 1, &fakeobj, levl[x][y].pindex == POT_WATER ? 0 : 3);
+        fakeobj.otyp = levl[x][y].pindex;
+        create_gas_cloud(x, y, 1,
+                            levl[x][y].pindex == POT_WATER ? 0 : &fakeobj,
+                            levl[x][y].pindex == POT_WATER ? 0 : 3);
         remove_coating(x, y, COAT_POTION);
     }
     if ((levl[x][y].coat_info & COAT_BLOOD) && !rn2(4)) {
-        fakeobj.otyp = 0;
-        create_gas_cloud(x, y, 1, &fakeobj, 0);
+        create_gas_cloud(x, y, 1, 0, 0);
         remove_coating(x, y, COAT_BLOOD);
     }
 }
