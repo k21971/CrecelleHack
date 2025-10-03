@@ -1071,6 +1071,9 @@ minimal_xname(struct obj *obj)
     else if (!obj->dknown)
         objects[otyp].oc_name_known = 0;
 
+    /* set a negative weight in order to suppress it */
+    bareobj.owt = 0;
+
     /* caveat: this makes a lot of assumptions about which fields
        are required in order for xname() to yield a sensible result */
     bareobj = cg.zeroobj;
@@ -1791,7 +1794,7 @@ doname_base(
 
     /* show weight for items (debug tourist info);
        "aum" is stolen from Crawl's "Arbitrary Unit of Measure" */
-    if (iflags.invweight) {
+    if (iflags.invweight && obj->owt) {
         /* wizard mode user has asked to see object weights */
         if (with_price && bp_eos[-1] == ')')
             ConcatF1(bp, 1, 
