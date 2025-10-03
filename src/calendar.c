@@ -596,9 +596,12 @@ init_environs(void)
 {
     u.uenvirons.tod_cnt = TOD_QUARTER;
     roll_precip();
+    do {
+        roll_wind();
+    } while (INC_WIND(WTH_TORNADO));
     roll_wind();
-    u.uenvirons.precip_cnt = rn1(400, 200);
-    u.uenvirons.wind_cnt = rn1(200, 100);
+    u.uenvirons.precip_cnt = rn1(1000, 500);
+    u.uenvirons.wind_cnt = rn1(500, 500);
     u.uenvirons.tod = TOD_MORNING;
     /* sometimes we start with a little breeze */
     if (!rn2(2))

@@ -62,6 +62,10 @@
 ## Roles
 - Jumping is now the grappler special spell.
 
+## Weather System
+- First weather change takes much longer.
+- First incoming weather system can no longer be a tornado.
+
 # 1.2
 
 ## Dungeon Changes
