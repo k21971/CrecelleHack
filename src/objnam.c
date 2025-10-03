@@ -210,7 +210,7 @@ obj_typename(int otyp)
     const char *un = ocl->oc_uname;
     int nn = ocl->oc_name_known;
 
-    if (Role_if(PM_SAMURAI)) {
+    if (Role_if(PM_SAMURAI) && !flags.obscure_role_obj_names) {
         actualn = Japanese_item_name(otyp, actualn);
         if (otyp == WOODEN_HARP || otyp == MAGIC_HARP)
             dn = "koto";
@@ -607,7 +607,7 @@ xname_flags(
     buf[0] = '\0';
     ConcUpdate(buf); /* set buf_eos and bufspaceleft */
 
-    if (Role_if(PM_SAMURAI)) {
+    if (Role_if(PM_SAMURAI) && !flags.obscure_role_obj_names) {
         actualn = Japanese_item_name(typ, actualn);
         if (typ == WOODEN_HARP || typ == MAGIC_HARP)
             dn = "koto";

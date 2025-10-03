@@ -51,6 +51,7 @@ struct flag {
     boolean nap;             /* `timed_delay' option for display effects */
     boolean nopick_dropped;  /* items you dropped may be autopicked */
     boolean null;            /* OK to send nulls to the terminal */
+    boolean obscure_role_obj_names; /* disable role-specific object names */
     boolean pickup;          /* whether you pickup or move and look */
     boolean pickup_stolen;   /* auto-pickup items stolen by a monster */
     boolean pickup_thrown;   /* auto-pickup items you threw */

@@ -10,6 +10,8 @@
 - Reverted changes to reflection from 1.0.
 - New feedback for cracked and greasy mirrors. Cracked mirrors scare
   monsters more easily.
+- Many additional options for config files.
+  - obscure_role_obj_names is taken from dnethack.
 
 ## Monster Changes
 - Monsters can gain water walking and jumping.
