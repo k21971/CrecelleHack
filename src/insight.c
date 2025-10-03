@@ -2174,6 +2174,8 @@ show_conduct(int final)
     if (u.uroleplay.pauper)
         enl_msg(You_, gi.invent ? "started" : "are", "started out",
                 " without possessions", "");
+    if (u.uroleplay.perfect_bestiary)
+        enl_msg(You_, "", "", "entered the dungeon with a pre-filled bestiary", "");
     /* nudist is far more than a subset of possessionless, and a much
        more impressive accomplishment, but showing "started out without
        possessions" before "faithfully nudist" looks more logical */

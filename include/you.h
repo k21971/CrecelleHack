@@ -216,6 +216,7 @@ struct u_roleplay {
     boolean nudist; /* has not worn any armor, ever */
     boolean deaf;   /* permanently deaf */
     boolean pauper; /* no starting inventory */
+    boolean perfect_bestiary; /* automatically know all monsters */
     long numbones;  /* # of bones files loaded  */
 };
 

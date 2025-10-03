@@ -2391,6 +2391,7 @@ do_supplemental_info(
     char buf[BUFSZ];
     boolean yes_to_moreinfo = FALSE;
     boolean is_marauder = is_orc(pm);
+    boolean auto_know = u.uroleplay.perfect_bestiary || wizard;
 
     /*
      * Provide some info on some specific things
@@ -2457,14 +2458,14 @@ do_supplemental_info(
     buf[0] = highc(buf[0]);
     putstr(datawin, 0, buf);
     /* Stats */
-    if (svm.mvitals[pm->pmidx].know_stats)
+    if (auto_know || svm.mvitals[pm->pmidx].know_stats)
         Sprintf(buf, "Speed: %d, AC: %d, MR: %d", pm->mmove, pm->ac, pm->mr);
     else
         Sprintf(buf, "Speed: ???, AC: ???, MR: ???");
     putstr(datawin, 0, buf);
     /* Food */
     Sprintf(buf, "Edibility: %s",
-            !svm.mvitals[pm->pmidx].know_pcorpse 
+            !(auto_know || svm.mvitals[pm->pmidx].know_pcorpse) 
                 ? "???" : poisonous(pm) ? "Poisonous" : "Not poisonous");
     putstr(datawin, 0, buf);
     /* Harmony */
@@ -2481,7 +2482,7 @@ do_supplemental_info(
     putstr(datawin, 0, "Attacks:");
     for (int i = 0; i < NATTK; i++) {
         if (!pm->mattk[i].aatyp && !pm->mattk[i].adtyp && !pm->mattk[i].damn && !pm->mattk[i].damd) continue;
-        if (!(svm.mvitals[pm->pmidx].know_attacks & (1 << i))) {
+        if (!auto_know && !(svm.mvitals[pm->pmidx].know_attacks & (1 << i))) {
             Sprintf(buf, "- ???");
         } else {
             Sprintf(buf, "- %s %dd%d %s", mattk_names[pm->mattk[i].aatyp],

@@ -9,6 +9,7 @@ implicit_medium         omit "medium" from inventory, if possible  [True]
 invweight               display weight of objects                        
                                                                    [True]
 obscure_role_obj_names  disable role-specific object names         [False]
+perfect_bestiary        enable perfect monster knowledge           [False]
 taunt                   custom string for the taunt command, preceded by
                         "You"                 
 

@@ -233,12 +233,15 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTB(cmdassist, Behavior, 0, opt_out, set_in_game,
            On, Yes, No, No, NoAlias, &iflags.cmdassist, Term_False,
            "give help for errors on direction input")
-    NHOPTB(color_coatings, Advanced, 0, opt_out, set_in_game,
-           On, Yes, No, No, NoAlias, &flags.color_coatings, Term_False,
-           "use color to indicate floor coatings")
     NHOPTB(color, Map, 0, opt_in, set_in_game,
            On, Yes, No, No, "colour", &iflags.wc_color, Term_False,
            "use color in map")
+    NHOPTB(color_coatings, Advanced, 0, opt_out, set_in_game,
+           On, Yes, No, No, NoAlias, &flags.color_coatings, Term_False,
+           "use color to indicate floor coatings")
+    NHOPTB(color_surfaces, Advanced, 0, opt_out, set_in_game,
+           On, Yes, No, No, NoAlias, &flags.color_surfaces, Term_False,
+           "use color to indicate dirt and sand")
     NHOPTB(confirm, Advanced, 0, opt_out, set_in_game,
            On, Yes, No, No, NoAlias, &flags.confirm, Term_False,
            "ask before hitting tame or peaceful monsters")
@@ -568,6 +571,9 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTB(pauper, Advanced, 0, opt_in, set_in_config,
            Off, Yes, No, No, NoAlias, &u.uroleplay.pauper, Term_False,
            "start your character without any items")
+    NHOPTB(perfect_bestiary, Advanced, 0, opt_in, set_in_config,
+           Off, Yes, No, No, NoAlias, &u.uroleplay.perfect_bestiary, Term_False,
+           "automatically know the stats of all monsters")
     NHOPTB(perm_invent, Advanced, 0, opt_in, set_in_game,
                 Off, Yes, No, No, NoAlias, &iflags.perm_invent, Term_Off,
                 "show persistent inventory window")
@@ -743,9 +749,6 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTC(suppress_alert, Advanced, 8, opt_in, set_in_game,
                 No, Yes, Yes, No, NoAlias,
                 "suppress alerts about version-specific features")
-    NHOPTB(color_surfaces, Advanced, 0, opt_out, set_in_game,
-           On, Yes, No, No, NoAlias, &flags.color_surfaces, Term_False,
-           "use color to indicate dirt and sand")
     NHOPTC(symset, Map, 70, opt_in, set_in_game,
                 No, Yes, No, Yes, NoAlias,
                 "load a set of display symbols from symbols file")
