@@ -1329,6 +1329,8 @@ mksobj(int otyp, boolean init, boolean artif)
     if (otmp->oclass == WEAPON_CLASS || otmp->oclass == ARMOR_CLASS
         || is_weptool(otmp))
         fuzz_weight(otmp);
+    else
+        otmp->owt = MZ_MEDIUM;
     return otmp;
 }
 
