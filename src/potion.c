@@ -588,7 +588,7 @@ dodrink(void)
             }
             ++drink_ok_extra;
         }
-        if (has_coating(u.ux, u.uy, POT_WATER)
+        if (has_coating(u.ux, u.uy, COAT_POTION)
             || has_coating(u.ux, u.uy, COAT_BLOOD)) {
             if (y_n("Drink liquid on the floor?") == 'y') {
                 pline("Do you know how many bugs there are on the floor?");
