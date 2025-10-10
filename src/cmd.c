@@ -1928,6 +1928,8 @@ struct ext_func_tab extcmdlist[] = {
               dowield, 0, NULL },
     { M('w'), "wipe", "wipe off your face",
               dowipe, AUTOCOMPLETE, NULL },
+    { '\0',   "wizbiome", "regenerate the biomes of the current dungeon",
+              wiz_biome, IFBURIED | AUTOCOMPLETE | WIZMODECMD, NULL },
     { '\0',   "wizborn", "show stats of monsters created",
               doborn, IFBURIED | WIZMODECMD, NULL },
 #ifdef DEBUG

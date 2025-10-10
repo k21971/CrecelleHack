@@ -16,6 +16,7 @@
 staticfn boolean uncommon(int);
 staticfn int align_shift(struct permonst *);
 staticfn int temperature_shift(struct permonst *);
+staticfn int biome_shift(struct permonst *);
 staticfn boolean mk_gen_ok(int, unsigned, unsigned);
 staticfn int QSORTCALLBACK cmp_init_mongen_order(const void *, const void *);
 staticfn void check_mongen_order(void);
@@ -1782,6 +1783,41 @@ temperature_shift(struct permonst *ptr)
     return 0;
 }
 
+/* return larger value if monster prefers the local biome */
+staticfn int
+biome_shift(struct permonst *ptr)
+{
+    unsigned char biome = svl.level.flags.biome;
+    int ret = 0;
+    switch (biome) {
+    case BIOME_WOODLAND:
+        if (ptr->mboost & BST_GRASS)
+            ret += 2;
+        break;
+    case BIOME_FUNGAL:
+        if (ptr->mlet == S_FUNGUS
+            || ptr->mboost & BST_FUNGI)
+            ret += 2;
+        break;
+    case BIOME_TROPICAL:
+        if (ptr->mboost & BST_SAND)
+            ret += 2;
+        break;
+    case BIOME_SNOWY:
+        if (ptr->mboost & BST_ICE)
+            ret += 2;
+        break;
+    case BIOME_ODUNGEON:
+    default:
+        ret = 0;
+    }
+    /* Swamp boosting happens seperately for now :( */
+    if (svl.level.flags.has_swamp 
+        && ((ptr->mboost & BST_MUD) || (ptr->mboost & BST_WATER)))
+        ret += 2;
+    return ret;
+}
+
 /* select a random monster type */
 struct permonst *
 rndmonst(void)
@@ -1845,6 +1881,7 @@ rndmonst_adj(int minadj, int maxadj)
         freq = (ptr->geno & G_MIDBOSS) ? 1 : (int) (ptr->geno & G_FREQ);
         weight = freq + align_shift(ptr);
         weight += temperature_shift(ptr);
+        weight += biome_shift(ptr);
         if (weight < 0 || weight > 127) {
             impossible("bad weight in rndmonst for mndx %d", mndx);
             weight = 0;

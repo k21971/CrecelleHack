@@ -875,7 +875,12 @@ kick_dumb(coordxy x, coordxy y)
 {
     exercise(A_DEX, FALSE);
     if (martial() || ACURR(A_DEX) >= 16 || rn2(3)) {
-        You("kick at empty space.");
+        if (has_coating(x, y, COAT_ASHES))
+            You("kick up some ashes.");
+        else if (has_coating(x, y, COAT_FROST))
+            You("kick at the snow.");
+        else
+            You("kick at empty space.");
         if (Blind)
             feel_location(x, y);
     } else {

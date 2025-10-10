@@ -934,6 +934,7 @@ extern void recbranch_mapseen(d_level *, d_level *) NONNULLPTRS;
 extern void overview_stats(winid, const char *, long *, long *) NONNULLPTRS;
 extern void remdun_mapseen(int);
 extern const char *endgamelevelname(char *, int);
+extern void init_biomes(void);
 
 /* ### eat.c ### */
 
@@ -3908,6 +3909,7 @@ extern int wiz_load_lua(void);
 extern int wiz_load_splua(void);
 extern int wiz_makemap(void);
 extern int wiz_map(void);
+extern int wiz_biome(void);
 extern int wiz_migrate_mons(void);
 extern int wiz_panic(void);
 extern int wiz_polyself(void);

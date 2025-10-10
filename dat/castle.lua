@@ -22,17 +22,7 @@ else
     des.level_init({ style = "swamp", lit = 0 });
 end
 
-local temperatures = { "hot", "cold", "temperate" }
-local temp_dragons = {}
-shuffle(temperatures)
-local castle_temp = temperatures[1];
-if (castle_temp == "cold") then
-    temp_dragons = { "white dragon", "silver dragon", "green dragon", "blue dragon"}
-else
-    temp_dragons = { "red dragon", "gold dragon", "orange dragon", "gray dragon" }
-end
-
-des.level_flags("mazelevel", "noteleport", "noflipy", castle_temp)
+des.level_flags("mazelevel", "noteleport", "noflipy")
 
 des.map([[
 }}}}}}}}}.............................................}}}}}}}}}
@@ -70,19 +60,7 @@ shuffle(monster)
 des.teleport_region({ region = {01,00,10,20}, region_islev=1, exclude={1,1,61,15}, dir="down" })
 des.teleport_region({ region = {69,00,79,20}, region_islev=1, exclude={1,1,61,15}, dir="up" })
 des.levregion({ region = {01,00,10,20}, region_islev=1, exclude={0,0,62,16}, type="stair-up" })
-if (castle_temp == "temperate") then
-    des.feature({ type = "tree", coord = {10,08} })
-else
-    des.feature({ type = "fountain", coord = {10,08}, frozen = (castle_temp == "cold")})
-end
--- Cover Courtyard in some kind of coating
-if (castle_temp == "cold") then
-    des.replace_terrain({ region={07,05, 14,11}, fromterrain=".", toterrain=".", coat="frost", chance=70 })
-elseif (castle_temp == "hot") then
-    des.replace_terrain({ region={07,05, 14,11}, fromterrain=".", toterrain=".", coat="ashes", chance=90 })
-else
-    des.replace_terrain({ region={07,05, 14,11}, fromterrain=".", toterrain=".", coat="grass", chance=70 })
-end
+des.feature({ type = "fountain", coord = {10,08}})
 -- Doors
 des.door("closed",07,03)
 des.door("closed",55,03)
@@ -203,21 +181,10 @@ des.monster("soldier",05,14)
 des.monster("soldier",57,14)
 des.monster("soldier",59,14)
 -- The four dragons that are guarding the storerooms
-if (castle_temp == "temperate") then
-    des.monster("D",47,05)
-    des.monster("D",47,06)
-    des.monster("D",47,10)
-    des.monster("D",47,11)
-else
-    shuffle(temp_dragons)
-    des.monster(temp_dragons[1], 47,05)
-    shuffle(temp_dragons)
-    des.monster(temp_dragons[1], 47,06)
-    shuffle(temp_dragons)
-    des.monster(temp_dragons[1], 47,10)
-    shuffle(temp_dragons)
-    des.monster(temp_dragons[1], 47,11)
-end
+des.monster("D",47,05)
+des.monster("D",47,06)
+des.monster("D",47,10)
+des.monster("D",47,11)
 -- Sea monsters in the moat
 des.monster("giant eel",05,07)
 des.monster("giant eel",05,09)

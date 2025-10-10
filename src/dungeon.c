@@ -3732,6 +3732,38 @@ print_mapseen(
         }
     }
 }
+
+/* Initialize the biomes of the dungeon */
+void
+init_biomes(void)
+{
+    int cutoff = 0;
+    int biome;
+    for (int i = 0; i < DGN_BIOMES; i++) {
+        /* Set the cutoff */
+        cutoff += rn1(3, 3);
+        svd.dungeons[u.uz.dnum].biome_cutoff[i] = cutoff;
+        /* Character choice changes*/
+        if (!i) {
+            if (Role_if(PM_VALKYRIE))
+                svd.dungeons[u.uz.dnum].biome_ids[0] = BIOME_SNOWY;
+            else if (Race_if(PM_ELF))
+                svd.dungeons[u.uz.dnum].biome_ids[0] = BIOME_WOODLAND;
+            continue;
+        }
+        /* Randomize the biome */
+        if (!rn2(3)) biome = BIOME_ODUNGEON;
+        else biome = rn2(BIOME_MAX);
+        /* Don't flip between opposite temps */
+        if ((i - 1 < 0) && biome == BIOME_TROPICAL
+            && svd.dungeons[u.uz.dnum].biome_ids[i - 1] == BIOME_SNOWY)
+            biome = BIOME_SNOWY;
+        if ((i - 1 < 0) && biome == BIOME_SNOWY
+            && svd.dungeons[u.uz.dnum].biome_ids[i - 1] == BIOME_TROPICAL)
+            biome = BIOME_TROPICAL;
+        svd.dungeons[u.uz.dnum].biome_ids[i] = biome;
+    }
+}
 #endif /* !SFCTOOL */
 #undef OF_INTEREST
 #undef ADDNTOBUF

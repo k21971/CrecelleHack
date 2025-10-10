@@ -282,7 +282,9 @@ drinkfountain(void)
     }
 
     if (fate < 10) {
-        pline_The("cool draught refreshes you.");
+        pline_The("%s draught refreshes you.",
+                    (svl.level.flags.temperature == -1) ? "icy"
+                        : (svl.level.flags.temperature == 1) ? "warm" : "cool");
         u.uhunger += rnd(10); /* don't choke on water */
         newuhs(FALSE);
         if (mgkftn)

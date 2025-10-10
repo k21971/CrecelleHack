@@ -4694,7 +4694,7 @@ dfeature_at(coordxy x, coordxy y, char *buf)
             listing = TRUE;
         }
         if ((lev->coat_info & COAT_FROST) != 0) {
-            Sprintf(eos(altbuf), "%sice", listing ? " and " : "");
+            Sprintf(eos(altbuf), "%ssnow", listing ? " and " : "");
             listing = TRUE;
         }
         if ((lev->coat_info & COAT_MUD) != 0) {

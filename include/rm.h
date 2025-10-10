@@ -150,7 +150,7 @@ COAT(BLOOD,     "blood",    "bloody ",              0x008), \
 COAT(FUNGUS,    "fungus",   "fungus-encrusted ",    0x010), \
 COAT(SHARDS,    "shards",   "glass-strewn ",        0x020), \
 COAT(HONEY,     "honey",    "sticky ",              0x040), \
-COAT(FROST,     "frost",    "icy ",                 0x080), \
+COAT(FROST,     "snow",     "snowy ",               0x080), \
 COAT(MUD,       "mud",      "muddy ",               0x100), \
 COAT(ALL,       "all",      "all",                  0xfff)
 
@@ -465,6 +465,7 @@ struct cemetery {
 struct levelflags {
     uchar nfountains; /* number of fountains on level */
     uchar nsinks;     /* number of sinks on the level */
+    uchar biome;      /* biome identifier */
     /* Several flags that give hints about what's on the level */
     Bitfield(has_shop, 1);
     Bitfield(has_vault, 1);

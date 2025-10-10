@@ -5,6 +5,11 @@
 - Added several options related to coating display that can be altered
   via config file.
 - Improved messaging around coatings in several instances.
+- Frost no longer causes ice-esque slippage.
+
+## Dungeon Changes
+- Dungeon is generated in biomes. This replaces the previous system of
+  gradually decreasing grass and increasing fungi.
 
 ## Misc
 - Reverted changes to reflection from 1.0.
@@ -21,6 +26,8 @@
 - Kobolds have been altered to skew closer to their appearance in early
   editions of D&D as well as anime like Record of Lodoss War. This is
   to say that their doglike features have been emphasized.
+- Water trolls have a generation probability of zero, allowing them
+  to spawn in certain branches and biomes.
 
 ## Item Changes
 - Implemented the weapon size system, extremely similar to the one that

@@ -2464,7 +2464,7 @@
         M3_INFRAVISIBLE | M3_INFRAVISION | M3_TRAITOR, BST_ROCK,
         0, 12, CLR_CYAN, ROCK_TROLL),
     MON(NAM("water troll"), S_TROLL,
-        LVL(11, 14, 4, 40, -3), (G_NOGEN | G_GENO),
+        LVL(11, 14, 4, 40, -3), (G_GENO),
         A(ATTK(AT_WEAP, AD_PHYS, 2, 8), ATTK(AT_CLAW, AD_PHYS, 2, 8),
           ATTK(AT_BITE, AD_PHYS, 2, 6), NO_ATTK, NO_ATTK, NO_ATTK),
         SIZ(1200, 350, MS_GRUNT, MZ_LARGE), 0, 0,

@@ -2391,7 +2391,7 @@ water_turbulence(coordxy *x, coordxy *y)
 staticfn void
 slippery_ice_fumbling(void)
 {
-    boolean on_ice = !Levitation && (is_ice(u.ux, u.uy) || has_coating(u.ux, u.uy, COAT_FROST));
+    boolean on_ice = !Levitation && is_ice(u.ux, u.uy);
     struct monst *iceskater = u.usteed ? u.usteed : &gy.youmonst;
 
     if (on_ice) {
