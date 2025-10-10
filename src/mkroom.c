@@ -544,7 +544,7 @@ antholemon(void)
             mtyp = PM_SOLDIER_ANT;
             break;
         case 1:
-            mtyp = PM_FIRE_ANT;
+            mtyp = rn2(2) ? PM_FIRE_ANT : PM_SNOW_ANT;
             break;
         default:
             mtyp = PM_GIANT_ANT;
