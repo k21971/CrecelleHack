@@ -3019,6 +3019,42 @@ mhitm_ad_tlpt(
 }
 
 void
+mhitm_ad_tlaw(
+    struct monst *magr, struct attack *mattk,
+    struct monst *mdef, struct mhitm_data *mhm)
+{
+    if (magr == &gy.youmonst) {
+        tele();
+        mhm->damage = 0;
+    } else if (mdef == &gy.youmonst) {
+        /* mhitu */
+        char nambuf[BUFSZ];
+        boolean u_saw_mon = (canseemon(magr) || engulfing_u(magr));
+        hitmsg(magr, mattk);
+        Strcpy(nambuf, Monnam(magr));
+        if (rloc(magr, RLOC_NOMSG) && u_saw_mon
+            && !(canseemon(magr) || engulfing_u(magr)))
+            pline("%s suddenly disappears!", nambuf);
+        mhm->damage = 0;
+    } else {
+        /* mhitm */
+        if (!magr->mcan && !tele_restrict(magr)) {
+            char magr_Monnam[BUFSZ];
+            boolean wasseen = canspotmon(magr);
+            /* save the name before monster teleports, otherwise
+               we'll get "it" in the suddenly disappears message */
+            if (gv.vis && wasseen)
+                Strcpy(magr_Monnam, Monnam(magr));
+            (void) rloc(magr, RLOC_NOMSG);
+            /* TODO: use RLOC_MSG instead? */
+            if (gv.vis && wasseen && !canspotmon(magr))
+                pline("%s suddenly disappears!", magr_Monnam);
+        }
+        mhm->damage = 0;
+    }
+}
+
+void
 mhitm_ad_blnd(
     struct monst *magr,     /* attacker */
     struct attack *mattk,   /* magr's attack */
@@ -4944,6 +4980,7 @@ mhitm_adtyping(
     case AD_POLY: mhitm_ad_poly(magr, mattk, mdef, mhm); break;
     case AD_WORM: mhitm_ad_worm(magr, mattk, mdef, mhm); break;
     case AD_SOAK: mhitm_ad_soak(magr, mattk, mdef, mhm); break;
+    case AD_TLAW: mhitm_ad_tlaw(magr, mattk, mdef, mhm); break;
     case AD_DISE: mhitm_ad_dise(magr, mattk, mdef, mhm); break;
     case AD_SAMU: mhitm_ad_samu(magr, mattk, mdef, mhm); break;
     case AD_DETH: mhitm_ad_deth(magr, mattk, mdef, mhm); break;

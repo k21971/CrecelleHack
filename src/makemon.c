@@ -1427,11 +1427,13 @@ makemon(
     case S_LIGHT:
     case S_ELEMENTAL:
     case S_VORTEX:
+    case S_FUNGUS:
     case S_FELINE:
         if (mndx == PM_STALKER || mndx == PM_BLACK_LIGHT
             || mndx == PM_POLTERGEIST
             || mndx == PM_CRIMSON_DEATH
-            || mndx == PM_HELLCAT) {
+            || mndx == PM_HELLCAT
+            || mndx == PM_PHANTOM_FUNGUS) {
             mtmp->perminvis = TRUE;
             mtmp->minvis = TRUE;
         }
@@ -1792,12 +1794,12 @@ biome_shift(struct permonst *ptr)
     switch (biome) {
     case BIOME_WOODLAND:
         if (ptr->mboost & BST_GRASS)
-            ret += 2;
+            ret += 3;
         break;
     case BIOME_FUNGAL:
         if (ptr->mlet == S_FUNGUS
             || ptr->mboost & BST_FUNGI)
-            ret += 2;
+            ret += 3;
         break;
     case BIOME_TROPICAL:
         if (ptr->mboost & BST_SAND)
@@ -2450,6 +2452,8 @@ golemhp(int type)
         return 70;
     case PM_SALT_GOLEM:
         return 80;
+    case PM_SAND_GOLEM:
+        return 90;
     case PM_BLOOD_GOLEM:
         return 90;
     case PM_STONE_GOLEM:

@@ -47,6 +47,14 @@
     area with coins. As a side effect, any death drops are also scattered.
   - Coins are additionally immune to stoning, have a weight, and can
     be rarely generated when polypiling gold.
+- Phantom Fungus
+  - Originally from dnethack. Identical here, with the exception that
+    they do not generate except in fungal biomes, and their AC is
+    lower.
+- Goat
+  - Originally appears in Slash'EM. Identical here, but only spawn
+    in woodlands and are also metalivorous (because they eat tin cans).
+  - Have variant male and female names.
 
 ## New Objects
 - Upgrade Kit

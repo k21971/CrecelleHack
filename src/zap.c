@@ -1662,7 +1662,7 @@ create_polymon(struct obj *obj, int okind)
     }
 
     /* Floor coatings */
-    if (!rn2(2)) {
+    if (!rn2(3)) {
         if (has_coating(obj->ox, obj->oy, COAT_BLOOD)
             || obj->otyp == POT_BLOOD) {
             pm_index = PM_BLOOD_GOLEM;
@@ -1670,6 +1670,9 @@ create_polymon(struct obj *obj, int okind)
         } else if (has_coating(obj->ox, obj->oy, COAT_SHARDS)) {
             pm_index = PM_GLASS_GOLEM;
             material = "glassy ";
+        } else if (levl[obj->ox][obj->oy].submask == SM_SAND) {
+            pm_index = PM_SAND_GOLEM;
+            material = "sandy ";
         }
     }
 

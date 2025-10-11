@@ -3421,6 +3421,8 @@ extern void mhitm_ad_sgld(struct monst *, struct attack *, struct monst *,
                           struct mhitm_data *) NONNULLPTRS;
 extern void mhitm_ad_tlpt(struct monst *, struct attack *, struct monst *,
                           struct mhitm_data *) NONNULLPTRS;
+extern void mhitm_ad_tlaw(struct monst *, struct attack *, struct monst *,
+                          struct mhitm_data *) NONNULLPTRS;
 /* gazemm() calls mhitm_ad_blnd with a NULL 4th arg */
 extern void mhitm_ad_blnd(struct monst *, struct attack *, struct monst *,
                           struct mhitm_data *) NONNULLARG123;

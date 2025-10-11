@@ -208,7 +208,8 @@
 #define likes_lava(ptr) \
     (ptr == &mons[PM_FIRE_ELEMENTAL] || ptr == &mons[PM_SALAMANDER])
 #define pm_invisible(ptr) \
-    ((ptr) == &mons[PM_STALKER] || (ptr) == &mons[PM_BLACK_LIGHT])
+    ((ptr) == &mons[PM_STALKER] || (ptr) == &mons[PM_BLACK_LIGHT] \
+        || (ptr) == &mons[PM_PHANTOM_FUNGUS])
 
 /* could probably add more */
 #define likes_fire(ptr)                                                  \
