@@ -4605,6 +4605,8 @@ rounddiv(long x, int y)
 const char *
 solid_stone(int x, int y)
 {
+    if (!IS_SUBMASKABLE(levl[x][y].typ))
+        return "solid stone";
     if (levl[x][y].submask == SM_SAND)
         return "packed sand";
     if (levl[x][y].submask == SM_DIRT)

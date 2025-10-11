@@ -316,7 +316,8 @@ flooreffects(
                && cansee(x,y)) {
         doaltarobj(obj);
     } else if (obj->oclass == POTION_CLASS && svl.level.flags.temperature > 0
-               && (levl[x][y].typ == ROOM || levl[x][y].typ == CORR)) {
+               && (levl[x][y].typ == ROOM || levl[x][y].typ == CORR)
+               && In_hell(&u.uz)) {
         /* Potions are sometimes destroyed when landing on very hot
            ground. The basic odds are 50% for nonblessed potions and
            30% for blessed potions; if you have handled the object
