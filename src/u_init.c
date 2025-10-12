@@ -1318,7 +1318,6 @@ ini_inv_adjust_obj(struct trobj *trop, struct obj *obj)
         }
         obj->cursed = 0;
         obj->booster = 0;
-        set_obj_size(obj, mons[gu.urace.mnum].msize);
         if (obj->opoisoned && u.ualign.type != A_CHAOTIC)
             obj->opoisoned = 0;
         if (obj->oclass == WEAPON_CLASS || obj->oclass == TOOL_CLASS) {
@@ -1344,6 +1343,9 @@ ini_inv_adjust_obj(struct trobj *trop, struct obj *obj)
     }
     /* defined after setting otyp+quan + blessedness */
     obj->owt = weight(obj);
+
+    /* set the object size */
+    set_obj_size(obj, mons[gu.urace.mnum].msize);
 }
 
 /* initial inventory: wear, wield, learn the spell/obj */

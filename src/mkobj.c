@@ -1246,6 +1246,7 @@ mksobj(int otyp, boolean init, boolean artif)
     otmp->lua_ref_cnt = 0;
     otmp->pickup_prev = 0;
     otmp->osize = MZ_MEDIUM;
+    otmp->fuzzwt = 0;
 
     if (init)
         mksobj_init(&otmp, artif);
@@ -1318,20 +1319,17 @@ mksobj(int otyp, boolean init, boolean artif)
         break;
     }
 
+    /* Fuzz weights after base weight is set,
+     * mergeable items are checked for in fuzz_weight */
+    if (is_fuzzy_weight(otmp))
+        fuzz_weight(otmp);
+
     /* unique objects may have an associated artifact entry */
     if (objects[otyp].oc_unique && !otmp->oartifact) {
         /* mk_artifact() with otmp and A_NONE will never return NULL */
         otmp = mk_artifact(otmp, (aligntyp) A_NONE, 99, FALSE);
     }
     otmp->owt = weight(otmp);
-
-    /* Fuzz weights after base weight is set,
-     * mergeable items are checked for in fuzz_weight */
-    if (otmp->oclass == WEAPON_CLASS || otmp->oclass == ARMOR_CLASS
-        || is_weptool(otmp))
-        fuzz_weight(otmp);
-    else
-        otmp->osize = MZ_MEDIUM;
     return otmp;
 }
 
@@ -1973,12 +1971,45 @@ int
 weight(struct obj *obj)
 {
     int wt = (int) objects[obj->otyp].oc_weight; /* weight of 1 'otyp' */
+    float shift;
 
     if (obj->quan < 1L) {
         impossible("Calculating weight of %ld %s?",
                    obj->quan, simpleonames(obj));
         return 0;
     }
+
+    /* If object has a fuzzwt, use that instead of the oc_weight */
+    if (is_fuzzy_weight(obj) && obj->fuzzwt)
+        wt = obj->fuzzwt;
+
+    /* size adjustments */
+    if (size_matters(obj)) {
+        switch (obj->osize) {
+            case MZ_TINY:
+            shift = 0.25;
+            break;
+        case MZ_SMALL:
+            shift = 0.5;
+            break;
+        case MZ_LARGE:
+            shift = 2;
+            break;
+        case MZ_HUGE:
+            shift = 3;
+            break;
+        case MZ_GIGANTIC:
+            shift = 4;
+            break;
+        case MZ_MEDIUM:
+        default:
+            shift = 1;
+            break;
+        }
+        wt = wt * shift;
+    }
+
+
     /* glob absorption means that merging globs combines their weight
        while quantity stays 1; mksobj(), obj_absorb(), and shrink_glob()
        manage glob->owt and there is nothing for weight() to do except
@@ -2045,10 +2076,6 @@ weight(struct obj *obj)
         wt = (long_wt > LARGEST_INT) ? LARGEST_INT : (int) long_wt;
         if (obj->oeaten)
             wt = eaten_stat(wt, obj);
-        return wt;
-    } else if ((obj->oclass == WEAPON_CLASS || obj->oclass == ARMOR_CLASS
-                || is_weptool(obj))
-                && !objects[obj->otyp].oc_merge) {
         return wt;
     } else if ((obj->otyp == SKULL || obj->otyp == SKULL_HELM) && ismnum(obj->corpsenm)) {
         /* Yuck */
@@ -3938,48 +3965,20 @@ pudding_merge_message(struct obj *otmp, struct obj *otmp2)
 staticfn void
 fuzz_weight(struct obj *obj) {
     int wt, orig_wt, fuzz_factor;
-    boolean dofuzz = TRUE;
-    float shift = 0;
 
-    if (objects[obj->otyp].oc_merge)
-        dofuzz = FALSE;
-    orig_wt = obj->owt;
+    if (!is_fuzzy_weight(obj))
+        return;
+
+    orig_wt = objects[obj->otyp].oc_weight;
     fuzz_factor = orig_wt / 4;
-    if (!fuzz_factor)
-        dofuzz = FALSE;
-    if (dofuzz)
+    if (fuzz_factor)
         wt = orig_wt + (2 * fuzz_factor) + 2 -  d(4, fuzz_factor);
     else
         wt = orig_wt;
-    /* size adjustments */
-    if (size_matters(obj)) {
-        switch (obj->osize) {
-            case MZ_TINY:
-            shift = 0.25;
-            break;
-        case MZ_SMALL:
-            shift = 0.5;
-            break;
-        case MZ_LARGE:
-            shift = 2;
-            break;
-        case MZ_HUGE:
-            shift = 3;
-            break;
-        case MZ_GIGANTIC:
-            shift = 4;
-            break;
-        case MZ_MEDIUM:
-        default:
-            shift = 1;
-            break;
-        }
-        wt = wt * shift;
-    }
     /* finalize */
     if (wt < 1)
         wt = 1;
-    obj->owt = wt;
+    obj->fuzzwt = wt;
 }
 
 /* Assuming a base size of medium, pull a multiplier out
@@ -4011,9 +4010,8 @@ void set_obj_size(struct obj *obj, int size) {
     if (!obj || obj->osize == size || !size_matters(obj))
         return;
     obj->osize = size;
-    obj->owt = objects[obj->otyp].oc_weight;
-    obj->owt = weight(obj);
     fuzz_weight(obj);
+    obj->owt = weight(obj);
 }
 
 /*mkobj.c*/

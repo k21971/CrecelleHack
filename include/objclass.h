@@ -208,5 +208,9 @@ extern NEARDATA struct objdescr obj_descr[NUM_OBJECTS + 1];
     (is_rustprone(otmp) || is_flammable(otmp)           \
      || is_rottable(otmp) || is_corrodeable(otmp)       \
      || is_crackable(otmp))
+/* has a fuzzed weight */
+#define is_fuzzy_weight(otmp) \
+    ((otmp->oclass == WEAPON_CLASS || otmp->oclass == ARMOR_CLASS \
+        || is_weptool(otmp)) && !(objects[otmp->otyp].oc_merge || otmp->nomerge || is_ammo(otmp)))
 
 #endif /* OBJCLASS_H */
