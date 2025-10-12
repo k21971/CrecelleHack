@@ -8,6 +8,7 @@
 - Frost no longer causes ice-esque slippage.
 - Water damage causes empty bottles to fill with water (suggested by
   karafruit).
+- You can dip things into acidic monsters that engulf you.
 
 ## Dungeon Changes
 - Dungeon is generated in biomes. This replaces the previous system of

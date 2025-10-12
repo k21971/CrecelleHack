@@ -2822,7 +2822,24 @@ dodip(void)
        fountains, and sinks plus the extra prompting which those entail */
     if (!iflags.menu_requested) {
         /* Is there a fountain to dip into here? */
-        if (!can_reach_floor(FALSE)) {
+        if (u.uswallow && u.ustuck && acidic(u.ustuck->data)) {
+            Snprintf(qbuf, sizeof(qbuf), "%s%s into your surroundings?", Dip_,
+                     flags.verbose ? obuf : shortestname);
+            if (y_n(qbuf) == 'y') {
+                if (obj->oclass == POTION_CLASS && obj->otyp != POT_ACID) {
+                    pline("KABOOM!");
+                    useupall(obj);
+                    losehp(d(10, 10), /* not physical damage */
+                        "creativity in a confined space", KILLED_BY_AN);
+                    if (u.uswallow)
+                        expels(u.ustuck, u.ustuck->data, TRUE);
+                } else {
+                    acid_damage(obj);
+                }
+                return ECMD_TIME;
+            }
+            ++drink_ok_extra;
+        } else if (!can_reach_floor(FALSE)) {
             ; /* can't dip something into fountain or pool if can't reach */
         } else if (at_fountain) {
             Snprintf(qbuf, sizeof(qbuf), "%s%s into the fountain?", Dip_,

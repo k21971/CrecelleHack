@@ -4554,6 +4554,12 @@ acid_damage(struct obj *obj)
 
     if (obj->greased) {
         grease_protect(obj, (char *) 0, victim);
+    } else if (obj->otyp == BOTTLE) {
+        if (carried(obj))
+            pline_The("%s fills up your %s.", hliquid("acid"), cxname(obj));
+        poly_obj(obj, POT_ACID);
+        update_inventory();
+        return;
     } else if (obj->oclass == SCROLL_CLASS && obj->otyp != SCR_BLANK_PAPER) {
         if (obj->otyp != SCR_BLANK_PAPER
 #ifdef MAIL_STRUCTURES
