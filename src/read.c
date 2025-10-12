@@ -1178,7 +1178,6 @@ seffect_enchant_armor(struct obj **sobjp)
         same_color = FALSE;
 
     /* KMH -- catch underflow */
-    #if 0
     s = scursed ? -otmp->spe : otmp->spe;
     if (s > (special_armor ? 5 : 3) && rn2(s)) {
         otmp->in_use = TRUE;
@@ -1192,7 +1191,6 @@ seffect_enchant_armor(struct obj **sobjp)
         useup(otmp);
         return;
     }
-    #endif
     s = scursed ? -1
         : (otmp->spe >= 9)
         ? (rn2(otmp->spe) == 0)
@@ -1266,10 +1264,7 @@ seffect_enchant_armor(struct obj **sobjp)
         /* despite being schar, it shouldn't be possible for spe to wrap
            here because it has been capped at 99 and s is quite small;
            however, might need to change s if it takes spe past 99 */
-        if (s < 0)
-            otmp->spe += s;
-        else
-            boost_object(otmp, 0);
+        otmp->spe += s;
         cap_spe(otmp); /* make sure that it doesn't exceed SPE_LIM */
         s = otmp->spe - oldspe; /* cap_spe() might have throttled 's' */
         if (s) /* skip if it got changed to 0 */

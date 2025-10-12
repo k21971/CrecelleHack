@@ -42,7 +42,7 @@ local wishtest_objects = {
    -- TODO: zombifying and other timers cannot be seen via lua
    ["zombifying elf corpse"] = { otyp_name = "corpse", oclass = "%", corpsenm_name = "elf" },
    ["destroy armor"] = { otyp_name = "destroy armor", oclass = "?" },
-   ["harmonize weapon"] = { otyp_name = "harmonize weapon", oclass = "?" },
+   ["enchant weapon"] = { otyp_name = "enchant weapon", oclass = "?" },
    ["scroll of food detection"] = { otyp_name = "food detection", oclass = "?" },
    ["scroll of detect food"] = { otyp_name = "food detection", oclass = "?" },
    ["2 scrolls of charging"] = { otyp_name = "charging", oclass = "?", quan = 2 },

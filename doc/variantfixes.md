@@ -21,6 +21,8 @@
 - Support 4 status lines in curses.
 - Many additional options for config files.
   - obscure_role_obj_names is taken from dnethack.
+- Ported xnethack's player orientation patch, based on some ancient
+  Splice code I wrote.
 
 ## Monster Changes
 - Monsters can gain water walking and jumping.
@@ -40,6 +42,8 @@
   - Weight modifications are less drastic.
   - implicit_medium is a config option that allows control over whether
     "medium" is omitted from sized item descriptions. Defaults to true.
+- Revert changes to scrolls of enchant weapon.
+  - This change was undercooked and damaged game balance significantly.
 
 ## New Monsters
 - Killer Coins
@@ -99,10 +103,6 @@
 - First weather change takes much longer.
 - First incoming weather system can no longer be a tornado.
 
-## Misc
-- Ported xnethack's player orientation patch, based on some ancient
-  Splice code I wrote.
-
 # 1.2
 
 ## Dungeon Changes
@@ -151,7 +151,7 @@
   what they harmonize with.
 - Dangerous monsters have a chance to spawn with harmonic objects
   related to their abilities.
-- Reading a scroll of harmonize armor while wearing a skull
+- Reading a scroll of enchant armor while wearing a skull
   corresponding to a monster now not only transforms the skull
   into a skull helm, but harmonizes that helm with the monster's
   associated harmonies.
