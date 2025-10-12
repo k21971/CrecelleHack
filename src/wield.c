@@ -1001,7 +1001,6 @@ chwepon(struct obj *otmp, int amount)
         return 1;
     }
     /* there is a (soft) upper and lower limit to uwep->spe */
-    #if 0
     if (((uwep->spe > 5 && amount >= 0) || (uwep->spe < -5 && amount < 0))
         && rn2(3)) {
         if (!Blind)
@@ -1014,7 +1013,6 @@ chwepon(struct obj *otmp, int amount)
         useupall(uwep); /* let all of them disappear */
         return 1;
     }
-    #endif
     if (!Blind) {
         xtime = (amount * amount == 1) ? "moment" : "while";
         pline("%s %s for a %s.",
@@ -1026,10 +1024,7 @@ chwepon(struct obj *otmp, int amount)
     }
     if (amount < 0)
         costly_alteration(uwep, COST_DECHNT);
-    if (amount > 0)
-        boost_object(uwep, 0);
-    else
-        uwep->spe += amount;
+    uwep->spe += amount;
     if (amount > 0) {
         if (uwep->cursed)
             uncurse(uwep);

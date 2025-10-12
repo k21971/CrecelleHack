@@ -6668,7 +6668,6 @@ boost_effects_pre(struct monst *magr, struct monst *mdef)
     if (is_u) {
         if ((weapon->booster & BST_ICE) && icy) {
             otmp = mksobj(ICICLE, FALSE, FALSE);
-            otmp->osize = MZ_MEDIUM;
             otmp->spe = 1;
             throwit(otmp, 0L, FALSE, (struct obj *) 0);
         }
@@ -6680,7 +6679,6 @@ boost_effects_pre(struct monst *magr, struct monst *mdef)
         if ((weapon->booster & BST_ICE) && icy) {
             (void) linedup(x, y, dx, dy, 0); /* set up gt.tbx and gt.tby */
             otmp = mksobj(ICICLE, FALSE, FALSE);
-            otmp->osize = MZ_MEDIUM;
             m_throw(magr, x, y, sgn(gt.tbx), sgn(gt.tby),
                     distmin(x, y, dx, dy), otmp);
         }

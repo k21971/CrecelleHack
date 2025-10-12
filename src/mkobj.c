@@ -1245,6 +1245,7 @@ mksobj(int otyp, boolean init, boolean artif)
     otmp->corpsenm = NON_PM;
     otmp->lua_ref_cnt = 0;
     otmp->pickup_prev = 0;
+    otmp->osize = MZ_MEDIUM;
 
     if (init)
         mksobj_init(&otmp, artif);
