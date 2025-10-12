@@ -4007,7 +4007,7 @@ size_mult(int sz) {
    weight */
 void set_obj_size(struct obj *obj, int size) {
     /* Do not set an object to its own size. */
-    if (obj->osize == size || !size_matters(obj))
+    if (!obj || obj->osize == size || !size_matters(obj))
         return;
     obj->osize = size;
     obj->owt = objects[obj->otyp].oc_weight;
