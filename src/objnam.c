@@ -1163,17 +1163,17 @@ the_unique_pm(struct permonst *ptr)
 }
 
 static struct boostnam boostnams[] = {
-   { BST_GRASS, "Grass", "lush " },
-   { BST_MUD, "Mud", "squelching " },
-   { BST_ROCK, "Rock", "stony " },
-   { BST_WATER, "Water", "oceanic " },
-   { BST_ASHES, "Ashes", "thermal " },
-   { BST_FUNGI, "Fungi", "fungal " },
-   { BST_BLOOD, "Blood", "sanguine " },
-   { BST_SAND, "Sand", "wasting " },
-   { BST_POTION, "Tonic", "alchemical " },
-   { BST_HONEY, "Honey", "honeyed " },
-   { BST_ICE, "Ice", "boreal " }
+   { BST_GRASS,  "Grass",   "lush " },
+   { BST_MUD,    "Mud",     "sodden " },
+   { BST_ROCK,   "Rock",    "lithic " },
+   { BST_WATER,  "Water",   "oceanic " },
+   { BST_ASHES,  "Ashes",   "thermal " },
+   { BST_FUNGI,  "Fungi",   "sporeborn " },
+   { BST_BLOOD,  "Blood",   "sanguine " },
+   { BST_SAND,   "Sand",    "wasting " },
+   { BST_POTION, "Tonic",   "actinic " },
+   { BST_HONEY,  "Honey",   "hivespun " },
+   { BST_ICE,    "Ice",     "boreal " }
 };
 
 void
@@ -4216,7 +4216,7 @@ readobjnam_preparse(struct _readobjnam_data *d)
             d->eroded = 1 + d->very;
             d->very = 0;
         } else if (!strncmpi(d->bp, "harmonic ", l = 9)) {
-            d->booster = 1;
+            d->booster = -1;
         } else if (!strncmpi(d->bp, "corroded ", l = 9)
                    || !strncmpi(d->bp, "rotted ", l = 7)) {
             d->eroded2 = 1 + d->very;
@@ -4307,8 +4307,19 @@ readobjnam_preparse(struct _readobjnam_data *d)
                 || !strncmpi(d->bp + l, "the ", more_l = 4))
                 l += more_l;
         } else {
+            /* handle boost names */
+            if (wizard) {
+                for (int i = 0; i < SIZE(boostnams); i++) {
+                    if (!strncmpi(d->bp, boostnams[i].abbr, l = strlen(boostnams[i].abbr))) {
+                        d->booster = boostnams[i].boost_short;
+                        goto inc_bp;
+                    }
+                }
+            }
+            /* break out */
             break;
         }
+inc_bp:
         d->bp += l;
     }
     if (save_bp)
@@ -5549,7 +5560,10 @@ readobjnam(char *bp, struct obj *no_wish)
         }
     }
     if (d.booster && (d.otmp->oclass == WEAPON_CLASS || d.otmp->oclass == ARMOR_CLASS)) {
-        boost_object(d.otmp, 0);
+        if (d.booster < 0)
+            boost_object(d.otmp, 0);
+        else
+            boost_object(d.otmp, d.booster);
     }
     /* These items should have had their weights fuzzed - don't reset it. */
     if (d.otmp->oclass != WEAPON_CLASS && d.otmp->oclass != ARMOR_CLASS

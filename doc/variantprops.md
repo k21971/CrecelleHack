@@ -22,25 +22,25 @@
 - Thermal weapons create bonfires on hit if the wielder is
   standing on ash or if the target is standing on grass.
 
-## Stony
-- Stony weapons have a chance to drop boulders on the target,
+## Lithic
+- Lithic weapons have a chance to drop boulders on the target,
   but only if the wielder is standing on uncovered stone.
 
-## Earthen
-- Earthen weapons cover their target with mud, slowing them
+## Sodden
+- Sodden weapons cover their target with mud, slowing them
   down.
 
-## Fungal
-- Fungal weapons stun a target standing on fungi, but confuse
+## Sporeborn
+- Sporeborn weapons stun a target standing on fungi, but confuse
   the target when the wielder is standing on fungi. Also, it
   spreads fungal coatings.
 
-## Alchemical
-- Alchemical weapons have a 25% chance of causing a type of
+## Actinic
+- Actinic weapons have a 25% chance of causing a type of
   potion dependent on object id to splash onto nearby squares.
 
-## Honeyed
-- Honeyed weapons deposit honey onto the surface beneath the
+## Hivespun
+- Hivespun weapons deposit honey onto the surface beneath the
   defender on hit.
 
 ## Wasting

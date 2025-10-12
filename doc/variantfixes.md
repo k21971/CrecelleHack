@@ -9,6 +9,8 @@
 - Water damage causes empty bottles to fill with water (suggested by
   karafruit).
 - You can dip things into acidic monsters that engulf you.
+- Improved the names of harmonic weapon oprops.
+- You can wish for specific harmonic oprops in wizard mode.
 
 ## Dungeon Changes
 - Dungeon is generated in biomes. This replaces the previous system of
