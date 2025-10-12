@@ -456,6 +456,10 @@ hole_destination(d_level *dst)
     }
 }
 
+static const int hellgas[] = { POT_SLEEPING, POT_HALLUCINATION, POT_PARALYSIS,
+                                        POT_POLYMORPH, POT_SICKNESS, POT_BLINDNESS,
+                                        POT_CONFUSION };
+
 struct trap *
 maketrap(coordxy x, coordxy y, int typ)
 {
@@ -577,9 +581,6 @@ maketrap(coordxy x, coordxy y, int typ)
         }
         break;
     case SLP_GAS_TRAP:
-        const int hellgas[] = { POT_SLEEPING, POT_HALLUCINATION, POT_PARALYSIS,
-                                        POT_POLYMORPH, POT_SICKNESS, POT_BLINDNESS,
-                                        POT_CONFUSION };
         if (In_hell(&u.uz)) {
             ttmp->launch_otyp = ROLL_FROM(hellgas);
         } else {
