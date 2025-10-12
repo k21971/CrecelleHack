@@ -176,6 +176,8 @@ void
 moveloop_core(void)
 {
     boolean monscanmove = FALSE;
+    int numdogs;
+    struct monst *weakdog;
 
 #ifdef SAFERHANGUP
     if (program_state.done_hup)
@@ -203,6 +205,8 @@ moveloop_core(void)
 
         do { /* hero can't move this turn loop */
             mvl_wtcap = encumber_msg();
+            weakdog = NULL;
+            numdogs = 0;
 
             svc.context.mon_moving = TRUE;
             do {
@@ -223,8 +227,37 @@ moveloop_core(void)
                 /* reallocate movement rations to monsters; don't need
                    to skip dead monsters here because they will have
                    been purged at end of their previous round of moving */
-                for (mtmp = fmon; mtmp; mtmp = mtmp->nmon)
+                for (mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
                     mtmp->movement += mcalcmove(mtmp, TRUE);
+                    /* we also take care of pets untaming due to insufficient charisma
+                       here. It's more efficient than dnethack and EvilHack, even if
+                       the code is in a weird spot. Overall, however, the code is largely
+                       the same, but there is no accounting for ties and pets untame
+                       one at a time rather than all at once. */
+                    if (mtmp->mtame) {
+                        ++numdogs;
+                        if (mtmp == u.usteed)
+                            continue;
+                        if (!weakdog)
+                            weakdog = mtmp;
+                        else if (weakdog->m_lev > mtmp->m_lev)
+                            weakdog = mtmp;
+                    }
+                }
+
+                /* Untame excess tame monsters. We have an extra check here so that
+                   we do a little bit less integer division. */
+                if (weakdog && numdogs > 1 && numdogs > ACURR(A_CHA) / 3) {
+                    if (canseemon(weakdog))
+                        pline_mon(weakdog, "%s goes wild!", Monnam(weakdog));
+                    else
+                        You_feel("concerned about %s.", y_monnam(weakdog));
+                    weakdog->mtame = 0;
+                    if (rn2(EDOG(weakdog)->abuse + 1))
+                        weakdog->mpeaceful = 0;
+                    if (weakdog->mleashed)
+                        m_unleash(weakdog, TRUE);
+                }
 
                 /* occasionally add another monster; since this takes
                    place after movement has been allotted, the new

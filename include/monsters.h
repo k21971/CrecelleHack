@@ -1759,8 +1759,7 @@
         M1_FLY | M1_THICK_HIDE | M1_NOHANDS | M1_SEE_INVIS
             | M1_OVIPAROUS | M1_CARNIVORE | M1_ACID,
         M2_HOSTILE | M2_STRONG | M2_NASTY | M2_GREEDY | M2_JEWELS | M2_MAGIC,
-        0, BST_ROCK, 
-        0, 20, CLR_YELLOW, YELLOW_DRAGON),
+        0, BST_ROCK, 0, 20, CLR_YELLOW, YELLOW_DRAGON),
     /*
      * Elementals
      */

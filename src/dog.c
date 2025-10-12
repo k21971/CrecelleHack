@@ -65,6 +65,7 @@ initedog(struct monst *mtmp, boolean everything)
         edogp->abuse = 0;
         edogp->revivals = 0;
         edogp->mhpmax_penalty = 0;
+        edogp->petstrat = 0;
         edogp->killed_by_u = 0;
     } else {
         if (edogp->apport <= 0)
@@ -808,6 +809,12 @@ keepdogs(
 {
     struct monst *mtmp, *mtmp2;
 
+    int follow_dist = 0;
+    if (P_SKILL(P_LEADERSHIP) >= P_BASIC) {
+        follow_dist = P_SKILL(P_LEADERSHIP) + 2;
+        follow_dist = follow_dist * follow_dist;
+    }
+
     for (mtmp = fmon; mtmp; mtmp = mtmp2) {
         mtmp2 = mtmp->nmon;
         if (DEADMONSTER(mtmp))
@@ -825,17 +832,19 @@ keepdogs(
             mtmp->mfrozen = 0;
             mtmp->mcanmove = 1;
         }
-        if (((monnear(mtmp, u.ux, u.uy) && levl_follower(mtmp))
+        if ((((monnear(mtmp, u.ux, u.uy) || (mtmp->mtame && mdistu(mtmp) < follow_dist))
+                && levl_follower(mtmp))
              /* the wiz will level t-port from anywhere to chase
                 the amulet; if you don't have it, will chase you
                 only if in range. -3. */
-             || (u.uhave.amulet && mtmp->iswiz))
+            || (u.uhave.amulet && mtmp->iswiz))
             && (!helpless(mtmp)
                 /* eg if level teleport or new trap, steed has no control
                    to avoid following */
                 || (mtmp == u.usteed))
             /* monster won't follow if it hasn't noticed you yet */
-            && !(mtmp->mstrategy & STRAT_WAITFORU)) {
+            && !(mtmp->mstrategy & STRAT_WAITFORU)
+            && !(has_edog(mtmp) && (EDOG(mtmp)->petstrat & PETSTRAT_STAY))) {
             int num_segs;
             boolean stay_behind = FALSE;
 
@@ -1225,6 +1234,7 @@ tamedog(
                 pline_mon(mtmp, "%s catches %s%s",
                           Monnam(mtmp), the(xname(obj)),
                          !big_corpse ? "." : ", or vice versa!");
+                use_skill(P_LEADERSHIP, 1);
             } else if (cansee(mtmp->mx, mtmp->my))
                 pline("%s.", Tobjnam(obj, "stop"));
             /* dog_eat expects a floor object */
@@ -1325,6 +1335,7 @@ wary_dog(struct monst *mtmp, boolean was_dead)
         mtmp->mhpmax += edog->mhpmax_penalty;
         mtmp->mhp += edog->mhpmax_penalty; /* heal it */
         edog->mhpmax_penalty = 0;
+        edog->petstrat = 0;
     }
 
     if (edog && (edog->killed_by_u == 1 || edog->abuse > 2)) {

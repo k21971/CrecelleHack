@@ -24,18 +24,19 @@ staticfn void skill_advance(int);
 #define PN_RIDING (-3)
 #define PN_TRIPPING (-4)
 #define PN_GRAPPLING (-5)
-#define PN_IMPROV (-6)
-#define PN_POLEARMS (-7)
-#define PN_SABER (-8)
-#define PN_HAMMER (-9)
-#define PN_WHIP (-10)
-#define PN_ATTACK_SPELL (-11)
-#define PN_HEALING_SPELL (-12)
-#define PN_DIVINATION_SPELL (-13)
-#define PN_ENCHANTMENT_SPELL (-14)
-#define PN_CLERIC_SPELL (-15)
-#define PN_ESCAPE_SPELL (-16)
-#define PN_MATTER_SPELL (-17)
+#define PN_LEADERSHIP (-6)
+#define PN_IMPROV (-7)
+#define PN_POLEARMS (-8)
+#define PN_SABER (-9)
+#define PN_HAMMER (-10)
+#define PN_WHIP (-11)
+#define PN_ATTACK_SPELL (-12)
+#define PN_HEALING_SPELL (-13)
+#define PN_DIVINATION_SPELL (-14)
+#define PN_ENCHANTMENT_SPELL (-15)
+#define PN_CLERIC_SPELL (-16)
+#define PN_ESCAPE_SPELL (-17)
+#define PN_MATTER_SPELL (-18)
 
 static NEARDATA const short skill_names_indices[P_NUM_SKILLS] = {
     /* Weapon */
@@ -48,14 +49,14 @@ static NEARDATA const short skill_names_indices[P_NUM_SKILLS] = {
     PN_ENCHANTMENT_SPELL, PN_CLERIC_SPELL, PN_ESCAPE_SPELL, PN_MATTER_SPELL,
     /* Other */
     PN_BARE_HANDED, PN_TWO_WEAPONS, PN_RIDING, PN_TRIPPING, PN_GRAPPLING,
-    PN_IMPROV
+    PN_LEADERSHIP, PN_IMPROV
 };
 
 /* note: entry [0] isn't used */
 static NEARDATA const char *const odd_skill_names[] = {
     "no skill", "bare hands", /* use barehands_or_martial[] instead */
     "two weapon combat", "riding", "tripping", "grappling",
-    "improvised weaponry",
+    "leadership", "improvised weaponry",
     "polearms", "saber", "hammer", "whip",
     "attack spells", "healing spells", "divination spells",
     "enchantment spells", "clerical spells", "escape spells", "matter spells",
@@ -1279,7 +1280,7 @@ static const struct skill_range {
     short first, last;
     const char *name;
 } skill_ranges[] = {
-    { P_FIRST_H_TO_H, P_LAST_H_TO_H, "Fighting Skills" },
+    { P_FIRST_H_TO_H, P_LAST_H_TO_H, "Generic Skills" },
     { P_FIRST_WEAPON, P_LAST_WEAPON, "Weapon Skills" },
     { P_FIRST_SPELL, P_LAST_SPELL, "Spellcasting Skills" },
 };
@@ -1827,6 +1828,10 @@ skill_init(const struct def_skill *class_skill)
     /* Wrestlers have trained in grappling */
     if (Role_if(PM_GRAPPLER))
         P_SKILL(P_GRAPPLING) = P_BASIC;
+
+    /* Rangers know how to handle beasts */
+    if (Role_if(PM_RANGER) && svc.context.startingpet_typ != NON_PM)
+        P_SKILL(P_LEADERSHIP) = P_BASIC;
 
     /* Roles that start with a horse know how to ride it */
     if (can_saddle(&mons[gu.urole.petnum])) 

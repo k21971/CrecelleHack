@@ -16,6 +16,7 @@ staticfn struct monst *responsive_mon_at(int, int);
 staticfn int mon_in_room(struct monst *, int);
 staticfn boolean oracle_sound(struct monst *);
 staticfn char *mverbal_description(coordxy, coordxy, char *);
+staticfn boolean order_pet(struct monst *);
 
 /* this easily could be a macro, but it might overtax dumb compilers */
 staticfn int
@@ -1460,12 +1461,9 @@ dochat(void)
         pline("%s is eating noisily.", Monnam(mtmp));
         return ECMD_OK;
     }
-    if (Race_if(PM_KOBOLD)) {
-        You("bark at %s.", mon_nam(mtmp));
-        if (is_kobold(mtmp->data)
-            || mtmp->data->mlet == S_DOG)
-            return domonnoise(mtmp);
-        return ECMD_OK;
+    if (mtmp->mtame && canspotmon(mtmp)
+        && (y_n("Issue a command?") == 'y') && order_pet(mtmp)) {
+        return ECMD_TIME;
     }
     if (Deaf) {
         const char *xresponse = humanoid(gy.youmonst.data)
@@ -1476,6 +1474,13 @@ dochat(void)
               canspotmon(mtmp) ? " from " : "",
               canspotmon(mtmp) ? mon_nam(mtmp) : "",
               xresponse);
+        return ECMD_OK;
+    }
+    if (Race_if(PM_KOBOLD)) {
+        You("bark at %s.", mon_nam(mtmp));
+        if (is_kobold(mtmp->data)
+            || mtmp->data->mlet == S_DOG)
+            return domonnoise(mtmp);
         return ECMD_OK;
     }
     return domonnoise(mtmp);
@@ -2424,6 +2429,151 @@ mcallout(struct monst *mtmp)
         mon->muy = mtmp->muy;
     }
     wake_nearto(mtmp->mx, mtmp->my, 25);
+}
+
+boolean
+order_pet(struct monst *mtmp)
+{
+    winid win;
+    anything any;
+    menu_item *pick_list = 0;
+    char ch = 0;
+    boolean less_tame = TRUE;
+    boolean not_skilled = FALSE;
+    if (!mtmp->mtame) {
+        pline_mon(mtmp, "%s is not used to taking orders from you.", Monnam(mtmp));
+        return FALSE;
+    }
+    /* Command window */
+    win = create_nhwindow(NHW_MENU);
+    start_menu(win, MENU_BEHAVE_STANDARD);
+    any = cg.zeroany;
+    any.a_char = 'd';
+    add_menu(win, &nul_glyphinfo, &any, any.a_char, 'D',
+             ATR_NONE, NO_COLOR, "Engage defensively", MENU_ITEMFLAGS_NONE);
+    any.a_char = 'o';
+    add_menu(win, &nul_glyphinfo, &any, any.a_char, 'O',
+             ATR_NONE, NO_COLOR, "Engage offensively", MENU_ITEMFLAGS_NONE);
+    any.a_char = 'i';
+    add_menu(win, &nul_glyphinfo, &any, any.a_char, 'I',
+             ATR_NONE, NO_COLOR, "Stop picking up items", MENU_ITEMFLAGS_NONE);     
+    any.a_char = 'p';
+    add_menu(win, &nul_glyphinfo, &any, any.a_char, 'P',
+             ATR_NONE, NO_COLOR, "Avoid attacking peacefuls", MENU_ITEMFLAGS_NONE);
+    any.a_char = 's';
+    add_menu(win, &nul_glyphinfo, &any, any.a_char, 'S',
+             ATR_NONE, NO_COLOR, "Stay on this level", MENU_ITEMFLAGS_NONE);
+    any.a_char = 'b';
+    add_menu(win, &nul_glyphinfo, &any, any.a_char, 'B',
+             ATR_NONE, NO_COLOR, "Belay all previous orders", MENU_ITEMFLAGS_NONE);
+    end_menu(win, "What command do you want to issue?");
+
+    if (select_menu(win, PICK_ONE, &pick_list) > 0) {
+        ch = pick_list[0].item.a_char;
+        free((genericptr_t) pick_list);
+    } else
+        ch = 'q';
+    destroy_nhwindow(win);
+    /* Actions */
+    switch (ch) {
+    case 'd':
+        if (P_SKILL(P_LEADERSHIP) < P_SKILLED) {
+            not_skilled = TRUE;
+            break;
+        }
+        You("direct %s to keep out of combat.", mon_nam(mtmp));
+        EDOG(mtmp)->petstrat |= PETSTRAT_COWED;
+        EDOG(mtmp)->petstrat &= ~PETSTRAT_AGGRO;
+        less_tame = is_demon(mtmp->data);
+        break;
+    case 'o':
+        if (P_SKILL(P_LEADERSHIP) < P_SKILLED) {
+            not_skilled = TRUE;
+            break;
+        }
+        if (Hallucination)
+            verbalize("Sic Em'!");
+        else {
+            You("direct %s to attack everything on sight regardless of the danger.",
+                mon_nam(mtmp));
+        }
+        peacefuls_respond(mtmp);
+        EDOG(mtmp)->petstrat |= PETSTRAT_AGGRO;
+        EDOG(mtmp)->petstrat &= ~PETSTRAT_COWED;
+        less_tame = !is_demon(mtmp->data);
+        break;
+    case 'p':
+        You("direct %s not to attack anyone peaceful.", mon_nam(mtmp));
+        EDOG(mtmp)->petstrat |= PETSTRAT_NOPEACE;
+        break;
+    case 'i':
+        if (P_SKILL(P_LEADERSHIP) < P_BASIC) {
+            not_skilled = TRUE;
+            break;
+        }
+        You("direct %s not to pick anything up.", mon_nam(mtmp));
+        EDOG(mtmp)->petstrat |= PETSTRAT_NOAPPORT;
+        break;
+    case 's':
+        You("direct %s to stay here.", mon_nam(mtmp));
+        EDOG(mtmp)->petstrat |= PETSTRAT_STAY;
+        break;
+    case 'b':
+        You("leave the actions of %s up to %s own discretion.", mon_nam(mtmp), mhis(mtmp));
+        EDOG(mtmp)->petstrat = 0;
+        less_tame = FALSE;
+        break;
+    default:
+    case 'q':
+        less_tame = FALSE;
+        break;
+    }
+    /* not skilled enough to issue commands */
+    if (not_skilled && flags.beginner) {
+        pline("You are not skilled enough to get %s to listen to such an order.", mon_nam(mtmp));
+        return TRUE;
+    } else if (not_skilled) {
+        pline("%s ignores your order.", Monnam(mtmp));
+    }
+    /* tameness cost */
+    if (less_tame && mtmp->mtame > 1) {
+        mtmp->mtame--;
+        betrayed(mtmp);
+    }
+    return TRUE;
+}
+
+extern int
+do_order(void)
+{
+    coord cc;
+    int cx, cy;
+    struct monst *mtmp = 0;
+
+    cc.x = u.ux;
+    cc.y = u.uy;
+    if (getpos(&cc, FALSE, "the monster you want to issue orders to") < 0
+        || !isok(cc.x, cc.y))
+        return ECMD_CANCEL;
+    cx = cc.x, cy = cc.y;
+
+    if (u_at(cx, cy)) {
+        if (u.usteed && canspotmon(u.usteed)) {
+            mtmp = u.usteed;
+        } else {
+            pline("Try using the keyboard...");
+            return ECMD_FAIL;
+        }
+    } else
+        mtmp = m_at(cx, cy);
+
+    if (u.uswallow || !mtmp || !canspotmon(mtmp)) {
+        You("are unaware of any monster there to order around.");
+        return ECMD_FAIL;
+    }
+    if (order_pet(mtmp))
+        return ECMD_TIME;
+    return ECMD_CANCEL;
 }
 
 /*sounds.c*/

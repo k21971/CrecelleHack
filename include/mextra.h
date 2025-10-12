@@ -168,6 +168,12 @@ enum dogfood_types {
     TABU    = 7
 };
 
+#define PETSTRAT_AGGRO     0x00000001L
+#define PETSTRAT_COWED     0x00000002L
+#define PETSTRAT_STAY      0x00000004L
+#define PETSTRAT_NOAPPORT  0x00000008L
+#define PETSTRAT_NOPEACE   0x00000010L
+
 struct edog {
     unsigned parentmid;       /* make clobber-detection possible */
     long droptime;            /* moment dog dropped object */
@@ -179,6 +185,7 @@ struct edog {
     int abuse;                /* track abuses to this pet */
     int revivals;             /* count pet deaths */
     int mhpmax_penalty;       /* while starving, points reduced */
+    long petstrat;            /* pet strategies */
     Bitfield(killed_by_u, 1); /* you attempted to kill him */
 };
 

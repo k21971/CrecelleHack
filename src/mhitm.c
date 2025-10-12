@@ -349,6 +349,10 @@ mattackm(
             }
         }
     }
+    
+    /* Train pet handling skills */
+    if (magr->mtame)
+        use_skill(P_LEADERSHIP, 1);
 
     /* Elves hate orcs. */
     if (is_elf(pa) && is_orc(pd))

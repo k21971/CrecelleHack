@@ -1817,6 +1817,7 @@ extern void deal_with_overcrowding(struct monst *) NONNULLARG1;
 extern void maybe_mnexto(struct monst *) NONNULLARG1;
 extern int mnearto(struct monst *, coordxy, coordxy, boolean, unsigned) NONNULLARG1;
 extern void m_respond(struct monst *) NONNULLARG1;
+extern void peacefuls_respond(struct monst *) NONNULLARG1;
 extern void setmangry(struct monst *, boolean) NONNULLARG1;
 extern void wake_msg(struct monst *, boolean) NONNULLARG1;
 extern void wakeup(struct monst *, boolean) NONNULLARG1;
@@ -3058,6 +3059,7 @@ extern void sound_speak(const char *) NO_NNARGS;
 extern int dotaunt(void);
 extern void mcallout(struct monst *) NO_NNARGS;
 extern enum soundlib_ids soundlib_id_from_opt(char *);
+extern int do_order(void);
 
 /* ### sp_lev.c ### */
 

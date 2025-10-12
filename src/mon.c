@@ -25,7 +25,6 @@ staticfn boolean ok_to_obliterate(struct monst *);
 staticfn void m_respond_shrieker(struct monst *);
 staticfn void m_respond_medusa(struct monst *);
 staticfn void qst_guardians_respond(void);
-staticfn void peacefuls_respond(struct monst *);
 staticfn void wake_nearto_core(coordxy, coordxy, int, boolean);
 staticfn void m_restartcham(struct monst *);
 staticfn boolean restrap(struct monst *);
@@ -4319,7 +4318,7 @@ qst_guardians_respond(void)
 }
 
 /* how other peacefuls react when you attack monster */
-staticfn void
+void
 peacefuls_respond(struct monst *mtmp)
 {
     struct monst *mon;

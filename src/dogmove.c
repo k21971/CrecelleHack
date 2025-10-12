@@ -436,7 +436,7 @@ dog_invent(struct monst *mtmp, struct edog *edog, int udist)
             carryamt = can_carry(mtmp, obj);
             if (carryamt > 0 && !obj->cursed
                 && could_reach_item(mtmp, obj->ox, obj->oy)) {
-                if (rn2(20) < edog->apport + 3) {
+                if (!(EDOG(mtmp)->petstrat & PETSTRAT_NOAPPORT) && rn2(20) < edog->apport + 3) {
                     if (rn2(udist) || !rn2(edog->apport)) {
                         otmp = obj;
                         if (carryamt != obj->quan)
@@ -771,7 +771,8 @@ score_targ(struct monst *mtmp, struct monst *mtarg)
             return score;
         }
         /* Is the monster peaceful or tame? */
-        if (/*mtarg->mpeaceful ||*/ mtarg->mtame || mtarg == &gy.youmonst) {
+        if (mtarg->mtame || mtarg == &gy.youmonst
+            || ((EDOG(mtmp)->petstrat & PETSTRAT_NOPEACE) && mtarg->mpeaceful)) {
             /* Pets will never be targeted */
             score -= 3000L;
             return score;
@@ -811,8 +812,9 @@ score_targ(struct monst *mtmp, struct monst *mtarg)
         }
         /* And pets will hesitate to attack vastly stronger foes.
            This penalty will be discarded if master's in trouble. */
-        if (mtarg->m_lev > mtmp_lev + 4L)
+        if (!(EDOG(mtmp)->petstrat & PETSTRAT_AGGRO) && mtarg->m_lev > mtmp_lev + 4L) {
             score -= (mtarg->m_lev - mtmp_lev) * 20L;
+        }
         /* All things being the same, go for the beefiest monster. This
            bonus should not be large enough to override the pet's aversion
            to attacking much stronger monsters. */
@@ -1143,6 +1145,15 @@ dog_move(
              * they are willing to attack; note the >= used when comparing it.
              */
             int balk = mtmp->m_lev + ((5 * mtmp->mhp) / mtmp->mhpmax) - 2;
+
+            if (EDOG(mtmp)->petstrat & PETSTRAT_AGGRO)
+                balk += 10;
+            if (EDOG(mtmp)->petstrat & PETSTRAT_COWED)
+                balk = 2;
+
+            if ((EDOG(mtmp)->petstrat & PETSTRAT_NOPEACE)
+                && mtmp2->mpeaceful)
+                continue;
 
             if ((int) mtmp2->m_lev >= balk
                 || (mtmp2->mtame && mtmp->mtame && !Conflict)

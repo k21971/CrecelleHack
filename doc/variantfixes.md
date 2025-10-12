@@ -68,6 +68,18 @@
     current form. In addition, any object where size is a factor can
     be resized.
 
+## Pets
+- Allow the player to issue granular orders to their pets, directing
+  them on how who to attack, whether to pick up items, and more.
+- New skill: Leadership. Determines what kind of orders you can issue to
+  pets.
+- Maximum number of pets is now one third charisma. The code here is
+  inhereted from EvilHack and dNetHack, but is more efficient. It also has
+  a side effect of excess pets untaming one at a time, rather than all at
+  once, so massive bursts of pets can still be semi-viable.
+- Also from dnethack, skill in leadership increases pet follow distance.
+- Orders can be issued by chatting with a pet or by using #order.
+
 ## Races
 - New Race: Kobold
   - Although kobolds are playable in Grunt and SlashTHEM, their appearance

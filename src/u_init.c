@@ -282,6 +282,7 @@ static const struct def_skill Skill_A[] = {
     { P_TRIPPING, P_EXPERT },
     { P_GRAPPLING, P_BASIC },
     { P_IMPROV, P_BASIC },
+    { P_LEADERSHIP, P_BASIC },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_B[] = {
@@ -336,6 +337,7 @@ static const struct def_skill Skill_C[] = {
     { P_TRIPPING, P_SKILLED },
     { P_GRAPPLING, P_BASIC },
     { P_IMPROV, P_SKILLED },
+    { P_LEADERSHIP, P_SKILLED },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_Grp[] = {
@@ -357,6 +359,7 @@ static const struct def_skill Skill_Grp[] = {
     { P_TRIPPING, P_EXPERT },
     { P_GRAPPLING, P_GRAND_MASTER },
     { P_IMPROV, P_MASTER },
+    { P_LEADERSHIP, P_BASIC },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_H[] = {
@@ -378,6 +381,7 @@ static const struct def_skill Skill_H[] = {
     { P_BARE_HANDED_COMBAT, P_BASIC },
     { P_TRIPPING, P_BASIC },
     { P_GRAPPLING, P_SKILLED },
+    { P_LEADERSHIP, P_EXPERT },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_K[] = {
@@ -407,6 +411,7 @@ static const struct def_skill Skill_K[] = {
     { P_RIDING, P_EXPERT },
     { P_TWO_WEAPON_COMBAT, P_SKILLED },
     { P_BARE_HANDED_COMBAT, P_EXPERT },
+    { P_LEADERSHIP, P_BASIC },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_Mon[] = {
@@ -424,6 +429,7 @@ static const struct def_skill Skill_Mon[] = {
     { P_MARTIAL_ARTS, P_GRAND_MASTER },
     { P_TRIPPING, P_EXPERT },
     { P_GRAPPLING, P_EXPERT },
+    { P_LEADERSHIP, P_SKILLED },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_P[] = {
@@ -449,6 +455,7 @@ static const struct def_skill Skill_P[] = {
     { P_CLERIC_SPELL, P_EXPERT },
     { P_BARE_HANDED_COMBAT, P_BASIC },
     { P_TRIPPING, P_BASIC },
+    { P_LEADERSHIP, P_SKILLED },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_R[] = {
@@ -508,6 +515,7 @@ static const struct def_skill Skill_Ran[] = {
     { P_TRIPPING, P_SKILLED },
     { P_GRAPPLING, P_BASIC },
     { P_IMPROV, P_BASIC },
+    { P_LEADERSHIP, P_EXPERT },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_S[] = {
@@ -531,6 +539,7 @@ static const struct def_skill Skill_S[] = {
     { P_RIDING, P_SKILLED },
     { P_TWO_WEAPON_COMBAT, P_EXPERT },
     { P_MARTIAL_ARTS, P_MASTER },
+    { P_LEADERSHIP, P_BASIC },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_T[] = {
@@ -569,6 +578,7 @@ static const struct def_skill Skill_T[] = {
     { P_TRIPPING, P_SKILLED },
     { P_GRAPPLING, P_SKILLED },
     { P_IMPROV, P_SKILLED },
+    { P_LEADERSHIP, P_SKILLED },
     { P_NONE, 0 }
 };
 static const struct def_skill Skill_V[] = {
@@ -619,6 +629,7 @@ static const struct def_skill Skill_W[] = {
     { P_MATTER_SPELL, P_EXPERT },
     { P_RIDING, P_BASIC },
     { P_BARE_HANDED_COMBAT, P_BASIC },
+    { P_LEADERSHIP, P_BASIC },
     { P_NONE, 0 }
 };
 
