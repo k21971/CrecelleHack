@@ -1331,7 +1331,7 @@ mksobj(int otyp, boolean init, boolean artif)
         || is_weptool(otmp))
         fuzz_weight(otmp);
     else
-        otmp->owt = MZ_MEDIUM;
+        otmp->osize = MZ_MEDIUM;
     return otmp;
 }
 
