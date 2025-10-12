@@ -1191,6 +1191,7 @@ extern void dump_glyphids(void);
 extern void clear_all_glyphmap_colors(void);
 extern void reset_customcolors(void);
 extern int glyph_to_cmap(int);
+extern void maybe_shuffle_customizations(void);
 
 /* ### hack.c ### */
 
