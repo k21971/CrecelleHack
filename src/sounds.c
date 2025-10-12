@@ -904,6 +904,16 @@ domonnoise(struct monst *mtmp)
         } else {
             pline_msg = "growls.";
         }
+        if (Race_if(PM_KOBOLD) && !mtmp->mtame) {
+            if (is_kobold(mtmp->data)
+                || !rn2((mtmp->m_lev < u.ulevel) ? 3 : 10)) {
+                You("communicate your plight to %s.", mon_nam(mtmp));
+                (void) tamedog(mtmp, (struct obj *) 0, FALSE);
+            } else {
+                pline_mon(mtmp, "%s does not take a sympathetic view.",
+                          Monnam(mtmp));
+            }
+        }
         break;
     case MS_MEW:
         if (mtmp->mtame) {
@@ -1448,6 +1458,13 @@ dochat(void)
         if (!canspotmon(mtmp))
             map_invisible(mtmp->mx, mtmp->my);
         pline("%s is eating noisily.", Monnam(mtmp));
+        return ECMD_OK;
+    }
+    if (Race_if(PM_KOBOLD)) {
+        You("bark at %s.", mon_nam(mtmp));
+        if (is_kobold(mtmp->data)
+            || mtmp->data->mlet == S_DOG)
+            return domonnoise(mtmp);
         return ECMD_OK;
     }
     if (Deaf) {
@@ -2368,7 +2385,8 @@ mcallout(struct monst *mtmp)
         rtyp = svr.rooms[levl[u.ux][u.uy].roomno - ROOMOFFSET].rtype;
     /* Make some kind of sound */
     if (!Deaf) {
-        if (is_animal(mtmp->data) || mindless(mtmp->data)) {
+        if (is_animal(mtmp->data) || mindless(mtmp->data)
+            || is_kobold(mtmp->data)) {
             pline_mon(mtmp, "%s %s!", Monnam(mtmp), makeplural(growl_sound(mtmp)));
         } else {
             if (gm.multi_reason) {

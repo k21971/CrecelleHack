@@ -74,6 +74,8 @@
     a kobold player.
   - Kobolds start with poison resistance, and like orcs they may eat
     tripe rations without penalty. They are of small size.
+  - Kobolds can only talk to dogs and other kobolds, but have a chance of
+    taming canines when talking to them.
 
 ## Roles
 - Jumping is now the grappler special spell.
