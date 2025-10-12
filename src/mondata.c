@@ -1410,6 +1410,9 @@ stagger(const struct permonst *ptr, const char *def)
 {
     int locoindx = (*def != highc(*def)) ? 2 : 3;
 
+    if (ptr == gy.youmonst.data && Underwater)
+        return "sink";
+
     return (is_floater(ptr) ? levitate[locoindx]
             : (is_flyer(ptr) && ptr->msize <= MZ_SMALL) ? flys[locoindx]
               : (is_flyer(ptr) && ptr->msize > MZ_SMALL) ? flyl[locoindx]

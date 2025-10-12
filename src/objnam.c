@@ -3551,6 +3551,9 @@ static const struct alt_spellings {
        but unfortunately this is muscle memory for a lot of strong players
        and will lead to wasted wishes. */
     { "genocide", SCR_GENOCIDE },
+    /* crecelle items */
+    { "bottle", BOTTLE },
+    { "flask", BOTTLE },
     { (const char *) 0, 0 },
 };
 
