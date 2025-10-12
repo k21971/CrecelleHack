@@ -4655,6 +4655,14 @@ water_damage(
            final spe is 1..7 and always greater than its starting value */
         wet_a_towel(obj, -rnd(7 - obj->spe), TRUE);
         return ER_NOTHING;
+    } else if (obj->otyp == BOTTLE) {
+        poly_obj(obj, POT_WATER);
+        if (in_invent) {
+            pline_The("%s fills up your %s.", hliquid("water"), ostr);
+            described = TRUE;
+            update_inventory();
+        }
+        return ER_NOTHING;
     } else if (obj->greased) {
         if (!rn2(2)) {
             obj->greased = 0;

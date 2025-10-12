@@ -2864,6 +2864,7 @@ dodip(void)
                 } else if (obj->otyp == BOTTLE) {
                     You("fill %s in the %s.", yobjnam(obj, (const char *) 0), pooltype);
                     poly_obj(obj, POT_WATER);
+                    update_inventory();
                 } else {
                     obj->pickup_prev = 0;
                     if (obj->otyp == POT_ACID)

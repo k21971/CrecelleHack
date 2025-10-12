@@ -6,6 +6,8 @@
   via config file.
 - Improved messaging around coatings in several instances.
 - Frost no longer causes ice-esque slippage.
+- Water damage causes empty bottles to fill with water (suggested by
+  karafruit).
 
 ## Dungeon Changes
 - Dungeon is generated in biomes. This replaces the previous system of

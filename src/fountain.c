@@ -468,6 +468,7 @@ dipfountain(struct obj *obj)
     } else if (obj->otyp == BOTTLE) {
         You("fill %s with the liquid in the fountain.", yobjnam(obj, (const char *) 0));
         poly_obj(obj, POT_WATER);
+        update_inventory();
     } else if (is_hands || obj == uarmg) {
         er = wash_hands();
     } else {
