@@ -27,7 +27,7 @@
   Splice code I wrote.
 
 ## Monster Changes
-- Monsters can gain water walking and jumping.
+- Monsters can gain water walking, jumping, bonus strength.
   From SpliceHack, code ported directly from Evil and updated to 3.7.
 - Monsters can gain telepathy from items.
 - Kobolds have been altered to skew closer to their appearance in early

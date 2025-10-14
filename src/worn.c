@@ -626,6 +626,8 @@ update_mon_extrinsics(
             mon->mextrinsics |= (unsigned short) res_to_mr(which);
             break;
         }
+        if (obj->otyp == GAUNTLETS_OF_POWER)
+            mon->mextrinsics |= MR2_STRENGTH;
     } else { /* off */
         switch (which) {
         case INVIS:
@@ -686,6 +688,8 @@ update_mon_extrinsics(
         default:
             break;
         }
+        if (obj->otyp == GAUNTLETS_OF_POWER)
+            mon->mextrinsics &= ~MR2_STRENGTH;
     }
 
     /* worn alchemy smock/apron confers both poison resistance and acid

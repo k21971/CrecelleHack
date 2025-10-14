@@ -643,7 +643,7 @@ select_rwep(struct monst *mtmp)
              * Big weapon is basically the same as bimanual.
              * All monsters can wield the remaining weapons.
              */
-            if (((strongmonst(mtmp->data)
+            if ((((strongmonst(mtmp->data) || extra_strength(mtmp))
                   && (mtmp->misc_worn_check & W_ARMS) == 0)
                  || !objects[pwep[i]].oc_bimanual)
                 && (objects[pwep[i]].oc_material != SILVER
@@ -782,7 +782,7 @@ select_hwep(struct monst *mtmp)
 {
     struct obj *otmp;
     int i;
-    boolean strong = strongmonst(mtmp->data);
+    boolean strong = strongmonst(mtmp->data) || extra_strength(mtmp);
     boolean wearing_shield = (mtmp->misc_worn_check & W_ARMS) != 0;
 
     /* prefer artifacts to everything else */
