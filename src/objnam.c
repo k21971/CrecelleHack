@@ -3542,11 +3542,12 @@ static const struct alt_spellings {
     { "HoOA", HELM_OF_OPPOSITE_ALIGNMENT },
     /* Easily confused objects */
     { "protection from illusions", RIN_PROTECTION_FROM_SHAPE_CHAN },
-    { "resizing kit", UPGRADE_KIT },
+    { "resizing kit", RESIZING_KIT },
     /* Objects renamed by variant */
     { "dented pot", YENDORIAN_BASCINET },
     { "small shield", ROUNDSHIELD },
     { "large shield", KITE_SHIELD },
+    { "upgrade kit", RESIZING_KIT },
     /* I would like to eliminate all mentions of this from the game entirely,
        but unfortunately this is muscle memory for a lot of strong players
        and will lead to wasted wishes. */

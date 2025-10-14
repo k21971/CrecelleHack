@@ -13,7 +13,7 @@ staticfn void use_whistle(struct obj *);
 staticfn void use_magic_whistle(struct obj *);
 staticfn void magic_whistled(struct obj *);
 staticfn int resize_ok(struct obj *);
-staticfn int use_upgrade_kit(struct obj *);
+staticfn int use_resizing_kit(struct obj *);
 staticfn int use_leash(struct obj *);
 staticfn void use_leash_core(struct obj *, struct monst *, coord *, int);
 staticfn boolean mleashed_next2u(struct monst *);
@@ -709,7 +709,7 @@ resize_ok(struct obj *obj)
 }
 
 staticfn int
-use_upgrade_kit(struct obj *obj)
+use_resizing_kit(struct obj *obj)
 {
     struct obj *otmp;
     anything any;
@@ -4536,8 +4536,8 @@ doapply(void)
     case TINNING_KIT:
         use_tinning_kit(obj);
         break;
-    case UPGRADE_KIT:
-        use_upgrade_kit(obj);
+    case RESIZING_KIT:
+        use_resizing_kit(obj);
         break;
     case LEASH:
         res = use_leash(obj);

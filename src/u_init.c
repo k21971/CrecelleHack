@@ -216,7 +216,7 @@ static struct trobj Sunglasses[] = { { SUNGLASSES, 0, TOOL_CLASS, 1, 0 },
                                     { 0, 0, 0, 0, 0 } };
 static struct trobj Darts[] = { { DART, 0, WEAPON_CLASS, 12, 0 },
                                      { 0, 0, 0, 0, 0 } };
-static struct trobj Upgrade[] = { { UPGRADE_KIT, 0, TOOL_CLASS, 1, 0 },
+static struct trobj Resizing[] = { { RESIZING_KIT, 0, TOOL_CLASS, 1, 0 },
                                 { 0, 0, 0, 0, 0 } };
 
 /* race-based substitutions for initial inventory;
@@ -925,7 +925,7 @@ u_init_race(void)
 
     case PM_GNOME:
         if (!rn2(10))
-            ini_inv(Upgrade);
+            ini_inv(Resizing);
         break;
 
     case PM_ORC:

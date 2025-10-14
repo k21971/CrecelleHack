@@ -71,7 +71,7 @@
 - Sand Golem
 
 ## New Objects
-- Upgrade Kit
+- Resizing Kit
   - As in dnethack, it can be used to resize objects. Unlike dnethack, it
     offers more granular control over object size. Objects can be one
     size larger, one size smaller, or the same size as the player's

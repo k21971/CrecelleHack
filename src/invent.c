@@ -3178,7 +3178,7 @@ itemactions(struct obj *otmp)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Use this tool to pick a lock");
     else if (otmp->otyp == TINNING_KIT)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Use this kit to tin a corpse");
-    else if (otmp->otyp == UPGRADE_KIT)
+    else if (otmp->otyp == RESIZING_KIT)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Use this kit to resize an object");
     else if (otmp->otyp == LEASH)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Tie a pet to this leash");
