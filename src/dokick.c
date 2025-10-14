@@ -1432,8 +1432,9 @@ void
 make_mon_prone(struct monst *mdef) {
     newsym(mdef->mx, mdef->my);
     mdef->mprone = 1;
-    pline_mon(mdef, "%s is knocked to the %s!",
-            Monnam(mdef), surface(mdef->mx, mdef->my));
+    if (canseemon(mdef))
+        pline_mon(mdef, "%s is knocked to the %s!",
+                Monnam(mdef), surface(mdef->mx, mdef->my));
     mselftouch(mdef, "Falling, ", TRUE);
     if (!DEADMONSTER(mdef)) {
         if (t_at(mdef->mx, mdef->my))

@@ -3632,11 +3632,13 @@ dotip(void)
         /* note "wax" even for tallow candles to avoid giving away info */
         spillage = "wax";
     } else if ((cobj->otyp == POT_OIL && cobj->lamplit)
-               || (cobj->otyp == OIL_LAMP && cobj->age != 0L)
+               || (cobj->otyp == OIL_LAMP && cobj->age > 1L)
+               || (cobj->otyp == BRASS_LANTERN && cobj->age > 1L)
                || (cobj->otyp == MAGIC_LAMP && cobj->spe != 0)) {
         spillage = "oil";
         floor_alchemy(u.ux, u.uy, POT_OIL, NON_PM);
-        /* todo: reduce potion's remaining burn timer or oil lamp's fuel */
+        cobj->age -= 1L;
+        check_unpaid_usage(cobj, FALSE);
     } else if (cobj->otyp == CAN_OF_GREASE && cobj->spe > 0) {
         /* charged consumed below */
         spillage = "grease";

@@ -2942,6 +2942,10 @@ searches_for_item(struct monst *mon, struct obj *obj)
             return (obj->spe > 0);
         if (is_glasses(obj) && typ != LENSES)
             return TRUE;
+        if (typ == OIL_LAMP || typ == BRASS_LANTERN)
+            return (obj->age > 9L);
+        if (typ == MAGIC_LAMP)
+            return TRUE;
         break;
     case FOOD_CLASS:
         if (typ == CORPSE)
@@ -2956,6 +2960,8 @@ searches_for_item(struct monst *mon, struct obj *obj)
         if (typ == EGG && ismnum(obj->corpsenm))
             return (boolean) touch_petrifies(&mons[obj->corpsenm]);
         break;
+    case BOTTLE_CLASS:
+        return TRUE;
     default:
         break;
     }

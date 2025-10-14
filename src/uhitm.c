@@ -1154,6 +1154,20 @@ hmon_hitmon_misc_obj(
         }
         hmd->dmg = 1;
         break;
+    case OIL_LAMP:
+    case MAGIC_LAMP:
+    case BRASS_LANTERN:
+        if (obj->age > 9L || obj->otyp == MAGIC_LAMP) {
+            You("douse %s in oil!", mon_nam(mon));
+            makeknown(POT_OIL);
+            potion_splatter(mon->mx, mon->my, POT_OIL, NON_PM);
+            mon->mdriptype = POT_OIL;
+            mon->mdripping = 1;
+            check_unpaid_usage(obj, FALSE);
+            if (obj->otyp != MAGIC_LAMP)
+                obj->age -= 9L;
+        }
+        break;
     case EXPENSIVE_CAMERA:
         You("succeed in destroying %s.  Congratulations!",
             ysimple_name(obj));

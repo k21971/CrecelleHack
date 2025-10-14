@@ -46,6 +46,9 @@
     "medium" is omitted from sized item descriptions. Defaults to true.
 - Revert changes to scrolls of enchant weapon.
   - This change was undercooked and damaged game balance significantly.
+- Throwing or hitting monsters with lanterns or lamps can cause oil to
+  splatter everywhere. If the object is lit and nonmagical, the oil
+  can occasionally catch on fire.
 
 ## New Monsters
 - Killer Coins
