@@ -845,6 +845,7 @@ m_dowear_type(
                     && obj->otyp != AMULET_OF_REFLECTION
                     && obj->otyp != AMULET_OF_GUARDING
                     && obj->otyp != AMULET_OF_ESP
+                    && obj->otyp != AMULET_OF_MAGICAL_BREATHING
                     && obj->otyp != AMULET_OF_CHANGE))
                 continue;
             /* for 'best' to be non-Null, it must be an amulet of guarding;

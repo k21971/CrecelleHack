@@ -1271,7 +1271,8 @@ inside_gas_cloud(genericptr_t p1, genericptr_t p2)
         fakeobj.cursed = REGION_CURSED(reg);
         if (!mtmp && (!breathless(gy.youmonst.data) || haseyes(gy.youmonst.data))) {
             potionbreathe(&fakeobj);
-        } else if (mtmp && (!breathless(mtmp->data) || haseyes(mtmp->data))) {
+        } else if (mtmp && (!breathless(mtmp->data) || haseyes(mtmp->data))
+                    && !can_magbreathe(mtmp)) {
             mpotionbreathe(&fakeobj, mtmp, heros_fault(reg));
         }
         return FALSE;

@@ -19,6 +19,7 @@
 
 #define can_wwalk(mon) (((mon)->mextrinsics & MR2_WATERWALK) != 0)
 #define can_jump(mon)  (((mon)->mextrinsics & MR2_JUMPING) != 0)
+#define can_magbreathe(mon) (((mon)->mextrinsics & MR2_MAGBREATH) != 0)
 #define extra_strength(mon) (((mon)->mextrinsics & MR2_STRENGTH) != 0)
 #define is_jumper(ptr) ((ptr) == &mons[PM_KNIGHT])
 #define is_flyer(ptr) (((ptr)->mflags1 & M1_FLY) != 0L)

@@ -318,7 +318,8 @@ m_poisongas_ok(struct monst *mtmp)
 
     /* Non living, non breathing, immune monsters are not concerned */
     if (nonliving(mtmp->data) || is_vampshifter(mtmp)
-        || breathless(mtmp->data) || immune_poisongas(mtmp->data))
+        || breathless(mtmp->data) || immune_poisongas(mtmp->data)
+        || can_magbreathe(mtmp))
         return M_POISONGAS_OK;
     /* not is_swimmer(); assume that non-fish are swimming on
        the surface and breathing the air above it periodically

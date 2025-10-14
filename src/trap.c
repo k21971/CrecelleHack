@@ -1138,6 +1138,8 @@ m_harmless_trap(struct monst *mtmp, struct trap *ttmp)
     case ROLLING_BOULDER_TRAP:
         break;
     case SLP_GAS_TRAP:
+        if (can_magbreathe(mtmp))
+            return TRUE;
         if ((!Inhell && (resists_sleep(mtmp) || defended(mtmp, AD_SLEE)))
             || (Inhell && breathless(mtmp->data)))
             return TRUE;
