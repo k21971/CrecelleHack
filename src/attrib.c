@@ -1023,10 +1023,12 @@ adjabil(int oldlevel, int newlevel)
     case PM_ORC:
         rabil = orc_abil;
         break;
+    case PM_KOBOLD:
+        rabil = kob_abil;
+        break;
     case PM_HUMAN:
     case PM_DWARF:
     case PM_GNOME:
-    case PM_KOBOLD:
     default:
         rabil = 0;
         break;
