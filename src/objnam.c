@@ -690,6 +690,7 @@ xname_flags(
     case WEAPON_CLASS:
         if (is_poisonable(obj) && obj->opoisoned)
             Strcpy(buf, "poisoned ");
+        add_boost_words(obj, buf);
         FALLTHROUGH;
         /*FALLTHRU*/
     case VENOM_CLASS:
@@ -1080,6 +1081,7 @@ minimal_xname(struct obj *obj)
     bareobj.otyp = otyp;
     bareobj.oclass = obj->oclass;
     bareobj.osize = obj->osize;
+    bareobj.booster = obj->booster;
     bareobj.dknown = (obj->dknown || iflags.override_ID) ? 1 : 0;
     /* suppress known except for amulets (needed for fakes and real A-of-Y) */
     bareobj.known = (obj->oclass == AMULET_CLASS)
