@@ -50,6 +50,7 @@
 - Throwing or hitting monsters with lanterns or lamps can cause oil to
   splatter everywhere. If the object is lit and nonmagical, the oil
   can occasionally catch on fire.
+- Dipping a unicorn horn into hazardous waste will purify it.
 
 ## New Monsters
 - Killer Coins
