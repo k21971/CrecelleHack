@@ -82,6 +82,8 @@
     size larger, one size smaller, or the same size as the player's
     current form. In addition, any object where size is a factor can
     be resized.
+- Snowball
+  - Can be obtained through some creative application of commands.
 
 ## Pets
 - Allow the player to issue granular orders to their pets, directing

@@ -6030,7 +6030,7 @@ const char *const destroy_strings[][3] = {
     { "catches fire and burns", "", "burning book" },
     { "turns to dust and vanishes", "", "" },
     { "breaks apart and explodes", "", "exploding wand" },
-    { "melts into a puddle", "melt", "melting icicle" },
+    { "melts into a puddle", "melt", "melting ice" },
 };
 
 /* guts of destroy_items();

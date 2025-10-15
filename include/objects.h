@@ -1677,6 +1677,8 @@ ROCK("flint", "gray",      0,  10,  10,  1, 6, 6, 0, 10, 7, MINERAL, CLR_GRAY,
                                                                     FLINT),
 ROCK("rock", NoDes,         1, 100,  10,  0, 3, 3, 0, 10, 7, MINERAL, CLR_GRAY,
                                                                     ROCK),
+ROCK("snowball", NoDes,     1,  0,  5,  0, 3, 3, 0, 10, 7, BLUEICE, CLR_WHITE,
+                                                                    SNOWBALL),
 #undef GEM
 #undef ROCK
 

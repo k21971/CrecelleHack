@@ -2626,7 +2626,6 @@ breaktest(struct obj *obj)
     case ACID_VENOM:
     case BLINDING_VENOM:
     case LUMP_OF_ROYAL_JELLY:
-        return TRUE;
     case OIL_LAMP:
     case MAGIC_LAMP:
     case BRASS_LANTERN:
@@ -2646,6 +2645,7 @@ breakmsg(struct obj *obj, boolean in_view)
 
     to_pieces = "";
     switch (obj->oclass == POTION_CLASS ? POT_WATER :
+            obj->otyp == SNOWBALL ? obj->otyp :
             obj->oclass == GEM_CLASS ? WORTHLESS_VIOLET_GLASS : obj->otyp) {
     default: /* glass or crystal wand */
         if (obj->oclass != WAND_CLASS)
@@ -2682,6 +2682,9 @@ breakmsg(struct obj *obj, boolean in_view)
     case MELON:
     case LUMP_OF_ROYAL_JELLY:
         pline("Splat!");
+        break;
+    case SNOWBALL:
+        pline("Piff!");
         break;
     case CREAM_PIE:
         if (in_view)

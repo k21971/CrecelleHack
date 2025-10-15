@@ -3849,6 +3849,13 @@ pickup_checks(void)
             pline("Moving the altar would be a very bad idea.");
         else if (lev->typ == STAIRS)
             pline_The("stairs are solidly affixed.");
+        else if (has_coating(u.ux, u.uy, COAT_FROST)) {
+            struct obj *obj = mksobj(SNOWBALL, FALSE, FALSE);
+            You("scoop up some snow.");
+            hold_another_object(obj, "You accidentally drop it!", (const char *) 0,
+                                  (const char *) 0);
+            remove_coating(u.ux, u.uy, COAT_FROST);
+        }
         else
             There("is nothing here to pick up.");
         return 0;
