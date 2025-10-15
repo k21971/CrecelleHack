@@ -640,7 +640,7 @@ probe_objchain(struct obj *otmp)
             otmp->lknown = 1;
             if (!SchroedingersBox(otmp))
                 otmp->cknown = 1;
-        } else if (otmp->otyp == TIN)
+        } else if (otmp->otyp == TIN || otmp->otyp == POT_BLOOD)
             otmp->known = 1;
     }
 }
@@ -2314,7 +2314,7 @@ bhito(struct obj *obj, struct obj *otmp)
                     (void) display_cinventory(obj);
                 }
                 res = 1;
-            } else if (obj->otyp == TIN) {
+            } else if (obj->otyp == TIN || obj->otyp == POT_BLOOD) {
                 /* don't learn wand if tin is already known */
                 if (!obj->known || !obj->cknown)
                     res = 1;
@@ -5570,8 +5570,7 @@ zap_over_floor(
                                     cond_buf, flash_str(zaptype(type), FALSE));
 
                     } else if (blood)
-                        pline_The("%s blood conducts the %s!",
-                                    mons[levl[x][y].pindex].pmnames[NEUTRAL],
+                        pline_The("blood conducts the %s!",
                                     flash_str(zaptype(type), FALSE));
                     else
                         pline_The("water conducts the %s!", flash_str(zaptype(type), FALSE));

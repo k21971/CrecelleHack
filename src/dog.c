@@ -1032,7 +1032,8 @@ dogfood(struct monst *mon, struct obj *obj)
 
     switch (obj->oclass) {
     case FOOD_CLASS:
-        fx = (obj->otyp == CORPSE || obj->otyp == TIN || obj->otyp == EGG)
+        fx = (obj->otyp == CORPSE || obj->otyp == TIN || obj->otyp == EGG
+                || obj->otyp == POT_BLOOD)
                 /* corpsenm might be NON_PM (special tin, unhatchable egg) */
                 ? obj->corpsenm
                 : NON_PM;

@@ -2531,7 +2531,7 @@ set_cknown_lknown(struct obj *obj)
 {
     if (Is_container(obj) || obj->otyp == STATUE)
         obj->cknown = obj->lknown = 1;
-    else if (obj->otyp == TIN)
+    else if (obj->otyp == TIN || obj->otyp == POT_BLOOD)
         obj->cknown = 1;
     /* TODO? cknown might be extended to candy bar, where it would mean that
        wrapper's text was known which in turn indicates candy bar's content */

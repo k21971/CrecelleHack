@@ -4215,7 +4215,8 @@ corpsenm_price_adj(struct obj *obj)
 {
     long val = 0L;
 
-    if ((obj->otyp == TIN || obj->otyp == EGG || obj->otyp == CORPSE)
+    if ((obj->otyp == TIN || obj->otyp == EGG || obj->otyp == CORPSE
+         || obj->otyp ==BLOOD)
         && ismnum(obj->corpsenm)) {
         int i;
         long tmp = 1L;

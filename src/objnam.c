@@ -858,7 +858,8 @@ xname_flags(
                     && (obj->blessed || obj->cursed)) {
                     Strcat(buf, obj->blessed ? "holy " : "unholy ");
                 }
-                if (typ == POT_BLOOD && known && ismnum(obj->corpsenm)) {
+                if (typ == POT_BLOOD && (obj->cknown || iflags.override_ID)
+                    && ismnum(obj->corpsenm)) {
                     Strcat(buf, mons[omndx].pmnames[NEUTRAL]);
                     Strcat(buf, " ");
                 }
@@ -4939,6 +4940,10 @@ readobjnam_postparse3(struct _readobjnam_data *d)
         d->contents = TIN_SPINACH;
         d->typ = TIN;
         return 2; /*goto typfnd;*/
+    }
+    if (!strstri(d->bp, " blood")) {
+        d->typ = POT_BLOOD;
+        return 2;
     }
     /* Fruits must not mess up the ability to wish for real objects (since
      * you can leave a fruit in a bones file and it will be added to

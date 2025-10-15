@@ -3673,6 +3673,7 @@ lspo_object(lua_State *L)
 
     if (tmpobj.id == STATUE || tmpobj.id == EGG
         || tmpobj.id == CORPSE || tmpobj.id == TIN
+        || tmpobj.id == POT_BLOOD
         || tmpobj.id == FIGURINE) {
         struct permonst *pm = NULL;
         boolean nonpmobj = FALSE;
