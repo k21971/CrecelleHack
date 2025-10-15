@@ -36,6 +36,10 @@
   to say that their doglike features have been emphasized.
 - Water trolls have a generation probability of zero, allowing them
   to spawn in certain branches and biomes.
+- Dust vorticies regenerate health incredibly quickly when on sand
+  or dirt.
+- Fire, steam, and ice vorticies can absorb nearby coatings to rapidly heal
+  and occasionally level up.
 
 ## Item Changes
 - Implemented the weapon size system, extremely similar to the one that

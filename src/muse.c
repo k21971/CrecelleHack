@@ -1204,6 +1204,10 @@ use_defensive(struct monst *mtmp)
             mtmp->mhp += d(6, 4); /* inconsistent number, but 4d4 is too small. */
             if (mtmp->mhp > mtmp->mhpmax)
                 mtmp->mhp = ++mtmp->mhpmax;
+            if (mtmp->data == &mons[PM_CRIMSON_DEATH]) {
+                mtmp->perminvis = mtmp->minvis = FALSE;
+                newsym(mtmp->mx, mtmp->my);
+            }
             if (canseemon(mtmp))
                 pline_mon(mtmp, "%s looks better.", Monnam(mtmp));
         }
