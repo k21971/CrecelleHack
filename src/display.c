@@ -2717,8 +2717,8 @@ const int explodecolors[7] = {
 /* main_walls, mines_walls, gehennom_walls, knox_walls, sokoban_walls */
 int wallcolors[sokoban_walls + 1] = {
     /* default init value is to match defsym[S_vwall + n].color (CLR_GRAY) */
-    CLR_GRAY, CLR_GRAY, CLR_GRAY, CLR_GRAY, CLR_GRAY,
-    /* CLR_GRAY, CLR_BROWN, CLR_RED, CLR_GRAY, CLR_BRIGHT_BLUE, */
+    /* CLR_GRAY, CLR_GRAY, CLR_GRAY, CLR_GRAY, CLR_GRAY, */
+    CLR_GRAY, CLR_BROWN, CLR_RED, CLR_GRAY, CLR_BRIGHT_BLUE,
 };
 
 #define zap_color(n) color = iflags.use_color ? zapcolors[n] : NO_COLOR
