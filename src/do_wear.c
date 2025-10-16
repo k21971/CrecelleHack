@@ -3498,6 +3498,8 @@ wrong_size_armor(struct obj *obj, struct permonst *ptr)
     if (!obj || obj->otyp == MUMMY_WRAPPING || is_shield(obj)
         || obj->otyp == SKULL_HELM || obj->otyp == SKULL)
         return FALSE;
+    if (Is_dragon_scales(obj))
+        return FALSE;
     if (is_cloak(obj) && abs(size_mult(obj->osize) - size_mult(size) > 1)) {
         return (obj->osize > size) ? 1 : -1;
     } else if (!is_cloak(obj) && obj->osize != size) {

@@ -1309,7 +1309,7 @@ size_matters(struct obj *obj)
     switch(obj->oclass) {
     case ARMOR_CLASS:
     case WEAPON_CLASS:
-        return TRUE;
+        return !Is_dragon_scales(obj);
     case TOOL_CLASS:
         return is_weptool(obj);
     default:
