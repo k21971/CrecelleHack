@@ -924,8 +924,7 @@ u_init_race(void)
         break;
 
     case PM_GNOME:
-        if (!rn2(10))
-            ini_inv(Resizing);
+        ini_inv(Resizing);
         break;
 
     case PM_ORC:
