@@ -3495,7 +3495,8 @@ int
 wrong_size_armor(struct obj *obj, struct permonst *ptr)
 {
     int size = (ptr == gy.youmonst.data) ? USIZE : ptr->msize;
-    if (!obj || obj->otyp == MUMMY_WRAPPING || is_shield(obj))
+    if (!obj || obj->otyp == MUMMY_WRAPPING || is_shield(obj)
+        || obj->otyp == SKULL_HELM || obj->otyp == SKULL)
         return FALSE;
     if (is_cloak(obj) && abs(size_mult(obj->osize) - size_mult(size) > 1)) {
         return (obj->osize > size) ? 1 : -1;
