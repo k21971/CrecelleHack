@@ -4941,7 +4941,7 @@ readobjnam_postparse3(struct _readobjnam_data *d)
         d->typ = TIN;
         return 2; /*goto typfnd;*/
     }
-    if (!strstri(d->bp, " blood")) {
+    if (d->oclass == POTION_CLASS && !strstri(d->bp, " blood")) {
         d->typ = POT_BLOOD;
         return 2;
     }
