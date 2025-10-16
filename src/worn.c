@@ -911,7 +911,7 @@ m_dowear_type(
         }
         if (obj->owornmask)
             continue;
-        if (wrong_size_armor(obj, mon->data))
+        if (wrong_size_armor(obj, mon->data) != 0)
             continue;
         /* I'd like to define a VISIBLE_ARM_BONUS which doesn't assume the
          * monster knows obj->spe, but if I did that, a monster would keep
