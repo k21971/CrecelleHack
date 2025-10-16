@@ -180,6 +180,7 @@ enum ms_sounds {
 #define M3_TRIPPER      0x2000 /* monster can trip the player */
 #define M3_CALLOUT      0x4000 /* monster coordinates with others by calling out player position */
 
+#define MZ_RANDOM      -1 /* used in set_obj_size */
 #define MZ_TINY         0 /* < 2' */
 #define MZ_SMALL        1 /* 2-4' */
 #define MZ_MEDIUM       2 /* 4-7' */

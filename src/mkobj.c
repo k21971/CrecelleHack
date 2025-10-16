@@ -912,6 +912,7 @@ mksobj_init(struct obj **obj, boolean artif)
             blessorcurse(otmp, 10);
         if (is_poisonable(otmp) && !rn2(100))
             otmp->opoisoned = 1;
+        set_obj_size(otmp, rn2(20) ? MZ_MEDIUM : MZ_RANDOM);
 
         if (artif && !rn2(20 + (10 * nartifact_exist()))) {
             /* mk_artifact() with otmp and A_NONE will never return NULL */
@@ -1018,10 +1019,10 @@ mksobj_init(struct obj **obj, boolean artif)
         break;
     case TOOL_CLASS:
         if (is_weptool(otmp)) {
-            if (otmp->otyp == UNICORN_HORN || rn2(100))
+            if (otmp->otyp == UNICORN_HORN || rn2(20))
                 set_obj_size(otmp, MZ_MEDIUM);
             else
-                set_obj_size(otmp, rn2(MZ_HUGE + 1));
+                set_obj_size(otmp, MZ_RANDOM);
         }
         switch (otmp->otyp) {
         case TALLOW_CANDLE:
@@ -1134,7 +1135,7 @@ mksobj_init(struct obj **obj, boolean artif)
         blessorcurse(otmp, 17);
         break;
     case ARMOR_CLASS:
-        set_obj_size(otmp, !rn2(100) ? rn2(MZ_HUGE + 1) : MZ_MEDIUM);
+        set_obj_size(otmp, rn2(20) ? MZ_MEDIUM : MZ_RANDOM);
         if (rn2(10)
             && (otmp->otyp == FUMBLE_BOOTS
                 || otmp->otyp == LEVITATION_BOOTS
@@ -4006,6 +4007,15 @@ size_mult(int sz) {
 /* set the size of the object and readjust the
    weight */
 void set_obj_size(struct obj *obj, int size) {
+    /* If the size doesn't make sense, randomize it */
+    if ((size < MZ_TINY || size > MZ_HUGE)
+        && size != MZ_GIGANTIC) {
+        do {
+            size = rn2(MZ_GIGANTIC);
+            if (size > MZ_HUGE && size < MZ_GIGANTIC)
+                size = MZ_SMALL;
+        } while (size == MZ_MEDIUM);
+    }
     /* Do not set an object to its own size. */
     if (!obj || obj->osize == size || !size_matters(obj))
         return;
