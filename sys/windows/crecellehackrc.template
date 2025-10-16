@@ -21,6 +21,8 @@ OPTIONS=color_surfaces
 OPTIONS=color_coatings
 # Use bold to indicate coatings
 OPTIONS=bold_coatings
+# Automatically size wishes to player
+OPTIONS=player_sized_wishes
 
 ##########################
 ####### Challenges #######

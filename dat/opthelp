@@ -10,6 +10,7 @@ obscure_role_obj_names  disable role-specific object names         [False]
 orientation             controls foocubus interactions
                                                  [straight, gay, bisexual]
 perfect_bestiary        enable perfect monster knowledge           [False]
+player_sized_wishes     wishes are player sized by default         [False]
 taunt                   custom string for the taunt command,
                         preceded by "You"                 
 

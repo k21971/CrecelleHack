@@ -4084,7 +4084,6 @@ readobjnam_init(char *bp, struct _readobjnam_data *d)
     d->actualn = d->dn = d->un = 0;
     d->wetness = 0;
     d->gsize = 0;
-    d->osize = MZ_MEDIUM;
     d->zombify = FALSE;
     d->bp = d->origbp = bp;
     d->p = (char *) 0;
@@ -4092,6 +4091,12 @@ readobjnam_init(char *bp, struct _readobjnam_data *d)
     d->ftype = svc.context.current_fruit;
     (void) memset(d->globbuf, '\0', sizeof d->globbuf);
     (void) memset(d->fruitbuf, '\0', sizeof d->fruitbuf);
+
+    /* Size depends on an option set */
+    if (flags.player_sized_wishes)
+        d->osize = USIZE;
+    else
+        d->osize = MZ_MEDIUM;
 }
 
 /* return 1 if d->bp is empty or contains only various qualifiers like

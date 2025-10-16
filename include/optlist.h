@@ -606,6 +606,9 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTC(player_selection, Advanced, 12, opt_in, set_gameview,
                 No, Yes, No, No, NoAlias,
                 "choose character via dialog or prompts")
+    NHOPTB(player_sized_wishes, Advanced, 0, opt_out, set_in_game,
+           On, Yes, No, No, NoAlias, &flags.player_sized_wishes, Term_False,
+           "size wishes to player by default")
  /* NHOPTC(playmode) -- moved to top */
     NHOPTB(popup_dialog, Advanced, 0, opt_in, set_in_game,
            Off, Yes, No, No, NoAlias, &iflags.wc_popup_dialog, Term_False,

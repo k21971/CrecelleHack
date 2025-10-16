@@ -59,6 +59,7 @@ struct flag {
     boolean pickup;          /* whether you pickup or move and look */
     boolean pickup_stolen;   /* auto-pickup items stolen by a monster */
     boolean pickup_thrown;   /* auto-pickup items you threw */
+    boolean player_sized_wishes; /* coerce wishes to player size unless specified */
     boolean pushweapon; /* When wielding, push old weapon into second slot */
     boolean quick_farsight;  /* True disables map browsing during random
                               * clairvoyance */
