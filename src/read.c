@@ -1223,7 +1223,7 @@ seffect_enchant_armor(struct obj **sobjp)
         otmp->lamplit = was_lit;
         if (old_light)
             maybe_adjust_light(otmp, old_light);
-        set_obj_size(otmp, USIZE);
+        set_obj_size(otmp, USIZE, TRUE);
         return;
     } else if (s >= 0 && otmp->otyp == SKULL) {
         pline("%s morphs into a fearsome helmet!", Yname2(otmp));

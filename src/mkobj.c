@@ -27,7 +27,7 @@ staticfn void check_contained(struct obj *, const char *);
 staticfn void check_glob(struct obj *, const char *);
 staticfn void sanity_check_worn(struct obj *);
 staticfn void init_oextra(struct oextra *);
-staticfn void fuzz_weight(struct obj *);
+staticfn int fuzz_weight(struct obj *);
 
 struct icp {
     int iprob;   /* probability of an item type */
@@ -912,7 +912,7 @@ mksobj_init(struct obj **obj, boolean artif)
             blessorcurse(otmp, 10);
         if (is_poisonable(otmp) && !rn2(100))
             otmp->opoisoned = 1;
-        set_obj_size(otmp, rn2(20) ? MZ_MEDIUM : MZ_RANDOM);
+        set_obj_size(otmp, rn2(20) ? MZ_MEDIUM : MZ_RANDOM, FALSE);
 
         if (artif && !rn2(20 + (10 * nartifact_exist()))) {
             /* mk_artifact() with otmp and A_NONE will never return NULL */
@@ -1020,9 +1020,9 @@ mksobj_init(struct obj **obj, boolean artif)
     case TOOL_CLASS:
         if (is_weptool(otmp)) {
             if (otmp->otyp == UNICORN_HORN || rn2(20))
-                set_obj_size(otmp, MZ_MEDIUM);
+                set_obj_size(otmp, MZ_MEDIUM, FALSE);
             else
-                set_obj_size(otmp, MZ_RANDOM);
+                set_obj_size(otmp, MZ_RANDOM, FALSE);
         }
         switch (otmp->otyp) {
         case TALLOW_CANDLE:
@@ -1135,7 +1135,7 @@ mksobj_init(struct obj **obj, boolean artif)
         blessorcurse(otmp, 17);
         break;
     case ARMOR_CLASS:
-        set_obj_size(otmp, rn2(20) ? MZ_MEDIUM : MZ_RANDOM);
+        set_obj_size(otmp, rn2(20) ? MZ_MEDIUM : MZ_RANDOM, FALSE);
         if (rn2(10)
             && (otmp->otyp == FUMBLE_BOOTS
                 || otmp->otyp == LEVITATION_BOOTS
@@ -1435,7 +1435,7 @@ set_corpsenm(struct obj *obj, int id)
     case SKULL:
     case SKELETON:
         obj->owt = weight(obj);
-        set_obj_size(obj, mons[obj->corpsenm].msize);
+        set_obj_size(obj, mons[obj->corpsenm].msize, FALSE);
         break;
     case EGG:
         if (obj->corpsenm != NON_PM && !dead_species(obj->corpsenm, TRUE))
@@ -1981,8 +1981,9 @@ weight(struct obj *obj)
     }
 
     /* If object has a fuzzwt, use that instead of the oc_weight */
-    if (is_fuzzy_weight(obj) && obj->fuzzwt)
+    if (is_fuzzy_weight(obj) && obj->fuzzwt) {
         wt = obj->fuzzwt;
+    }
 
     /* size adjustments */
     if (size_matters(obj)) {
@@ -3963,12 +3964,12 @@ pudding_merge_message(struct obj *otmp, struct obj *otmp2)
    object class weight, so that very heavy and very light versions of
    an object are rarer. Assumes that the obj's weight has already been
    initialized. */
-staticfn void
+staticfn int
 fuzz_weight(struct obj *obj) {
     int wt, orig_wt, fuzz_factor;
 
     if (!is_fuzzy_weight(obj))
-        return;
+        return 0;
 
     orig_wt = objects[obj->otyp].oc_weight;
     fuzz_factor = orig_wt / 4;
@@ -3980,6 +3981,7 @@ fuzz_weight(struct obj *obj) {
     if (wt < 1)
         wt = 1;
     obj->fuzzwt = wt;
+    return wt;
 }
 
 /* Assuming a base size of medium, pull a multiplier out
@@ -4006,7 +4008,7 @@ size_mult(int sz) {
 
 /* set the size of the object and readjust the
    weight */
-void set_obj_size(struct obj *obj, int size) {
+void set_obj_size(struct obj *obj, int size, boolean force_resize) {
     /* If the size doesn't make sense, randomize it */
     if ((size < MZ_TINY || size > MZ_HUGE)
         && size != MZ_GIGANTIC) {
@@ -4017,7 +4019,8 @@ void set_obj_size(struct obj *obj, int size) {
         } while (size == MZ_MEDIUM);
     }
     /* Do not set an object to its own size. */
-    if (!obj || obj->osize == size || !size_matters(obj))
+    if (!obj || !size_matters(obj)
+        || (obj->osize == size && !force_resize))
         return;
     obj->osize = size;
     fuzz_weight(obj);

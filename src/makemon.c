@@ -185,7 +185,7 @@ m_initthrow(struct monst *mtmp, int otyp, int oquan)
     otmp = mksobj(otyp, TRUE, FALSE);
     otmp->quan = (long) rn1(oquan, 3);
     otmp->owt = weight(otmp);
-    set_obj_size(otmp, mtmp->data->msize);
+    set_obj_size(otmp, mtmp->data->msize, FALSE);
     if (otyp == ORCISH_ARROW || is_roguish(mtmp->data))
         otmp->opoisoned = TRUE;
     (void) mpickobj(mtmp, otmp);
@@ -300,7 +300,7 @@ m_initweap(struct monst *mtmp)
             otmp->spe = rnd(3);
             if (!rn2(2))
                 curse(otmp);
-            set_obj_size(otmp, mtmp->data->msize);
+            set_obj_size(otmp, mtmp->data->msize, FALSE);
             (void) mpickobj(mtmp, otmp);
         } else if (mm == PM_NINJA) { /* extra quest villains */
             (void) mongets(mtmp, rn2(4) ? SHURIKEN : DART);
@@ -392,7 +392,7 @@ m_initweap(struct monst *mtmp)
             otmp->spe = rn2(4);
             if (typ == SILVER_MACE)
                 otmp->spe += 3;
-            set_obj_size(otmp, mtmp->data->msize);
+            set_obj_size(otmp, mtmp->data->msize, FALSE);
             (void) mpickobj(mtmp, otmp);
 
             otmp = mksobj(!rn2(4) || is_lord(ptr) ? SHIELD_OF_REFLECTION
@@ -401,7 +401,7 @@ m_initweap(struct monst *mtmp)
             /* uncurse(otmp); -- mksobj(,FALSE,) item is always uncursed */
             otmp->oerodeproof = TRUE;
             otmp->spe = 0;
-            set_obj_size(otmp, mtmp->data->msize);
+            set_obj_size(otmp, mtmp->data->msize, FALSE);
             (void) mpickobj(mtmp, otmp);
         }
         break;
@@ -829,7 +829,7 @@ m_initinv(struct monst *mtmp)
                 otmp->spe = rnd(3);
             if (!rn2(4))
                 otmp->oerodeproof = 1;
-            set_obj_size(otmp, mtmp->data->msize);
+            set_obj_size(otmp, mtmp->data->msize, FALSE);
             (void) mpickobj(mtmp, otmp);
         }
         break;
@@ -2410,7 +2410,7 @@ mongets(struct monst *mtmp, int otyp)
             otmp->opoisoned = rn2(2);
 
         /* adjust the size of the object */
-        set_obj_size(otmp, mtmp->data->msize);
+        set_obj_size(otmp, mtmp->data->msize, FALSE);
 
         /* powerful monsters have a good chance of getting
            some kind of boosted weapon related to their

@@ -5203,10 +5203,6 @@ readobjnam(char *bp, struct obj *no_wish)
     d.otmp = d.typ ? mksobj(d.typ, TRUE, FALSE) : mkobj(d.oclass, FALSE);
     d.typ = d.otmp->otyp, d.oclass = d.otmp->oclass; /* what we actually got */
 
-    /* set up the object size */
-    if (size_matters(d.otmp))
-        set_obj_size(d.otmp, d.osize);
-
     /* if player specified a reasonable count, maybe honor it;
        quantity for gold is handled elsewhere and d.cnt is 0 for it here */
     if (d.otmp->globby) {
@@ -5547,6 +5543,12 @@ readobjnam(char *bp, struct obj *no_wish)
 
     if (permapoisoned(d.otmp))
         d.otmp->opoisoned = 1;
+
+    /* set up the object size. force a resize to fix wish parser setting
+       a bizarre weight. */
+    if (size_matters(d.otmp)) {
+        set_obj_size(d.otmp, d.osize, TRUE);
+    }
 
     /* more wishing abuse: don't allow wishing for certain artifacts */
     /* and make them pay; charge them for the wish anyway! */

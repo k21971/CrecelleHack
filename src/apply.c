@@ -783,7 +783,7 @@ use_resizing_kit(struct obj *obj)
 
     /* RESIZE */
     You("resize %s.", thesimpleoname(otmp));
-    set_obj_size(otmp, newsize);
+    set_obj_size(otmp, newsize, TRUE);
     if (otmp->osize == USIZE) pline("It's a perfect fit!");
     if (erosion_matters(otmp))
         otmp->oeroded = otmp->oeroded2 = 0;

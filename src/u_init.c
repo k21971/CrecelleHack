@@ -1344,7 +1344,7 @@ ini_inv_adjust_obj(struct trobj *trop, struct obj *obj)
     obj->owt = weight(obj);
 
     /* set the object size */
-    set_obj_size(obj, mons[gu.urace.mnum].msize);
+    set_obj_size(obj, mons[gu.urace.mnum].msize, FALSE);
 }
 
 /* initial inventory: wear, wield, learn the spell/obj */

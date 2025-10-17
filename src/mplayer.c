@@ -111,7 +111,7 @@ mk_mplayer_armor(struct monst *mon, short typ)
      * chances of having plusses is the same as usual....
      */
     obj->spe = rn2(10) ? (rn2(3) ? rn2(5) : rn1(4, 4)) : -rnd(3);
-    set_obj_size(obj, mon->data->msize);
+    set_obj_size(obj, mon->data->msize, FALSE);
     (void) mpickobj(mon, obj);
 }
 
@@ -279,7 +279,7 @@ mk_mplayer(struct permonst *ptr, coordxy x, coordxy y, boolean special)
             if (is_art(otmp, ART_MAGICBANE))
                 otmp->spe = rnd(4);
             (void) mpickobj(mtmp, otmp);
-            set_obj_size(otmp, mtmp->data->msize);
+            set_obj_size(otmp, mtmp->data->msize, FALSE);
         }
 
         if (special) {

@@ -2317,7 +2317,7 @@ create_object(object *o, struct mkroom *croom)
                 if (otmp->otyp == SADDLE && can_saddle(invent_carrying_monster->data))
                     put_saddle_on_mon(otmp, invent_carrying_monster);
                 else {
-                    set_obj_size(otmp, invent_carrying_monster->data->msize);
+                    set_obj_size(otmp, invent_carrying_monster->data->msize, FALSE);
                     (void) mpickobj(invent_carrying_monster, otmp);
                 }
             }

@@ -888,7 +888,7 @@ gcrownu(void)
         bless(obj);
         obj->bknown = 1; /* ok to skip set_bknown() */
         obj->dknown = 1;
-        set_obj_size(obj, USIZE);
+        set_obj_size(obj, USIZE, FALSE);
         at_your_feet(upstart(ansimpleoname(obj)));
         dropy(obj);
         u.ugifts++;
@@ -1816,7 +1816,7 @@ bestow_artifact(uchar max_giftvalue)
                 otmp->spe = 0;
             if (otmp->cursed)
                 uncurse(otmp);
-            set_obj_size(otmp, USIZE);
+            set_obj_size(otmp, USIZE, FALSE);
             otmp->oerodeproof = TRUE;
             Strcpy(buf, (Hallucination ? "a doodad"
                             : Blind ? "an object"
