@@ -1737,6 +1737,7 @@ extern struct obj *obj_absorb(struct obj **, struct obj **);
 extern struct obj *obj_meld(struct obj **, struct obj **);
 extern void pudding_merge_message(struct obj *, struct obj *) NONNULLARG12;
 extern struct obj *init_dummyobj(struct obj *, short, long);
+extern float weight_adj_by_size(int sz);
 extern void set_obj_size(struct obj *, int, boolean);
 
 /* ### mkroom.c ### */

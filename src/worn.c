@@ -735,6 +735,8 @@ find_mac(struct monst *mon)
                 base -= 2; /* fixed amount, not impacted by erosion */
             else
                 base -= ARM_BONUS(obj);
+            if (is_shield(obj))
+                base -= (max(MZ_HUGE + 1, obj->osize) - mon->data->msize);
             /* since ARM_BONUS is positive, subtracting it increases AC */
             if (!mon->mprone)
                 base -= mon_boosted(mon, obj->booster);

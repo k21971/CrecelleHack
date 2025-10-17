@@ -1987,27 +1987,7 @@ weight(struct obj *obj)
 
     /* size adjustments */
     if (size_matters(obj)) {
-        switch (obj->osize) {
-            case MZ_TINY:
-            shift = 0.25;
-            break;
-        case MZ_SMALL:
-            shift = 0.5;
-            break;
-        case MZ_LARGE:
-            shift = 2;
-            break;
-        case MZ_HUGE:
-            shift = 3;
-            break;
-        case MZ_GIGANTIC:
-            shift = 4;
-            break;
-        case MZ_MEDIUM:
-        default:
-            shift = 1;
-            break;
-        }
+        shift = weight_adj_by_size(obj->osize);
         wt = wt * shift;
     }
 
@@ -4004,6 +3984,33 @@ size_mult(int sz) {
     default:
         return 0;
     }
+}
+
+float
+weight_adj_by_size(int sz) {
+    float shift;
+    switch (sz) {
+        case MZ_TINY:
+        shift = 0.25;
+        break;
+    case MZ_SMALL:
+        shift = 0.5;
+        break;
+    case MZ_LARGE:
+        shift = 2;
+        break;
+    case MZ_HUGE:
+        shift = 3;
+        break;
+    case MZ_GIGANTIC:
+        shift = 4;
+        break;
+    case MZ_MEDIUM:
+    default:
+        shift = 1;
+        break;
+    }
+    return shift;
 }
 
 /* set the size of the object and readjust the

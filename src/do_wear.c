@@ -2503,6 +2503,7 @@ void
 find_ac(void)
 {
     int uac = mons[u.umonnum].ac; /* base armor class for current form */
+    int shield_bonus;
 
     /* armor class from worn gear */
     if (uarm) {
@@ -2522,7 +2523,9 @@ find_ac(void)
         uac -= (!Prone && u_boosted(uarmf->booster) ? 3 : 0);
     }
     if (uarms) {
-        uac -= ARM_BONUS(uarms);
+        shield_bonus = ARM_BONUS(uarms);
+        shield_bonus += (min(MZ_HUGE + 1, uarms->osize) - USIZE);
+        uac -= shield_bonus;
         uac -= (!Prone && u_boosted(uarms->booster) ? 3 : 0);
     }
     if (uarmg) {
