@@ -721,6 +721,10 @@ use_resizing_kit(struct obj *obj)
     any.a_int = 1; 
 
     otmp = getobj("resize", resize_ok, GETOBJ_PROMPT);
+    if (otmp->globby) {
+        pline("You'll need to be a pudding farmer to do that.");
+        return ECMD_OK;
+    }
     if (resize_ok(otmp) != GETOBJ_SUGGEST)
         return ECMD_OK;
     if (otmp->oclass == ARMOR_CLASS && otmp->owornmask) {
