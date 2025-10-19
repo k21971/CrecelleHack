@@ -254,10 +254,7 @@
 - Skeleton
   - Found on the ground of the dungeon, and occasionally
     created through other situations, such as by zapping
-    a wand of death or being struck by lightning.
-- Duct Tape
-  - You can do all sorts of fun things with duct tape...
-    - TODO: Breaking a taped-up wand should cause many explosions?
+    a wand of death or being struck by lightning.s
 - Banana Peel
   - Replaces bolas.
 - Acoustic Guitar

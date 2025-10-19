@@ -1474,9 +1474,6 @@ doname_base(
     if (obj->greased)
         Strcat(prefix, "greased ");
 
-    if (obj->oclass == WAND_CLASS && obj->cobj)
-        Strcat(prefix, "taped ");
-
     if (cknown && Has_contents(obj) && bpspaceleft > 0) {
         /* we count the number of separate stacks, which corresponds
            to the number of inventory slots needed to be able to take
@@ -3509,8 +3506,6 @@ static const struct alt_spellings {
     { "recharging", SCR_CHARGING },
     { "stone", ROCK },
     { "camera", EXPENSIVE_CAMERA },
-    { "tape", DUCT_TAPE },
-    { "duck tape", DUCT_TAPE },
     { "tee shirt", T_SHIRT },
     { "can", TIN },
     { "can opener", TIN_OPENER },

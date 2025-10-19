@@ -3081,13 +3081,6 @@ zapyourself(struct obj *obj, boolean ordinary)
        that the wand itself has been seen */
     if (learn_it)
         learnwand(obj);
-    /* Handle chained zaps */
-    if (obj->cobj) {
-        pline("The wands taped to %s go off!", yname(obj));
-        for (struct obj *otmp = obj->cobj; otmp; otmp = otmp->nobj) {
-            zapyourself(otmp, ordinary);
-        }
-    }
     return damage;
 }
 
@@ -3582,13 +3575,6 @@ weffects(struct obj *obj)
         learnwand(obj);
         if (was_unkn)
             more_experienced(0, 10);
-    }
-    /* Dear god... */
-    if (obj->cobj) {
-        pline("The wands taped to %s go off!", yname(obj));
-        for (struct obj *otmp = obj->cobj; otmp; otmp = otmp->nobj) {
-            weffects(otmp);
-        }
     }
     return;
 }

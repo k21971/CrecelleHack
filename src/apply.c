@@ -28,8 +28,6 @@ staticfn void display_jump_positions(boolean);
 staticfn void use_tinning_kit(struct obj *);
 staticfn int use_figurine(struct obj **);
 staticfn int grease_ok(struct obj *);
-staticfn int duct_tape_ok(struct obj *);
-staticfn int use_duct_tape(struct obj *);
 staticfn int use_grease(struct obj *);
 staticfn void use_trap(struct obj *);
 staticfn int touchstone_ok(struct obj *);
@@ -2738,84 +2736,6 @@ use_figurine(struct obj **optr)
     return ECMD_TIME;
 }
 
-/* getobj callback for object to tape */
-staticfn int
-duct_tape_ok(struct obj *obj)
-{
-    if (!obj)
-        return GETOBJ_SUGGEST;
-    if (obj->oclass == COIN_CLASS)
-        return GETOBJ_EXCLUDE;
-    if (inaccessible_equipment(obj, (const char *) 0, FALSE))
-        return GETOBJ_EXCLUDE_INACCESS;
-
-    if (obj->oclass == WAND_CLASS
-        || (erosion_matters(obj) && (obj->oeroded || obj->oeroded2)))
-        return GETOBJ_SUGGEST;
-
-    return GETOBJ_DOWNPLAY;
-}
-
-staticfn int
-use_duct_tape(struct obj *obj)
-{
-    struct obj *otmp, *otmp2;
-    if (Glib) {
-        pline("%s from your %s.", Tobjnam(obj, "tumble"),
-              fingers_or_gloves(FALSE));
-        dropx(obj);
-        return ECMD_TIME;
-    }
-    if (obj->spe > 0) {
-        if ((obj->cursed || Fumbling) && !rn2(2)) {
-            consume_obj_charge(obj, TRUE);
-            pline_The("tape sticks to itself!");
-            return ECMD_TIME;
-        }
-        otmp = getobj("tape", duct_tape_ok, GETOBJ_PROMPT);
-        if (!otmp)
-            return ECMD_CANCEL;
-        if (inaccessible_equipment(otmp, "tape", FALSE))
-            return ECMD_OK;
-        if (otmp == &hands_obj) {
-            pline("There are better ways to make hand wraps.");
-            return ECMD_TIME;
-        } else if (y_n("Tape this item to another?") == 'y') {
-            otmp2 = getobj("combine", duct_tape_ok, GETOBJ_PROMPT);
-            if (otmp == otmp2 || otmp == obj || otmp2 == obj) {
-                pline("That would be yet another interesting topological exercise.");
-            } else if ((otmp->oclass == WAND_CLASS && otmp2->oclass == WAND_CLASS)) {
-                obj_extract_self(otmp2);
-                (void) add_to_container(otmp, otmp2);
-                consume_obj_charge(obj, TRUE);
-                obj->owt = weight(obj);
-                You("tape your objects together.");
-            } else {
-                pline("Those are silly items to combine!");
-            }
-            #if 0
-            if (uwep) {
-                uwep->cursed = 1;
-                uwep->owt += 2;
-                if (welded(uwep)) weldmsg(uwep)
-            }
-            #endif
-        } else {
-            You("wrap %s in tape.", yname(otmp));
-            if (erosion_matters(otmp))
-                otmp->oeroded = otmp->oeroded2 = 0;
-            otmp->owt += 2;
-            consume_obj_charge(obj, TRUE);
-        }
-        if (Hallucination)
-            pline("This level of reasoning is possible for %s. What do you think, everyone?", svp.plname);
-    } else {
-        pline("The roll has no more tape on it.");
-    }
-    update_inventory();
-    return ECMD_TIME;
-}
-
 /* getobj callback for object to apply grease to */
 staticfn int
 grease_ok(struct obj *obj)
@@ -4164,10 +4084,6 @@ do_break_wand(struct obj *obj)
     } else if (ACURR(A_STR) < (is_fragile ? 5 : 10)) {
         You("don't have the strength to break %s!", yname(obj));
         return ECMD_OK;
-    } else if (obj->cobj && ACURR(A_STR) < 15) {
-        /* Thanks for the idea, lapis */
-        pline("The bundle of wands is too difficult for you to break!");
-        return ECMD_OK;
     }
     if (!paranoid_query(ParanoidBreakwand,
                         safe_qbuf(confirm,
@@ -4469,13 +4385,8 @@ doapply(void)
         return ECMD_TIME; /* evading your grasp costs a turn; just be
                              grateful that you don't drop it as well */
 
-    if (obj->oclass == WAND_CLASS) {
-        if (obj->cobj && y_n("Examine the taped wands?") == 'y') {
-            container_contents(obj, TRUE, TRUE, FALSE);
-            return 0;
-        } else 
-            return do_break_wand(obj);
-    }
+    if (obj->oclass == WAND_CLASS)
+        return do_break_wand(obj);
 
     if (obj->oclass == SPBOOK_CLASS)
         return flip_through_book(obj);
@@ -4600,9 +4511,6 @@ doapply(void)
         break;
     case EXPENSIVE_CAMERA:
         res = use_camera(obj);
-        break;
-    case DUCT_TAPE:
-        res = use_duct_tape(obj);
         break;
     case TOWEL:
         res = use_towel(obj);
