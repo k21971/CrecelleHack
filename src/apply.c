@@ -700,6 +700,8 @@ resize_ok(struct obj *obj)
 {
     if (!obj)
         return GETOBJ_EXCLUDE;
+    if (obj->globby)
+        return GETOBJ_DOWNPLAY;
     if (obj->oclass != ARMOR_CLASS && obj->oclass != WEAPON_CLASS
         && !is_weptool(obj))
         return GETOBJ_EXCLUDE;
@@ -719,6 +721,9 @@ use_resizing_kit(struct obj *obj)
     any.a_int = 1; 
 
     otmp = getobj("resize", resize_ok, GETOBJ_PROMPT);
+    if (!otmp) {
+        return ECMD_CANCEL;
+    }
     if (otmp->globby) {
         pline("You'll need to be a pudding farmer to do that.");
         return ECMD_OK;
