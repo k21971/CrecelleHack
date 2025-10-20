@@ -690,7 +690,6 @@ xname_flags(
     case WEAPON_CLASS:
         if (is_poisonable(obj) && obj->opoisoned)
             Strcpy(buf, "poisoned ");
-        add_boost_words(obj, buf);
         FALLTHROUGH;
         /*FALLTHRU*/
     case VENOM_CLASS:
