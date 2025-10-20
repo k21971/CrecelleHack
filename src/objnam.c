@@ -1654,7 +1654,7 @@ doname_base(
     }
 
     if ((obj->otyp == STATUE || obj->otyp == CORPSE || obj->otyp == FIGURINE 
-        || obj->otyp == SKULL || obj->otyp == SKULL_HELM || obj->otyp == SKELETON)
+        || obj->otyp == SKELETON)
         && wizard && iflags.wizmgender) {
         int cgend = (obj->spe & CORPSTAT_GENDER),
             mgend = ((cgend == CORPSTAT_MALE) ? MALE
@@ -5306,9 +5306,7 @@ readobjnam(char *bp, struct obj *no_wish)
         break;
     case STATUE: /* otmp->cobj already done in mksobj() */
     case FIGURINE:
-    case SKULL:
     case SKELETON:
-    case SKULL_HELM:
     case CORPSE: {
         struct permonst *P = (ismnum(d.mntmp)) ? &mons[d.mntmp] : 0;
 

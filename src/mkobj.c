@@ -1283,7 +1283,8 @@ mksobj(int otyp, boolean init, boolean artif)
     case FIGURINE:
         if (otmp->corpsenm == NON_PM)
             otmp->corpsenm = rndmonnum();
-        if (otmp->corpsenm != NON_PM) {
+        if (otmp->corpsenm != NON_PM
+            && otmp->otyp != SKULL && otmp->otyp != SKULL_HELM) {
             struct permonst *ptr = &mons[otmp->corpsenm];
 
             otmp->spe = (is_neuter(ptr) ? CORPSTAT_NEUTER
