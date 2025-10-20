@@ -1814,8 +1814,8 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
             } else if (thick_skinned(mon->data)) {
                 pline("Shards of glass crunch under your %s.", makeplural(body_part(FOOT)));
             } else {
-                if (u.uhp > 1) losehp(1, "stepping on broken glass", KILLED_BY);
                 Your("%s are cut by shards of glass!", makeplural(body_part(FOOT)));
+                if (u.uhp > 1) losehp(1, "stepping on broken glass", KILLED_BY);
                 add_coating(x, y, COAT_BLOOD, gy.youmonst.mnum);
                 disp.botl = TRUE;
             }
