@@ -824,6 +824,8 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
 
     case PM_STALKER: case PM_AIR_ELEMENTAL: case PM_FIRE_ELEMENTAL:
     case PM_EARTH_ELEMENTAL: case PM_WATER_ELEMENTAL:
+    case PM_ACID_PARAELEMENTAL: case PM_ICE_PARAELEMENTAL:
+    case PM_MAGMA_PARAELEMENTAL: case PM_SMOKE_PARAELEMENTAL:
 
     case PM_NIGHTCRUST: case PM_LICHEN: case PM_BROWN_MOLD: case PM_YELLOW_MOLD:
     case PM_GREEN_MOLD: case PM_RED_MOLD: case PM_SHRIEKER:
@@ -3304,6 +3306,19 @@ corpse_chance(
         return FALSE;
     }
 
+    /* Handle magma elementals melting */
+    if (mdat == &mons[PM_MAGMA_PARAELEMENTAL]) {
+        if (levl[mon->mx][mon->my].typ != STAIRS &&
+                levl[mon->mx][mon->my].typ != LADDER) {
+            levl[mon->mx][mon->my].typ = LAVAPOOL;
+            newsym(mon->mx, mon->my);
+            if (cansee(mon->mx, mon->my) && !was_swallowed)
+                pline("%s body dissolves into a pool of lava.",
+                    s_suffix(Monnam(mon)));
+        }
+        return FALSE;
+    }
+    /* Handle coin explosions */
     if (mdat->mlet == S_BAD_COINS) {
         if (canseemon(mon))
             pline_mon(mon, "%s explodes in a shower of gold!", Monnam(mon));
@@ -3312,7 +3327,7 @@ corpse_chance(
                                            | VIS_EFFECTS, (struct obj *) 0);
         return FALSE;
     }
-
+    /* Handle crimson death blood clouds */
     if (mdat == &mons[PM_CRIMSON_DEATH]) {
         struct obj fakeobj = cg.zeroobj;
         fakeobj.cursed = TRUE;
@@ -3320,7 +3335,7 @@ corpse_chance(
         create_gas_cloud(mon->mx, mon->my, 5, &fakeobj, 8);
         return FALSE;
     }
-
+    /* Handle illusion vanishing */
     if (mdat == &mons[PM_ILLUSION]) {
         /* Illusions killed while undiscovered yield a message. */
         if (cansee(mon->mx, mon->my) && mon->mappearance) {
@@ -3328,7 +3343,7 @@ corpse_chance(
         }
         return FALSE;
     }
-
+    /* Handle nymphs returning to grass */
     if (mdat == &mons[PM_WOOD_NYMPH]) {
         if (cansee(mon->mx, mon->my) && !was_swallowed) {
             pline_mon(mon, "%s body returns to the earth.",

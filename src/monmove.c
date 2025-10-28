@@ -689,7 +689,8 @@ m_everyturn_effect(struct monst *mtmp)
     coordxy x = is_u ? u.ux : mtmp->mx,
             y = is_u ? u.uy : mtmp->my;
 
-    if (mtmp->data == &mons[PM_FOG_CLOUD]) {
+    if (mtmp->data == &mons[PM_FOG_CLOUD]
+        || mtmp->data == &mons[PM_SMOKE_PARAELEMENTAL]) {
         /* don't leave a vapor cloud if some other gas cloud is already
            present, or when flowing under closed doors so that visibility
            changes aren't mixed with messages about doing such */

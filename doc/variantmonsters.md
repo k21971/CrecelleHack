@@ -46,6 +46,13 @@
 - **Falcon**: Falcons are similar to giant bats, but spawn during the day.
 - **Giant Eagle**: Giant eagles are dangerous birds that spawns only during daytime.
 
+# Elementals (E)
+- **Ice Paraelemental**: Appear when a water elemental is frozen.
+- **Acid Paraelemental**: Appear when a water elemental is struck with acid.
+- **Magma Paraelemental**: Appear when an earth elemental is struck with fire. Creates
+  a pool of lava when destroyed.
+- **Smoke Paraelemental**: Appears when an air elemental is struck with fire.
+
 # Fungi (F)
 - **Lightcrust**: Lightcrusts are imobile fungi which shed light in a large radius.
   Instead of generating randomly, they are spawned during dungeon creation, providing

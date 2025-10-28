@@ -8,9 +8,12 @@
 /* used to pick among the four basic elementals without worrying whether
    they've been reordered (difficulty reassessment?) or any new ones have
    been introduced (hybrid types added to 'E'-class?) */
-static const int elementals[4] = {
+static const int elementals[8] = {
     PM_AIR_ELEMENTAL, PM_FIRE_ELEMENTAL,
-    PM_EARTH_ELEMENTAL, PM_WATER_ELEMENTAL
+    PM_EARTH_ELEMENTAL, PM_WATER_ELEMENTAL,
+    /* Don't forget the paraelementals... */
+    PM_ICE_PARAELEMENTAL, PM_MAGMA_PARAELEMENTAL,
+    PM_ACID_PARAELEMENTAL, PM_SMOKE_PARAELEMENTAL,
 };
 
 void

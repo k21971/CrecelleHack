@@ -36,8 +36,9 @@ staticfn void init_mextra(struct mextra *);
 boolean
 is_home_elemental(struct permonst *ptr)
 {
+    int mndx = monsndx(ptr);
     if (ptr->mlet == S_ELEMENTAL) {
-        switch (monsndx(ptr)) {
+        switch (mndx) {
         case PM_AIR_ELEMENTAL:
             return Is_airlevel(&u.uz);
         case PM_FIRE_ELEMENTAL:
@@ -45,11 +46,19 @@ is_home_elemental(struct permonst *ptr)
         case PM_EARTH_ELEMENTAL:
             return Is_earthlevel(&u.uz);
         case PM_WATER_ELEMENTAL:
+        case PM_ICE_PARAELEMENTAL:
             return Is_waterlevel(&u.uz);
         default:
             break;
         }
     }
+    if (mndx == PM_SMOKE_PARAELEMENTAL)
+        return (Is_airlevel(&u.uz) || Is_firelevel(&u.uz));
+    if (mndx == PM_MAGMA_PARAELEMENTAL)
+        return (Is_earthlevel(&u.uz) || Is_firelevel(&u.uz));
+    if (mndx == PM_ACID_PARAELEMENTAL)
+        return (Is_waterlevel(&u.uz) || Is_earthlevel(&u.uz));
+
     return FALSE;
 }
 

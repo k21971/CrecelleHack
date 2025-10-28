@@ -37,6 +37,7 @@ staticfn void boxlock_invent(struct obj *) NONNULLARG1;
 staticfn int spell_hit_bonus(int);
 staticfn int maybe_destroy_item(struct monst *, struct obj *, int) NONNULLPTRS;
 staticfn boolean destroyable(struct obj *, int);
+staticfn boolean elemental_shift(struct monst *, int);
 
 staticfn void wishcmdassist(int);
 
@@ -4535,6 +4536,11 @@ zhitm(
             erode_armor(mon, ERODE_CORRODE);
         break;
     }
+    if (mon->data->mlet == S_ELEMENTAL
+        && elemental_shift(mon, damgtype)) {
+        sho_shieldeff = TRUE;
+        tmp = 0;
+    }
     if (sho_shieldeff)
         shieldeff(mon->mx, mon->my);
     if (is_hero_spell(type) && (Role_if(PM_KNIGHT) && u.uhave.questart))
@@ -6584,6 +6590,37 @@ flash_str(
         Strcpy(fltxt, flash_types[typ]);
     }
     return fltxt;
+}
+
+static const short elem_pairings[][3] = {
+    { PM_WATER_ELEMENTAL, ZT_FIRE, PM_STEAM_VORTEX },
+    { PM_WATER_ELEMENTAL, ZT_COLD, PM_ICE_PARAELEMENTAL },
+    { PM_WATER_ELEMENTAL, ZT_ACID, PM_ACID_PARAELEMENTAL },
+    { PM_EARTH_ELEMENTAL, ZT_FIRE, PM_MAGMA_PARAELEMENTAL },
+    { PM_ICE_PARAELEMENTAL, ZT_FIRE, PM_WATER_ELEMENTAL },
+    { PM_MAGMA_PARAELEMENTAL, ZT_COLD, PM_EARTH_ELEMENTAL },
+    { NON_PM, 0, NON_PM }
+
+
+};
+
+/* Shifts an elemental from one type to another. */
+staticfn boolean
+elemental_shift(struct monst *mtmp, int zt)
+{
+    int i, pm = 0;
+    int orig_pm = monsndx(mtmp->data);
+    short zt_s = (short) zt;
+    for (i = 0; elem_pairings[i][0] >= LOW_PM; i++) {
+        if (zt_s == elem_pairings[i][1] && orig_pm == elem_pairings[i][0]) {
+            pm = elem_pairings[i][2];
+            break;
+        }
+    }
+    if (!pm)
+        return FALSE;
+    (void) newcham(mtmp, &mons[pm], NC_SHOW_MSG | NC_VIA_WAND_OR_SPELL);
+    return TRUE;
 }
 
 /*zap.c*/
