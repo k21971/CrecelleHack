@@ -47,7 +47,7 @@
 .ds f0 \*(vr
 .ds f1 \" empty
 .\"DO NOT REMOVE NH_DATESUB .ds f2 Date(%B %-d, %Y)
-.ds f2 May 1, 2025
+.ds f2 October 24, 2025
 .
 .\" A note on some special characters:
 .\" \(lq = left double quote
@@ -2925,7 +2925,7 @@ Some objects of subtle enchantment are difficult to identify without these.
 .pg
 A scroll whose label is known can be read even when the hero is blind.
 If a scroll has been discovered, it will be listed in inventory by type
-rather than by label, but the label is known in that situtaion even though
+rather than by label, but the label is known in that situation even though
 it isn't shown.
 .pg
 Many scrolls produce a different effect from usual if they are blessed or
