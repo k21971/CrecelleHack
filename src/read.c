@@ -2002,7 +2002,10 @@ seffect_maze(struct obj **sobjp)
         }
         if (!(cc.x == u.ux && cc.y == u.uy)) {
             mtmp = m_at(cc.x, cc.y);
-            if (is_rider(mtmp->data)) {
+            if (!mtmp) {
+                pline1(nothing_happens);
+                return;
+            } else if (is_rider(mtmp->data)) {
                 You("lack the authority...");
                 return;
             } else if (mtmp) {
