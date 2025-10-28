@@ -1927,7 +1927,7 @@ floor_alchemy(int x, int y, int otyp, int corpsenm) {
         }
         if (bomb || !rn2(10)) {
             remove_coating(x, y, COAT_POTION);
-            explode(x, y, 11, d(1, 10), 0, EXPL_NOXIOUS);
+            explode(x, y, PHYS_EXPL_TYPE, d(1, 10), 0, EXPL_NOXIOUS);
             return;
         }
     }
