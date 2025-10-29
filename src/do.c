@@ -1713,7 +1713,8 @@ goto_level(
     if (cant_go_back) {
         /* discard unreachable levels; keep #0 */
         for (l_idx = maxledgerno(); l_idx > 0; --l_idx)
-            if (!leaving_tutorial || ledger_to_dnum(l_idx) == tutorial_dnum)
+            if (!leaving_tutorial || ledger_to_dnum(l_idx) == tutorial_dnum
+                || ledger_to_dnum(l_idx) == maze_dnum)
                 delete_levelfile(l_idx);
         /* mark #overview data for all dungeon branches as uninteresting */
         for (l_idx = 0; l_idx < svn.n_dgns; ++l_idx)
