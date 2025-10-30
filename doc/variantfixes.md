@@ -382,7 +382,6 @@
 
 ## GUI
 - MC is displayed on the status line as a percentage.
-- Display level names on status line.
 
 ## Harmony System
 - Most monsters harmonize on a specific type of terrain. While
