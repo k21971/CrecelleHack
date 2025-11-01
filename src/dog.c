@@ -97,6 +97,8 @@ pet_type(void)
             gu.urole.petnum = PM_WARG;
         else if (Race_if(PM_ELF))
             gu.urole.petnum = PM_JAGUAR;
+        else if (Race_if(PM_GNOME))
+            gu.urole.petnum = PM_LARGE_DOG;
     }
     if (Race_if(PM_KOBOLD)) {
         gu.urole.petnum = PM_KOBOLD;
@@ -242,7 +244,9 @@ makedog(void)
     }
 
     pettype = svc.context.startingpet_typ = pet_type();
-    petname = (pettype == PM_LITTLE_DOG || pettype == PM_KOBOLD) ? gd.dogname
+    petname = (pettype == PM_LITTLE_DOG 
+                || pettype == PM_LARGE_DOG 
+                || pettype == PM_KOBOLD) ? gd.dogname
               : (pettype == PM_KITTEN) ? gc.catname
                 : (pettype == PM_PONY) ? gh.horsename
                   : "";

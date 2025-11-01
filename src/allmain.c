@@ -19,6 +19,7 @@ staticfn void do_positionbar(void);
 #endif
 staticfn void regen_pw(int);
 staticfn void regen_hp(int);
+staticfn void to_the_mines(void);
 staticfn void interrupt_multi(const char *);
 staticfn void debug_fields(const char *);
 #ifndef NODUMPENUMS
@@ -850,6 +851,8 @@ newgame(void)
     vision_reset();          /* set up internals for level (after mklev) */
     check_special_room(FALSE);
 
+    to_the_mines();
+
     if (MON_AT(u.ux, u.uy))
         mnexto(m_at(u.ux, u.uy), RLOC_NOMSG);
     (void) makedog();
@@ -857,7 +860,10 @@ newgame(void)
 
     if (flags.legacy) {
         flush_screen(1);
-        com_pager("crecelle_legacy");
+        if (Race_if(PM_GNOME) && u.uroleplay.altstarts)
+            com_pager("legacy");
+        else
+            com_pager("crecelle_legacy");
     }
     
     adj_midbosses();
@@ -877,6 +883,32 @@ newgame(void)
     else
         notice_all_mons(TRUE);
     return;
+}
+
+staticfn void
+to_the_mines(void)
+{
+    d_level newlevel;
+
+    if (Race_if(PM_GNOME) && u.uroleplay.altstarts) {
+        /* pulled from bones.c */
+        for (int x = 1; x < COLNO; x++)
+            for (int y = 0; y < ROWNO; y++) {
+                levl[x][y].seenv = 0;
+                levl[x][y].waslit = 0;
+                levl[x][y].glyph = GLYPH_UNEXPLORED;
+                svl.lastseentyp[x][y] = 0;
+            }
+        rm_mapseen(ledger_no(&u.uz));
+        newlevel.dnum = mines_dnum;
+        newlevel.dlevel = 1;
+        /* move gnomes into gnomish mines */
+        schedule_goto(&newlevel, UTOTYPE_NONE,
+                        wizard ? "Entering the mines." : "", (char *) 0);
+        deferred_goto();
+        u_on_upstairs();
+        vision_reset();
+    }
 }
 
 /* show "welcome [back] to CrecelleHack" message at program startup */
@@ -923,6 +955,9 @@ welcome(boolean new_game) /* false => restoring an old game */
           Hello((struct monst *) 0), svp.plname, buf);
 
     if (new_game) {
+        /* gnomes get cheered on */
+        if (Race_if(PM_GNOME))
+            You_hear("your gnomish colleagues cheering for you!");
         /* guarantee that 'major' event category is never empty */
         livelog_printf(LL_ACHIEVE, "%s the%s entered the dungeon",
                        svp.plname, buf);

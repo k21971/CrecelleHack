@@ -1,3 +1,18 @@
+# 1.4
+
+## Races
+- Gnome
+  - Gnomes start the game at the top of the gnomish mines.
+  - Gnomes have many new inventory substitutions.
+  - Gnomes hunger more slowly.
+  - Gnomish knights begin with saddled large dogs.
+
+## New Items
+- Gnomish Pointy Hat
+  - Ported from dNetHack. Differences are as follows:
+    - Pointy hats do not contain a candle.
+    - Pointy hats grant a point of luck when worn by gnomish players.
+
 # 1.3
 
 ## Coating System

@@ -217,6 +217,7 @@ struct u_roleplay {
     boolean deaf;   /* permanently deaf */
     boolean pauper; /* no starting inventory */
     boolean perfect_bestiary; /* automatically know all monsters */
+    boolean altstarts;  /* alternate location starts for certain roles and races */
     long numbones;  /* # of bones files loaded  */
 };
 

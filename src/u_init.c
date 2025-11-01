@@ -252,6 +252,11 @@ static struct inv_sub {
     { PM_DWARF, LEMBAS_WAFER, CRAM_RATION },
     { PM_GNOME, BOW, CROSSBOW },
     { PM_GNOME, ARROW, CROSSBOW_BOLT },
+    { PM_GNOME, BLINDFOLD, TINKER_GOGGLES },
+    { PM_GNOME, CLUB, AKLYS },
+    { PM_GNOME, ROCK, WORTHLESS_WHITE_GLASS },
+    { PM_GNOME, OIL_LAMP, WAX_CANDLE },
+    { PM_GNOME, FEDORA, GNOMISH_POINTY_HAT },
     { PM_KOBOLD, BOW, CROSSBOW },
     { PM_KOBOLD, ARROW, CROSSBOW_BOLT },
     { PM_KOBOLD, CRAM_RATION, TRIPE_RATION },
@@ -925,6 +930,7 @@ u_init_race(void)
 
     case PM_GNOME:
         ini_inv(Resizing);
+        knows_object(GNOMISH_POINTY_HAT, FALSE);
         break;
 
     case PM_ORC:
@@ -1295,6 +1301,8 @@ ini_inv_obj_substitution(struct trobj *trop, struct obj *obj)
                             (trop->trotyp == UNDEF_TYP) ? "random " : "",
                             OBJ_NAME(objects[obj->otyp]));
                 obj->otyp = inv_subs[i].subs_otyp;
+                if (obj->otyp == WORTHLESS_WHITE_GLASS)
+                    obj->otyp += (rn2(WORTHLESS_VIOLET_GLASS - WORTHLESS_WHITE_GLASS));
                 break;
             }
     }

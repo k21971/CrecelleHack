@@ -164,6 +164,9 @@ static int optfn_##a(int, int, boolean, char *, char *);
            Off, Yes, No, No, NoAlias, (boolean *) 0, Term_False,
            (char *)0)
 #endif
+    NHOPTB(altstarts, Advanced, 0, opt_out, set_in_config,
+           On, Yes, No, No, NoAlias, &u.uroleplay.altstarts, Term_False,
+           "start in gnomish mines if playing a gnome")
     NHOPTB(ascii_map, Advanced, 0, opt_in, set_in_game,
                 ascii_map_Def, Yes, No, No, NoAlias, &iflags.wc_ascii_map,
            Term_False, "show map as text")

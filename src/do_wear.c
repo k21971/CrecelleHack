@@ -438,6 +438,9 @@ Helmet_on(void)
         if (Role_if(PM_ARCHEOLOGIST))
             change_luck(1);
         break;
+    case GNOMISH_POINTY_HAT:
+        if (Race_if(PM_GNOME))
+            change_luck(1);
     case HELMET:
     case YENDORIAN_BASCINET:
     case WINTER_HAT:
@@ -529,6 +532,10 @@ Helmet_off(void)
         if (Role_if(PM_ARCHEOLOGIST))
             change_luck(-1);
         break;
+    case GNOMISH_POINTY_HAT:
+        if (Race_if(PM_GNOME))
+            change_luck(-1);
+        break;
     case HELMET:
     case YENDORIAN_BASCINET:
     case WINTER_HAT:
@@ -536,7 +543,6 @@ Helmet_off(void)
     case DWARVISH_IRON_HELM:
     case ORCISH_HELM:
     case SKULL:
-        break;
     case SKULL_HELM:
         mon_product_handling(uarmh, FALSE, TRUE);
         break;

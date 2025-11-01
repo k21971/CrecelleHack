@@ -892,6 +892,8 @@ m_initinv(struct monst *mtmp)
             otmp = mksobj(TINKER_GOGGLES, TRUE, FALSE);
             (void) mpickobj(mtmp, otmp);
         }
+        if (In_mines(&u.uz) || rn2(6))
+            (void) mongets(mtmp, GNOMISH_POINTY_HAT);
         if (ptr == &mons[PM_GWTWOD]) {
             otmp = mksobj(WAN_DEATH, FALSE, FALSE);
             otmp->quan = 1;
