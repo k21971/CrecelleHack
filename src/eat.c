@@ -1384,9 +1384,13 @@ void
 violated_vegetarian(void)
 {
     u.uconduct.unvegetarian++;
-    if (Role_if(PM_MONK)) {
+    if (Role_if(PM_MONK) || Race_if(PM_ELF)) {
         You_feel("guilty.");
         adjalign(-1);
+    }
+    if (Race_if(PM_ELF)) {
+        make_vomiting((long) rn1(10, 6),
+                              FALSE);
     }
     return;
 }
@@ -3179,7 +3183,7 @@ gethungry(void)
         && (carnivorous(gy.youmonst.data)
             || herbivorous(gy.youmonst.data)
             || metallivorous(gy.youmonst.data))
-        && !Slow_digestion)
+        && !(Slow_digestion || Race_if(PM_GNOME)))
         u.uhunger--; /* ordinary food consumption */
 
     /*

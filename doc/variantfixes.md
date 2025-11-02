@@ -1,11 +1,20 @@
 # 1.4
 
 ## Races
+- Elf
+  - Elves are not used to meat. They take an alignment
+    penalty and begin throwing up after eating any kind of
+    meat.
 - Gnome
   - Gnomes start the game at the top of the gnomish mines.
   - Gnomes have many new inventory substitutions.
   - Gnomes hunger more slowly.
   - Gnomish knights begin with saddled large dogs.
+
+## Roles
+- Barbarian
+  - Barbarians begin with cram rations rather than food
+    rations, potentially resulting in inventory substitutions.
 
 ## New Items
 - Gnomish Pointy Hat
