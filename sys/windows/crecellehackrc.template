@@ -13,6 +13,8 @@
 OPTIONS=taunt:do a little dance.
 # Implicit Item Sizes
 OPTIONS=implicit_medium
+# Implicit Materials
+OPTIONS=implicit material
 # Display item weights
 OPTIONS=invweight
 # Display surface colors

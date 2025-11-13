@@ -19,6 +19,7 @@
     - Any object that is somehow converted to meat or
       vegetable matter can be eaten.
     - Figurines have randomized material types.
+    - New option, implicit_material, to quash default materials.
 
 ## Races
 - Elf

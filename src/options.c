@@ -5418,6 +5418,7 @@ optfn_boolean(
         case opt_sortpack:
         case opt_implicit_uncursed:
         case opt_implicit_medium:
+        case opt_implicit_material:
         case opt_invweight:
         case opt_obscure_role_obj_names:
             if (!flags.invlet_constant)

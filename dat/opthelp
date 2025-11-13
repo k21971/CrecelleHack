@@ -1,20 +1,27 @@
 Crecelle-specific options are reproduced at the top of this file (with
 default values in [].)
 
+Boolean Crecelle Options
 altstarts               gnomes start in gnomish mines              [True]
 bold_coatings           indicate coated areas using bold           [True]
 color_coatings          indicate coated areas using color          [True]
 color_surfaces          indicate non-stone surfaces using color    [True]
 implicit_medium         omit "medium" from inventory, if possible  [True]
+implicit_material       omit default material from item names      [True]
 invweight               display weight of objects                  [True]
 obscure_role_obj_names  disable role-specific object names         [False]
-orientation             controls foocubus interactions
-                                                 [straight, gay, bisexual]
 perfect_bestiary        enable perfect monster knowledge           [False]
 player_sized_wishes     wishes are player sized by default         [True]
+
+
+Compound Crecelle Options
+orientation             controls foocubus interactions         [straight,
+                                                                gay,
+                                                                bisexual]
 taunt                   custom string for the taunt command,
                         preceded by "You"                 
-
+ - - - - -
+ =
 Boolean options not under specific compile flags (with default values in []):
 (You can learn which options exist in your version by checking your current
 option setting, which is reached via the 'O' command.)

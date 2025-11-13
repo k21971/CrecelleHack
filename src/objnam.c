@@ -587,7 +587,8 @@ xcalled(
 #define force_material_name(typ) \
     ((typ) == ARMOR || (typ) == STUDDED_ARMOR                     \
      || (typ) == JACKET || (typ) == CLOAK || (typ) == SABER \
-     || ((typ) == GLOVES && objects[GLOVES].oc_name_known))
+     || ((typ) == GLOVES && objects[GLOVES].oc_name_known) \
+     || !flags.implicit_material)
 
 char *
 xname(struct obj *obj)
