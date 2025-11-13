@@ -4255,6 +4255,14 @@ static const struct icp orcish_materials[] = {
     {200, MINERAL}
 };
 
+/* figurines */
+static const struct icp figurine_materials[] = {
+    {500, MINERAL},
+    {300, BONE},
+    {100, WOOD},
+    {100, GLASS}
+};
+
 /* Return the appropriate above list for a given object, or NULL if there isn't
  * an appropriate list. */
 staticfn const struct icp*
@@ -4319,6 +4327,8 @@ material_list(struct obj *obj)
         case HORN_OF_PLENTY:
         case SKELETON_KEY:
             return horn_materials;
+        case FIGURINE:
+            return figurine_materials;
         default:
             break;
     }

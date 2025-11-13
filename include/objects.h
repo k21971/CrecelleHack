@@ -996,7 +996,7 @@ TOOL("tin opener",          NoDes, 1, 0, 0, 0, 35,  4, 30, IRON, HI_METAL,
                                                                 TIN_OPENER),
 TOOL("can of grease",       NoDes, 1, 0, 0, 1, 15, 15, 20, IRON, HI_METAL,
                                                                 CAN_OF_GREASE),
-TOOL("figurine",            NoDes, 1, 0, 1, 0, 25, 50, 80, MINERAL, HI_MINERAL,
+TOOL("figurine",            NoDes, 1, 0, 1, 0, 25, 10, 80, MINERAL, HI_MINERAL,
                                                                 FIGURINE),
         /* monster type specified by obj->corpsenm */
 TOOL("magic marker",        NoDes, 1, 0, 1, 1, 15,  2, 50, PLASTIC, CLR_RED,

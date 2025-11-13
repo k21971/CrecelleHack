@@ -18,6 +18,7 @@
     - Sabers are made of silver by default.
     - Any object that is somehow converted to meat or
       vegetable matter can be eaten.
+    - Figurines have randomized material types.
 
 ## Races
 - Elf
@@ -44,6 +45,7 @@
 ## Objects
 - New wand appearances: meat and leek.
 - Eating a wand of death is instantly fatal.
+- Figurines weigh much less.
 
 # 1.3
 
