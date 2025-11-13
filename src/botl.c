@@ -578,9 +578,9 @@ static struct istat_s initblstats[MAXBLSTATS] = {
     INIT_BLSTAT("power-max", "(%s)", ANY_INT, 10, BL_ENEMAX),
     INIT_BLSTATP("experience-level", " Xp:%s", ANY_INT, 10, BL_EXP, BL_XP),
     INIT_BLSTAT("armor-class", " AC:%s", ANY_INT, 10, BL_AC),
-    INIT_BLSTAT("magic-cancellation", " MC:%s%%", ANY_INT, 10, BL_MC),
+    INIT_BLSTAT("cancellation", " MC:%s%%", ANY_INT, 10, BL_MC),
     INIT_BLSTAT("HD", " HD:%s", ANY_INT, 10, BL_HD),
-    INIT_BLSTAT("time", " T:%s", ANY_LONG, 20, BL_TIME),
+    INIT_BLSTAT("turns", " T:%s", ANY_LONG, 20, BL_TIME),
     /* hunger used to be 'ANY_UINT'; see note below in bot_via_windowport() */
     INIT_BLSTAT("hunger", " %s", ANY_INT, 40, BL_HUNGER),
     INIT_BLSTATP("hitpoints", " HP:%s", ANY_INT, 10, BL_HPMAX, BL_HP),
@@ -593,7 +593,7 @@ static struct istat_s initblstats[MAXBLSTATS] = {
        available mostly for screenshots or someone looking over shoulder;
        blstat[][BL_VERS] is actually an int copy of flags.versinfo (0...7) */
     INIT_BLSTAT("version", " %s", ANY_STR, MAXVALWIDTH, BL_VERS),
-    INIT_BLSTAT("timeofday", " %s", ANY_STR, 20, BL_TOD)
+    INIT_BLSTAT("time", "%s", ANY_STR, 20, BL_TOD)
 };
 
 #undef INIT_BLSTATP
