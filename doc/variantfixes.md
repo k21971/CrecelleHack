@@ -16,6 +16,8 @@
       this, and I would rather make orcs distinct in
       different ways.
     - Sabers are made of silver by default.
+    - Any object that is somehow converted to meat or
+      vegetable matter can be eaten.
 
 ## Races
 - Elf
@@ -38,6 +40,10 @@
   - Ported from dNetHack. Differences are as follows:
     - Pointy hats do not contain a candle.
     - Pointy hats grant a point of luck when worn by gnomish players.
+
+## Objects
+- New wand appearances: meat and leek.
+- Eating a wand of death is instantly fatal.
 
 # 1.3
 

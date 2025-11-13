@@ -118,6 +118,14 @@ is_edible(struct obj *obj)
             as engulfed items, but poly'd player can't do that] */
         && !Has_contents(obj))
         return TRUE;
+    
+    /* Departure from EvilHack into the cursed land that is
+       Crecelle: You can eat anything. If you somehow end up with
+       a mace made out of flesh, that's a meal. */
+    if (obj->material != objects[obj->otyp].oc_material
+        && (obj->material == FLESH || obj->material == VEGGY)
+        && !Has_contents(obj) && !is_ascension_obj(obj))
+        return TRUE;
 
     return (boolean) (obj->oclass == FOOD_CLASS);
 }
@@ -2796,8 +2804,16 @@ doeat_nonfood(struct obj *otmp)
     if (otmp->cursed) {
         (void) rottenfood(otmp);
         nodelicious = TRUE;
-    } else if (objects[otmp->otyp].oc_material == PAPER)
+    } else if (otmp->material == PAPER)
         nodelicious = TRUE;
+    
+    if (otmp->otyp == WAN_DEATH) {
+        pline("Eating a wand of death is instantly fatal.");
+        Sprintf(svk.killer.name, "ate a wand of death");
+        svk.killer.format = NO_KILLER_PREFIX;
+        done(DIED);
+        exercise(A_WIS, FALSE);
+    }
 
     if (otmp->oclass == WEAPON_CLASS && otmp->opoisoned) {
         pline("Ecch - that must have been poisonous!");

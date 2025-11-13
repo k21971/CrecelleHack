@@ -220,5 +220,11 @@ extern NEARDATA struct objdescr obj_descr[NUM_OBJECTS + 1];
 #define is_fuzzy_weight(otmp) \
     ((otmp->oclass == WEAPON_CLASS || otmp->oclass == ARMOR_CLASS \
         || is_weptool(otmp)) && !(objects[otmp->otyp].oc_merge || otmp->nomerge || is_ammo(otmp)))
+/* is necessary to win the game */
+#define is_ascension_obj(otmp) \
+    (otmp->otyp == AMULET_OF_YENDOR \
+        || otmp->otyp == CANDELABRUM_OF_INVOCATION \
+        || otmp->otyp == BELL_OF_OPENING \
+        || otmp->otyp == SPE_BOOK_OF_THE_DEAD)
 
 #endif /* OBJCLASS_H */

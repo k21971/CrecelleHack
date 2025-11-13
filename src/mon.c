@@ -1641,6 +1641,7 @@ meatobj(struct monst *mtmp) /* for gelatinous cubes */
                     && !resists_ston(mtmp))
                    /* don't engulf boulders and statues or ball&chain */
                    || otmp->oclass == ROCK_CLASS
+                   || otmp->otyp == WAN_DEATH
                    || otmp == uball || otmp == uchain
                    /* normally mtmp won't have stepped onto scare monster
                       scroll, but if it does, don't eat or engulf that

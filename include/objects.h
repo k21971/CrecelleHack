@@ -1562,6 +1562,8 @@ WAND(NoDes,             "forked",  0, 150, 1, 0, WOOD, HI_WOOD, WAN1),
 WAND(NoDes,             "spiked",  0, 150, 1, 0, IRON, HI_METAL, WAN2),
 WAND(NoDes,            "jeweled",  0, 150, 1, 0, IRON, HI_MINERAL, WAN3),
 WAND(NoDes,          "solid ice",  0, 150, 1, 0, ICECRYSTAL, HI_GLASS, WAN4),
+WAND(NoDes,               "meat",  0, 150, 1, 0, FLESH, CLR_BROWN, WAN5),
+WAND(NoDes,               "leek",  0, 150, 1, 0, VEGGY, CLR_GREEN, WAN6),
 #undef WAND
 
 /* coins ... - so far, gold is all there is */

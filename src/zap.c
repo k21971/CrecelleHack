@@ -1492,10 +1492,7 @@ obj_resists(struct obj *obj,
             int ochance, /* percent chance for ordinary objects */
             int achance) /* percent chance for artifacts */
 {
-    if (obj->otyp == AMULET_OF_YENDOR
-        || obj->otyp == SPE_BOOK_OF_THE_DEAD
-        || obj->otyp == CANDELABRUM_OF_INVOCATION
-        || obj->otyp == BELL_OF_OPENING
+    if (is_ascension_obj(obj)
         || (obj->otyp == CORPSE && is_rider(&mons[obj->corpsenm]))) {
         return TRUE;
     } else if ((obj->otyp == SKULL
