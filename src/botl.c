@@ -593,7 +593,7 @@ static struct istat_s initblstats[MAXBLSTATS] = {
        available mostly for screenshots or someone looking over shoulder;
        blstat[][BL_VERS] is actually an int copy of flags.versinfo (0...7) */
     INIT_BLSTAT("version", " %s", ANY_STR, MAXVALWIDTH, BL_VERS),
-    INIT_BLSTAT("time", "%s", ANY_STR, 20, BL_TOD)
+    INIT_BLSTAT("time", " %s", ANY_STR, 20, BL_TOD)
 };
 
 #undef INIT_BLSTATP
