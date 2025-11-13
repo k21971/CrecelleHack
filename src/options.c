@@ -130,7 +130,7 @@ static boolean opt_set_in_config[OPTCOUNT];
 static char *roleoptvals[MAX_ROLEOPT][num_opt_phases];
 
 static NEARDATA const char *OptS_type[OptS_Advanced+1] = {
-    "General", "Behavior", "Map", "Status", "Advanced"
+    "General", "Crecelle", "Behavior", "Map", "Status", "Advanced"
 };
 
 static const char def_inv_order[MAXOCLASSES] = {

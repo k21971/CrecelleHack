@@ -21,7 +21,7 @@ enum Y_N { No, Yes };
 enum Off_On { Off, On };
 /* Advanced options are only shown in the full, traditional options menu */
 enum OptSection {
-    OptS_General, OptS_Behavior, OptS_Map, OptS_Status, OptS_Advanced
+    OptS_General, OptS_Variant, OptS_Behavior, OptS_Map, OptS_Status, OptS_Advanced
 };
 enum menu_terminology_preference {
     Term_False, Term_Off, Term_Disabled, Term_Excluded, num_terms
@@ -210,7 +210,7 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTB(blind, Advanced, 0, opt_in, set_in_config,
            Off, Yes, No, No, "permablind", &u.uroleplay.blind, Term_False,
            "your character is permanently blind")
-    NHOPTB(bold_coatings, Advanced, 0, opt_out, set_in_game,
+    NHOPTB(bold_coatings, Variant, 0, opt_out, set_in_game,
            On, Yes, No, No, NoAlias, &flags.bold_coatings, Term_False,
            "use color to indicate floor coatings")
     NHOPTB(bones, Advanced, 0, opt_out, set_in_config,
@@ -239,10 +239,10 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTB(color, Map, 0, opt_in, set_in_game,
            On, Yes, No, No, "colour", &iflags.wc_color, Term_False,
            "use color in map")
-    NHOPTB(color_coatings, Advanced, 0, opt_out, set_in_game,
+    NHOPTB(color_coatings, Variant, 0, opt_out, set_in_game,
            On, Yes, No, No, NoAlias, &flags.color_coatings, Term_False,
            "use color to indicate floor coatings")
-    NHOPTB(color_surfaces, Advanced, 0, opt_out, set_in_game,
+    NHOPTB(color_surfaces, Variant, 0, opt_out, set_in_game,
            On, Yes, No, No, NoAlias, &flags.color_surfaces, Term_False,
            "use color to indicate dirt and sand")
     NHOPTB(confirm, Advanced, 0, opt_out, set_in_game,
@@ -408,13 +408,13 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTB(implicit_uncursed, Advanced, 0, opt_out, set_in_game,
            On, Yes, No, No, NoAlias, &flags.implicit_uncursed, Term_False,
            "omit \"uncursed\" from inventory")
-    NHOPTB(implicit_material, Advanced, 0, opt_out, set_in_game,
+    NHOPTB(implicit_material, Variant, 0, opt_out, set_in_game,
            On, Yes, No, No, NoAlias, &flags.implicit_material, Term_False,
-           "omit \"medium\" from inventory")
-    NHOPTB(implicit_medium, Advanced, 0, opt_out, set_in_game,
+           "omit default materials from inventory")
+    NHOPTB(implicit_medium, Variant, 0, opt_out, set_in_game,
            On, Yes, No, No, NoAlias, &flags.implicit_medium, Term_False,
            "omit \"medium\" from inventory")
-    NHOPTB(invweight, Advanced, 0, opt_out, set_in_game,
+    NHOPTB(invweight, Variant, 0, opt_out, set_in_game,
            On, Yes, No, No, "wizweight", &iflags.invweight, Term_False,
            "display weight of items" )
 #if 0   /* obsolete - pre-OSX Mac */
@@ -553,7 +553,7 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTC(objects, Advanced, MAXOCLASSES, opt_in, set_in_config,
                 No, Yes, No, No, NoAlias,
                 "list of symbols to use for objects")
-    NHOPTB(obscure_role_obj_names, Advanced, 0, opt_in, set_in_game,
+    NHOPTB(obscure_role_obj_names, Variant, 0, opt_in, set_in_game,
            On, Yes, No, No, NoAlias, &flags.obscure_role_obj_names, Term_False,
            "disable role-specific object names")
     NHOPTC(orientation,  Advanced, 12, opt_in, set_gameview,
@@ -612,7 +612,7 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTC(player_selection, Advanced, 12, opt_in, set_gameview,
                 No, Yes, No, No, NoAlias,
                 "choose character via dialog or prompts")
-    NHOPTB(player_sized_wishes, Advanced, 0, opt_out, set_in_game,
+    NHOPTB(player_sized_wishes, Variant, 0, opt_out, set_in_game,
            On, Yes, No, No, NoAlias, &flags.player_sized_wishes, Term_False,
            "size wishes to player by default")
  /* NHOPTC(playmode) -- moved to top */
@@ -764,7 +764,7 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTC(symset, Map, 70, opt_in, set_in_game,
                 No, Yes, No, Yes, NoAlias,
                 "load a set of display symbols from symbols file")
-    NHOPTC(taunt, General, PL_TSIZ, opt_in, set_in_game,
+    NHOPTC(taunt, Variant, PL_TSIZ, opt_in, set_in_game,
                 No, Yes, No, No, NoAlias, "custom taunt text")
     NHOPTC(term_cols, Advanced, 6, opt_in, set_in_config,
                 No, Yes, No, No, "termcolumns", "number of columns")
