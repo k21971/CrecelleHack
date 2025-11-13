@@ -2328,10 +2328,24 @@ do_supplemental_item_info(struct obj *otmp)
     int dbonus;
     /* Display monster info */
     datawin = create_nhwindow(NHW_MENU);
-    Sprintf(buf, doname(otmp));
-    buf[0] = highc(buf[0]);
-    putstr(datawin, 0, buf);
+    Sprintf(buf, Doname2(otmp));
+    add_menu_heading(datawin, buf);
     putstr(datawin, 0, "");
+    add_menu_heading(datawin, "Basics");
+    if (not_fully_identified(otmp)) {
+        putstr(datawin, 0, "There is more you could learn about it.");
+    } else {
+        putstr(datawin, 0, "It is fully identified.");
+    }
+    /* Scroll Writing */
+    if ((otmp->oclass == SCROLL_CLASS || otmp->oclass == SPBOOK_CLASS)
+        && objects[otmp->otyp].oc_name_known) {
+        Sprintf(buf, "It would cost ~%d ink to write.", cost(otmp));
+        putstr(datawin, 0, buf);
+    }
+    putstr(datawin, 0, "");
+    /* Class info */
+    add_menu_heading(datawin, "Statistics");
     if (otmp->oclass == WEAPON_CLASS) {
         dbonus = otmp->known ? (otmp->spe - greatest_erosion(otmp)) : greatest_erosion(otmp);
         if (dbonus) {
@@ -2340,6 +2354,7 @@ do_supplemental_item_info(struct obj *otmp)
         Sprintf(buf, "Type: %s%sweapon", objects[otmp->otyp].oc_bimanual ? "two-handed " : "one-handed ",
                                  objects[otmp->otyp].oc_finesse ? "finesse " : "");
         putstr(datawin, 0, buf);
+        #if 0
         Sprintf(buf, "Damage (S): 1d%d%s%s%s", objects[otmp->otyp].oc_wsdam + size_mult(otmp->osize),
                                             stringify_dmgval(otmp->otyp, FALSE),
                                             dbonus ? dam_buf : "",
@@ -2350,10 +2365,17 @@ do_supplemental_item_info(struct obj *otmp)
                                             dbonus ? dam_buf : "",
                                             otmp->known ? "" : "?");
         putstr(datawin, 0, buf);
+        #endif
     } else {
         Sprintf(buf, "Class: %s", OBJ_DESCR(objects[(int) otmp->oclass]));
         putstr(datawin, 0, buf);
     }
+    /* Appearance */
+    if (OBJ_DESCR(objects[otmp->otyp])) {
+        Sprintf(buf, "Appearance: %s", OBJ_DESCR(objects[otmp->otyp]));
+        putstr(datawin, 0, buf);
+    }
+    /* Armor stats */
     if (otmp->oclass == ARMOR_CLASS) {
         Sprintf(buf, "AC: %d%s", (objects[otmp->otyp].a_ac + (otmp->known ? otmp->spe : 0)),
                                 otmp->known ? "" : "?");
@@ -2362,14 +2384,15 @@ do_supplemental_item_info(struct obj *otmp)
                                  otmp->known ? "" : "?");
         putstr(datawin, 0, buf);
     }
+    /* Boosts */
     if (otmp->booster) {
         Sprintf(buf, "Harmonies: ");
         print_obj_harmonies(otmp, buf);
         putstr(datawin, 0, buf);
     }
-    Sprintf(buf, "Weight: %d aum (Average %d aum)", otmp->owt, objects[otmp->otyp].oc_weight);
+    Sprintf(buf, "Weight: %d aum (average %d aum)", otmp->owt, objects[otmp->otyp].oc_weight);
     putstr(datawin, 0, buf);
-    Sprintf(buf, "Material: %s (Usually %s)", materialnm[otmp->material],
+    Sprintf(buf, "Material: %s (usually %s)", materialnm[otmp->material],
                                                 materialnm[objects[otmp->otyp].oc_material]);
     putstr(datawin, 0, buf);
     Sprintf(buf, "Rarity: %s, %s", objects[otmp->otyp].oc_unique ? "unique" : "common",
@@ -2393,7 +2416,7 @@ do_supplemental_info(
     char buf[BUFSZ];
     boolean yes_to_moreinfo = FALSE;
     boolean is_marauder = is_orc(pm);
-    boolean auto_know = u.uroleplay.perfect_bestiary || wizard;
+    boolean auto_know = u.uroleplay.perfect_bestiary;
 
     /*
      * Provide some info on some specific things
@@ -2448,13 +2471,14 @@ do_supplemental_info(
     /* Display monster info */
     datawin = create_nhwindow(NHW_MENU);
     if (strlen(name) && strlen(name) < (BUFSZ - 1)) {
-        putstr(datawin, 0, name);
+        add_menu_heading(datawin, name);
     } else {
         Sprintf(buf, "%s", pmname(pm, MALE));
         buf[0] = highc(buf[0]);
-        putstr(datawin, 0, buf);
+        add_menu_heading(datawin, buf);
     }
     putstr(datawin, 0, "");
+    add_menu_heading(datawin, "Statistics");
     /* Size */
     Sprintf(buf, "%s %s", size_str(pm->msize), def_monsyms[(int) pm->mlet].explain);
     buf[0] = highc(buf[0]);
@@ -2478,10 +2502,10 @@ do_supplemental_info(
     /* Have we seen it? */
     if (!svm.mvitals[pm->pmidx].seen_close) {
         putstr(datawin, 0, "You have never seen this monster up close.");
+        putstr(datawin, 0, "");
     }
-    putstr(datawin, 0, "");
     /* Attacks */
-    putstr(datawin, 0, "Attacks:");
+    add_menu_heading(datawin, "Attacks");
     for (int i = 0; i < NATTK; i++) {
         if (!pm->mattk[i].aatyp && !pm->mattk[i].adtyp && !pm->mattk[i].damn && !pm->mattk[i].damd) continue;
         if (!auto_know && !(svm.mvitals[pm->pmidx].know_attacks & (1 << i))) {

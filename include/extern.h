@@ -4008,6 +4008,7 @@ extern void extract_from_minvent(struct monst *, struct obj *, boolean,
 
 /* ### write.c ### */
 
+extern int cost(struct obj *) NONNULLARG1;
 extern int dowrite(struct obj *) NONNULLARG1;
 
 /* ### zap.c ### */

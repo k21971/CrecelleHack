@@ -3,7 +3,6 @@
 
 #include "hack.h"
 
-staticfn int cost(struct obj *) NONNULLARG1;
 staticfn boolean label_known(int, struct obj *) NO_NNARGS;
 staticfn int write_ok(struct obj *) NO_NNARGS;
 staticfn char *new_book_description(int, char *) NONNULL NONNULLPTRS;
@@ -11,7 +10,7 @@ staticfn char *new_book_description(int, char *) NONNULL NONNULLPTRS;
 /*
  * returns basecost of a scroll or a spellbook
  */
-staticfn int
+int
 cost(struct obj *otmp)
 {
     if (otmp->oclass == SPBOOK_CLASS)
