@@ -191,7 +191,7 @@ Boots_on(void)
 
     switch (uarmf->otyp) {
     case LOW_BOOTS:
-    case IRON_SHOES:
+    case DWARVISH_BOOTS:
     case HIGH_BOOTS:
     case JUMPING_BOOTS:
     case KICKING_BOOTS:
@@ -310,7 +310,7 @@ Boots_off(void)
         }
         break;
     case LOW_BOOTS:
-    case IRON_SHOES:
+    case DWARVISH_BOOTS:
     case HIGH_BOOTS:
     case JUMPING_BOOTS:
     case KICKING_BOOTS:
@@ -333,7 +333,7 @@ Cloak_on(void)
     case DWARVISH_CLOAK:
     case CLOAK_OF_MAGIC_RESISTANCE:
     case ROBE:
-    case LEATHER_CLOAK:
+    case CLOAK:
         break;
     case CLOAK_OF_PROTECTION:
         makeknown(uarmc->otyp);
@@ -396,7 +396,7 @@ Cloak_off(void)
     case CLOAK_OF_MAGIC_RESISTANCE:
     case OILSKIN_CLOAK:
     case ROBE:
-    case LEATHER_CLOAK:
+    case CLOAK:
         break;
     case ELVEN_CLOAK:
         toggle_stealth(otmp, oldprop, FALSE);
@@ -444,8 +444,8 @@ Helmet_on(void)
     case HELMET:
     case YENDORIAN_BASCINET:
     case WINTER_HAT:
-    case ELVEN_LEATHER_HELM:
-    case DWARVISH_IRON_HELM:
+    case ELVEN_HELM:
+    case DWARVISH_HELM:
     case ORCISH_HELM:
     case HELM_OF_TELEPATHY:
     case SKULL:
@@ -539,8 +539,8 @@ Helmet_off(void)
     case HELMET:
     case YENDORIAN_BASCINET:
     case WINTER_HAT:
-    case ELVEN_LEATHER_HELM:
-    case DWARVISH_IRON_HELM:
+    case ELVEN_HELM:
+    case DWARVISH_HELM:
     case ORCISH_HELM:
     case SKULL:
     case SKULL_HELM:
@@ -585,7 +585,8 @@ hard_helmet(struct obj *obj)
 {
     if (!obj || !is_helmet(obj))
         return FALSE;
-    return (is_metallic(obj) || is_crackable(obj)) ? TRUE : FALSE;
+    return (is_metallic(obj) || is_crackable(obj)
+            || is_wood(obj) || is_bone(obj) || is_stone(obj)) ? TRUE : FALSE;
 }
 
 staticfn int
@@ -595,7 +596,7 @@ Gloves_on(void)
         u.uprops[objects[uarmg->otyp].oc_oprop].extrinsic & ~WORN_GLOVES;
 
     switch (uarmg->otyp) {
-    case LEATHER_GLOVES:
+    case GLOVES:
         break;
     case GAUNTLETS_OF_FUMBLING:
         if (!oldprop && !(HFumbling & ~TIMEOUT))
@@ -669,7 +670,7 @@ Gloves_off(void)
     svc.context.takeoff.mask &= ~W_ARMG;
 
     switch (uarmg->otyp) {
-    case LEATHER_GLOVES:
+    case GLOVES:
         break;
     case GAUNTLETS_OF_FUMBLING:
         if (!oldprop && !(HFumbling & ~TIMEOUT))
@@ -710,6 +711,10 @@ Gloves_off(void)
        be being touched simultaneously.] */
     if (u.twoweap && uswapwep && uswapwep->otyp == CORPSE)
         wielding_corpse(uswapwep, gloves, on_purpose);
+
+    /* you may now be touching some material you hate */
+    if (uwep)
+        retouch_object(&uwep, will_touch_skin(W_WEP), FALSE);
 
     if (condtests[bl_bareh].enabled)
         disp.botl = TRUE;
@@ -2250,6 +2255,22 @@ canwearobj(struct obj *otmp, long *mask, boolean noisy)
     return !err;
 }
 
+/* Return TRUE iff wearing/wielding a potential new piece of equipment with
+ * the given mask will touch the hero's skin. */
+boolean
+will_touch_skin(long mask)
+{
+    if ((mask == W_ARMC || mask == W_AMUL) && (uarm || uarmu))
+        return FALSE;
+    else if (mask == W_ARM && uarmu)
+        return FALSE;
+    else if ((mask & (W_WEP | W_SWAPWEP | W_ARMS)) && uarmg)
+        return FALSE;
+    else if (mask == W_QUIVER)
+        return FALSE;
+    return TRUE;
+}
+
 staticfn int
 accessory_or_armor_on(struct obj *obj)
 {
@@ -2368,6 +2389,7 @@ accessory_or_armor_on(struct obj *obj)
                 already_wearing("an amulet");
                 return ECMD_OK;
             }
+            mask = W_AMUL;
         } else if (eyewear) {
             if (!has_head(gy.youmonst.data)) {
                 You("have no head to wear %s on.", ansimpleoname(obj));
@@ -2400,7 +2422,7 @@ accessory_or_armor_on(struct obj *obj)
         }
     }
 
-    if (!retouch_object(&obj, FALSE))
+    if (!retouch_object(&obj, will_touch_skin(mask), FALSE))
         return ECMD_TIME; /* costs a turn even though it didn't get worn */
 
     if (armor) {

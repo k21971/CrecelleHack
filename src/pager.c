@@ -323,6 +323,7 @@ object_from_map(
         if (OBJ_NAME(objects[glyphotyp])) {
             /* map shows a regular object, but one that's not actually here */
             otmp = mksobj(glyphotyp, FALSE, FALSE);
+            set_material(otmp, objects[otmp->otyp].oc_material);
         } else {
             /* map shows a non-item that holds an extra object type (shown
                on map due to hallucination) for a name which might have been
@@ -2368,7 +2369,8 @@ do_supplemental_item_info(struct obj *otmp)
     }
     Sprintf(buf, "Weight: %d aum (Average %d aum)", otmp->owt, objects[otmp->otyp].oc_weight);
     putstr(datawin, 0, buf);
-    Sprintf(buf, "Material: %s", materialnm[objects[otmp->otyp].oc_material]);
+    Sprintf(buf, "Material: %s (Usually %s)", materialnm[otmp->material],
+                                                materialnm[objects[otmp->otyp].oc_material]);
     putstr(datawin, 0, buf);
     Sprintf(buf, "Rarity: %s, %s", objects[otmp->otyp].oc_unique ? "unique" : "common",
                                     objects[otmp->otyp].oc_nowish ? "unwishable" : "wishable");

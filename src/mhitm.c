@@ -459,8 +459,8 @@ mattackm(
                 res[i] = hitmm(magr, mdef, mattk, mwep, dieroll);
                 if ((mdef->data == &mons[PM_BLACK_PUDDING]
                      || mdef->data == &mons[PM_BROWN_PUDDING])
-                    && (mwep && (objects[mwep->otyp].oc_material == IRON
-                                 || objects[mwep->otyp].oc_material == METAL))
+                    && (mwep && (mwep->material == IRON
+                                 || mwep->material == METAL))
                     && mdef->mhp > 1 && !mdef->mcan) {
                     struct monst *mclone;
 
@@ -659,8 +659,8 @@ hitmm(
     int compat;
     boolean weaponhit = (mattk->aatyp == AT_WEAP
                          || (mattk->aatyp == AT_CLAW && mwep)),
-            silverhit = (weaponhit && mwep
-                         && objects[mwep->otyp].oc_material == SILVER);
+            hatedhit = (weaponhit && mwep
+                         && mon_hates_material(mdef, mwep->material));
 
     pre_mm_attack(magr, mdef);
 
@@ -714,7 +714,7 @@ hitmm(
             if (*buf)
                 pline("%s %s.", buf, mon_nam_too(mdef, magr));
 
-            if (mon_hates_silver(mdef) && silverhit) {
+            if (hatedhit) {
                 char *mdef_name = mon_nam_too(mdef, magr);
 
                 /* note: mon_nam_too returns a modifiable buffer; so
@@ -1043,6 +1043,8 @@ mdamagem(
     mhm.specialdmg = 0;
     mhm.dieroll = dieroll;
     mhm.done = FALSE;
+    struct obj* hated_obj;
+    long armask;
 
 #ifdef MON_HARMONICS
     if (mon_boosted(magr, magr->data->mboost))
@@ -1075,6 +1077,10 @@ mdamagem(
             return M_ATTK_AGR_DIED;
         }
     }
+
+    /* check for special damage sources (e.g. hated material) */
+    armask = attack_contact_slots(magr, mattk->aatyp);
+    mhm.damage += special_dmgval(magr, mdef, armask, &hated_obj);
 
     mhitm_adtyping(magr, mattk, mdef, &mhm);
 

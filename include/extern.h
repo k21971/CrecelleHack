@@ -143,6 +143,7 @@ extern void init_artifacts(void);
 extern void save_artifacts(NHFILE *);
 extern void restore_artifacts(NHFILE *);
 extern const char *artiname(int);
+extern short artifact_material(int);
 extern struct obj *mk_artifact(struct obj *, aligntyp, uchar, boolean);
 extern const char *artifact_name(const char *, short *, boolean) NONNULLARG1;
 extern boolean exist_artifact(int, const char *) NONNULLPTRS;
@@ -182,7 +183,7 @@ extern struct obj *what_gives(long *) NONNULLARG1;
 extern const char *glow_color(int);
 extern const char *glow_verb(int, boolean);
 extern void Sting_effects(int);
-extern int retouch_object(struct obj **, boolean) NONNULLARG1;
+extern int retouch_object(struct obj **, boolean, boolean) NONNULLARG1;
 extern void retouch_equipment(int);
 extern void mkot_trap_warn(void);
 extern boolean is_magic_key(struct monst *, struct obj *);
@@ -768,6 +769,7 @@ extern int doremring(void);
 extern int cursed(struct obj *);
 extern int armoroff(struct obj *);
 extern int canwearobj(struct obj *, long *, boolean) NONNULLPTRS;
+extern boolean will_touch_skin(long);
 extern int dowear(void);
 extern int doputon(void);
 extern void find_ac(void);
@@ -1565,6 +1567,7 @@ extern boolean mon_avoiding_this_attack(struct monst *, int) NONNULLARG1;
 */
 extern boolean ranged_attk_available(struct monst *mtmp) NONNULLARG1;
 extern void learn_mattack(int, int);
+extern long attack_contact_slots(struct monst *, int) NONNULLARG1;
 
 /* ### minion.c ### */
 
@@ -1700,6 +1703,7 @@ extern struct obj *mk_named_object(int, struct permonst *,
                                    coordxy, coordxy,
                                    const char *) ;
 extern struct obj *rnd_treefruit_at(coordxy, coordxy);
+extern int material_bonus(struct obj *) NONNULLARG1;
 extern void set_corpsenm(struct obj *, int) NONNULLARG1;
 extern long rider_revival_time(struct obj *, boolean) NONNULLARG1;
 extern void start_corpse_timeout(struct obj *) NONNULLARG1;
@@ -1740,6 +1744,8 @@ extern void pudding_merge_message(struct obj *, struct obj *) NONNULLARG12;
 extern struct obj *init_dummyobj(struct obj *, short, long);
 extern float weight_adj_by_size(int sz);
 extern void set_obj_size(struct obj *, int, boolean);
+extern boolean valid_obj_material(struct obj *, int);
+extern void set_material(struct obj *, int);
 
 /* ### mkroom.c ### */
 
@@ -1888,8 +1894,9 @@ extern boolean resists_blnd_by_arti(struct monst *) NONNULLARG1;
 extern boolean can_blnd(struct monst *, struct monst *,
                         uchar, struct obj *) NONNULLARG2;
 extern boolean ranged_attk(struct permonst *) NONNULLARG1;
-extern boolean mon_hates_silver(struct monst *) NONNULLARG1;
-extern boolean hates_silver(struct permonst *) NONNULLARG1;
+extern boolean mon_hates_material(struct monst *, int) NONNULLARG1;
+extern boolean hates_material(struct permonst *, int) NONNULLARG1;
+extern int sear_damage(int);
 extern boolean mon_hates_blessings(struct monst *) NONNULLARG1;
 extern boolean hates_blessings(struct permonst *) NONNULLARG1;
 extern boolean mon_hates_light(struct monst *) NONNULLARG1;
@@ -1935,6 +1942,8 @@ extern int get_atkdam_type(int);
 #if (NH_DEVEL_STATUS != NH_STATUS_RELEASED) || defined(DEBUG)
 extern int mstrength(struct permonst *) NONNULLARG1;
 #endif
+extern int monmaterial(int);
+extern boolean is_fleshy(const struct permonst *ptr);
 
 /* ### monmove.c ### */
 
@@ -3747,8 +3756,8 @@ extern const char *weapon_descr(struct obj *) NONNULLARG1;
 extern int hitval(struct obj *, struct monst *) NONNULLARG12;
 extern int dmgval(struct obj *, struct monst *) NONNULLARG12;
 extern const char *stringify_dmgval(int, boolean);
-extern int special_dmgval(struct monst *, struct monst *, long, long *) NONNULLARG12;
-extern void silver_sears(struct monst *, struct monst *, long) NONNULLARG2;
+extern int special_dmgval(struct monst *, struct monst *, long, struct obj **) NONNULLARG12;
+extern void searmsg(struct monst *, struct monst *, struct obj*, boolean);
 extern struct obj *select_rwep(struct monst *) NONNULLARG1;
 extern boolean monmightthrowwep(struct obj *) NONNULLARG1;
 extern struct obj *select_hwep(struct monst *) NONNULLARG1;

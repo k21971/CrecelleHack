@@ -660,15 +660,27 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
         /*FALLTHRU*/
     case PM_IRON_GOLEM:
         num = d(2, 6);
-        while (num--)
-            obj = mksobj_at(IRON_CHAIN, x, y, TRUE, FALSE);
+        while (num--) {
+            obj = mkobj_at(RANDOM_CLASS, x, y, FALSE);
+            if (!valid_obj_material(obj, IRON)) {
+                delobj(obj);
+                obj = mksobj_at(IRON_CHAIN, x, y, TRUE, FALSE);
+            }
+            set_material(obj, IRON);
+        }
         free_mgivenname(mtmp); /* don't christen obj */
         break;
     case PM_GLASS_GOLEM:
         num = d(2, 4); /* very low chance of creating all glass gems */
-        while (num--)
-            obj = mksobj_at(FIRST_GLASS_GEM + rn2(NUM_GLASS_GEMS),
-                            x, y, TRUE, FALSE);
+        while (num--) {
+            obj = mkobj_at(RANDOM_CLASS, x, y, FALSE);
+            if (!valid_obj_material(obj, GLASS)
+                || obj->oclass == POTION_CLASS) {
+                delobj(obj);
+                obj = mksobj_at((JADE + rnd(9)), x, y, TRUE, FALSE);
+            }
+            set_material(obj, GLASS);
+        }
         add_coating(x, y, COAT_SHARDS, 0);
         free_mgivenname(mtmp);
         break;
@@ -692,13 +704,12 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_WOOD_GOLEM:
         num = d(2, 4);
         while (num--) {
-            obj = mksobj_at(
-                            rn2(2) ? QUARTERSTAFF
-                            : rn2(3) ? ROUNDSHIELD
-                            : rn2(3) ? CLUB
-                            : rn2(3) ? ELVEN_SPEAR
-                            : rn2(3) ? SHEPHERD_S_CROOK : BOOMERANG,
-                            x, y, TRUE, FALSE);
+            obj = mkobj_at(RANDOM_CLASS, x, y, FALSE);
+            if (!valid_obj_material(obj, WOOD)) {
+                delobj(obj);
+                obj = mksobj_at(QUARTERSTAFF, x, y, TRUE, FALSE);
+            }
+            set_material(obj, WOOD);
         }
         free_mgivenname(mtmp);
         break;
@@ -711,8 +722,14 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
         break;
     case PM_LEATHER_GOLEM:
         num = d(2, 4);
-        while (num--)
-            obj = mksobj_at(LEATHER_ARMOR, x, y, TRUE, FALSE);
+        while (num--) {
+            obj = mkobj_at(RANDOM_CLASS, x, y, FALSE);
+            if (!valid_obj_material(obj, LEATHER)) {
+                delobj(obj);
+                obj = mksobj_at(ARMOR, x, y, TRUE, FALSE);
+            }
+            set_material(obj, LEATHER);
+        }
         free_mgivenname(mtmp);
         break;
     case PM_GOLD_GOLEM:
@@ -723,8 +740,15 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_PAPER_GOLEM:
     case PM_SCROLEM:
         num = rnd(4);
-        while (num--)
-            obj = mksobj_at(SCR_BLANK_PAPER, x, y, TRUE, FALSE);
+        while (num--) {
+            obj = mkobj_at(RANDOM_CLASS, x, y, FALSE);
+            if (!valid_obj_material(obj, PAPER) || obj->oclass == SCROLL_CLASS
+                || obj->oclass == SPBOOK_CLASS) {
+                delobj(obj);
+                obj = mksobj_at(SCR_BLANK_PAPER, x, y, TRUE, FALSE);
+            }
+            set_material(obj, PAPER);
+        }
         free_mgivenname(mtmp);
         break;
     /* expired puddings will congeal into a large blob;
@@ -1874,7 +1898,7 @@ mpickgold(struct monst *mtmp)
     int mat_idx;
 
     if ((gold = g_at(mtmp->mx, mtmp->my)) != 0) {
-        mat_idx = objects[gold->otyp].oc_material;
+        mat_idx = gold->material;
         obj_extract_self(gold);
         add_to_minv(mtmp, gold);
         if (cansee(mtmp->mx, mtmp->my)) {
@@ -2017,7 +2041,7 @@ can_touch_safely(struct monst *mtmp, struct obj *otmp)
         return FALSE;
     if (otyp == CORPSE && is_rider(&mons[otmp->corpsenm]))
         return FALSE;
-    if (objects[otyp].oc_material == SILVER && mon_hates_silver(mtmp)
+    if (mon_hates_material(mtmp, otmp->material)
         && (otyp != BELL_OF_OPENING || !is_covetous(mdat)))
         return FALSE;
     if (!touch_artifact(otmp, mtmp))

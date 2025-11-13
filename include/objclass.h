@@ -21,8 +21,8 @@ enum obj_material_types {
     WOOD        =  8,
     BONE        =  9,
     DRAGON_HIDE = 10, /* not leather! */
-    IRON        = 11, /* Fe - includes steel */
-    METAL       = 12, /* Sn, &c. */
+    IRON        = 11, /* Fe*/
+    METAL       = 12, /* Stainless steel, Sn, &c. */
     COPPER      = 13, /* Cu - includes brass */
     SILVER      = 14, /* Ag */
     GOLD        = 15, /* Au */
@@ -30,9 +30,10 @@ enum obj_material_types {
     MITHRIL     = 17,
     PLASTIC     = 18,
     GLASS       = 19,
-    BLUEICE     = 20,
+    ICECRYSTAL     = 20,
     GEMSTONE    = 21,
-    MINERAL     = 22
+    MINERAL     = 22,
+    NUM_MATERIAL_TYPES
 };
 
 enum obj_armor_types {
@@ -187,22 +188,29 @@ extern NEARDATA struct objdescr obj_descr[NUM_OBJECTS + 1];
 #define OBJ_NAME(obj) (obj_descr[(obj).oc_name_idx].oc_name)
 #define OBJ_DESCR(obj) (obj_descr[(obj).oc_descr_idx].oc_descr)
 
-#define is_organic(otmp) (objects[otmp->otyp].oc_material <= WOOD)
+#define is_organic(otmp) (otmp->material <= WOOD)
+#define is_dragonhide(otmp) (otmp->material == DRAGON_HIDE)
+#define is_mithril(otmp) (otmp->material == MITHRIL)
+#define is_iron(otmp) (otmp->material == IRON)
+#define is_glass(otmp) (otmp->material == GLASS)
+#define is_wood(otmp) (otmp->material == WOOD)
+#define is_bone(otmp) (otmp->material == BONE)
+#define is_stone(otmp) (otmp->material == MINERAL)
 #define is_metallic(otmp) \
-    (objects[otmp->otyp].oc_material >= IRON            \
-     && objects[otmp->otyp].oc_material <= MITHRIL)
+    (otmp->material >= IRON && otmp->material <= MITHRIL)
+#define is_heavy_metallic(otmp) \
+    (otmp->material >= IRON && otmp->material <= PLATINUM)
 
 /* primary damage: fire/rust/--- */
 /* is_flammable(otmp), is_rottable(otmp) in mkobj.c */
-#define is_rustprone(otmp) (objects[otmp->otyp].oc_material == IRON)
+#define is_rustprone(otmp) (otmp->material == IRON)
 #define is_crackable(otmp) \
-    ((objects[(otmp)->otyp].oc_material == GLASS \
-        || objects[(otmp)->otyp].oc_material == BLUEICE) \
+    ((otmp->material == GLASS || otmp->material == ICECRYSTAL) \
      && ((otmp)->oclass == ARMOR_CLASS || (otmp)->oclass == TOOL_CLASS)) /* erosion_matters() */
 /* secondary damage: rot/acid/acid */
 #define is_corrodeable(otmp) \
-    (objects[otmp->otyp].oc_material == COPPER          \
-     || objects[otmp->otyp].oc_material == IRON)
+    (otmp->material == COPPER          \
+     || otmp->material == IRON)
 /* subject to any damage */
 #define is_damageable(otmp) \
     (is_rustprone(otmp) || is_flammable(otmp)           \

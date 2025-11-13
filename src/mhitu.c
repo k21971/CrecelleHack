@@ -1168,6 +1168,8 @@ hitmu(struct monst *mtmp, struct attack *mattk)
     struct permonst *mdat = mtmp->data;
     struct permonst *olduasmon = gy.youmonst.data;
     int res;
+    long armask = attack_contact_slots(mtmp, mattk->aatyp);
+    struct obj *hated_obj;
     struct mhitm_data mhm;
     mhm.hitflags = M_ATTK_MISS;
     mhm.permdmg = 0;
@@ -1235,6 +1237,14 @@ hitmu(struct monst *mtmp, struct attack *mattk)
         mhm.damage -= rnd(-u.uac);
         if (mhm.damage < 1)
             mhm.damage = 1;
+    }
+
+    /* handle body/equipment made out of harmful materials for touch attacks */
+    /* should come after AC damage reduction */
+    mhm.damage += special_dmgval(mtmp, &gy.youmonst, armask, &hated_obj);
+    if (hated_obj) {
+        searmsg(mtmp, &gy.youmonst, hated_obj, FALSE);
+        exercise(A_CON, FALSE);
     }
 
     if (mhm.damage > 0) {
@@ -2352,6 +2362,14 @@ mayberem(struct monst *mon,
        (loss of levitation that leads to landing on a transport trap) */
     if (u.utotype || !m_next2u(mon))
         return;
+        /* monster won't steal objects made of a material it hates */
+    if (obj && mon_hates_material(mon, obj->material)) {
+        if (!Deaf)
+            verbalize("Ow!  %s hurts to touch!", Ysimple_name2(obj));
+        else if (canseemon(mon))
+            pline("%s appears to recoil in disgust.", Monnam(mon));
+        return;
+    }
 
     /* being deaf overrides confirmation prompt for high charisma */
     if (Deaf) {
@@ -2675,6 +2693,36 @@ cloneu(void)
 void
 learn_mattack(int index, int attack_index) {
     svm.mvitals[index].know_attacks |= (1 << attack_index);
+}
+
+/* Given an attacking monster and the attack type it's currently attacking with,
+ * return a bitmask of W_ARM* values representing the gear slots that might be
+ * coming in contact with the defender.
+ * Intended to return worn items. Will not return W_WEP.
+ * Does not check to see whether slots are ineligible due to being covered by
+ * some other piece of gear. Usually special_dmgval() will handle that.
+ */
+long
+attack_contact_slots(struct monst *magr, int aatyp)
+{
+    struct obj* mwep = (magr == &gy.youmonst ? uwep : magr->mw);
+    if (aatyp == AT_CLAW || aatyp == AT_TUCH || (aatyp == AT_WEAP && !mwep)
+        || (aatyp == AT_HUGS && hug_throttles(magr->data))) {
+        /* attack with hands; gloves and rings might touch */
+        return W_ARMG | W_RINGL | W_RINGR;
+    }
+    if (aatyp == AT_HUGS && !hug_throttles(magr->data)) {
+        /* bear hug which is not a strangling attack; gloves and rings might
+         * touch, but also all torso slots */
+        return W_ARMG | W_RINGL | W_RINGR | W_ARMC | W_ARM | W_ARMU;
+    }
+    if (aatyp == AT_KICK) {
+        return W_ARMF;
+    }
+    if (aatyp == AT_BUTT) {
+        return W_ARMH;
+    }
+    return 0;
 }
 
 /*mhitu.c*/

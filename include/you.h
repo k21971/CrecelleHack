@@ -583,9 +583,9 @@ struct _hitmon_data {
     struct permonst *mdat;
     boolean use_weapon_skill;
     boolean train_weapon_skill;
-    int barehand_silver_rings;
-    boolean silvermsg;
-    boolean silverobj;
+    int barehand_hated_rings;
+    boolean hatedmsg;
+    boolean hatedobj;
     boolean lightobj;
     int material;
     int jousting;

@@ -1540,9 +1540,10 @@ typedef uint32_t mmflags_nht;     /* makemon MM_ flags */
 #define LIMIT_TO_RANGE_INT(lo, hi, var) \
     ((int) ((var) < (lo) ? (lo) : (var) > (hi) ? (hi) : (var)))
 
-#define ARM_BONUS(obj) \
-    (objects[(obj)->otyp].a_ac + (obj)->spe                             \
-     - min((int) greatest_erosion(obj), objects[(obj)->otyp].a_ac))
+#define ARM_BONUS(obj)                      \
+    (objects[(obj)->otyp].a_ac + (obj)->spe + material_bonus(obj) \
+     - min((int) greatest_erosion(obj), \
+           objects[(obj)->otyp].a_ac + material_bonus(obj)))
 
 #define makeknown(x) discover_object((x), TRUE, TRUE)
 #define distu(xx, yy) dist2((coordxy) (xx), (coordxy) (yy), u.ux, u.uy)

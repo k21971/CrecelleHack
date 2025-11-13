@@ -520,20 +520,59 @@ mstrength_ranged_attk(struct permonst *ptr)
 }
 #endif /* (NH_DEVEL_STATUS != NH_STATUS_RELEASED) || DEBUG || MAKEDEFS_C */
 
-/* True if specific monster is especially affected by silver weapons */
+/* True if specific monster is especially affected by weapons of the given
+ * material type */
 boolean
-mon_hates_silver(struct monst *mon)
+mon_hates_material(struct monst *mon, int material)
 {
-    return (boolean) (is_vampshifter(mon) || hates_silver(mon->data));
+    struct permonst *mdat;
+    if (mon == &gy.youmonst)
+        mdat = &mons[gu.urace.mnum];
+    else 
+        mdat = mon->data;
+        
+    if (hates_material(mdat, material))
+        return TRUE;
+
+    /* extra case: shapeshifted vampires still hate silver */
+    if (material == SILVER && is_vampshifter(mon))
+        return TRUE;
+    return FALSE;
 }
 
-/* True if monster-type is especially affected by silver weapons */
+/* True if monster-type is especially affected by weapons of the given material
+ * type */
 boolean
-hates_silver(struct permonst *ptr)
+hates_material(struct permonst *ptr, int material)
 {
-    return (boolean) (is_were(ptr) || ptr->mlet == S_VAMPIRE || is_demon(ptr)
-                      || ptr == &mons[PM_SHADE]
-                      || (ptr->mlet == S_IMP && ptr != &mons[PM_TENGU]));
+    if (material == SILVER) {
+        if (ptr->mlet == S_IMP) {
+            /* impish creatures that aren't actually demonic */
+            if (ptr == &mons[PM_TENGU] || ptr == &mons[PM_LEPRECHAUN])
+                return FALSE;
+        }
+        return (boolean) (is_were(ptr) || ptr->mlet == S_VAMPIRE
+                          || is_demon(ptr) || ptr == &mons[PM_SHADE]
+                          || (ptr->mlet == S_IMP));
+    } else if (material == IRON) {
+        /* elves hate cold iron */
+        return is_elf(ptr);
+    }
+    return FALSE;
+}
+
+/* Return amount of damage a monster will take from coming into contact with a
+ * material it hates. */
+int
+sear_damage(int material)
+{
+    switch (material) {
+    case SILVER:
+        return 20;
+    case IRON:
+    default:
+        return 6;
+    }
 }
 
 /* True if specific monster is especially affected by blessed objects */
@@ -1691,4 +1730,62 @@ get_atkdam_type(int adtyp)
     return adtyp;
 }
 
+/* Return the material a monster is composed of. */
+int
+monmaterial(int mndx)
+{
+    switch (mndx) {
+    case PM_GARGOYLE:
+    case PM_WINGED_GARGOYLE:
+    case PM_EARTH_ELEMENTAL:
+        return MINERAL;
+    case PM_BONE_DEVIL:
+    case PM_SKELETON:
+        return BONE;
+    case PM_PAPER_GOLEM:
+    case PM_SCROLEM:
+        return PAPER;
+    case PM_GOLD_GOLEM:
+        return GOLD;
+    case PM_LEATHER_GOLEM:
+        return LEATHER;
+    case PM_WOOD_GOLEM:
+        return WOOD;
+    case PM_CLAY_GOLEM:
+    case PM_STONE_GOLEM:
+        return MINERAL;
+    case PM_GLASS_GOLEM:
+        return GLASS;
+    case PM_IRON_GOLEM:
+        return IRON;
+    case PM_ICE_PARAELEMENTAL:
+        return ICECRYSTAL;
+    default:
+        return 0;
+    }
+}
+
+/* Return TRUE if the monster has flesh. */
+boolean
+is_fleshy(const struct permonst *ptr)
+{
+    if (vegetarian(ptr)) {
+        /* vegetarian monsters generally don't have flesh */
+        return FALSE;
+    }
+    if (noncorporeal(ptr)) {
+        /* these certainly don't have flesh */
+        return FALSE;
+    }
+    if (!nonliving(ptr)) {
+        /* nonvegetarian, alive monsters generally do */
+        return TRUE;
+    }
+    if (ptr->mlet == S_MUMMY || ptr->mlet == S_VAMPIRE
+        || ptr->mlet == S_ZOMBIE || ptr == &mons[PM_FLESH_GOLEM]) {
+        /* Exceptions: non-living monsters that do have flesh */
+        return TRUE;
+    }
+    return FALSE;
+}
 /*mondata.c*/

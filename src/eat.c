@@ -1752,7 +1752,6 @@ start_tin(struct obj *otmp)
             tmp = rn2(uwep->cursed ? 3 : !uwep->blessed ? 2 : 1);
             break;
         case DAGGER:
-        case SILVER_DAGGER:
         case ELVEN_DAGGER:
         case ORCISH_DAGGER:
         case ATHAME:
@@ -2432,7 +2431,7 @@ eatspecial(void)
         vault_gd_watching(GD_EATGOLD);
         return;
     }
-    if (objects[otmp->otyp].oc_material == PAPER) {
+    if (otmp->material == PAPER) {
 #ifdef MAIL_STRUCTURES
         if (otmp->otyp == SCR_MAIL)
             /* no nutrition */
@@ -2502,10 +2501,9 @@ foodword(struct obj *otmp)
 {
     if (otmp->oclass == FOOD_CLASS)
         return "food";
-    if (otmp->oclass == GEM_CLASS && objects[otmp->otyp].oc_material == GLASS
-        && otmp->dknown)
+    if (is_worthless_glass(otmp) && otmp->dknown)
         makeknown(otmp->otyp);
-    return foodwords[objects[otmp->otyp].oc_material];
+    return foodwords[otmp->material];
 }
 
 /* called after consuming (non-corpse) food */
@@ -2643,7 +2641,7 @@ edibility_prompts(struct obj *otmp)
          it_or_they[QBUFSZ];
     /* 3.7: decaying globs don't become tainted anymore; in 3.6, they did */
     boolean cadaver = (otmp->otyp == CORPSE), stoneorslime = FALSE;
-    int material = objects[otmp->otyp].oc_material, mnum = otmp->corpsenm;
+    int material = otmp->material, mnum = otmp->corpsenm;
     long rotted = 0L;
 
     Strcpy(foodsmell, Tobjnam(otmp, "smell"));
@@ -2777,7 +2775,7 @@ doeat_nonfood(struct obj *otmp)
         livelog_printf(LL_CONDUCT, "ate for the first time (%s)",
                        food_xname(otmp, FALSE));
     }
-    material = objects[otmp->otyp].oc_material;
+    material = otmp->material;
     if (material == LEATHER || material == BONE
         || material == DRAGON_HIDE || material == WAX) {
         if (!u.uconduct.unvegan++ && !ll_conduct) {
@@ -2878,7 +2876,7 @@ doeat(void)
         /* let them eat rings */
         You_cant("eat %s you're wearing.", something);
         return ECMD_OK;
-    } else if (!(carried(otmp) ? retouch_object(&otmp, FALSE)
+    } else if (!(carried(otmp) ? retouch_object(&otmp, !uarmg, FALSE)
                                : touch_artifact(otmp, &gy.youmonst))) {
         return ECMD_TIME; /* got blasted so use a turn */
     }
@@ -3004,7 +3002,7 @@ doeat(void)
         /* No checks for WAX, LEATHER, BONE, DRAGON_HIDE.  These are
          * all handled in the != FOOD_CLASS case, above.
          */
-        switch (objects[otmp->otyp].oc_material) {
+        switch (otmp->material) {
         case FLESH:
             if (!u.uconduct.unvegan++ && !ll_conduct) {
                 livelog_printf(LL_CONDUCT,

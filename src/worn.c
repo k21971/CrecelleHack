@@ -915,6 +915,8 @@ m_dowear_type(
             continue;
         if (wrong_size_armor(obj, mon->data) != 0)
             continue;
+        if (mon_hates_material(mon, obj->material))
+            continue;
         /* I'd like to define a VISIBLE_ARM_BONUS which doesn't assume the
          * monster knows obj->spe, but if I did that, a monster would keep
          * switching forever between two -2 caps since when it took off one

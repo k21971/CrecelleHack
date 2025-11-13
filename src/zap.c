@@ -1558,7 +1558,7 @@ polyuse(struct obj *objhdr, int mat, int minwt)
             continue;
 #endif
 
-        if (((int) objects[otmp->otyp].oc_material == mat)
+        if (((int) otmp->material == mat)
             == (rn2(minwt + 1) != 0)) {
             /* appropriately add damage to bill */
             if (costly_spot(otmp->ox, otmp->oy)) {
@@ -1705,7 +1705,7 @@ do_osshock(struct obj *obj)
         /* some may metamorphosize */
         for (i = obj->quan; i; i--)
             if (!rn2(Luck + 45)) {
-                gp.poly_zapped = objects[obj->otyp].oc_material;
+                gp.poly_zapped = obj->material;
                 break;
             }
     }
@@ -1941,8 +1941,8 @@ poly_obj(struct obj *obj, int id)
 
     case GEM_CLASS:
         if (otmp->quan > (long) rnd(4)
-            && objects[obj->otyp].oc_material == MINERAL
-            && objects[otmp->otyp].oc_material != MINERAL) {
+            && obj->material == MINERAL
+            && otmp->material != MINERAL) {
             otmp->otyp = ROCK; /* transmutation backfired */
             otmp->quan /= 2L;  /* some material has been lost */
         }
@@ -2058,8 +2058,7 @@ stone_to_flesh_obj(struct obj *obj) /* nonnull */
     boolean smell = FALSE, golem_xform = FALSE;
     int res = 1; /* affected object by default */
 
-    if (objects[obj->otyp].oc_material != MINERAL
-        && objects[obj->otyp].oc_material != GEMSTONE)
+    if (obj->material != MINERAL && obj->material != GEMSTONE)
         return 0;
     /* Heart of Ahriman usually resists; ordinary items rarely do */
     if (obj_resists(obj, 2, 98))
@@ -2087,6 +2086,19 @@ stone_to_flesh_obj(struct obj *obj) /* nonnull */
                 /* animate_statue() forces all golems to become flesh golems */
                 mon = animate_statue(obj, oox, ooy, ANIMATE_SPELL, (int *) 0);
             } else { /* (obj->otyp == FIGURINE) */
+                if (obj->otyp != FIGURINE) {
+                    /* hedge against other stone tools being added */
+                    pline("%s to flesh!", Tobjnam(obj, "turn"));
+                    set_material(obj, FLESH);
+                    obj->owt = weight(obj);
+                    break;
+                }
+                if (vegetarian(&mons[obj->corpsenm])) {
+                    /* don't animate monsters that aren't fleshy */
+                    obj = poly_obj(obj, MEATBALL);
+                    smell = TRUE;
+                    break;
+                }
                 if (golem_xform)
                     ptr = &mons[PM_FLESH_GOLEM];
                 mon = makemon(ptr, oox, ooy, NO_MINVENT|MM_NOMSG);
@@ -2148,7 +2160,14 @@ stone_to_flesh_obj(struct obj *obj) /* nonnull */
         FALLTHROUGH;
         /*FALLTHRU*/
     default:
-        res = 0;
+        if (valid_obj_material(obj, FLESH)) {
+            pline("%s to flesh!", Tobjnam(obj, "turn"));
+            set_material(obj, FLESH);
+            obj->owt = weight(obj);
+        }
+        else {
+            res = 0;
+        }
         break;
     }
     nhUse(obj); /* avoid 'assigned value not used' for poly_obj() calls */
@@ -4362,6 +4381,7 @@ boomhit(struct obj *obj, coordxy dx, coordxy dy)
             } else { /* we catch it */
                 tmp_at(DISP_END, 0);
                 You("skillfully catch the boomerang.");
+                retouch_object(&obj, !uarmg, FALSE);
                 return &gy.youmonst;
             }
         }
@@ -5864,7 +5884,7 @@ destroyable(struct obj *obj, int adtyp)
         }
         if (obj->otyp == GLOB_OF_GREEN_SLIME || obj->oclass == POTION_CLASS
             || obj->oclass == SCROLL_CLASS || obj->oclass == SPBOOK_CLASS
-            || objects[obj->otyp].oc_material == BLUEICE) {
+            || objects[obj->otyp].oc_material == ICECRYSTAL) {
             return TRUE;
         }
     } else if (adtyp == AD_COLD) {
@@ -6094,7 +6114,7 @@ maybe_destroy_item(
             break;
         }
         /* Handle ice separately */
-        if (objects[obj->otyp].oc_material == BLUEICE) {
+        if (objects[obj->otyp].oc_material == ICECRYSTAL) {
             dindx = 7;
             dmg = 0;
             break;

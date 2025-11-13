@@ -203,6 +203,17 @@ artiname(int artinum)
     return artilist[artinum].name;
 }
 
+/* return the material of a given artifact */
+short
+artifact_material(int artinum)
+{
+    if (artinum <= 0 || artinum > NROFARTIFACTS) {
+        impossible("invalid artifact number %d to artifact_material", artinum);
+        return 0;
+    }
+    return artilist[artinum].material;
+}
+
 /*
    Make an artifact.  If a specific alignment is specified, then an object of
    the appropriate alignment is created from scratch, or 0 is returned if
@@ -255,7 +266,9 @@ mk_artifact(
            suitable for hero's role+race */
         if ((a->alignment == alignment || a->alignment == A_NONE)
             /* avoid enemies' equipment */
-            && (a->race == NON_PM || !race_hostile(&mons[a->race]))) {
+            && (a->race == NON_PM || !race_hostile(&mons[a->race]))
+            /* avoid artifacts that the player will hate */
+            && !Hate_material(artifact_material(m))) {
             /* when a role-specific first choice is available, use it */
             if (Role_if(a->role)) {
                 /* make this be the only possibility in the list */
@@ -605,8 +618,8 @@ shade_glare(struct obj *obj)
 {
     const struct artifact *arti;
 
-    /* any silver object is effective */
-    if (objects[obj->otyp].oc_material == SILVER)
+    /* any silver object is effective; bone too, though it gets no bonus */
+    if (obj->material == SILVER || obj->material == BONE)
         return TRUE;
     /* non-silver artifacts with bonus against undead also are effective */
     arti = get_artifact(obj);
@@ -992,7 +1005,7 @@ touch_artifact(struct obj *obj, struct monst *mon)
 
     if (((badclass || badalign) && self_willed)
         || (badalign && (!yours || !rn2(4)))) {
-        int dmg, tmp;
+        int dmg;
         char buf[BUFSZ];
 
         if (!yours)
@@ -1000,9 +1013,10 @@ touch_artifact(struct obj *obj, struct monst *mon)
         You("are blasted by %s power!", s_suffix(the(xname(obj))));
         touch_blasted = TRUE;
         dmg = d((Antimagic ? 2 : 4), (self_willed ? 10 : 4));
-        /* add half (maybe quarter) of the usual silver damage bonus */
-        if (objects[obj->otyp].oc_material == SILVER && Hate_silver)
-            tmp = rnd(10), dmg += Maybe_Half_Phys(tmp);
+        /* add half of the usual material damage bonus */
+        if (Hate_material(obj->material)) {
+            dmg += (rnd(sear_damage(obj->material)) / 2) + 1;
+        }
         Sprintf(buf, "touching %s", oart->name);
         losehp(dmg, buf, KILLED_BY); /* magic damage, not physical */
         exercise(A_WIS, FALSE);
@@ -1883,7 +1897,7 @@ doinvoke(void)
     obj = getobj("invoke", invoke_ok, GETOBJ_PROMPT);
     if (!obj)
         return ECMD_CANCEL;
-    if (!retouch_object(&obj, FALSE))
+    if (!retouch_object(&obj, FALSE, FALSE))
         return ECMD_TIME;
     return arti_invoke(obj);
 }
@@ -2602,6 +2616,7 @@ Sting_effects(
 int
 retouch_object(
     struct obj **objp, /* might be destroyed or unintentionally dropped */
+    boolean direct,    /* whether player has physical protection from artifact */
     boolean loseit)    /* whether to drop it if hero can longer touch it */
 {
     struct obj *obj = *objp;
@@ -2615,42 +2630,60 @@ retouch_object(
     if (touch_artifact(obj, &gy.youmonst)) {
         char buf[BUFSZ];
         int dmg = 0, tmp;
-        boolean ag = (objects[obj->otyp].oc_material == SILVER && Hate_silver),
+        boolean hatemat = Hate_material(obj->material),
                 bane = bane_applies(get_artifact(obj), &gy.youmonst);
 
         /* nothing else to do if hero can successfully handle this object */
-        if (!ag && !bane)
+        if (!hatemat && !bane)
+            return 1;
+
+        /* another case where nothing should happen: hero is wearing gloves
+           which protect them from directly touching a weapon of a material
+           they hate or wearing boots that prevent them touching a kicked
+           object. demons and vampires will always get blasted, though. */
+        if (!bane && !direct)
             return 1;
 
         /* hero can't handle this object, but didn't get touch_artifact()'s
            "<obj> evades your grasp|control" message; give an alternate one */
-        You_cant("handle %s%s!", yname(obj),
-                 obj->owornmask ? " anymore" : "");
+
+        if (!bane && !(hatemat && obj->material == SILVER)) {
+            pline("The %s of %s %s!", materialnm[obj->material],
+                  yname(obj), rn2(2) ? "hurts to touch" : "burns your skin");
+        }
+        else {
+            You_cant("handle %s%s!", yname(obj),
+                    obj->owornmask ? " anymore" : "");
+        }
         /* also inflict damage unless touch_artifact() already did so */
         if (!touch_blasted) {
             const char *what = killer_xname(obj);
 
-            if (ag && !obj->oartifact && !bane) {
-                /* 'obj' is silver; for rings and wands it ended up that
-                   way due to randomization at start of game; showing this
-                   game's silver item without stating that it is silver
-                   potentially leads to confusion about cause of death */
+            if (hatemat && !obj->oartifact && !bane) {
                 if (obj->oclass == RING_CLASS)
-                    what = "a silver ring";
+                    what = "a ring";
                 else if (obj->oclass == WAND_CLASS)
-                    what = "a silver wand";
+                    what = "a wand";
                 /* for anything else, stick with killer_xname() */
             }
             /* damage is somewhat arbitrary; half the usual 1d20 physical
                for silver, 1d10 magical for <foo>bane, potentially both */
-            if (ag)
-                tmp = rnd(10), dmg += Maybe_Half_Phys(tmp);
+            if (hatemat && direct)
+                tmp = rnd(sear_damage(obj->material) / 2), dmg += Maybe_Half_Phys(tmp);
             if (bane)
                 dmg += rnd(10);
-            Sprintf(buf, "handling %s", what);
+            Sprintf(buf, "handling %s (made of %s)", what, materialnm[obj->material]);
             losehp(dmg, buf, KILLED_BY);
             exercise(A_CON, FALSE);
         }
+        /* concession to those wishing to use gear made of an adverse material:
+         * don't make them totally unable to use them. In fact, they can touch
+         * them just fine as long as they're willing to.
+         * In keeping with the flavor of searing vs just pain implemented
+         * everywhere else, only silver is actually unbearable -- other
+         * hated non-silver materials can be used too. */
+        if (!bane && !(hatemat && obj->material == SILVER))
+            return 1;
     }
 
     /* removing a worn item might result in loss of levitation,
@@ -2716,7 +2749,8 @@ untouchable(
     }
 
     if (beingworn || carryeffect || invoked) {
-        if (!retouch_object(&obj, drop_untouchable)) {
+        boolean direct = beingworn && will_touch_skin(obj->owornmask);
+        if (!retouch_object(&obj, direct, drop_untouchable)) {
             /* "<artifact> is beyond your control" or "you can't handle
                <object>" has been given and it is now unworn/unwielded
                and possibly dropped (depending upon caller); if dropped,

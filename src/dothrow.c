@@ -135,6 +135,8 @@ throw_obj(struct obj *obj, int shotlimit)
         res = ECMD_OK;
         goto unsplit_stack;
     }
+    if (!retouch_object(&obj, !uarmg, TRUE))
+        return ECMD_TIME;
     u_wipe_engr(2);
     if (!uarmg && obj->otyp == CORPSE && touch_petrifies(&mons[obj->corpsenm])
         && !Stone_resistance) {
@@ -393,8 +395,7 @@ autoquiver(void)
                    /* seen rocks or known flint or known glass */
                    || (otmp->otyp == FLINT
                        && objects[otmp->otyp].oc_name_known)
-                   || (otmp->oclass == GEM_CLASS
-                       && objects[otmp->otyp].oc_material == GLASS
+                   || (is_worthless_glass(otmp)
                        && objects[otmp->otyp].oc_name_known)) {
             if (uslinging())
                 oammo = otmp;
@@ -1246,7 +1247,7 @@ harmless_missile(struct obj *obj)
     default:
         if (obj->oclass == SCROLL_CLASS) /* scrolls but not all paper objs */
             return TRUE;
-        if (objects[otyp].oc_material == CLOTH)
+        if (obj->material == CLOTH)
             return TRUE;
         break;
     }
@@ -1345,10 +1346,10 @@ toss_up(struct obj *obj, boolean hitsroof)
         hitfloor(obj, FALSE);
         gt.thrownobj = 0;
     } else { /* neither potion nor other breaking object */
-        int material = objects[otyp].oc_material;
+        int material = obj->material;
         boolean is_silver = (material == SILVER),
                 less_damage = (hard_helmet(uarmh)
-                               && (!is_silver || !Hate_silver)),
+                               && (!is_silver || !Hate_material(SILVER))),
                 harmless = (stone_missile(obj)
                             && passes_rocks(gy.youmonst.data)),
                 artimsg = FALSE;
@@ -1374,7 +1375,7 @@ toss_up(struct obj *obj, boolean hitsroof)
                 dmg = 0;
             if (obj->blessed && mon_hates_blessings(&gy.youmonst))
                 dmg += rnd(4);
-            if (is_silver && Hate_silver)
+            if (is_silver && Hate_material(SILVER))
                 dmg += rnd(20);
         }
         if (dmg > 1 && less_damage)
@@ -1418,7 +1419,7 @@ toss_up(struct obj *obj, boolean hitsroof)
             done(STONING);
             return obj ? TRUE : FALSE;
         }
-        if (is_silver && Hate_silver)
+        if (is_silver && Hate_material(SILVER))
             pline_The("silver sears you!");
         if (harmless)
             hit(thesimpleoname(obj), &gy.youmonst, " but doesn't hurt.");
@@ -1712,6 +1713,7 @@ throwit(
                         setuqwep((struct obj *) 0);
                     setuwep(obj);
                     set_twoweap(twoweap); /* u.twoweap = twoweap */
+                    retouch_object(&obj, !uarmg, TRUE);
                     if (cansee(gb.bhitpos.x, gb.bhitpos.y))
                         newsym(gb.bhitpos.x, gb.bhitpos.y);
                 } else {
@@ -2050,7 +2052,7 @@ thitmonst(
         case GAUNTLETS_OF_FUMBLING:
             tmp -= 3;
             break;
-        case LEATHER_GLOVES:
+        case GLOVES:
         case GAUNTLETS_OF_DEXTERITY:
             break;
         default:
@@ -2073,7 +2075,7 @@ thitmonst(
        3.7: treat rocks and gray stones as attacks rather than like glass
        and also treat gems or glass shot via sling as attacks */
     if (obj->oclass == GEM_CLASS && is_unicorn(mon->data)
-        && objects[obj->otyp].oc_material != MINERAL && !uslinging()) {
+        && obj->material != MINERAL && !uslinging()) {
         if (helpless(mon)) {
             tmiss(obj, mon, FALSE);
             return 0;
@@ -2304,7 +2306,7 @@ gem_accept(struct monst *mon, struct obj *obj)
         addluck[]    = " gratefully";
     char buf[BUFSZ];
     boolean is_buddy = sgn(mon->data->maligntyp) == sgn(u.ualign.type);
-    boolean is_gem = objects[obj->otyp].oc_material == GEMSTONE;
+    boolean is_gem = obj->material == GEMSTONE;
     int ret = 0;
 
     Strcpy(buf, Monnam(mon));
@@ -2515,7 +2517,7 @@ breakobj(
     case EXPENSIVE_CAMERA:
         release_camera_demon(obj, x, y);
         break;
-    case BRASS_LANTERN:
+    case LANTERN:
     case OIL_LAMP:
     case MAGIC_LAMP:
         if (obj->age > 9L || obj->otyp == MAGIC_LAMP) {
@@ -2549,7 +2551,7 @@ breakobj(
         break;
     }
 
-    if (objects[obj->otyp].oc_material == GLASS) {
+    if (obj->material == GLASS) {
         add_coating(x, y, COAT_SHARDS, 0);
     }
     if (hero_caused) {
@@ -2599,7 +2601,7 @@ breaktest(struct obj *obj)
     /* this may need to be changed if actual glass armor gets added someday;
        for now, it affects crystal plate mail and helm of brilliance;
        either of them will have to be cracked 4 times before breaking */
-    if (obj->oclass == ARMOR_CLASS && objects[obj->otyp].oc_material == GLASS)
+    if (obj->oclass == ARMOR_CLASS && obj->material == GLASS)
         nonbreakchance = 90;
 
     if (obj->otyp == SKELETON) {
@@ -2611,10 +2613,10 @@ breaktest(struct obj *obj)
 
     if (obj_resists(obj, nonbreakchance, 99))
         return FALSE;
-    if ((objects[obj->otyp].oc_material == GLASS
-        || objects[obj->otyp].oc_material == BLUEICE) && !obj->oartifact)
+    if ((obj->material == GLASS
+        || obj->material == ICECRYSTAL) && !obj->oartifact)
         return TRUE;
-    if (obj->oclass == GEM_CLASS && objects[obj->otyp].oc_material != MINERAL)
+    if (obj->oclass == GEM_CLASS && obj->material != MINERAL)
         return TRUE;
     switch (obj->oclass == POTION_CLASS ? POT_WATER : obj->otyp) {
     case EXPENSIVE_CAMERA:
@@ -2628,7 +2630,7 @@ breaktest(struct obj *obj)
     case LUMP_OF_ROYAL_JELLY:
     case OIL_LAMP:
     case MAGIC_LAMP:
-    case BRASS_LANTERN:
+    case LANTERN:
         return (obj->age > 9L);
     default:
         return FALSE;
@@ -2648,7 +2650,7 @@ breakmsg(struct obj *obj, boolean in_view)
             obj->otyp == SNOWBALL ? obj->otyp :
             obj->oclass == GEM_CLASS ? WORTHLESS_VIOLET_GLASS : obj->otyp) {
     default: /* glass or crystal wand */
-        if (obj->oclass != WAND_CLASS)
+        if (obj->material != GLASS && obj->material != ICECRYSTAL)
             impossible("breaking odd object (%d)?", obj->otyp);
         FALLTHROUGH;
         /*FALLTHRU*/
@@ -2696,7 +2698,7 @@ breakmsg(struct obj *obj, boolean in_view)
         break;
     case OIL_LAMP:
     case MAGIC_LAMP:
-    case BRASS_LANTERN:
+    case LANTERN:
         if (obj->age > 9L) {
             if (in_view) {
                 pline("Oil splatters everywhere!");

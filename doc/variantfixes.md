@@ -1,4 +1,21 @@
 # 1.4
+## Object Materials Patch
+- This version of the object materials patch is pulled from
+  EvilHack, meaning that the code was written by
+  aosdict (copperwater), K2, saltwatterterrapin,
+  and entrez. Please let me know if I'm forgetting anyone.
+  I had to do an enormous amount of work to update it to
+  play nicely with 3.7, and I probably still missed some
+  things. There are a few differences from EvilHack:
+    - Much of the searing code looks very different due
+      to 3.7 changes to how silver hits are handled.
+    - Runeswords are made of steel by default, thus
+      cutting down the length of Stormbringer's un-ID'd
+      description.
+    - Orcs do not hate mithril. There is no basis for
+      this, and I would rather make orcs distinct in
+      different ways.
+    - Sabers are made of silver by default.
 
 ## Races
 - Elf

@@ -57,6 +57,7 @@ struct artifact {
     uchar gift_value;   /* minimum sacrifice value to be gifted this */
     long cost;          /* price when sold to hero (default 100 x base cost) */
     char acolor;        /* color to use if artifact 'glows' */
+    short material;     /* material it's made out of (0 = base type's default)*/
 };
 
 /* invoked properties with special powers */
