@@ -4288,6 +4288,8 @@ material_list(struct obj *obj)
         case TOWEL:
         case AMULET_OF_YENDOR:
         case FAKE_AMULET_OF_YENDOR:
+        case BELL_OF_OPENING:
+        case CANDELABRUM_OF_INVOCATION:
             return NULL;
         /* Any other cases for specific object types go here. */
         case SHIELD_OF_REFLECTION:
