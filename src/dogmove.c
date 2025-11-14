@@ -772,7 +772,8 @@ score_targ(struct monst *mtmp, struct monst *mtarg)
         }
         /* Is the monster peaceful or tame? */
         if (mtarg->mtame || mtarg == &gy.youmonst
-            || ((EDOG(mtmp)->petstrat & PETSTRAT_NOPEACE) && mtarg->mpeaceful)) {
+            || (has_edog(mtmp) && (EDOG(mtmp)->petstrat & PETSTRAT_NOPEACE)
+                && mtarg->mpeaceful)) {
             /* Pets will never be targeted */
             score -= 3000L;
             return score;
@@ -812,7 +813,7 @@ score_targ(struct monst *mtmp, struct monst *mtarg)
         }
         /* And pets will hesitate to attack vastly stronger foes.
            This penalty will be discarded if master's in trouble. */
-        if (!(EDOG(mtmp)->petstrat & PETSTRAT_AGGRO) && mtarg->m_lev > mtmp_lev + 4L) {
+        if (!(has_edog(mtmp) && (EDOG(mtmp)->petstrat & PETSTRAT_AGGRO)) && mtarg->m_lev > mtmp_lev + 4L) {
             score -= (mtarg->m_lev - mtmp_lev) * 20L;
         }
         /* All things being the same, go for the beefiest monster. This
