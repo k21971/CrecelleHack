@@ -436,7 +436,8 @@ dog_invent(struct monst *mtmp, struct edog *edog, int udist)
             carryamt = can_carry(mtmp, obj);
             if (carryamt > 0 && !obj->cursed
                 && could_reach_item(mtmp, obj->ox, obj->oy)) {
-                if (!(EDOG(mtmp)->petstrat & PETSTRAT_NOAPPORT) && rn2(20) < edog->apport + 3) {
+                if (!(has_edog(mtmp) && (EDOG(mtmp)->petstrat & PETSTRAT_NOAPPORT))
+                    && rn2(20) < edog->apport + 3) {
                     if (rn2(udist) || !rn2(edog->apport)) {
                         otmp = obj;
                         if (carryamt != obj->quan)
@@ -1147,14 +1148,15 @@ dog_move(
              */
             int balk = mtmp->m_lev + ((5 * mtmp->mhp) / mtmp->mhpmax) - 2;
 
-            if (EDOG(mtmp)->petstrat & PETSTRAT_AGGRO)
-                balk += 10;
-            if (EDOG(mtmp)->petstrat & PETSTRAT_COWED)
-                balk = 2;
-
-            if ((EDOG(mtmp)->petstrat & PETSTRAT_NOPEACE)
-                && mtmp2->mpeaceful)
-                continue;
+            if (edog) {
+                if (edog->petstrat & PETSTRAT_AGGRO)
+                    balk += 10;
+                if (edog->petstrat & PETSTRAT_COWED)
+                    balk = 2;
+                if ((edog->petstrat & PETSTRAT_NOPEACE)
+                    && mtmp2->mpeaceful)
+                    continue;
+            }
 
             if ((int) mtmp2->m_lev >= balk
                 || (mtmp2->mtame && mtmp->mtame && !Conflict)
