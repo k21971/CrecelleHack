@@ -66,6 +66,8 @@ resetobjs(struct obj *ochain, boolean restore)
             /* artifact bookkeeping needs to be done during
                restore; other fixups are done while saving */
             if (otmp->oartifact) {
+                fix_bones_artifact_otyp(otmp);
+
                 if (exist_artifact(otmp->otyp, safe_oname(otmp))
                     || is_quest_artifact(otmp)) {
                     /* prevent duplicate--revert to ordinary obj */

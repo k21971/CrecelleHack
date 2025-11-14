@@ -113,6 +113,16 @@ hack_artifacts(void)
     return;
 }
 
+/* fix bones objects with weird artifact otyps */
+void
+fix_bones_artifact_otyp(struct obj *otmp)
+{
+    struct artifact *art;
+    art = artifact_from_index(otmp->oartifact);
+    art->otyp = otmp->otyp;
+    artiotypes[(int) otmp->oartifact] = otmp->otyp;
+}
+
 /* Mildly randomize artifact otyps */
 staticfn void
 hack_artifact_otyps(void)
@@ -470,6 +480,7 @@ artifact_exists(
 void
 found_artifact(int a)
 {
+    pline("CHUNGUS");
     if (a < 1 || a > NROFARTIFACTS)
         impossible("found_artifact: invalid artifact index! (%d)", a);
     else if (!artiexist[a].exists)
@@ -2956,7 +2967,7 @@ get_artifact(struct obj *obj)
     return &artilist[ART_NONARTIFACT];
 }
 
-staticfn struct artifact *
+struct artifact *
 artifact_from_index(int artidx)
 {
     /* skip 0, 1st artifact at 1 */

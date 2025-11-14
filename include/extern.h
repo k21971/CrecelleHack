@@ -138,6 +138,7 @@ extern void fig_transform(union any *, long) NONNULLARG1;
 extern int unfixable_trouble_count(boolean);
 
 /* ### artifact.c ### */
+extern void fix_bones_artifact_otyp(struct obj *) NONNULLARG1;
 extern int get_artifact_otyp(const struct artifact *);
 extern void init_artifacts(void);
 extern void save_artifacts(NHFILE *);
