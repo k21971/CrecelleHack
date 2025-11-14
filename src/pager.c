@@ -2385,6 +2385,10 @@ do_supplemental_item_info(struct obj *otmp)
                                  otmp->known ? "" : "?");
         putstr(datawin, 0, buf);
     }
+    if (size_matters(otmp)) {
+        Sprintf(buf,"Size: %s", size_str(otmp->osize));
+        putstr(datawin, 0, buf);
+    }
     /* Boosts */
     if (otmp->booster) {
         Sprintf(buf, "Harmonies: ");
