@@ -2395,7 +2395,7 @@ potionbreathe(struct obj *obj)
         }
         break;
     case POT_HALLUCINATION:
-        Norep("have a momentary vision.");
+        Norep("You have a momentary vision.");
         break;
     case POT_CONFUSION:
     case POT_BOOZE:

@@ -159,7 +159,7 @@ picklock(void)
     if (gx.xlock.picktyp == CREDIT_CARD) break_chance = 3;
     else if (gx.xlock.picktyp == LOCK_PICK) break_chance = 5; 
     if (gx.xlock.pick && !gx.xlock.magic_key && !rn2(break_chance)) {
-        pline("%s %s breaks!", gx.xlock.pick->quan > 1L ? "One of you" : "Your", 
+        pline("%s %s breaks!", gx.xlock.pick->quan > 1L ? "One of your" : "Your",
                                 xname(gx.xlock.pick));
         useup(gx.xlock.pick);
     }
