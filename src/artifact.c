@@ -125,6 +125,13 @@ fix_bones_artifact_otyp(struct obj *otmp)
     }
 }
 
+static int axe_fuzzes[] = { AXE, BATTLE_AXE, DUAL_AXE, TWO_HANDED_SWORD };
+static int sword_fuzzes[] = { SHORT_SWORD, ELVEN_SHORT_SWORD, ORCISH_SHORT_SWORD,
+                                DWARVISH_SHORT_SWORD, SCIMITAR, SABER, BROADSWORD,
+                                ELVEN_BROADSWORD, LONG_SWORD, RUNESWORD };
+static int bi_sw_fuzzes[] = { TWO_BLADED_SWORD, KATANA, TSURUGI,
+                                TWO_HANDED_SWORD, FALCHION };
+
 /* Mildly randomize artifact otyps */
 staticfn void
 hack_artifact_otyps(void)
@@ -137,16 +144,27 @@ hack_artifact_otyps(void)
         if (!art->fuzz || rn2(2)) { 
             artiotypes[i] = art->otyp;
         } else {
-            do {
-                otyp = rn2(BULLWHIP - SPEAR) + SPEAR;
-                if (tries++ > 250) {
-                    otyp = art->otyp;
-                    break;
-                }
-            } while (!(objects[otyp].oc_dir & objects[art->otyp].oc_dir)
-                     || objects[otyp].oc_skill == P_POLEARMS
-                     || otyp == RUBBER_HOSE || otyp == SCALPEL
-                     || otyp == ICICLE);
+            if (objects[art->otyp].oc_skill == P_AXE) {
+                otyp = ROLL_FROM(axe_fuzzes);
+            } else if (objects[art->otyp].oc_skill >= P_SHORT_SWORD
+                        && objects[art->otyp].oc_skill <= P_SABER) {
+                if (objects[art->otyp].oc_bimanual)
+                    otyp = ROLL_FROM(bi_sw_fuzzes);
+                else
+                    otyp = ROLL_FROM(sword_fuzzes);
+            } else {
+                /* If we don't have a set to roll from, try our best. */
+                do {
+                    otyp = rn2(BULLWHIP - SPEAR) + SPEAR;
+                    if (tries++ > 250) {
+                        otyp = art->otyp;
+                        break;
+                    }
+                } while (!(objects[otyp].oc_dir & objects[art->otyp].oc_dir)
+                        || objects[otyp].oc_skill == P_POLEARMS
+                        || otyp == RUBBER_HOSE || otyp == SCALPEL
+                        || otyp == ICICLE);
+            }
             artiotypes[i] = otyp;
         }
         i++;
