@@ -119,8 +119,10 @@ fix_bones_artifact_otyp(struct obj *otmp)
 {
     struct artifact *art;
     art = artifact_from_index(otmp->oartifact);
-    art->otyp = otmp->otyp;
-    artiotypes[(int) otmp->oartifact] = otmp->otyp;
+    if (art->fuzz) {
+        art->otyp = otmp->otyp;
+        artiotypes[(int) otmp->oartifact] = otmp->otyp;
+    }
 }
 
 /* Mildly randomize artifact otyps */
@@ -128,20 +130,23 @@ staticfn void
 hack_artifact_otyps(void)
 {
     struct artifact *art;
-    int otyp;
+    int otyp, tries;
     int i = 0;
     for (art = artilist + 1; art->otyp; art++) {
-        if (art->role != NON_PM || art == &artilist[ART_EXCALIBUR]
-            || art == &artilist[ART_GRAYSWANDIR]
-            || art == &artilist[ART_ORCRIST] || art == &artilist[ART_STING]
-            || art == &artilist[ART_STORMBRINGER] || art == &artilist[ART_WEREBANE]) { 
+        tries = 0;
+        if (!art->fuzz) { 
             artiotypes[i] = art->otyp;
         } else {
             do {
                 otyp = rn2(BULLWHIP - SPEAR) + SPEAR;
+                if (tries++ > 250) {
+                    otyp = art->otyp;
+                    break;
+                }
             } while (!(objects[otyp].oc_dir & objects[art->otyp].oc_dir)
                      || objects[otyp].oc_skill == P_POLEARMS
-                     || otyp == RUBBER_HOSE);
+                     || otyp == RUBBER_HOSE || otyp == SCALPEL
+                     || otyp == ICICLE);
             artiotypes[i] = otyp;
         }
         i++;
