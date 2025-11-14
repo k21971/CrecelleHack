@@ -906,8 +906,10 @@ dochug(struct monst *mtmp)
     /* Monsters that want to acquire things may teleport, so do it before
        inrange is set. This costs a turn only if mstate is set.  */
     if (is_covetous(mdat)) {
-        (void) tactics(mtmp);
+        int tactics_result = tactics(mtmp);
         /* tactics -> mnexto -> deal_with_overcrowding */
+        if (tactics_result >= 2)
+            return tactics_result;
         if (mtmp->mstate)
             return 0;
         set_apparxy(mtmp);
