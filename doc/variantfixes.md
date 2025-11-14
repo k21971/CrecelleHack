@@ -12,6 +12,8 @@
     - Runeswords are made of steel by default, thus
       cutting down the length of Stormbringer's un-ID'd
       description.
+    - Grimtooth is made of iron, and Frost Brand is made
+      of ice.
     - Orcs do not hate mithril. There is no basis for
       this, and I would rather make orcs distinct in
       different ways.

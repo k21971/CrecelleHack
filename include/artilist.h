@@ -125,7 +125,7 @@ static NEARDATA struct artifact artilist[] = {
     A("Grimtooth", ORCISH_DAGGER, (SPFX_RESTR | SPFX_WARN | SPFX_DFLAGH),
       0, MH_ELF, PHYS(2, 6), POIS(0,0),
       NO_CARY, FLING_POISON, A_CHAOTIC, NON_PM, PM_ORC,
-      0, 5, 1200L, CLR_RED, DEFAULT_MAT, GRIMTOOTH),
+      0, 5, 1200L, CLR_RED, IRON, GRIMTOOTH),
     /*
      *      Orcrist and Sting have same alignment as elves.
      *
