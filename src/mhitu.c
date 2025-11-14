@@ -736,8 +736,8 @@ mattacku(struct monst *mtmp)
     }
 
     /* monster might grapple you to gain an advantage */
-    if (!ranged && !u.ustuck
-        && can_grapple(mtmp->data)&& !critically_low_hp(FALSE)) {
+    if (!ranged && !u.ustuck && !mtmp->mundetected
+        && can_grapple(mtmp->data) && !critically_low_hp(FALSE)) {
         int grapple_chance = 1;
         if (u.utrap && u.utraptype == TT_LAVA) grapple_chance += 20;
         /* if (region_danger()) grapple_chance += 20; */

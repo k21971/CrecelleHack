@@ -230,7 +230,7 @@ dmgval(struct obj *otmp, struct monst *mon)
 
     if (bigmonst(ptr)) {
         if (objects[otyp].oc_wldam)
-            tmp = rnd(objects[otyp].oc_wldam + size_mult(otmp->osize));
+            tmp = rnd(max(2, (objects[otyp].oc_wldam + size_mult(otmp->osize))));
         switch (otyp) {
         case IRON_CHAIN:
         case CROSSBOW_BOLT:

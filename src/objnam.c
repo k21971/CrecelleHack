@@ -3533,7 +3533,6 @@ static const struct alt_spellings {
     { "gauntlets of ogre power", GAUNTLETS_OF_POWER },
     { "gauntlets of giant strength", GAUNTLETS_OF_POWER },
     { "elven mithril coat", ELVEN_CHAIN_MAIL },
-    { "silver shield", SHIELD_OF_REFLECTION },
     { "tonic of sleep", POT_SLEEPING },
     { "scroll of recharging", SCR_CHARGING },
     { "recharging", SCR_CHARGING },

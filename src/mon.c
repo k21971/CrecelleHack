@@ -3315,6 +3315,7 @@ corpse_chance(
 {
     struct permonst *mdat = mon->data;
     int i, tmp;
+    struct obj *otmp;
 
     /* maybe leave behind some blood */
     if (rn2(4) && has_blood(mon->data) && !touch_petrifies(mon->data) && !was_swallowed) {
@@ -3331,7 +3332,7 @@ corpse_chance(
         return FALSE;
     }
 
-    /* Handle magma elementals melting */
+    /* Handle magma paraelementals melting */
     if (mdat == &mons[PM_MAGMA_PARAELEMENTAL]) {
         if (levl[mon->mx][mon->my].typ != STAIRS &&
                 levl[mon->mx][mon->my].typ != LADDER) {
@@ -3340,6 +3341,10 @@ corpse_chance(
             if (cansee(mon->mx, mon->my) && !was_swallowed)
                 pline("%s body dissolves into a pool of lava.",
                     s_suffix(Monnam(mon)));
+            if ((otmp = sobj_at(BOULDER, mon->mx, mon->my)) != 0) {
+                obj_extract_self(otmp);
+                boulder_hits_pool(otmp, mon->mx, mon->my, FALSE);
+            }
         }
         return FALSE;
     }

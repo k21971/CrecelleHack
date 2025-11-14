@@ -722,6 +722,9 @@ m_everyturn_effect(struct monst *mtmp)
     } else if (!is_u && mtmp->mdripping) {
         if (mtmp->mdriptype > 0) floor_alchemy(x, y, mtmp->mdriptype, NON_PM);
         else add_coating(x, y, COAT_BLOOD, -1 * mtmp->mdriptype);
+    } else if (mtmp->data == &mons[PM_ACID_BLOB] 
+            || mtmp->data == &mons[PM_GELATINOUS_CUBE]) {
+        floor_alchemy(x, y, POT_ACID, NON_PM);
     }
 }
 
@@ -753,9 +756,6 @@ m_postmove_effect(struct monst *mtmp)
             create_gas_cloud(x, y, 1, 0, 0);
         else
             create_bonfire(x, y, 1, rnd(4));
-    } else if (mtmp->data == &mons[PM_ACID_BLOB] 
-            || mtmp->data == &mons[PM_GELATINOUS_CUBE]) {
-        floor_alchemy(x, y, POT_ACID, NON_PM);
     } else if (mtmp->data == &mons[PM_WATER_ELEMENTAL] || 
                 mtmp->data == &mons[PM_SQUONK]) {
         /* enough water is produced that we just add a coating instead of alchemizing */

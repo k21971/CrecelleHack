@@ -31,7 +31,7 @@ staticfn void look_region_nearby(coordxy *, coordxy *, coordxy *, coordxy *,
 staticfn void look_all(boolean, boolean);
 staticfn void look_traps(boolean);
 staticfn void look_engrs(boolean);
-staticfn void do_supplemental_item_info(struct obj *) NONNULLPTRS;
+staticfn void do_supplemental_item_info(struct obj *);
 staticfn void do_supplemental_info(char *, struct permonst *,
                                                          boolean) NONNULLPTRS;
 staticfn void whatdoes_help(void);
@@ -1903,7 +1903,8 @@ do_look(int mode, coord *click_cc)
                     Strcpy(out_str, singular(invobj, xname));
                     break;
                 }
-            do_supplemental_item_info(invobj);
+            if (invobj)
+                do_supplemental_item_info(invobj);
             if (*out_str)
                 (void) checkfile(out_str, pm, chkfilUsrTyped | chkfilDontAsk,
                                  (char *) 0);

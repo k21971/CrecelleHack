@@ -130,7 +130,7 @@ choose_monster_spell(struct monst *mtmp, int adtyp) {
         else if (mtmp->data->mlet == S_GNOME || mtmp->data->mlet == S_KOBOLD
                  || mtmp->data == &mons[PM_DISPATER])
             spell = mon_trickster_spells[n];
-        else if (adtyp == AD_SPEL)
+        else if (adtyp == AD_CLRC)
             spell = mon_cleric_spells[n];
         else
             spell = mon_mage_spells[n];
