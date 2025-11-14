@@ -311,7 +311,7 @@ attack_checks(
     if (flags.confirm && mtmp->mpeaceful
         && !Confusion && !Hallucination && !Stunned) {
         /* Intelligent chaotic weapons (Stormbringer) want blood */
-        if (is_art(wep, ART_STORMBRINGER)) {
+        if (is_art(wep, ART_STORMBRINGER) || is_art(wep, ART_WRATH_OF_SANKIS)) {
             go.override_confirmation = TRUE;
             return FALSE;
         }

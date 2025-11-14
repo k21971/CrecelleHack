@@ -134,7 +134,7 @@ hack_artifact_otyps(void)
     int i = 0;
     for (art = artilist + 1; art->otyp; art++) {
         tries = 0;
-        if (!art->fuzz) { 
+        if (!art->fuzz || rn2(2)) { 
             artiotypes[i] = art->otyp;
         } else {
             do {
@@ -812,6 +812,8 @@ set_artifact_intrinsic(
         mask = &EFire_resistance;
     else if (dtyp == AD_COLD)
         mask = &ECold_resistance;
+    else if (dtyp == AD_ACID)
+        mask = &EAcid_resistance;
     else if (dtyp == AD_ELEC)
         mask = &EShock_resistance;
     else if (dtyp == AD_MAGM)
@@ -1120,6 +1122,8 @@ spec_applies(const struct artifact *weap, struct monst *mtmp)
             return !(yours ? Fire_resistance : resists_fire(mtmp));
         case AD_COLD:
             return !(yours ? Cold_resistance : resists_cold(mtmp));
+        case AD_ACID:
+            return !(yours ? Acid_resistance : resists_acid(mtmp));
         case AD_ELEC:
             return !(yours ? Shock_resistance : resists_elec(mtmp));
         case AD_MAGM:
@@ -1131,6 +1135,10 @@ spec_applies(const struct artifact *weap, struct monst *mtmp)
             return !(yours ? Drain_resistance : resists_drli(mtmp));
         case AD_STON:
             return !(yours ? Stone_resistance : resists_ston(mtmp));
+        case AD_LEGS:
+            return (yours ? (!Prone && (Flying || Levitation))
+                            : (!mtmp->mprone
+                                && (is_flyer(mtmp->data) || is_floater(mtmp->data))));
         default:
             impossible("Weird weapon special attack.");
         }
@@ -1665,6 +1673,18 @@ artifact_hit(
         }
         return realizes_damage;
     }
+    if (attacks(AD_ACID, otmp)) {
+        if (realizes_damage)
+            pline_The("sizzling blade %s %s%c",
+                      !gs.spec_dbon_applies ? "hits" : "melts", hittee,
+                      !gs.spec_dbon_applies ? '.' : '!');
+        if (!rn2(4)) {
+            int itemdmg = destroy_items(mdef, AD_ACID, *dmgptr);
+            if (!youdefend)
+                *dmgptr += itemdmg; /* item destruction dmg */
+        }
+        return realizes_damage;
+    }
     if (attacks(AD_ELEC, otmp)) {
         if (realizes_damage)
             pline_The("massive hammer hits%s %s%c",
@@ -1692,6 +1712,21 @@ artifact_hit(
     if (attacks(AD_STUN, otmp) && dieroll <= MB_MAX_DIEROLL) {
         /* Magicbane's special attacks (possibly modifies hittee[]) */
         return Mb_hit(magr, mdef, otmp, dmgptr, dieroll, vis, hittee);
+    }
+
+    if (attacks(AD_LEGS, otmp)) {
+        if (realizes_damage)
+            pline_The("beautiful mace hits%s %s%c",
+                        !gs.spec_dbon_applies ? "" : "! A falling star strikes",
+                        hittee, !gs.spec_dbon_applies ? '.' : '!');
+        if (gs.spec_dbon_applies) {
+            if (youdefend) {
+                make_prone();
+            } else {
+                make_mon_prone(mdef);
+            }
+        }
+        return realizes_damage;
     }
 
     if (!gs.spec_dbon_applies) {
@@ -2295,6 +2330,13 @@ arti_invoke(struct obj *obj)
             /*FALLTHRU*/
         case FIRESTORM: res = invoke_storm_spell(obj); break;
         case BLINDING_RAY: res = invoke_blinding_ray(obj); break;
+        case STONEPROOF: {
+            You("are covered in a protective sheath of acid!");
+            if (Stoned)
+                fix_petrification();
+            incr_itimeout(&HStone_resistance, d(6, 6));
+            break;
+        }
         default:
             impossible("Unknown invoke power %d.", oart->inv_prop);
             break;
@@ -2450,6 +2492,7 @@ abil_to_adtyp(long *abil)
     } abil2adtyp[] = {
         { &EFire_resistance, AD_FIRE },
         { &ECold_resistance, AD_COLD },
+        { &EAcid_resistance, AD_ACID },
         { &EShock_resistance, AD_ELEC },
         { &EAntimagic, AD_MAGM },
         { &EDisint_resistance, AD_DISN },

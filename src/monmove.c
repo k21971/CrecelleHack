@@ -719,6 +719,11 @@ m_everyturn_effect(struct monst *mtmp)
         if (flags.verbose) You("drip some liquid.");
         if (u.udriptype > 0) floor_alchemy(x, y, u.udriptype, NON_PM);
         else add_coating(x, y, COAT_BLOOD, -1 * u.udriptype);
+    } else if (is_u && uwep && is_art(uwep, ART_WRATH_OF_SANKIS) && !rn2(3)) {
+        add_coating(x, y, COAT_BLOOD, PM_DWARF);
+    } else if (!is_u && MON_WEP(mtmp)
+                && is_art(MON_WEP(mtmp), ART_WRATH_OF_SANKIS)  && !rn2(3)) {
+        add_coating(x, y, COAT_BLOOD, PM_DWARF);
     } else if (!is_u && mtmp->mdripping) {
         if (mtmp->mdriptype > 0) floor_alchemy(x, y, mtmp->mdriptype, NON_PM);
         else add_coating(x, y, COAT_BLOOD, -1 * mtmp->mdriptype);

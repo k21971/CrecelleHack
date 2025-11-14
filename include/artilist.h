@@ -44,6 +44,8 @@ static const char *const artifact_names[] = {
 #define     ELEC(a,b)   {0,AD_ELEC,a,b}         /* electrical shock */
 #define     STUN(a,b)   {0,AD_STUN,a,b}         /* magical attack */
 #define     POIS(a,b)   {0,AD_DRST,a,b}         /* poison */
+#define     LEGS(a,b)   {0,AD_LEGS,a,b}         /* strike from sky */
+#define     ACID(a,b)   {0,AD_ACID,a,b}
 
 #define DEFAULT_MAT 0 /* use base object's default material */
 #define FIXED_OTYP 0
@@ -156,7 +158,7 @@ static NEARDATA struct artifact artilist[] = {
 
     A("Fire Brand", LONG_SWORD, (SPFX_RESTR | SPFX_ATTK | SPFX_DEFN), 0, 0,
       FIRE(5, 0), FIRE(0, 0), NO_CARY, FIRESTORM, A_NONE, NON_PM, NON_PM,
-      0, 5, 3000L, NO_COLOR, METAL, FUZZED_OTYP, FIRE_BRAND),
+      0, 5, 3000L, NO_COLOR, COPPER, FUZZED_OTYP, FIRE_BRAND),
 
     A("Dragonbane", BROADSWORD,
       (SPFX_RESTR | SPFX_DCLAS | SPFX_REFLECT), 0, S_DRAGON,
@@ -214,6 +216,18 @@ static NEARDATA struct artifact artilist[] = {
       PHYS(5, 0), DFNS(AD_BLND), NO_CARY, BLINDING_RAY, A_LAWFUL, NON_PM,
       NON_PM,
       0, 6, 1500L, NO_COLOR, GEMSTONE, FUZZED_OTYP, SUNSWORD),
+
+    A("Lucifer", MORNING_STAR, (SPFX_RESTR | SPFX_ATTK),
+      0, 0, LEGS(4, 20), NO_DFNS, NO_CARY, 0, A_CHAOTIC, NON_PM, NON_PM,
+      1, 3, 400L, NO_COLOR, BONE, FIXED_OTYP, LUCIFER),
+
+    A("Wrath of Sankis", PICK_AXE, (SPFX_RESTR | SPFX_DFLAGH | SPFX_DEFN),
+      0, MH_DWARF, PHYS(5, 0), FIRE(0, 0), NO_CARY, 0, A_NEUTRAL, NON_PM,
+      NON_PM, 2, 1, 200L, NO_COLOR, GOLD, FUZZED_OTYP, WRATH_OF_SANKIS),
+    
+    A("Acidfall", LONG_SWORD, (SPFX_RESTR | SPFX_ATTK | SPFX_DEFN), 0, 0,
+      ACID(5, 0), ACID(0, 0), NO_CARY, STONEPROOF, A_NONE, NON_PM, NON_PM,
+      0, 5, 3000L, NO_COLOR, METAL, FUZZED_OTYP, ACIDFALL),
 
     /*
      *      The artifacts for the quest dungeon, all self-willed.

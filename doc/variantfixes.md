@@ -23,6 +23,23 @@
     - Figurines have randomized material types.
     - New option, implicit_material, to quash default materials.
 
+## Artifacts
+- Lucifer
+  - Chaotic bone morningstar (does not fuzz).
+  - +1d4 to-hit.
+  - Against non-prone flying or floating monsters, does 1d20
+    extra damage and automatically knocks them prone.
+- Wrath of Sankis
+  - Neutral golden pick axe (fuzzes)
+  - +1d5 damage against dwarves.
+  - Provides resistance to fire.
+  - Bloodthirsty, like stormbringer.
+  - When wielded, player constantly drips blood onto the floor.
+- Acidfall
+  - Similar to fire and frost brand, but corresponds to acid.
+  - Can be invoked for temporary stoning resistance.
+  - Originally from SpliceHack.
+
 ## Races
 - Elf
   - Elves are not used to meat. They take an alignment
