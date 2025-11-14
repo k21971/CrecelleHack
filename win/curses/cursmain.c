@@ -962,9 +962,6 @@ curses_print_glyph(
 #endif
         }
     }
-    if ((special & MG_BOOST)) {
-        attr = A_UNDERLINE;
-    }
     if ((special & MG_SURFACE)) {
         attr = A_BOLD;
     }

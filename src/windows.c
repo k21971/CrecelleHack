@@ -1536,8 +1536,6 @@ mg_hl_attr(unsigned special)
         hl |= HL_INVERSE;
     if ((special & MG_BW_LAVA) && iflags.use_inverse)
         hl |= HL_INVERSE;
-    if ((special & MG_BOOST) && iflags.use_inverse)
-        hl |= HL_INVERSE;
     return hl;
 }
 
