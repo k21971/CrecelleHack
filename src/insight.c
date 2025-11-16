@@ -2165,6 +2165,8 @@ show_conduct(int final)
                 " without possessions", "");
     if (u.uroleplay.perfect_bestiary)
         enl_msg(You_, "", "", "began your quest with a pre-filled bestiary", "");
+    if (u.uroleplay.no_flipped_soko)
+        enl_msg(You_, "", "", "refused to solve flipped Sokoban", "");
     if (u.uroleplay.altstarts)
         enl_msg(You_, "", "", "started in the gnomish mines", "");
     /* nudist is far more than a subset of possessionless, and a much

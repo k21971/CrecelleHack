@@ -77,6 +77,7 @@
 ## Options
 - implicit_material: quash default material names.
 - shorten_buc: shortens full buc name to [B][U][C].
+- no_flipped_soko: stop sokoban levels from being flipped.
 
 # 1.3
 

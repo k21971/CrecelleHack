@@ -550,6 +550,9 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTC(number_pad, General, 1, opt_in, set_in_game,
                 No, Yes, No, Yes, NoAlias,
                 "use the number pad for movement")
+    NHOPTB(no_flipped_soko, Advanced, 0, opt_in, set_in_config,
+           Off, Yes, No, No, NoAlias, &u.uroleplay.no_flipped_soko, Term_False,
+           "disable flipped sokoban")
     NHOPTC(objects, Advanced, MAXOCLASSES, opt_in, set_in_config,
                 No, Yes, No, No, NoAlias,
                 "list of symbols to use for objects")
