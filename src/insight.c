@@ -2167,7 +2167,9 @@ show_conduct(int final)
         enl_msg(You_, "", "", "began your quest with a pre-filled bestiary", "");
     if (u.uroleplay.no_flipped_soko)
         enl_msg(You_, "", "", "refused to solve flipped Sokoban", "");
-    if (u.uroleplay.altstarts)
+    else
+        enl_msg(You_, "", "", "were willing to try flipped Sokoban", "");
+    if (u.uroleplay.altstarts && Race_if(PM_GNOME))
         enl_msg(You_, "", "", "started in the gnomish mines", "");
     /* nudist is far more than a subset of possessionless, and a much
        more impressive accomplishment, but showing "started out without
