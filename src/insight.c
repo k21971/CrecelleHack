@@ -2165,10 +2165,6 @@ show_conduct(int final)
                 " without possessions", "");
     if (u.uroleplay.perfect_bestiary)
         enl_msg(You_, "", "", "began your quest with a pre-filled bestiary", "");
-    if (u.uroleplay.no_flipped_soko)
-        enl_msg(You_, "", "", "refused to solve flipped Sokoban", "");
-    else
-        enl_msg(You_, "", "", "were willing to try flipped Sokoban", "");
     if (u.uroleplay.altstarts && Race_if(PM_GNOME))
         enl_msg(You_, "", "", "started in the gnomish mines", "");
     /* nudist is far more than a subset of possessionless, and a much
@@ -2299,6 +2295,10 @@ show_conduct(int final)
             break;
         }
         enl_msg(You_, presentverb, pastverb, buf, "");
+        if (u.uroleplay.no_flipped_soko)
+        enl_msg(You_, "", "", "refused to solve flipped Sokoban", "");
+    else
+        enl_msg(You_, "", "", "were willing to try flipped Sokoban", "");
     }
 
     show_achievements(final);
