@@ -622,8 +622,8 @@ known_hitum(
     }
 
     /* Icicles fired from weapon could kill something before the attack finishes. */
-    if (weapon && weapon->booster) {
-        if (boost_effects_pre(&gy.youmonst, mon))
+    if (weapon && weapon->oprop) {
+        if (oprop_effects_pre(&gy.youmonst, mon))
             return FALSE;
     }
 
@@ -1026,7 +1026,7 @@ hmon_hitmon_weapon_melee(
         hmd->hittxt = TRUE;
     }
 
-    if ((obj->oartifact || obj->booster)
+    if ((obj->oartifact || obj->oprop)
         && artifact_hit(&gy.youmonst, mon, obj, &hmd->dmg, hmd->dieroll)) {
         /* artifact_hit updates 'tmp' but doesn't inflict any
            damage; however, it might cause carried items to be
@@ -1898,8 +1898,7 @@ hmon_hitmon(
 
     if (hmd.jousting) {
         hmon_hitmon_jousting(&hmd, mon, obj);
-    } else if ((hmd.unarmed && hmd.dmg > 1 && !thrown && !obj && !Upolyd)
-                || (obj && (obj->booster & BST_SAND) && levl[u.ux][u.uy].submask == SM_SAND)) {
+    } else if (hmd.unarmed && hmd.dmg > 1 && !thrown && !obj && !Upolyd) {
         hmon_hitmon_stagger(&hmd, mon, obj);
     } else if (!hmd.unarmed && hmd.dmg > 1 && !thrown && !Upolyd
                && !u.twoweap && uwep) {
@@ -4248,7 +4247,7 @@ mhitm_ad_phys(
                     mhm->damage += rn1(4, 3); /* 3..6 */
                 if (mhm->damage <= 0)
                     mhm->damage = 1;
-                if ((!otmp->oartifact && !otmp->booster)
+                if ((!otmp->oartifact && !otmp->oprop)
                     || !artifact_hit(magr, mdef, otmp, &mhm->damage,
                                      gm.mhitu_dieroll)) {
                     hitmsg(magr, mattk);
@@ -4338,7 +4337,7 @@ mhitm_ad_phys(
                 mhm->damage += rn1(4, 3); /* 3..6 */
             if (mhm->damage < 1) /* is this necessary?  mhitu.c has it... */
                 mhm->damage = 1;
-            if (mwep->oartifact || mwep->booster) {
+            if (mwep->oartifact || mwep->oprop) {
                 /* when magr's weapon is an artifact, caller suppressed its
                    usual 'hit' message in case artifact_hit() delivers one;
                    now we'll know and might need to deliver skipped message
@@ -5036,12 +5035,6 @@ damageum(
         demonpet();
         return M_ATTK_MISS;
     }
-
-    /* If boosted, multiply damage */
-#ifdef MON_HARMONICS
-    if (u_boosted(gy.youmonst.data->mboost))
-        mhm.damage += d((int) mattk->damn, (int) mattk->damd);
-#endif
 
     mhitm_adtyping(&gy.youmonst, mattk, mdef, &mhm);
 
@@ -6655,8 +6648,11 @@ light_hits_gremlin(struct monst *mon, int dmg)
     }
 }
 
+/* Handle oprop effects that do things outside the normal 
+   weapon routine, potentially killing a monster before 
+   the attack is completed. */
 boolean
-boost_effects_pre(struct monst *magr, struct monst *mdef)
+oprop_effects_pre(struct monst *magr, struct monst *mdef)
 {
     boolean is_u = (magr == &gy.youmonst);
     boolean icy;
@@ -6683,34 +6679,42 @@ boost_effects_pre(struct monst *magr, struct monst *mdef)
 
     icy = (has_coating(x, y, COAT_FROST) || levl[x][y].typ == ICE);
     if (is_u) {
-        if ((weapon->booster & BST_ICE) && icy) {
+        if (weapon->oprop == OPROP_BOREAL && icy) {
             otmp = mksobj(ICICLE, FALSE, FALSE);
             otmp->spe = 1;
             throwit(otmp, 0L, FALSE, (struct obj *) 0);
-        }
-        if (((weapon->booster & BST_ROCK) && !rn2(7) && !levl[x][y].submask)
-                && (IS_SUBMASKABLE(levl[x][y].typ) || levl[x][y].typ == STONE)) {
-            drop_boulder_on_monster(dx, dy, FALSE, magr == &gy.youmonst);
+            weapon->pknown = 1;
+        } else if (weapon->oprop == OPROP_CRACKLING && rn2(2)) {
+            if (cansee(dx, dy))
+                pline("Lightning arcs from the %s!", simpleonames(weapon));
+            gc.current_wand = weapon;
+            ubuzz(BZ_U_WAND(BZ_OFS_AD(AD_ELEC)), 1);
+            gc.current_wand = 0;
+            weapon->pknown = 1;
         }
     } else {
-        if ((weapon->booster & BST_ICE) && icy) {
+        if (weapon->oprop == OPROP_BOREAL && icy) {
             (void) linedup(x, y, dx, dy, 0); /* set up gt.tbx and gt.tby */
             otmp = mksobj(ICICLE, FALSE, FALSE);
             m_throw(magr, x, y, sgn(gt.tbx), sgn(gt.tby),
                     distmin(x, y, dx, dy), otmp);
-        }
-        if (((weapon->booster & BST_ROCK) && !rn2(7) && !levl[x][y].submask)
-                && (IS_SUBMASKABLE(levl[x][y].typ) || levl[x][y].typ == STONE)) {
-            drop_boulder_on_player(FALSE, TRUE, magr == &gy.youmonst, FALSE);
+            weapon->pknown = 1;
+        } else if (weapon->oprop == OPROP_CRACKLING && rn2(2)) {
+            if (cansee(x, y)) {
+                pline("Lightning arcs from the %s!", simpleonames(weapon));
+                weapon->pknown = 1;
+            }
+            gb.buzzer = magr;
+            buzz(BZ_M_WAND(BZ_OFS_AD(AD_ELEC)), 1, x, y, sgn(dx - x), sgn(dy - y));
+            gb.buzzer = 0;
         }
     }
-    if ((weapon->booster & BST_POTION) && !rn2(4)) {
-        char buf[BUFSZ];
-        int otyp = POT_GAIN_ABILITY + ((weapon->o_id) % (POT_OIL - POT_GAIN_ABILITY));
-        potion_splatter(x, y, otyp, 0);
-        potion_coating_text(buf, otyp);
-        if (cansee(x, y))
-            pline("A spray of %s erupts from %s!", buf, simpleonames(weapon));
+    if (weapon->oprop == OPROP_THERMAL && !rn2(5)) {
+        if (cansee(dx, dy)) {
+            pline_The("%s ignites!", simpleonames(weapon));
+            otmp->pknown = 1;
+        }
+        create_bonfire(dx, dy, rnd(7), d(2, 4));
     }
     return DEADMONSTER(mdef);
 }

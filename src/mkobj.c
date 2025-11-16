@@ -887,7 +887,7 @@ unknow_object(struct obj *obj)
 
     obj->bknown = obj->rknown = 0;
     obj->cknown = obj->lknown = 0;
-    obj->tknown = 0;
+    obj->tknown = obj->pknown = 0;
     /* for an existing object, awareness of charges or enchantment has
        gone poof...  [object types which don't use the known flag have
        it set True for some reason] */
@@ -923,8 +923,8 @@ mksobj_init(struct obj **obj, boolean artif)
             *obj = otmp;
         }
         /* Small chance of making the object harmonic. */
-        if (!rn2(16)) {
-            boost_object(otmp, 0);
+        if (!rn2(60)) {
+            add_oprop_to_object(otmp, 0);
         }
         break;
     case FOOD_CLASS:
@@ -1166,9 +1166,9 @@ mksobj_init(struct obj **obj, boolean artif)
             otmp->oerodeproof = otmp->rknown = 1;
 #endif
         }
-        /* Armor has a slightly higher chance than weapons of being harmonic */
-        if (!rn2(14)) {
-            boost_object(otmp, 0);
+        /* Armor has a slightly lower chance than weapons of being harmonic */
+        if (!rn2(80)) {
+            add_oprop_to_object(otmp, 0);
         }
         break;
     case WAND_CLASS:
@@ -3538,6 +3538,7 @@ init_dummyobj(struct obj *obj, short otyp, long oquan)
                          /* default is "on" for types which don't use it */
                          : !objects[otyp].oc_uses_known;
          obj->quan = oquan ? oquan : 1L;
+         obj->pknown = 0;
          obj->corpsenm = NON_PM; /* suppress statue and figurine details */
          if (obj->otyp == LEASH)
              obj->leashmon = 0; /* overloads corpsenm, avoid NON_PM */
@@ -4477,5 +4478,55 @@ set_material(struct obj *otmp, int material)
     if (!is_corrodeable(otmp) && !is_rottable(otmp))
         otmp->oeroded2 = 0;
 }
+
+/* Oprop probabilities. More powerful or fantastical ones are less likely
+   to appear. */
+static const struct icp oprop_probs[] = {
+    { 200, OPROP_SANGUINE },
+    { 200, OPROP_BOREAL },
+    { 250, OPROP_CRACKLING },
+    { 250, OPROP_THERMAL },
+    {  50, OPROP_SUBTLE },
+    {  50, OPROP_HEXED },
+};
+
+/* Add an oprop to an object. If zero is passed in, then get a random
+   one. */
+void
+add_oprop_to_object(struct obj *obj, int force)
+{
+    int i;
+    const struct icp* props = oprop_probs;
+    if (force) {
+        obj->oprop = force;
+    } else if (force >= NUM_OPROPS || force < 0) {
+        impossible("Attempting to set invalid oprop %d?", obj->oprop);
+    } else {
+        i = rnd(1000);
+        while (i > 0) {
+            if (i <= props->iprob)
+                break;
+            i -= props->iprob;
+            props++;
+        }
+        obj->oprop = props->iclass;
+    }
+}
+
+/* Based on a permonst, get a vaguely related oprop. */
+int
+oprop_from_permonst(struct permonst *pm)
+{
+    if (is_vampire(pm))
+        return OPROP_SANGUINE;
+    if (pm->mflags4 & M4_BST_ICE)
+        return OPROP_BOREAL;
+    if (pm->mflags4 & M4_BST_ASHES)
+        return OPROP_THERMAL;
+    if (is_roguish(pm))
+        return OPROP_SUBTLE;
+    return 0;
+}
+
 
 /*mkobj.c*/

@@ -738,8 +738,6 @@ find_mac(struct monst *mon)
             if (is_shield(obj))
                 base -= (min(MZ_HUGE + 1, obj->osize) - mon->data->msize);
             /* since ARM_BONUS is positive, subtracting it increases AC */
-            if (!mon->mprone)
-                base -= mon_boosted(mon, obj->booster);
         }
     }
     if (mon->mprone)
@@ -934,7 +932,8 @@ m_dowear_type(
 
     /* same auto-cursing behavior as for hero */
     autocurse = ((best->otyp == HELM_OF_OPPOSITE_ALIGNMENT
-                  || best->otyp == DUNCE_CAP) && !best->cursed);
+                  || best->otyp == DUNCE_CAP
+                  || best->oprop == OPROP_HEXED) && !best->cursed);
     /* if wearing a cloak, account for the time spent removing
        and re-wearing it when putting on a suit or shirt */
     if ((flag == W_ARM || flag == W_ARMU) && (mon->misc_worn_check & W_ARMC))

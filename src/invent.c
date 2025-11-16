@@ -2561,7 +2561,7 @@ fully_identify_obj(struct obj *otmp)
     makeknown(otmp->otyp);
     if (otmp->oartifact)
         discover_artifact((xint16) otmp->oartifact);
-    otmp->known = otmp->dknown = otmp->bknown = otmp->rknown = 1;
+    otmp->known = otmp->dknown = otmp->bknown = otmp->rknown = otmp->pknown = 1;
     set_cknown_lknown(otmp); /* set otmp->{cknown,lknown} if applicable */
     if (otmp->otyp == EGG && otmp->corpsenm != NON_PM)
         learn_egg_type(otmp->corpsenm);
@@ -5107,7 +5107,7 @@ mergable(
         || (obj->bknown != otmp->bknown && !Role_if(PM_CLERIC) &&
             (Blind || Hallucination))
         || obj->oeroded != otmp->oeroded || obj->oeroded2 != otmp->oeroded2
-        || obj->greased != otmp->greased || obj->booster != otmp->booster
+        || obj->greased != otmp->greased || obj->oprop != otmp->oprop
         || obj->material != otmp->material)
         return FALSE;
 

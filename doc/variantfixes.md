@@ -66,6 +66,13 @@
 - New wand appearances: meat and leek.
 - Eating a wand of death is instantly fatal.
 - Figurines weigh much less.
+- Nerf skulls and skull helms so they do not provide extrinsics.
+- Switched from previous object harmonics system to a much more
+  contemporary oprop system.
+    - Oprops are not known unless the item is identified or probed.
+    - Angels spawn with harmonic weapons.
+    - When unknown, appear as "harmonic."
+    - Creating excalibur does not remove the oprop.
 
 # 1.3
 

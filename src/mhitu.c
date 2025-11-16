@@ -142,7 +142,7 @@ mswings(
         pline_mon(mtmp, "%s %s %s%s %s.", Monnam(mtmp),
                   mswings_verb(otemp, bash),
                   (otemp->quan > 1L) ? "one of " : "",
-                  mhis(mtmp), xname(otemp));
+                  mhis(mtmp), simpleonames(otemp));
     }
 }
 
@@ -1207,8 +1207,8 @@ hitmu(struct monst *mtmp, struct attack *mattk)
         }
     }
 
-    if (MON_WEP(mtmp) && MON_WEP(mtmp)->booster) {
-        boost_effects_pre(mtmp, &gy.youmonst);
+    if (MON_WEP(mtmp) && MON_WEP(mtmp)->oprop) {
+        oprop_effects_pre(mtmp, &gy.youmonst);
     }
 
     /*  First determine the base damage done */

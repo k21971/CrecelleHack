@@ -2188,6 +2188,7 @@ create_object(object *o, struct mkroom *croom)
     struct obj *otmp;
     coordxy x, y;
     char c;
+    int omat, oprop = 0;
     boolean named; /* has a name been supplied in level description? */
 
     named = o->name.str ? TRUE : FALSE;
@@ -2297,6 +2298,16 @@ create_object(object *o, struct mkroom *croom)
     if (o->quan > 0 && objects[otmp->otyp].oc_merge) {
         otmp->quan = o->quan;
         otmp->owt = weight(otmp);
+    }
+
+    /* set the material and object property */
+    if (o->omat.str) {
+        omat = lookup_material_by_name(o->omat.str, &omat);
+        if (omat) set_material(otmp, omat);
+    }
+    if (o->oprop.str){
+        oprop = lookup_oprop_by_name(o->oprop.str, &oprop);
+        if (oprop) otmp->oprop = oprop;
     }
 
     /* contents (of a container or monster's inventory) */
@@ -3564,6 +3575,8 @@ lspo_object(lua_State *L)
 {
     static object zeroobject = {
             { 0 },   /* Str_or_len name */
+            { 0 },   /* omat */
+            { 0 },   /* oprop */
             0,       /* corpsenm */
             0, 0,    /* id, spe */
             0,       /* coord */
@@ -3573,7 +3586,7 @@ lspo_object(lua_State *L)
             0,       /* quan */
             0,       /* buried */
             0,       /* lit */
-            0, 0, 0, 0, 0, 0, /* eroded, osize, locked, trapped, tknown, recharged */
+            0, 0, 0, 0, 0, 0, 0, /* eroded, osize, locked, trapped, tknown, pknown, recharged */
             0, 0, 0, 0, /* invis, greased, broken, achievement */
     };
 #if 0
@@ -3590,10 +3603,13 @@ lspo_object(lua_State *L)
 
     tmpobj = zeroobject;
     tmpobj.name.str = (char *) 0;
+    tmpobj.omat.str = (char *) 0;
+    tmpobj.oprop.str = (char *) 0;
     tmpobj.spe = -127;
     tmpobj.quan = -1;
     tmpobj.trapped = -1;
     tmpobj.tknown = -1;
+    tmpobj.pknown = 0;
     tmpobj.locked = -1;
     tmpobj.corpsenm = NON_PM;
 
@@ -3641,6 +3657,8 @@ lspo_object(lua_State *L)
         tmpobj.curse_state = get_table_buc(L);
         tmpobj.corpsenm = NON_PM;
         tmpobj.name.str = get_table_str_opt(L, "name", (char *) 0);
+        tmpobj.omat.str = get_table_str_opt(L, "material", (char *) 0);
+        tmpobj.oprop.str = get_table_str_opt(L, "oprop", (char *) 0);
         tmpobj.quan = get_table_int_or_random(L, "quantity", -1);
         tmpobj.buried = get_table_boolean_opt(L, "buried", 0);
         tmpobj.lit = get_table_boolean_opt(L, "lit", 0);
@@ -3649,6 +3667,7 @@ lspo_object(lua_State *L)
         tmpobj.locked = get_table_boolean_opt(L, "locked", -1);
         tmpobj.trapped = get_table_boolean_opt(L, "trapped", -1);
         tmpobj.tknown = get_table_boolean_opt(L, "trap_known", -1);
+        tmpobj.pknown = get_table_boolean_opt(L, "oprop_known", 0);
         tmpobj.recharged = get_table_int_opt(L, "recharged", 0);
         tmpobj.greased = get_table_boolean_opt(L, "greased", 0);
         tmpobj.broken = get_table_boolean_opt(L, "broken", 0);
@@ -3756,6 +3775,8 @@ lspo_object(lua_State *L)
         spo_pop_container();
 
     Free(tmpobj.name.str);
+    Free(tmpobj.omat.str);
+    Free(tmpobj.oprop.str);
 
     nhl_push_obj(L, otmp);
 

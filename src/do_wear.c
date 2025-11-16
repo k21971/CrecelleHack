@@ -29,7 +29,7 @@ staticfn int Helmet_on(void);
 staticfn int Gloves_on(void);
 staticfn int Shield_on(void);
 staticfn int Shirt_on(void);
-staticfn void mon_product_handling(struct obj *, boolean, boolean);
+staticfn void oprop_armor_handling(struct obj *, boolean);
 staticfn void dragon_armor_handling(struct obj *, boolean, boolean);
 staticfn void Amulet_on(struct obj *) NONNULLARG1;
 staticfn void learnring(struct obj *, boolean);
@@ -449,9 +449,7 @@ Helmet_on(void)
     case ORCISH_HELM:
     case HELM_OF_TELEPATHY:
     case SKULL:
-        break;
     case SKULL_HELM:
-        mon_product_handling(uarmh, TRUE, TRUE);
         break;
     case HELM_OF_CAUTION:
         see_monsters();
@@ -544,7 +542,6 @@ Helmet_off(void)
     case ORCISH_HELM:
     case SKULL:
     case SKULL_HELM:
-        mon_product_handling(uarmh, FALSE, TRUE);
         break;
     case DUNCE_CAP:
         disp.botl = TRUE;
@@ -812,30 +809,52 @@ Shirt_off(void)
     return 0;
 }
 
-/* handle abilities granted by monster bones and meat */
-staticfn void
-mon_product_handling(
-    struct obj *otmp,
-    boolean puton,
-    boolean on_purpose)
+/* handle oprop-granted abilities for hero wearing harmonic armor */
+staticfn void 
+oprop_armor_handling(struct obj *otmp, boolean puton)
 {
-    struct permonst *mdat = &mons[otmp->corpsenm];
-    short mr;
-    if (!otmp)
+    if (!otmp || !otmp->oprop)
         return;
-    for (int i = FIRE_RES; i <= STONE_RES; i++) {
-        mr = res_to_mr(i);
-        if (pm_resistance(mdat, mr)) {
+    switch(otmp->oprop) {
+        case OPROP_BOREAL:
             if (puton) {
-                u.uprops[i].extrinsic |= W_ARMH;
+                ECold_resistance |= W_ARM;
             } else {
-                u.uprops[i].extrinsic &= ~W_ARMH;
-                if (i == STONE_RES) {
-                    wielding_corpse(uwep, otmp, on_purpose);
-                    wielding_corpse(uswapwep, otmp, on_purpose);
-                }
+                ECold_resistance &= ~W_ARM;
             }
-        }
+            break;
+        case OPROP_THERMAL:
+            if (puton) {
+                EFire_resistance |= W_ARM;
+            } else {
+                EFire_resistance &= ~W_ARM;
+            }
+            break;
+        case OPROP_CRACKLING:
+            if (puton) {
+                EShock_resistance |= W_ARM;
+            } else {
+                EShock_resistance &= ~W_ARM;
+            }
+            break;
+        case OPROP_SUBTLE:
+            if (puton) {
+                EStealth |= W_ARM;
+            } else {
+                EStealth &= ~W_ARM;
+            }
+            break;
+        case OPROP_HEXED:
+            if (Blind)
+                pline("%s for a moment.", Tobjnam(otmp, "vibrate"));
+            else
+                pline("%s %s for a moment.", Tobjnam(otmp, "glow"),
+                      hcolor(NH_BLACK));
+            curse(otmp);
+            update_inventory();
+            break;
+        default:
+            break;
     }
 }
 
@@ -938,6 +957,7 @@ Armor_on(void)
         uarm->known = 1; /* suit's +/- evident because of status line AC */
         update_inventory();
     }
+    oprop_armor_handling(uarm, TRUE);
     dragon_armor_handling(uarm, TRUE, TRUE);
     /* gold DSM requires extra handling since it emits light when worn;
        do that after the special armor handling */
@@ -970,6 +990,7 @@ Armor_off(void)
         if (!Blind)
             pline("%s shining.", Tobjnam(otmp, "stop"));
     }
+    oprop_armor_handling(otmp, FALSE);
     dragon_armor_handling(otmp, FALSE, TRUE);
 
     return 0;
@@ -1000,6 +1021,7 @@ Armor_gone(void)
         if (!Blind)
             pline("%s shining.", Tobjnam(otmp, "stop"));
     }
+    oprop_armor_handling(otmp, FALSE);
     dragon_armor_handling(otmp, FALSE, FALSE);
 
     return 0;
@@ -2551,33 +2573,26 @@ find_ac(void)
     /* armor class from worn gear */
     if (uarm) {
         uac -= ARM_BONUS(uarm);
-        uac -= (!Prone && u_boosted(uarm->booster) ? 3 : 0);
     }
     if (uarmc) {
         uac -= ARM_BONUS(uarmc);
-        uac -= (!Prone && u_boosted(uarmc->booster) ? 3 : 0);
     }
     if (uarmh) {
         uac -= ARM_BONUS(uarmh);
-        uac -= (!Prone && u_boosted(uarmh->booster) ? 3 : 0);
     }
     if (uarmf) {
         uac -= ARM_BONUS(uarmf);
-        uac -= (!Prone && u_boosted(uarmf->booster) ? 3 : 0);
     }
     if (uarms) {
         shield_bonus = ARM_BONUS(uarms);
         shield_bonus += (min(MZ_HUGE + 1, uarms->osize) - USIZE);
         uac -= shield_bonus;
-        uac -= (!Prone && u_boosted(uarms->booster) ? 3 : 0);
     }
     if (uarmg) {
         uac -= ARM_BONUS(uarmg);
-        uac -= (!Prone && u_boosted(uarmg->booster) ? 3 : 0);
     }
     if (uarmu) {
         uac -= ARM_BONUS(uarmu);
-        uac -= (!Prone && u_boosted(uarmu->booster) ? 3 : 0);
     }
     if (uleft && uleft->otyp == RIN_PROTECTION)
         uac -= uleft->spe;

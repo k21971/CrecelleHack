@@ -113,6 +113,7 @@ resetobjs(struct obj *ochain, boolean restore)
             otmp->lknown = 0;
             otmp->cknown = 0;
             otmp->tknown = 0;
+            otmp->pknown = 0;
             otmp->invlet = 0;
             otmp->no_charge = 0;
             otmp->how_lost = LOST_NONE;

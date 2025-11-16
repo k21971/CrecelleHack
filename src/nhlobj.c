@@ -297,6 +297,7 @@ l_obj_to_table(lua_State *L)
     nhl_add_table_entry_int(L, "bknown", obj->bknown);
     nhl_add_table_entry_int(L, "rknown", obj->rknown);
     nhl_add_table_entry_int(L, "tknown", obj->tknown);
+    nhl_add_table_entry_int(L, "pknown", obj->pknown);
     if (obj->oclass == POTION_CLASS)
         nhl_add_table_entry_int(L, "odiluted", obj->odiluted);
     else

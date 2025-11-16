@@ -180,6 +180,18 @@ enum ms_sounds {
 #define M3_TRIPPER      0x2000 /* monster can trip the player */
 #define M3_CALLOUT      0x4000 /* monster coordinates with others by calling out player position */
 
+#define M4_BST_GRASS 0x0001
+#define M4_BST_MUD  0x0002
+#define M4_BST_ROCK  0x0004
+#define M4_BST_WATER 0x0008
+#define M4_BST_ICE   0x0010
+#define M4_BST_ASHES 0x0020
+#define M4_BST_FUNGI 0x0040
+#define M4_BST_BLOOD 0x0080
+#define M4_BST_SAND 0x0100
+#define M4_BST_POTION 0x0200
+#define M4_BST_HONEY  0x0400
+
 #define MZ_RANDOM      -1 /* used in set_obj_size */
 #define MZ_TINY         0 /* < 2' */
 #define MZ_SMALL        1 /* 2-4' */
@@ -200,25 +212,6 @@ enum ms_sounds {
 #define MH_UNDEAD       0x00000080L
 #define MH_GIANT        0x00000100L
 #define MH_KOBOLD       0x00000200L
-
-/* Boosts */
-#define BST_GRASS 0x0001
-#define BST_MUD  0x0002
-#define BST_ROCK  0x0004
-#define BST_WATER 0x0008
-#define BST_ICE   0x0010
-#define BST_ASHES 0x0020
-#define BST_FUNGI 0x0040
-#define BST_BLOOD 0x0080
-#define BST_SAND 0x0100
-#define BST_POTION 0x0200
-#define BST_HONEY  0x0400
-
-struct boostnam {
-   short boost_short;
-   const char *nam;
-   const char *abbr;
-};
 
 /* for mons[].geno (constant during game) */
 #define G_DAY           0x00010000 /* generated only in day */

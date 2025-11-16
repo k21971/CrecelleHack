@@ -156,7 +156,8 @@ struct obj {
 #else
     Bitfield(osize, 3);   /* the size of the weapon or armor */
     Bitfield(material, 5); /* material this obj is made of */
-    /* 6 free bits */
+    Bitfield(pknown, 1); /* oprop known */
+    /* 5 free bits */
 #endif
 
     int corpsenm;         /* type of corpse is mons[corpsenm] */
@@ -170,7 +171,7 @@ struct obj {
 #define spestudied usecount /* # of times a spellbook has been studied */
 #define wishedfor usecount  /* flag for hold_another_object() if from wish */
     unsigned oeaten;        /* nutrition left in food, if partly eaten */
-    short booster;          /* What terrain the object boosts on */
+    int oprop;              /* The oprop of the item */
     long age;               /* creation date */
     long owornmask;        /* bit mask indicating which equipment slot(s) an
                             * item is worn in [by hero or by monster; could

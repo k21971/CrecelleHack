@@ -1355,7 +1355,7 @@ toss_up(struct obj *obj, boolean hitsroof)
                 artimsg = FALSE;
         int dmg = dmgval(obj, &gy.youmonst);
 
-        if ((obj->oartifact || obj->booster) && !harmless)
+        if ((obj->oartifact || obj->oprop) && !harmless)
             /* need a fake die roll here; rn1(18,2) avoids 1 and 20 */
             artimsg = artifact_hit((struct monst *) 0, &gy.youmonst, obj,
                                    &dmg, rn1(18, 2));
@@ -1731,7 +1731,7 @@ throwit(
                                     : "%s back toward you, hitting your %s!",
                               Tobjnam(obj, Blind ? "hit" : "fly"),
                               body_part(ARM));
-                        if (obj->oartifact || obj->booster)
+                        if (obj->oartifact || obj->oprop)
                             (void) artifact_hit((struct monst *) 0,
                                                 &gy.youmonst, obj, &dmg, 0);
                         losehp(Maybe_Half_Phys(dmg), killer_xname(obj),

@@ -465,11 +465,7 @@ look_at_monster(
     else if ((mtmp->mstrategy & STRAT_WAITMASK) != 0)
         /* arbitrary reason why it isn't moving */
         Strcat(buf, ", meditating");
-
-#ifdef MON_HARMONICS
-    if (mon_boosted(mtmp, mtmp->data->mboost))
-        Strcat(buf, ", harmonizing");
-#endif
+        
     if (mtmp->mleashed)
         Strcat(buf, ", leashed to you");
     if (mtmp->mprone)
@@ -2389,12 +2385,6 @@ do_supplemental_item_info(struct obj *otmp)
         Sprintf(buf,"Size: %s", size_str(otmp->osize));
         putstr(datawin, 0, buf);
     }
-    /* Boosts */
-    if (otmp->booster) {
-        Sprintf(buf, "Harmonies: ");
-        print_obj_harmonies(otmp, buf);
-        putstr(datawin, 0, buf);
-    }
     Sprintf(buf, "Weight: %d aum (average %d aum)", otmp->owt, objects[otmp->otyp].oc_weight);
     putstr(datawin, 0, buf);
     Sprintf(buf, "Material: %s (usually %s)", materialnm[otmp->material],
@@ -2403,6 +2393,15 @@ do_supplemental_item_info(struct obj *otmp)
     Sprintf(buf, "Rarity: %s, %s", objects[otmp->otyp].oc_unique ? "unique" : "common",
                                     objects[otmp->otyp].oc_nowish ? "unwishable" : "wishable");
     putstr(datawin, 0, buf);
+    if (otmp->oprop) {
+        if (otmp->pknown) {
+            Sprintf(buf, "Harmony: ");
+            add_oprop_text(otmp, otmp->pknown, buf);
+        } else {
+            Sprintf(buf, "Harmony: Unknown");
+        }
+        putstr(datawin, 0, buf);
+    }
     
     display_nhwindow(datawin, FALSE);
     destroy_nhwindow(datawin), datawin = WIN_ERR;
@@ -2499,11 +2498,6 @@ do_supplemental_info(
             !(auto_know || svm.mvitals[pm->pmidx].know_pcorpse) 
                 ? "???" : poisonous(pm) ? "Poisonous" : "Not poisonous");
     putstr(datawin, 0, buf);
-    /* Harmony */
-    Sprintf(buf, "Harmonies: ");
-    print_mon_harmonies(pm, buf);
-    putstr(datawin, 0, buf);
-    putstr(datawin, 0, "");
     /* Have we seen it? */
     if (!svm.mvitals[pm->pmidx].seen_close) {
         putstr(datawin, 0, "You have never seen this monster up close.");

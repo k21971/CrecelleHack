@@ -1341,9 +1341,9 @@ cancel_item(struct obj *obj)
             costly_alteration(obj, COST_CANCEL);
             obj->spe = cancelled_spe;
         }
-        if (obj->booster) {
+        if (obj->oprop) {
             costly_alteration(obj, COST_UNHARMONIZE);
-            obj->booster = 0;
+            obj->oprop = 0;
         }
         switch (obj->oclass) {
         case SCROLL_CLASS:
@@ -1794,6 +1794,8 @@ poly_obj(struct obj *obj, int id)
 
     /* preserve quantity */
     otmp->quan = obj->quan;
+    /* remove oprop */
+    otmp->oprop = 0;
     /* preserve the shopkeepers (lack of) interest */
     otmp->no_charge = obj->no_charge;
     /* preserve inventory letter if in inventory */
@@ -2299,6 +2301,7 @@ bhito(struct obj *obj, struct obj *otmp)
             res = !obj->dknown;
             /* target object has now been "seen (up close)" */
             obj->dknown = 1;
+            obj->pknown = 1;
             if (Is_container(obj) || obj->otyp == STATUE) {
                 obj->cknown = obj->lknown = 1;
                 if (Is_box(obj) && !obj->tknown) {

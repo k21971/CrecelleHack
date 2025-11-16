@@ -2953,7 +2953,7 @@ get_cost(
         tmp *= 4L;
 
     /* harmonic objects cost significantly more */
-    if (obj->booster)
+    if (obj->oprop)
         tmp *= 2L;
 
     /* anger surcharge should match rile_shk's, so we do it separately

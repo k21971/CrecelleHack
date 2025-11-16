@@ -909,7 +909,7 @@ return_from_mtoss(
     }
     if (otmp) {
         if (hits_thrower) {
-            if (otmp->oartifact || otmp->booster)
+            if (otmp->oartifact || otmp->oprop)
                 (void) artifact_hit((struct monst *) 0, magr, otmp, &dmg, 0);
             magr->mhp -= dmg;
             if (DEADMONSTER(magr))

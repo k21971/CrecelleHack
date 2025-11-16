@@ -402,6 +402,7 @@ m_initweap(struct monst *mtmp)
                 otmp = oname(otmp, nam, ONAME_RANDOM); /* randomly created */
             /* enhance the weapon */
             bless(otmp);
+            add_oprop_to_object(otmp, 0);
             otmp->oerodeproof = TRUE;
             /* make long sword be +0 to +3, mace be +3 to +6 to compensate
                for being significantly weaker against large opponents */
@@ -1828,20 +1829,20 @@ biome_shift(struct permonst *ptr)
     int ret = 0;
     switch (biome) {
     case BIOME_WOODLAND:
-        if (ptr->mboost & BST_GRASS)
+        if (ptr->mflags4 & M4_BST_GRASS)
             ret += 3;
         break;
     case BIOME_FUNGAL:
         if (ptr->mlet == S_FUNGUS
-            || ptr->mboost & BST_FUNGI)
+            || ptr->mflags4 & M4_BST_FUNGI)
             ret += 3;
         break;
     case BIOME_TROPICAL:
-        if (ptr->mboost & BST_SAND)
+        if (ptr->mflags4 & M4_BST_SAND)
             ret += 2;
         break;
     case BIOME_SNOWY:
-        if (ptr->mboost & BST_ICE)
+        if (ptr->mflags4 & M4_BST_ICE)
             ret += 2;
         break;
     case BIOME_ODUNGEON:
@@ -1850,7 +1851,7 @@ biome_shift(struct permonst *ptr)
     }
     /* Swamp boosting happens seperately for now :( */
     if (svl.level.flags.has_swamp 
-        && ((ptr->mboost & BST_MUD) || (ptr->mboost & BST_WATER)))
+        && ((ptr->mflags4 & M4_BST_MUD) || (ptr->mflags4 & M4_BST_WATER)))
         ret += 2;
     return ret;
 }
@@ -2447,15 +2448,14 @@ mongets(struct monst *mtmp, int otyp)
         /* powerful monsters have a good chance of getting
            some kind of boosted weapon related to their
            abilities */
-        if (!otmp->booster &&
+        if (!otmp->oprop &&
             (otmp->oclass == WEAPON_CLASS
                 || otmp->oclass == ARMOR_CLASS
                 || is_weptool(otmp))) {
-            if ((is_prince(mtmp->data) && !rn2(3))
-                || (is_lord(mtmp->data) && !rn2(4))
-                || (extra_nasty(mtmp->data) && !rn2(8))
-                || ((mons[mtmp->mnum].geno & G_UNIQ) != 0)) {
-                boost_object(otmp, mtmp->data->mboost);
+            if (mtmp->data == &mons[PM_SHOPKEEPER]
+                || ((mons[mtmp->mnum].geno & G_UNIQ) != 0)
+                || (is_prince(mtmp->data) && !rn2(3))) {
+                add_oprop_to_object(otmp, rn2(4) ? oprop_from_permonst(mtmp->data) : 0);
             }
         }
 

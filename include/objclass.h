@@ -46,6 +46,16 @@ enum obj_armor_types {
     ARM_SHIRT  = 6
 };
 
+enum obj_oprops {
+    OPROP_SANGUINE = 1,
+    OPROP_BOREAL = 2,
+    OPROP_THERMAL = 3,
+    OPROP_CRACKLING = 4,
+    OPROP_SUBTLE = 5,
+    OPROP_HEXED = 6,
+    NUM_OPROPS
+};
+
 struct objclass {
     short oc_name_idx;              /* index of actual name */
     short oc_descr_idx;             /* description when name unknown */

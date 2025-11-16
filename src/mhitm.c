@@ -664,7 +664,7 @@ hitmm(
 
     pre_mm_attack(magr, mdef);
 
-    if (boost_effects_pre(magr, mdef))
+    if (oprop_effects_pre(magr, mdef))
         return M_ATTK_HIT; /* mdef died */
 
     compat = !magr->mcan ? could_seduce(magr, mdef, mattk) : 0;
@@ -1045,11 +1045,6 @@ mdamagem(
     mhm.done = FALSE;
     struct obj* hated_obj;
     long armask;
-
-#ifdef MON_HARMONICS
-    if (mon_boosted(magr, magr->data->mboost))
-        mhm.damage += d((int) mattk->damn, (int) mattk->damd);
-#endif
 
     if ((touch_petrifies(pd) /* or flesh_petrifies() */
          || (mattk->adtyp == AD_DGST && pd == &mons[PM_MEDUSA]))

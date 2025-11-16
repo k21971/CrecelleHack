@@ -1748,6 +1748,8 @@ extern float weight_adj_by_size(int sz);
 extern void set_obj_size(struct obj *, int, boolean);
 extern boolean valid_obj_material(struct obj *, int);
 extern void set_material(struct obj *, int);
+extern void add_oprop_to_object(struct obj *, int) NONNULLARG1;
+extern int oprop_from_permonst(struct permonst *) NONNULLARG1;
 
 /* ### mkroom.c ### */
 
@@ -1876,9 +1878,6 @@ extern void see_monster_closeup(struct monst *, boolean) NONNULLARG1;
 extern void see_nearby_monsters(void);
 extern void shieldeff_mon(struct monst *) NONNULLARG1;
 extern void flash_mon(struct monst *) NONNULLARG1;
-extern boolean is_boosted(int, int, short);
-extern boolean u_boosted(short);
-extern boolean mon_boosted(struct monst *, short);
 
 /* ### mondata.c ### */
 
@@ -2245,15 +2244,13 @@ extern void reorder_fruit(boolean);
 extern char *xname(struct obj *) NONNULLARG1;
 extern char *mshot_xname(struct obj *) NONNULLARG1;
 extern boolean the_unique_obj(struct obj *) NONNULLARG1;
+extern void add_oprop_text(struct obj *, boolean, char *);
 extern boolean the_unique_pm(struct permonst *) NONNULLARG1;
 extern boolean erosion_matters(struct obj *) NONNULLARG1;
 extern boolean size_matters(struct obj *) NONNULLARG1;
 extern char *doname(struct obj *) NONNULLARG1;
 extern char *doname_with_price(struct obj *) NONNULLARG1;
 extern char *doname_vague_quan(struct obj *) NONNULLARG1;
-extern void print_mon_harmonies(struct permonst *, char *) NONNULLARG1;
-extern void print_obj_harmonies(struct obj *, char *) NONNULLARG1;
-extern void boost_object(struct obj *, short) NONNULLARG1;
 extern boolean not_fully_identified(struct obj *) NONNULLARG1;
 extern char *corpse_xname(struct obj *, const char *, unsigned) NONNULLARG1;
 extern char *cxname(struct obj *) NONNULLARG1;
@@ -2323,6 +2320,8 @@ extern char *safe_qbuf(char *, const char *, const char *, struct obj *,
                        char * (*)(struct obj *), char * (*)(struct obj *),
                        const char *) NONNULL NONNULLARG14;
 extern int shiny_obj(char);
+extern int lookup_oprop_by_name(char *, int *);
+extern int lookup_material_by_name(char *, int *);
 
 /* ### options.c ### */
 
@@ -3522,7 +3521,7 @@ extern boolean disguised_as_non_mon(struct monst *) NONNULLARG1;
 extern boolean disguised_as_mon(struct monst *) NONNULLARG1;
 extern int flash_hits_mon(struct monst *, struct obj *) NONNULLARG12;
 extern void light_hits_gremlin(struct monst *, int) NONNULLARG1;
-extern boolean boost_effects_pre(struct monst *, struct monst *);
+extern boolean oprop_effects_pre(struct monst *, struct monst *);
 
 
 /* ### unixmain.c ### */

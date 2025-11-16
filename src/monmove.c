@@ -714,6 +714,25 @@ m_everyturn_effect(struct monst *mtmp)
                 uarm->otyp == YELLOW_DRAGON_SCALE_MAIL))) {
         floor_alchemy(x, y, POT_ACID, NON_PM);
     }
+    /* oprop boots do odd things */
+    if (is_u && uarmf && uarmf->oprop) {
+        switch(uarmf->oprop) {
+            case OPROP_BOREAL:
+                add_coating(x, y, COAT_FROST, 0);
+                break;
+            case OPROP_THERMAL:
+                if (has_coating(x, y, COAT_GRASS)) {
+                    remove_coating(x,y, COAT_GRASS);
+                    add_coating(x, y, COAT_ASHES, 0);
+                }
+                break;
+            case OPROP_SANGUINE:
+                floor_alchemy(x, y, POT_BLOOD, PM_HUMAN);
+                break;
+            default:
+                break;
+        }
+    }
     /* Drip liquids */
     if (is_u && Dripping && !rn2(3)) {
         if (flags.verbose) You("drip some liquid.");
