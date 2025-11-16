@@ -81,6 +81,7 @@
 
 ## Conducts
 - Conflictless: Never generated conflict (from xNetHack).
+- Blessless: Never blessed an item with holy water.
 
 # 1.3
 

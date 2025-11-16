@@ -448,6 +448,8 @@ encodeconduct(void)
         e |= 1L << 14;
     if (u.uconduct.conflicting)
         e |= 1L << 15;
+    if (u.uconduct.holy_water)
+        e |= 1L << 16;
 
     return e;
 }
@@ -606,6 +608,8 @@ encode_extended_conducts(char *buf)
     add_achieveX(buf, "pauper",       u.uroleplay.pauper);
     add_achieveX(buf, "bonesless",    !flags.bones);
     add_achieveX(buf, "petless",      !u.uconduct.pets);
+    add_achieveX(buf, "conflictless", !u.uconduct.conflicting);
+    add_achieveX(buf, "blessless",    !u.uconduct.holy_water);
 
     return buf;
 }

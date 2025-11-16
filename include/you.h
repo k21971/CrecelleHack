@@ -209,6 +209,7 @@ struct u_conduct {     /* number of times... */
     long sokocheat;    /* violated special 'rules' in Sokoban */
     long pets;         /* obtained a pet */
     long conflicting;  /* generated conflict */
+    long holy_water;   /* blessed an object with holy water */
     /* genocides already listed at end of game */
 };
 

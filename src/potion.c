@@ -1594,6 +1594,7 @@ H2Opotion_dip(
             glowcolor = NH_LIGHT_BLUE;
             costchange = COST_alter;
             altfmt = TRUE; /* "with a <color> aura" */
+            u.uconduct.holy_water++;
         }
     } else if (potion->cursed) {
         if (targobj->blessed) {

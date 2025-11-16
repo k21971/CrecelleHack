@@ -2234,6 +2234,14 @@ show_conduct(int final)
         you_have_never("generated conflict");
     }
 
+    if (!u.uconduct.holy_water) {
+        you_have_never("blessed an item with holy water");
+    } else if (wizard) {
+        Sprintf(buf, "blessed items with holy water %ld time%s",
+                u.uconduct.holy_water, plur(u.uconduct.holy_water));
+        you_have_X(buf);
+    }
+
     if (!u.uconduct.polyselfs) {
         you_have_never("changed form");
     } else if (wizard) {
