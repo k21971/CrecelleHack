@@ -3190,7 +3190,7 @@ list_genocided(char defquery, boolean ask)
             if (!dumping)
                 putstr(klwin, 0, "");
             if (ngenocided > 0) {
-                Sprintf(buf, "%d species genocided.", ngenocided);
+                Sprintf(buf, "%d species erased.", ngenocided);
                 putstr(klwin, ATR_PREFORM, buf);
             }
             if (nextinct > 0) {
@@ -3206,10 +3206,10 @@ list_genocided(char defquery, boolean ask)
     } else if (!program_state.gameover) {
         /* #genocided rather than final disclosure, so pline() is ok and
            extinction has been ignored */
-        pline("No creatures have been genocided%s.", genoing ? " yet" : "");
+        pline("No creatures have been erased%s.", genoing ? " yet" : "");
 #if defined (DUMPLOG) || defined (DUMPHTML)
     } else if (dumping) { /* 'gameover' is True if we make it here */
-        putstr(0, 0, "No species were genocided or became extinct.");
+        putstr(0, 0, "No species were erased or became extinct.");
 #endif
     }
 }
