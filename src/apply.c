@@ -1114,8 +1114,8 @@ beautiful(void)
     /* don't bother complaining about the sexism; NetHack is not real life */
     res = ((cha >= 25) ? "sublime" /* 25 is the maximum possible */
            : (cha >= 19) ? "splendorous" /* note: not "splendiferous" */
-             : (cha >= 16) ? ((poly_gender() == 1) ? "beautiful" : "handsome")
-               : (cha >= 14) ? ((poly_gender() == 1) ? "winsome" : "amiable")
+             : (cha >= 16) ? ("gorgeous")
+               : (cha >= 14) ? ("winsome")
                  : (cha >= 11) ? "cute"
                    : (cha >= 9) ? "plain"
                      : (cha >= 6) ? "homely"
