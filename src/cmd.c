@@ -5534,14 +5534,15 @@ doshout(void)
     /* Shouting makes noise. */
     if (gy.youmonst.data->msound == MS_SILENT) {
         You("cannot speak, so you just shout \"%s\" mentally.", buf);
-    }
-    else {
+    } else if (Race_if(PM_KOBOLD)) {
+        You("bark something that sounds like \"%s\".", buf);
+    } else {
         You("raise your voice and shout: \"%s\"", buf);
         wake_nearby(FALSE);
     }
     /* The main reason for this command: putting this string into the livelog
      * and chronicle. */
-    livelog_printf(LL_SHOUT, "shouted \"%s\"", buf);
+    livelog_printf(LL_SHOUT, "%s \"%s\"", Race_if(PM_KOBOLD) ? "barked" : "shouted", buf);
     return ECMD_TIME;
 }
 
