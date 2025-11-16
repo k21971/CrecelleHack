@@ -50,7 +50,7 @@ static NEARDATA const char *deaths[] = {
     /* the array of death */
     "died", "choked", "poisoned", "starvation", "drowning", "burning",
     "dissolving under the heat and pressure", "crushed", "turned to stone",
-    "turned into slime", "genocided", "panic", "trickery", "quit",
+    "turned into slime", "erased from existence", "panic", "trickery", "quit",
     "escaped", "ascended"
 };
 
@@ -60,7 +60,7 @@ static NEARDATA const char *ends[] = {
     "starved", "drowned", "burned",
     "dissolved in the lava",
     "were crushed", "turned to stone",
-    "turned into slime", "were genocided",
+    "turned into slime", "were erased",
     "panicked", "were tricked", "quit",
     "escaped", "ascended"
 };
