@@ -74,6 +74,10 @@
     - When unknown, appear as "harmonic."
     - Creating excalibur does not remove the oprop.
 
+## Options
+- implicit_material: quash default material names.
+- shorten_buc: shortens full buc name to [B][U][C].
+
 # 1.3
 
 ## Coating System

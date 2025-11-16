@@ -1430,9 +1430,9 @@ doname_base(
          * always allow "uncursed potion of water"
          */
         if (obj->cursed)
-            Strcat(prefix, "cursed ");
+            Strcat(prefix, flags.shorten_buc ? "[C] " : "cursed ");
         else if (obj->blessed)
-            Strcat(prefix, "blessed ");
+            Strcat(prefix, flags.shorten_buc ? "[U] " : "blessed ");
         else if (!flags.implicit_uncursed
             /* For most items with charges or +/-, if you know how many
              * charges are left or what the +/- is, then you must have
@@ -1453,7 +1453,7 @@ doname_base(
                      && obj->otyp != FAKE_AMULET_OF_YENDOR
                      && obj->otyp != AMULET_OF_YENDOR
                      && !Role_if(PM_CLERIC)))
-            Strcat(prefix, "uncursed ");
+            Strcat(prefix, flags.shorten_buc ? "[U] " : "uncursed ");
     }
 
     /* "a large trapped box" would perhaps be more correct; [no!]

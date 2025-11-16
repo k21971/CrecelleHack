@@ -5421,6 +5421,7 @@ optfn_boolean(
         case opt_implicit_material:
         case opt_invweight:
         case opt_obscure_role_obj_names:
+        case opt_shorten_buc:
             if (!flags.invlet_constant)
                 reassign();
             update_inventory();
