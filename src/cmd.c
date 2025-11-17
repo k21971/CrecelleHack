@@ -1717,7 +1717,7 @@ struct ext_func_tab extcmdlist[] = {
               IFBURIED | AUTOCOMPLETE | GENERALCMD | CMD_M_PREFIX, NULL },
     { ';',    "glance", "show what type of thing a map symbol corresponds to",
               doquickwhatis, IFBURIED | GENERALCMD, NULL },
-    { '\0',   "grapple", "grapple a nearby monster",
+    { M('G'),   "grapple", "grapple a nearby monster",
               dograpple,  AUTOCOMPLETE, NULL },
     { '?',    "help", "give a help message",
               dohelp, IFBURIED | GENERALCMD, NULL },
@@ -1852,7 +1852,7 @@ struct ext_func_tab extcmdlist[] = {
                         | CMD_NOT_AVAILABLE
 #endif /* SHELL */
                         ), NULL },
-    { '\0',   "shout", "shout something",
+    { M('S'),   "shout", "shout something",
               doshout, AUTOCOMPLETE, NULL },
     /* $ is like ),=,&c but is not included with *, so not called "seegold" */
     { GOLD_SYM, "showgold", "show gold, possibly shop credit or debt",
@@ -1898,7 +1898,7 @@ struct ext_func_tab extcmdlist[] = {
               dotip, AUTOCOMPLETE | CMD_M_PREFIX, NULL },
     { '_',    "travel", "travel to a specific location on the map",
               dotravel, CMD_M_PREFIX, NULL },
-    { '\0',   "trip", "trip a nearby monster",
+    { M('>'),   "trip", "trip a nearby monster",
               dotrip,  AUTOCOMPLETE, NULL },
     { M('t'), "turn", "turn undead away",
               doturn, IFBURIED | AUTOCOMPLETE, NULL },

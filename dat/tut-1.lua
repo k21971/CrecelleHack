@@ -35,7 +35,7 @@ des.map([[
 |...|.......|.............................................................|
 |.---.......|.............----------......................................|
 |.|.|.......|.---------...|........|......................................|
-|--.---|+|+--.|.|.|.|.|...|........|......................................|
+|S-.---|+|+--.|.|.|.|.|...|........|......................................|
 |.....||.|.|---.-.-.-.-----........|-------...............................|
 |.....||.|..+..........+..................|...............................|
 |.....|-+------.-.-.-.-----........|-------...............................|
@@ -57,16 +57,17 @@ des.non_diggable();
 des.teleport_region({ region = { 3, 8, 3, 8 } });
 
 nh.parse_config("OPTIONS=taunt:do the tutorial shuffle.");
-
-if (u.role == "Knight") then
-   des.engraving({ coord = { 12,1 }, type = "engrave", text = "Knights can jump with '" .. tut_key("jump") .. "'", degrade = false });
-end
-
 --
 des.object({ coord = { 1, 6 }, id = "statue", montype = "blood golem", historic = true });
 des.object({ coord = { 5, 6 }, id = "statue", montype = "black hole", historic = true });
 des.object({ coord = { 1, 10 }, id = "statue", montype = "illusion", historic = true });
 des.object({ coord = { 5, 10 }, id = "statue", montype = "squonk", historic = true });
+
+-- Secret area
+des.door({ coord = { 1, 5 }, state = "locked"});
+des.engraving({ coord = { 1, 4 }, type = "engrave", text = "You have found secret area #1/2", degrade = false });
+des.engraving({ coord = { 3, 1 }, type = "engrave", text = "You can pick up snow from the ground.", degrade = false });
+des.replace_terrain({ region={01,01, 03,02}, fromterrain=".", toterrain=".", coat="snow" })
 
 des.engraving({ coord = { 3, 5 }, type = "engrave", text = "You can leave the tutorial via the magic portal", degrade = false });
 des.trap({ type = "magic portal", coord = { 3, 4 }, seen = true });
@@ -74,7 +75,11 @@ des.trap({ type = "magic portal", coord = { 3, 4 }, seen = true });
 des.engraving({ coord = { 3, 11 }, type = "engrave", text = "Welcome to the CrecelleHack Tutorial. This tutorial is modeled off the 3.7 tutorial", degrade = false });
 des.engraving({ coord = { 3, 13 }, type = "engrave", text = "This tutorial will walk you through a few key differences between this variant and vanilla", degrade = false });
 des.engraving({ coord = { 3, 15 }, type = "engrave", text = "If you have not played NetHack before, please familiarize yourself with NetHack 3.7 first", degrade = false });
-des.engraving({ coord = { 5, 16 }, type = "engrave", text = "Let's start with the floor coating system", degrade = false });
+if (u.race == "kobold") then
+    des.engraving({ coord = { 5, 16 }, type = "engrave", text = "As a kobold, your face a special challenge: your ability scores are mediocre and you cannot chat with other monsters", degrade = false });
+else
+   des.engraving({ coord = { 5, 16 }, type = "engrave", text = "Let's start with the floor coating system", degrade = false });
+end
 des.door({ coord = { 6, 16 }, state = "closed" });
 --
 des.door({ coord = { 8, 8 }, state = "closed" });
@@ -104,16 +109,20 @@ des.object({ coord = { 17, 5 }, id = "tonic of gain ability", buc = "blessed", q
 des.engraving({ coord = { 19, 6 }, type = "engrave", text = "Scrolls of Genocide have been renamed to Scrolls of Erasure", degrade = false });
 des.object({ coord = { 19, 5 }, id = "scroll of light", buc = "not-cursed", name = "(Not a Real Erasure Scroll)" });
 -- Niche
-des.engraving({ coord = { 19, 8 }, type = "engrave", text = "Weapons and armor can be of different sizes", degrade = false });
-des.object({ coord = { 17, 9 }, id = "stiletto", osize = 3, buc = "not-cursed" });
+des.engraving({ coord = { 17, 8 }, type = "engrave", text = "Weapons and armor can be of different sizes and materials", degrade = false });
+des.object({ coord = { 17, 9 }, id = "stiletto", material = "silver ", osize = 3, buc = "not-cursed" });
 des.object({ coord = { 17, 9 }, id = "two-handed sword", osize = 1, buc = "not-cursed" });
 des.object({ coord = { 17, 9 }, id = "scale mail", osize = 0, buc = "not-cursed" });
+-- Niche
+des.engraving({ coord = { 19, 8 }, type = "engrave", text = "Items can have special properties", degrade = false });
+des.object({ coord = { 19, 9 }, id = "long sword", oprop = "crackling", buc = "not-cursed" });
 -- Niche
 des.engraving({ coord = { 15, 8 }, type = "engrave", text = "Unlocking tools can break", degrade = false });
 des.object({ coord = { 15, 9 }, id = "lock pick", quantity = 5, buc = "not-cursed" });
 des.object({ coord = { 15, 9 }, id = "chest", trapped = 0, locked = 1, buc = "not-cursed" });
 des.door({ coord = { 15, 10 }, state = "locked"});
 -- Secret Room
+des.engraving({ coord = { 15, 11 }, type = "engrave", text = "You have found secret area #2/2", degrade = false });
 des.engraving({ coord = { 15, 13 }, type = "engrave", text = "Use the #taunt command to taunt", degrade = false });
 des.engraving({ coord = { 11, 16 }, type = "engrave", text = "A custom taunt can be defined in your config file", degrade = false });
 des.monster({ coord = { 11, 9 }, id = "mountain nymph", peaceful = 1, asleep = 1 });
@@ -122,13 +131,20 @@ des.monster({ coord = { 11, 9 }, id = "mountain nymph", peaceful = 1, asleep = 1
 des.engraving({ coord = { 22, 7 }, type = "engrave", text = "Please note that this is not a comprehensive list of changes, merely a few salient ones.", degrade = false });
 des.door({ coord = { 23, 7 }, state = "closed" });
 ----------------
-des.engraving({ coord = { 24, 7 }, type = "engrave", text = "New commands are available for interacting with monsters.", degrade = false });
-des.engraving({ coord = { 26, 7 }, type = "engrave", text = "Try them out in this area.", degrade = false });
-des.engraving({ coord = { 24, 7 }, type = "engrave", text = "New commands are available for interacting with monsters.", degrade = false });
+if (u.role == "Grappler") then
+    des.engraving({ coord = { 24,7 }, type = "engrave", text = "As a grappler, standard attacks are grabs. Move after grabbing for a special attack.", degrade = false });
+else
+   des.engraving({ coord = { 24, 7 }, type = "engrave", text = "New commands are available for interacting with monsters.", degrade = false });
+   des.engraving({ coord = { 26, 7 }, type = "engrave", text = "Try them out in this area.", degrade = false });
+end
 des.monster({ coord = { 28, 4 }, id = "red mold", peaceful = 0 });
-des.engraving({ coord = { 28, 5 }, type = "engrave", text = "Use #trip to knock monsters over.", degrade = false });
+des.engraving({ coord = { 28, 5 }, type = "engrave", text = "#Trip (".. tut_key("trip") ..") to knock monsters over.", degrade = false });
+des.monster({ coord = { 30, 4 }, id = "brown mold", peaceful = 0 });
+des.engraving({ coord = { 30, 5 }, type = "engrave", text = "#Shout (".. tut_key("shout") ..") to yell messages that will appear in server logs.", degrade = false });
 des.monster({ coord = { 28, 10 }, id = "green mold", peaceful = 0 });
-des.engraving({ coord = { 28, 9 }, type = "engrave", text = "Use #grapple to hold monsters in place.", degrade = false });
+des.engraving({ coord = { 28, 9 }, type = "engrave", text = "#Grapple (".. tut_key("grapple") ..") to hold monsters in place.", degrade = false });
+des.monster({ coord = { 30, 10 }, id = "yellow mold", peaceful = 1 });
+des.engraving({ coord = { 30, 9 }, type = "engrave", text = "#Order (".. tut_key("order") ..") to issue commands to tame monsters.", degrade = false });
 des.engraving({ coord = { 39, 7 }, type = "engrave", text = "So ends the CrecelleHack tutorial. Go forth!", degrade = false});
 des.trap({ type = "magic portal", coord = { 40,7 }, seen = true });
 

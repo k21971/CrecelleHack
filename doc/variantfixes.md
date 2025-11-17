@@ -83,6 +83,9 @@
 - Conflictless: Never generated conflict (from xNetHack).
 - Blessless: Never blessed an item with holy water.
 
+## Misc
+- Added some secret areas to the tutorial.
+
 # 1.3
 
 ## Coating System
