@@ -651,7 +651,7 @@ doengrave_sfx_item_WAN(struct _doengrave_ctx *de)
                     surface(u.ux, u.uy));
         }
         break;
-    case WAN_WATER:
+    case WAN_AQUA_BOLT:
         if (!Blind)
             Sprintf(de->post_engr_text, "The bugs on the %s are washed away!",
                     surface(u.ux, u.uy));

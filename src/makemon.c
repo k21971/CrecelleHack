@@ -795,7 +795,7 @@ m_initinv(struct monst *mtmp)
                 FALLTHROUGH;
                 /*FALLTHRU*/
             case 3:
-                (void) mongets(mtmp, rn2(3) ? WAN_STRIKING : WAN_WATER);
+                (void) mongets(mtmp, rn2(3) ? WAN_STRIKING : WAN_AQUA_BOLT);
             }
         } else if (ptr->msound == MS_PRIEST
                    || quest_mon_represents_role(ptr, PM_CLERIC)) {

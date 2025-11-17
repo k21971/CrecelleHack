@@ -1375,7 +1375,7 @@ rnd_defensive_item(struct monst *mtmp)
                                      * redefine; nonconsecutive value is ok */
 #define MUSE_FLOOR_ALCHEMY 21
 #define MUSE_SCR_MAZE_OFFENSIVE 22
-#define MUSE_WAN_WATER 23
+#define MUSE_WAN_AQUA_BOLT 23
 
 staticfn boolean
 linedup_chk_corpse(coordxy x, coordxy y)
@@ -1567,10 +1567,10 @@ find_offensive(struct monst *mtmp)
             gm.m.offensive = obj;
             gm.m.has_offense = MUSE_WAN_STRIKING;
         }
-        nomore(MUSE_WAN_WATER);
-        if (obj->otyp == WAN_WATER && obj->spe > 0) {
+        nomore(MUSE_WAN_AQUA_BOLT);
+        if (obj->otyp == WAN_AQUA_BOLT && obj->spe > 0) {
             gm.m.offensive = obj;
-            gm.m.has_offense = MUSE_WAN_WATER;
+            gm.m.has_offense = MUSE_WAN_AQUA_BOLT;
         }
         nomore(MUSE_WAN_TELEPORTATION);
         if (obj->otyp == WAN_TELEPORTATION && obj->spe > 0
@@ -1734,7 +1734,7 @@ mbhitm(struct monst *mtmp, struct obj *otmp)
                                         || cansee(mtmp->mx, mtmp->my)))
             makeknown(WAN_STRIKING);
         break;
-    case WAN_WATER:
+    case WAN_AQUA_BOLT:
         reveal_invis = TRUE;
         if (hits_you) {
             if (rnd(20) < 10 + u.uac) {
@@ -1759,7 +1759,7 @@ mbhitm(struct monst *mtmp, struct obj *otmp)
         }
         if (learnit && gz.zap_oseen && (hits_you
                                         || cansee(mtmp->mx, mtmp->my)))
-            makeknown(WAN_WATER);
+            makeknown(WAN_AQUA_BOLT);
         break;
     case WAN_TELEPORTATION:
         if (hits_you) {
@@ -1902,7 +1902,7 @@ mbhit(
             case WAN_OPENING:
             case WAN_LOCKING:
             case WAN_STRIKING:
-            case WAN_WATER:
+            case WAN_AQUA_BOLT:
                 if (doorlock(obj, gb.bhitpos.x, gb.bhitpos.y)) {
                     if (gz.zap_oseen)
                         makeknown(otyp);
@@ -1978,7 +1978,7 @@ use_offensive(struct monst *mtmp)
     case MUSE_WAN_TELEPORTATION:
     case MUSE_WAN_UNDEAD_TURNING:
     case MUSE_WAN_STRIKING:
-    case MUSE_WAN_WATER:
+    case MUSE_WAN_AQUA_BOLT:
         gz.zap_oseen = oseen;
         mzapwand(mtmp, otmp, FALSE);
         gm.m_using = TRUE;
@@ -2165,7 +2165,7 @@ rnd_offensive_item(struct monst *mtmp)
     FALLTHROUGH;
     /* FALLTHRU */
     case 1:
-        return ((difficulty < 8 || rn2(difficulty) < 6)) ? WAN_STRIKING : WAN_WATER;
+        return ((difficulty < 8 || rn2(difficulty) < 6)) ? WAN_STRIKING : WAN_AQUA_BOLT;
     case 2:
         return POT_ACID;
     case 3:
@@ -2901,7 +2901,7 @@ searches_for_item(struct monst *mon, struct obj *obj)
             return (boolean) (mons[monsndx(mon->data)].difficulty < 6);
         if (objects[typ].oc_dir == RAY || typ == WAN_STRIKING
             || typ == WAN_UNDEAD_TURNING
-            || typ == WAN_WATER
+            || typ == WAN_AQUA_BOLT
             || typ == WAN_TELEPORTATION || typ == WAN_CREATE_MONSTER)
             return TRUE;
         break;

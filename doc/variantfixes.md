@@ -73,6 +73,7 @@
     - Angels spawn with harmonic weapons.
     - When unknown, appear as "harmonic."
     - Creating excalibur does not remove the oprop.
+- Rename wand of water to wand of aqua bolt.
 
 ## Options
 - implicit_material: quash default material names.

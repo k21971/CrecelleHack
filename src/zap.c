@@ -214,7 +214,7 @@ bhitm(struct monst *mtmp, struct obj *otmp)
             learn_it = FALSE;
         }
         break;
-    case WAN_WATER:
+    case WAN_AQUA_BOLT:
         zap_type_text = "jet of water";
         reveal_invis = TRUE;
         if (disguised_mimic)
@@ -2492,7 +2492,7 @@ bhito(struct obj *obj, struct obj *otmp)
         case WAN_NOTHING:
         case SPE_HEALING:
         case SPE_EXTRA_HEALING:
-        case WAN_WATER:
+        case WAN_AQUA_BOLT:
             res = 0;
             break;
         case SPE_STONE_TO_FLESH:
@@ -2803,7 +2803,7 @@ zapyourself(struct obj *obj, boolean ordinary)
         }
         break;
 
-    case WAN_WATER:
+    case WAN_AQUA_BOLT:
         You("douse yourself in %s!", hliquid("water"));
         learn_it = TRUE;
         water_damage_chain(gi.invent, FALSE);
@@ -3221,7 +3221,7 @@ zap_steed(struct obj *obj) /* wand or spell */
     case SPE_DRAIN_LIFE:
     case WAN_OPENING:
     case SPE_KNOCK:
-    case WAN_WATER:
+    case WAN_AQUA_BOLT:
         (void) bhitm(u.usteed, obj);
         steedhit = TRUE;
         break;
@@ -3403,7 +3403,7 @@ zap_updown(struct obj *obj) /* wand or spell, nonnull */
             add_coating(x, y, COAT_GRASS, 0);
         }
         break;
-    case WAN_WATER:
+    case WAN_AQUA_BOLT:
         if (u.dz > 0) {
             pline("Water sprays downward.");
             add_coating(x, y, COAT_POTION, POT_WATER);
@@ -3802,7 +3802,7 @@ zap_map(
                 break;
             case WAN_STRIKING:
             case SPE_FORCE_BOLT:
-            case WAN_WATER:
+            case WAN_AQUA_BOLT:
                 wipe_engr_at(x, y, d(2, 4), TRUE);
                 break;
             default:
@@ -3849,7 +3849,7 @@ zap_map(
                 Norep("You see some grass grow.");
                 learn_it = TRUE;
             }
-        } else if (obj->otyp == WAN_WATER) {
+        } else if (obj->otyp == WAN_AQUA_BOLT) {
             if (cansee(x, y))
                 Norep("The %s gets wet.", surface(x, y));
             floor_alchemy(x, y, POT_WATER, 0);
@@ -4234,7 +4234,7 @@ bhit(
             case WAN_LOCKING:
             case WAN_STRIKING:
             case SPE_KNOCK:
-            case WAN_WATER:
+            case WAN_AQUA_BOLT:
             case SPE_WIZARD_LOCK:
             case SPE_FORCE_BOLT:
                 if (doorlock(obj, x, y)) {
