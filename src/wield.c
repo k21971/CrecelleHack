@@ -766,13 +766,8 @@ can_twoweapon(void)
 {
     struct obj *otmp;
 
-    if (!could_twoweap(gy.youmonst.data)) {
-        if (Upolyd)
-            You_cant("use two weapons in your current form.");
-        else
-            pline("%s aren't able to use two weapons at once.",
-                  makeplural((flags.female && gu.urole.name.f)
-                             ? gu.urole.name.f : gu.urole.name.m));
+    if (!could_twoweap(gy.youmonst.data) && Upolyd) {
+        You_cant("use two weapons in your current form.");
     } else if (!uwep || !uswapwep) {
         const char *hand_s = body_part(HAND);
 
@@ -792,7 +787,7 @@ can_twoweapon(void)
         pline("%s isn't one-handed.", Yname2(otmp));
     } else if (uarms) {
         You_cant("use two weapons while wearing a shield.");
-    } else if (uswapwep->oartifact) {
+    } else if (uswapwep->oartifact && !can_hold_second(uswapwep)) {
         pline("%s being held second to another weapon!",
               Yobjnam2(uswapwep, "resist"));
     } else if (uswapwep->otyp == CORPSE && cant_wield_corpse(uswapwep)) {

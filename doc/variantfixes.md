@@ -39,6 +39,9 @@
   - Similar to fire and frost brand, but corresponds to acid.
   - Can be invoked for temporary stoning resistance.
   - Originally from SpliceHack.
+- You may dual-wield fire and frost brand together.
+- Unintelligent non-crossaligned artifacts do not resist being
+  held second to another artifact. Based on YANI archive #845.
 
 ## Races
 - Elf
@@ -74,6 +77,7 @@
     - When unknown, appear as "harmonic."
     - Creating excalibur does not remove the oprop.
 - Rename wand of water to wand of aqua bolt.
+- All characters can dual-wield weapons (badly).
 
 ## Options
 - implicit_material: quash default material names.

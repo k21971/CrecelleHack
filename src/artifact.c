@@ -2975,7 +2975,7 @@ get_artifact(struct obj *obj)
     return &artilist[ART_NONARTIFACT];
 }
 
-struct artifact *
+staticfn struct artifact *
 artifact_from_index(int artidx)
 {
     /* skip 0, 1st artifact at 1 */
@@ -3002,5 +3002,27 @@ permapoisoned(struct obj *obj)
     return (obj && (is_art(obj, ART_GRIMTOOTH) || obj->oprop == OPROP_SUBTLE));
 }
 #endif /* SFCTOOL */
+
+boolean
+can_hold_second(struct obj *obj)
+{
+    int art = obj->oartifact;
+    const struct artifact *oart = artifact_from_index(art);
+
+    if (!art)
+        return TRUE;
+    switch (art) {
+    case ART_FROST_BRAND:
+        return (uwep && uwep->oartifact == ART_FIRE_BRAND);
+    case ART_FIRE_BRAND:
+        return (uwep && uwep->oartifact == ART_FROST_BRAND);
+    default: {
+        boolean smart = ((oart->spfx & SPFX_INTEL) != 0);
+        boolean cross = (oart->spfx & SPFX_RESTR) && oart->alignment != A_NONE
+                   && (oart->alignment != u.ualign.type);
+        return (!(smart || cross));
+    }
+    }
+}
 
 /*artifact.c*/

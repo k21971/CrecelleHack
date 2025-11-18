@@ -192,6 +192,7 @@ extern struct obj *has_magic_key(struct monst *);
 extern boolean is_art(struct obj *, int);
 extern int otyp_from_artifact_index(int);
 extern boolean permapoisoned(struct obj *);
+extern boolean can_hold_second(struct obj *) NONNULLARG1;
 
 /* ### attrib.c ### */
 
