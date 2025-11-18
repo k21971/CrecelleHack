@@ -1229,7 +1229,7 @@
         0, 10, CLR_YELLOW, FIRE_VORTEX),
     MON(NAM("black hole"), S_VORTEX,
         LVL(9, 22, 2, 30, 0), (G_GENO | G_NOCORPSE | 1),
-        A(ATTK(AT_ENGL, AD_DREN, 2, 6), ATTK(AT_ENGL, AD_TLPT, 1, 6), 
+        A(ATTK(AT_ENGL, AD_COLD, 2, 6), ATTK(AT_ENGL, AD_TLPT, 1, 6), 
           ATTK(AT_NONE, AD_COLD, 0, 4), NO_ATTK, NO_ATTK, NO_ATTK),
         SIZ(0, 0, MS_SILENT, MZ_HUGE),
         MR_ELEC | MR_SLEEP | MR_DISINT | MR_POISON | MR_STONE, 0,
