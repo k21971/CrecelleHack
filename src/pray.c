@@ -895,7 +895,7 @@ gcrownu(void)
         /* not an artifact, but treat like one for this situation;
            classify as a spoiler in case player hasn't IDed the book yet */
         livelog_printf(LL_DIVINEGIFT | LL_ARTIFACT | LL_SPOILER,
-                       "was bestowed with %s (%s)", bbuf, OBJ_NAME(objects[obj->otyp]));
+                       "was bestowed with %s, %s", bbuf, an(OBJ_NAME(objects[obj->otyp])));
 
         /* when getting a new book for known spell, enhance
            currently wielded weapon rather than the book */
@@ -1830,10 +1830,11 @@ bestow_artifact(uchar max_giftvalue)
             u.ugifts++;
             u.ublesscnt = rnz(300 + (50 * nartifacts));
             exercise(A_WIS, TRUE);
-            livelog_printf (LL_DIVINEGIFT | LL_ARTIFACT,
-                            "was bestowed with %s (%s) by %s",
-                            artiname(otmp->oartifact),
+            livelog_printf(LL_DIVINEGIFT | LL_ARTIFACT,
+                            "was bestowed with %s %s named %s by %s",
+                            an(materialnm[otmp->material]),
                             OBJ_NAME(objects[otmp->otyp]),
+                            artiname(otmp->oartifact),
                             align_gname(u.ualign.type));
             /* make sure we can use this weapon */
             unrestrict_weapon_skill(weapon_type(otmp));

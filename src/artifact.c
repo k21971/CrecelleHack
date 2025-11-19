@@ -503,7 +503,6 @@ artifact_exists(
 void
 found_artifact(int a)
 {
-    pline("CHUNGUS");
     if (a < 1 || a > NROFARTIFACTS)
         impossible("found_artifact: invalid artifact index! (%d)", a);
     else if (!artiexist[a].exists)
@@ -549,8 +548,9 @@ find_artifact(struct obj *otmp)
                         blind but now seen; there's no previous_where to
                         figure out how it got here */
                      : "");
-        livelog_printf(LL_ARTIFACT, "found %s as a %s%s",
-                       bare_artifactname(otmp), OBJ_NAME(objects[otmp->otyp]), where);
+        livelog_printf(LL_ARTIFACT, "found %s %s named %s%s",
+                        an(materialnm[otmp->material]), OBJ_NAME(objects[otmp->otyp]),
+                        bare_artifactname(otmp), where);
     }
 }
 
