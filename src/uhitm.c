@@ -6712,7 +6712,7 @@ oprop_effects_pre(struct monst *magr, struct monst *mdef)
     if (weapon->oprop == OPROP_THERMAL && !rn2(5)) {
         if (cansee(dx, dy)) {
             pline_The("%s ignites!", simpleonames(weapon));
-            otmp->pknown = 1;
+            weapon->pknown = 1;
         }
         create_bonfire(dx, dy, rnd(7), d(2, 4));
     }
