@@ -2481,9 +2481,17 @@ bhito(struct obj *obj, struct obj *otmp)
                 learn_it = TRUE;
             break;
         case WAN_FECUNDITY:
-            /* kludge */
             if (obj->otyp == EGG)
                 revive_egg(obj);
+            if (obj->where == OBJ_BURIED && obj->material == VEGGY
+                && set_levltyp(obj->ox, obj->oy, TREE)) {
+                obj->where = OBJ_FLOOR;
+                if (cansee(obj->ox, obj->oy))
+                    pline("A tree sprouts from the ground!");
+                levl[obj->ox][obj->oy].fruit_otyp = obj->otyp;
+                block_point(obj->ox, obj->oy);
+                delobj(obj);
+            } 
             res = 0;
             break;
         case WAN_SLOW_MONSTER: /* no effect on objects */
@@ -2520,6 +2528,30 @@ bhitpile(
     struct obj *otmp, *next_obj;
     boolean hidingunder, first;
     int prevotyp, hitanything = 0;
+
+    /* Wand of fecundity only: hit buried objects*/
+    if (obj->otyp == WAN_FECUNDITY && IS_OVERWRITABLE(levl[tx][ty].typ)) {
+        for (otmp = svl.level.buriedobjlist; otmp; otmp = next_obj) {
+            if (otmp->otyp == APPLE || otmp->otyp == ORANGE
+                || otmp->otyp == PEAR || otmp->otyp == BANANA
+                || otmp->otyp == EUCALYPTUS_LEAF 
+                || (otmp->material != objects[otmp->otyp].oc_material && otmp->material == VEGGY)) {
+                obj_extract_self(otmp);
+                if (otmp->timed)
+                    (void) stop_timer(ROT_ORGANIC, obj_to_any(otmp));
+                place_object(otmp, tx, ty);
+                stackobj(otmp);
+                newsym(tx, ty);
+                /* this is a kludge to prevent fruit from being grown into trees
+                without being planted. We fix the where field later, before
+                doing anything with the object. */
+                otmp->where = OBJ_BURIED;
+                hitanything += (*fhito)(otmp, obj);
+                break;
+            }
+            next_obj = otmp->nobj;
+        }
+    }
 
     if (!svl.level.objects[tx][ty])
         return 0;
@@ -3848,6 +3880,11 @@ zap_map(
                 && add_coating(x, y, COAT_GRASS, 0)) {
                 Norep("You see some grass grow.");
                 learn_it = TRUE;
+            }
+            if (IS_TREE(levl[x][y].typ)) {
+                if (levl[x][y].flags & T_LOOTED) {
+                    levl[x][y].flags &= ~T_LOOTED;
+                }
             }
         } else if (obj->otyp == WAN_AQUA_BOLT) {
             if (cansee(x, y))

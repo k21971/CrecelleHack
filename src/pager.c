@@ -856,6 +856,13 @@ lookat(coordxy x, coordxy y, char *buf, char *monbuf)
         case S_fountain:
             Strcpy(buf, FOUNTAIN_IS_FROZEN(x, y) ? "frozen fountain" : "fountain");
             break;
+        case S_tree:
+            if (levl[x][y].fruit_otyp && !(levl[x][y].flags & T_LOOTED)
+                && !Role_if(PM_TOURIST))
+                Sprintf(buf, "%s tree", OBJ_NAME(objects[levl[x][y].fruit_otyp]));
+            else
+                Strcpy(buf, defsyms[symidx].explanation);
+            break;
         case S_pool:
         case S_water: /* was Plane of Water, now that or "wall of water" */
         case S_lava:

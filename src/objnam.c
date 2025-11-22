@@ -3848,6 +3848,7 @@ wizterrainwish(struct _readobjnam_data *d)
     } else if (!BSTRCMPI(bp, p - 4, "tree")) {
         lev->typ = TREE;
         lev->looted = d->looted ? (TREE_LOOTED | TREE_SWARM) : 0;
+        lev->fruit_otyp = rnd_treefruit();
         set_wallprop_from_str(bp);
         pline("A tree.");
         madeterrain = TRUE;

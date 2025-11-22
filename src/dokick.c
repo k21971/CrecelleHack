@@ -1169,13 +1169,15 @@ kick_nondoor(coordxy x, coordxy y, int avrg_attrib)
             return ECMD_TIME;
         }
         if (rn2(15) && !(gm.maploc->looted & TREE_LOOTED)
-            && (treefruit = rnd_treefruit_at(x, y))) {
+            && (treefruit = rnd_treefruit_at(x, y, x, y))) {
             long nfruit = 8L - rnl(7), nfall;
             short frtype = treefruit->otyp;
 
             treefruit->quan = nfruit;
             treefruit->owt = weight(treefruit);
-            if (is_plural(treefruit))
+            if (Hallucination && treefruit->otyp == PEAR)
+                pline("Shall I give you dis pear?");
+            else if (is_plural(treefruit))
                 pline("Some %s fall from the tree!", xname(treefruit));
             else
                 pline("%s falls from the tree!", An(xname(treefruit)));

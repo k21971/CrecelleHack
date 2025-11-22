@@ -2174,11 +2174,46 @@ material_bonus(struct obj *obj)
     return diff;
 }
 
+int
+rnd_treefruit(void)
+{
+    return ROLL_FROM(treefruits);
+}
+
 /* called when a tree is kicked; never returns Null */
 struct obj *
-rnd_treefruit_at(coordxy x, coordxy y)
+rnd_treefruit_at(coordxy x, coordxy y, coordxy tx, coordxy ty)
 {
-    return mksobj_at(ROLL_FROM(treefruits), x, y, TRUE, FALSE);
+    struct obj *obj;
+    int typ = levl[tx][ty].fruit_otyp;
+    if (!typ) {
+        obj = mksobj_at(ROLL_FROM(treefruits), x, y, TRUE, FALSE);
+    } else {
+        obj = mksobj_at(typ, x, y, TRUE, FALSE);
+    }
+    /* Block exploits. There is no way to change the materials of
+       ascension items so we do not need to worry about those. */
+    switch (obj->otyp) {
+        case WAN_DEATH:
+        case WAN_FECUNDITY:
+            obj->spe = 0;
+            obj->recharged = 7;
+            break;
+        case WAN_WISHING:
+            obj->otyp = WAN_NOTHING;
+            break;
+        case MAGIC_MARKER:
+            obj->spe = rnd(8);
+            obj->recharged = 1;
+            break;
+    }
+    if (obj->oclass == SCROLL_CLASS)
+        obj->otyp = SCR_BLANK_PAPER;
+    /* If the player has made some kind of wacky tree, the objects
+       that it grows should still be made of vegetable matter. */
+    if (obj->material != VEGGY)
+        set_material(obj, VEGGY);
+    return obj;
 }
 
 /* create a stack of N gold pieces; never returns Null */

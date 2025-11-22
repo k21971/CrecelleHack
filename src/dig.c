@@ -487,7 +487,7 @@ dig(void)
                 digtxt = "You cut down the tree.";
                 lev->typ = ROOM, lev->flags = 0;
                 if (!rn2(5))
-                    (void) rnd_treefruit_at(dpx, dpy);
+                    (void) rnd_treefruit_at(dpx, dpy, dpx, dpy);
                 if (Race_if(PM_ELF) || Role_if(PM_RANGER))
                     adjalign(-1);
             } else {
@@ -1499,7 +1499,7 @@ mdig_tunnel(struct monst *mtmp)
     } else if (IS_TREE(here->typ)) {
         here->typ = ROOM, here->flags = 0;
         if (pile && pile < 5)
-            (void) rnd_treefruit_at(mtmp->mx, mtmp->my);
+            (void) rnd_treefruit_at(mtmp->mx, mtmp->my, mtmp->mx, mtmp->my);
     } else {
         here->typ = CORR, here->flags = 0;
         if (pile && pile < 5)

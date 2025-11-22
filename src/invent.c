@@ -4718,9 +4718,14 @@ dfeature_at(coordxy x, coordxy y, char *buf)
         cmap = S_vcdbridge; /* "raised drawbridge" */
     else if (IS_GRAVE(ltyp))
         cmap = S_grave; /* "grave" */
-    else if (ltyp == TREE)
-        cmap = S_tree; /* "tree" */
-    else if (ltyp == IRONBARS)
+    else if (ltyp == TREE) {
+        if (levl[x][y].fruit_otyp && !(levl[x][y].flags & T_LOOTED)
+            && !Role_if(PM_TOURIST)) {
+            Sprintf(altbuf, "%s tree",  OBJ_NAME(objects[levl[x][y].fruit_otyp]));
+            dfeature = altbuf;
+        } else
+            cmap = S_tree; /* "tree" */
+    } else if (ltyp == IRONBARS)
         dfeature = "set of iron bars";
     else if (IS_COATABLE(ltyp)) {
         Sprintf(altbuf, "patch of ");

@@ -3361,8 +3361,7 @@ corpse_chance(
 
     /* Handle magma paraelementals melting */
     if (mdat == &mons[PM_MAGMA_PARAELEMENTAL]) {
-        if (levl[mon->mx][mon->my].typ != STAIRS &&
-                levl[mon->mx][mon->my].typ != LADDER) {
+        if (IS_OVERWRITABLE(levl[mon->mx][mon->my].typ)) {
             levl[mon->mx][mon->my].typ = LAVAPOOL;
             newsym(mon->mx, mon->my);
             if (cansee(mon->mx, mon->my) && !was_swallowed)

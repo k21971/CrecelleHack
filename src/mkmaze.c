@@ -103,6 +103,9 @@ set_levltyp(coordxy x, coordxy y, schar newtyp)
                 obj_ice_effects(x, y, TRUE);
                 spot_stop_timers(x, y, MELT_ICE_AWAY);
             }
+            if (IS_TREE(newtyp)) {
+                levl[x][y].fruit_otyp = rnd_treefruit();
+            }
             if ((IS_FOUNTAIN(oldtyp) != IS_FOUNTAIN(newtyp))
                 || (IS_SINK(oldtyp) != IS_SINK(newtyp)))
                 count_level_features(); /* level.flags.nfountains,nsinks */

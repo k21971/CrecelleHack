@@ -90,11 +90,19 @@
 - Rename wand of water to wand of aqua bolt.
 - All characters can dual-wield weapons (badly).
 - Breaking a wand of force creates a force field.
+- Zapping a wand of fecundity at a tree will cause it to become
+  fruitful again.
 
 ## Options
 - implicit_material: quash default material names.
 - shorten_buc: shortens full buc name to [B][U][C].
 - no_flipped_soko: stop sokoban levels from being flipped.
+
+## Dungeon Changes
+- Every tree grows a specific kind of fruit.
+- Looking at a tree now tells you what kind of fruit it grows.
+  Tourists simply see trees, because they are not familiar with
+  the local flora.
 
 ## Conducts
 - Conflictless: Never generated conflict (from xNetHack).

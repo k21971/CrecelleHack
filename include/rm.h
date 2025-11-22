@@ -128,6 +128,7 @@ enum levl_typ_types {
 #define IS_WATERWALL(typ) ((typ) == WATER)
 #define IS_COATABLE(typ) (IS_STWALL(typ) || ((typ) >= IRONBARS && (typ) < ALTAR))
 #define IS_SUBMASKABLE(typ) (typ == ROOM || typ == CORR || typ == STONE)
+#define IS_OVERWRITABLE(typ) (typ != STAIRS && typ != LADDER)
 /* for surface checks when it's unknown whether a drawbridge is involved;
    drawbridge_up is the spot in front of a closed drawbridge and not the
    current surface at that spot; caveat: this evaluates its arguments more
@@ -185,6 +186,7 @@ struct rm {
 
     /* HORRIBLE HACK INCOMING DANGER DANGER */
     Bitfield(pindex, 10);    /* This puts a hard upper limit on monster and potion types of 1024.*/
+#define fruit_otyp pindex
     /* 2 free  bits */
     Bitfield(coat_info, 12);  /* Stores the info about the floor's coating. */
 

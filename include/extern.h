@@ -1705,7 +1705,8 @@ extern struct obj *mk_tt_object(int, coordxy, coordxy);
 extern struct obj *mk_named_object(int, struct permonst *,
                                    coordxy, coordxy,
                                    const char *) ;
-extern struct obj *rnd_treefruit_at(coordxy, coordxy);
+extern int rnd_treefruit(void);
+extern struct obj *rnd_treefruit_at(coordxy, coordxy, coordxy, coordxy);
 extern int material_bonus(struct obj *) NONNULLARG1;
 extern void set_corpsenm(struct obj *, int) NONNULLARG1;
 extern long rider_revival_time(struct obj *, boolean) NONNULLARG1;
