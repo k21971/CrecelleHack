@@ -1235,6 +1235,10 @@ typedef uint32_t mmflags_nht;     /* makemon MM_ flags */
 #define M_BONFIRE_MINOR 1
 #define M_BONFIRE_OK    2
 
+/* m_force_field_ok() return values */
+#define M_FORCE_FIELD_BAD 0
+#define M_FORCE_FIELD_OK 1
+
 /* flags for deliver_obj_to_mon */
 #define DF_NONE     0x00
 #define DF_RANDOM   0x01

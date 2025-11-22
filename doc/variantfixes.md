@@ -43,6 +43,15 @@
 - Unintelligent non-crossaligned artifacts do not resist being
   held second to another artifact. Based on YANI archive #845.
 
+## Spells
+- Force field
+  - Creates a force field which blocks movement.
+  - Level 4 escape spell.
+
+## Monsters
+- Lawful monsters that cast clerical spells create force
+  fields around the player instead of summoning insects.
+
 ## Races
 - Elf
   - Elves are not used to meat. They take an alignment
@@ -78,6 +87,7 @@
     - Creating excalibur does not remove the oprop.
 - Rename wand of water to wand of aqua bolt.
 - All characters can dual-wield weapons (badly).
+- Breaking a wand of force creates a force field.
 
 ## Options
 - implicit_material: quash default material names.

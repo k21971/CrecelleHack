@@ -3542,7 +3542,6 @@ static const struct alt_spellings {
     { "HoOA", HELM_OF_OPPOSITE_ALIGNMENT },
     /* Easily confused objects */
     { "protection from illusions", RIN_PROTECTION_FROM_SHAPE_CHAN },
-    { "resizing kit", RESIZING_KIT },
     /* Objects renamed by variant */
     { "dented pot", YENDORIAN_BASCINET },
     { "small shield", ROUNDSHIELD },
@@ -3555,6 +3554,7 @@ static const struct alt_spellings {
     /* crecelle items */
     { "bottle", BOTTLE },
     { "flask", BOTTLE },
+    { "forcefield", SPE_FORCE_FIELD },
     { (const char *) 0, 0 },
 };
 

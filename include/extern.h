@@ -1782,6 +1782,7 @@ extern boolean zombie_maker(struct monst *) NONNULLARG1;
 extern int zombie_form(struct permonst *) NONNULLARG1;
 extern int m_poisongas_ok(struct monst *) NONNULLARG1;
 extern int m_bonfire_ok(struct monst *) NONNULLARG1;
+extern int m_force_field_ok(struct monst *) NONNULLARG1;
 extern int undead_to_corpse(int);
 extern int genus(int, int);
 extern int pm_to_cham(int);
@@ -2730,6 +2731,7 @@ extern void show_region(NhRegion *, coordxy, coordxy) NONNULLARG1;
 extern void save_regions(NHFILE *) NONNULLARG1;
 extern void rest_regions(NHFILE *) NONNULLARG1;
 extern void region_stats(const char *, char *, long *, long *) NONNULLPTRS;
+extern NhRegion *create_force_field(coordxy,coordxy,int,long);
 extern NhRegion *create_bonfire(coordxy, coordxy, int, int);
 extern char *reg_descr(NhRegion *, char *);
 extern NhRegion *create_gas_cloud(coordxy, coordxy, int, struct obj *, int);
@@ -2737,6 +2739,7 @@ extern NhRegion *create_gas_cloud_selection(struct selectionvar *, int);
 extern boolean region_danger(void);
 extern void region_safety(void);
 extern boolean is_gasregion(NhRegion *);
+extern boolean is_bonfire(NhRegion *);
 extern const char *region_string(NhRegion *);
 
 /* ### report.c ### */

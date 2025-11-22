@@ -354,6 +354,18 @@ m_bonfire_ok(struct monst *mtmp)
     return M_BONFIRE_BAD;
 }
 
+/* Would a monster try to walk through a force field? */
+int
+m_force_field_ok(struct monst *mtmp)
+{
+    boolean is_you = (mtmp == &gy.youmonst);
+    if (is_you)
+        return M_FORCE_FIELD_BAD;
+    if (mindless(mtmp->data) || is_animal(mtmp->data))
+        return M_FORCE_FIELD_OK;
+    return M_FORCE_FIELD_BAD;
+}
+
 /* return True if mon is capable of converting other monsters into zombies */
 boolean
 zombie_maker(struct monst *mon)
@@ -2268,11 +2280,14 @@ mfndpos(
     boolean rockok = FALSE, treeok = FALSE, thrudoor;
     int maxx, maxy;
     boolean poisongas_ok, in_poisongas, bonfire_ok, in_bonfire;
+    boolean force_field_ok, in_force_field;
     NhRegion *gas_reg;
     NhRegion *bonf_reg;
+    NhRegion *ff_reg;
     int gas_glyph = cmap_to_glyph(S_poisoncloud);
     int vapor_glyph = cmap_to_glyph(S_potioncloud);
     int bonfire_glyph = cmap_to_glyph(S_bonfire);
+    int force_field_glyph = cmap_to_glyph(S_force_field);
 
     x = mon->mx;
     y = mon->my;
@@ -2291,10 +2306,13 @@ mfndpos(
     thrudoor = ((flag & (ALLOW_WALL | BUSTDOOR)) != 0L);
     poisongas_ok = (m_poisongas_ok(mon) == M_POISONGAS_OK);
     bonfire_ok = (m_bonfire_ok(mon) == M_BONFIRE_OK);
+    force_field_ok = (m_force_field_ok(mon) == M_FORCE_FIELD_OK);
     in_poisongas = ((gas_reg = visible_region_at(x,y)) != 0
                     && (gas_reg->glyph == gas_glyph || gas_reg->glyph == vapor_glyph));
     in_bonfire = ((bonf_reg = visible_region_at(x,y)) != 0
                     && bonf_reg->glyph == bonfire_glyph);
+    in_force_field = ((ff_reg = visible_region_at(x,y)) != 0
+                    && ff_reg->glyph == force_field_glyph);
 
     if (flag & ALLOW_DIG) {
         struct obj *mw_tmp;
@@ -2368,6 +2386,15 @@ mfndpos(
             if (!bonfire_ok && !in_bonfire
                 && (bonf_reg = visible_region_at(nx,ny)) != 0
                 && bonf_reg->glyph == bonfire_glyph)
+                continue;
+            /* avoid force field (both in and out)? */
+            if (!force_field_ok && !in_force_field
+                && (ff_reg = visible_region_at(nx,ny)) != 0
+                && ff_reg->glyph == force_field_glyph)
+                continue;
+            if (!force_field_ok && in_force_field
+                && (((ff_reg = visible_region_at(nx,ny)) == 0)
+                    || ff_reg->glyph != force_field_glyph))
                 continue;
             /* first diagonal checks (tight squeezes handled below) */
             if (nx != x && ny != y

@@ -2537,9 +2537,12 @@ avoid_trap_andor_region(coordxy x, coordxy y)
                     u_locomotion("step"),
                     newreg->arg.otyp ? OBJ_DESCR(objects[newreg->arg.otyp])
                     : (reg_damg(newreg) > 0) ? "poison gas" : "vapor");
-        else
+        else if (is_bonfire(newreg))
             Snprintf(qbuf, sizeof qbuf, "%s into those raging flames?",
                     u_locomotion("step"));
+        else
+              Snprintf(qbuf, sizeof qbuf, "%s into that force field?",
+                    u_locomotion("step"));  
         if (!paranoid_query(ParanoidConfirm, upstart(qbuf))) {
             nomul(0);
             svc.context.move = 0;

@@ -413,6 +413,7 @@ tele_jump_ok(coordxy x1, coordxy y1, coordxy x2, coordxy y2)
 staticfn boolean
 teleok(coordxy x, coordxy y, boolean trapok)
 {
+    NhRegion *ff;
     if (!trapok) {
         /* allow teleportation onto vibrating square, it's not a real trap;
            also allow pits and holes if levitating or flying */
@@ -433,7 +434,11 @@ teleok(coordxy x, coordxy y, boolean trapok)
         return FALSE;
     if (!tele_jump_ok(u.ux, u.uy, x, y))
         return FALSE;
-    if (!in_out_region(x, y))
+    /* Check for force fields becauses the player needs to be able to
+       warp out of them, but not exit in any other way. */
+    ff = visible_region_at(x, y);
+    if ((ff != 0 && ff->glyph != S_force_field)
+        && !in_out_region(x, y))
         return FALSE;
     return TRUE;
 }

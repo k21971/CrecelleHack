@@ -4168,6 +4168,7 @@ do_break_wand(struct obj *obj)
         /* we want this before the explosion instead of at the very end */
         Soundeffect(se_wall_of_force, 65);
         pline("A wall of force smashes down around you!");
+        create_force_field(u.ux, u.uy, 2, 5L);
         dmg = d(1 + obj->spe, 6); /* normally 2d12 */
         FALLTHROUGH;
         /*FALLTHRU*/

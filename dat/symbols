@@ -115,6 +115,7 @@ start: Blank
         S_fire_trap: \032
         S_flashbeam: \032
         S_food: \032
+				S_force_field: \032
         S_fountain: \032
         S_fungus: \032
         S_gem: \032

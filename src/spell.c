@@ -53,6 +53,7 @@ staticfn void display_spell_target_positions(boolean);
 staticfn boolean spell_aim_step(genericptr_t, coordxy, coordxy);
 staticfn void propagate_chain_lightning(struct chain_lightning_queue *,
             struct chain_lightning_zap);
+staticfn void cast_force_field(void);
 
 /* The roles[] table lists the role-specific values for tuning
  * percent_success().
@@ -1594,6 +1595,9 @@ spelleffects(int spell_otyp, boolean atme, boolean force)
         if (!(jump(max(role_skill, 1)) & ECMD_TIME))
             pline1(nothing_happens);
         break;
+    case SPE_FORCE_FIELD:
+        cast_force_field();
+        break;
     case SPE_CHAIN_LIGHTNING:
         cast_chain_lightning();
         break;
@@ -2414,6 +2418,15 @@ num_spells(void)
         if (spellid(i) == NO_SPELL)
             break;
     return i;
+}
+
+staticfn
+void cast_force_field(void)
+{
+    if (throwspell()) {
+        create_force_field(u.dx, u.dy, 2, 10L);
+        You("create a force field!");
+    }
 }
 
 /*spell.c*/
