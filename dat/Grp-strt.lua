@@ -33,10 +33,7 @@ des.stair("down", 75,01)
 -- Portal arrival point
 des.levregion({ region = {37,16,37,16}, type="branch" })
 -- Masked Mummy, the quest leader in hiding
-des.monster({ id = "Masked Mummy", coord = {71, 17}, inventory = function()
-   des.object({ id = "towel" });
-   des.object({ id = "club", spe = 6 });
-end })
+des.monster({ id = "Masked Mummy", coord = {71, 17}})
 -- The treasure of the quest leader
 des.object("chest", 71, 17)
 -- Trainees and their loot.

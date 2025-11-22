@@ -378,6 +378,112 @@ m_initweap(struct monst *mtmp)
                 (void) mongets(mtmp, ARMOR);
                 break;
             }
+        } else if (mons[mm].geno & G_UNIQ) {
+            switch(mm) {
+            case PM_LORD_CARNARVON:
+                otmp = mksobj(FEDORA, FALSE, FALSE);
+                otmp->spe = 5;
+                (void) mpickobj(mtmp, otmp);
+                otmp = mksobj(BULLWHIP, FALSE, FALSE);
+                otmp->spe = 4;
+                (void) mpickobj(mtmp, otmp);
+                break;
+            case PM_PELIAS:
+                otmp = mksobj(RUNESWORD, FALSE, FALSE);
+                otmp->spe = 5;
+                (void) mpickobj(mtmp, otmp);
+                otmp = mksobj(CHAIN_MAIL, FALSE, FALSE);
+                otmp->spe = 5;
+                (void) mpickobj(mtmp, otmp);
+                break;
+            case PM_SHAMAN_KARNOV:
+                otmp = mksobj(ARMOR, FALSE, FALSE);
+                otmp->spe = 5;
+                (void) mpickobj(mtmp, otmp);
+                otmp = mksobj(CLUB, FALSE, FALSE);
+                otmp->spe = 5;
+                (void) mpickobj(mtmp, otmp);
+                break;
+            case PM_MASKED_MUMMY:
+                (void) mongets(mtmp, TOWEL);
+                otmp = mksobj(CLUB, FALSE, FALSE);
+                otmp->spe = 6;
+                (void) mpickobj(mtmp, otmp);
+                break;
+            case PM_HIPPOCRATES:
+                otmp = mksobj(DAGGER, FALSE, FALSE);
+                otmp->spe = 5;
+                set_material(otmp, SILVER);
+                (void) mpickobj(mtmp, otmp);
+                break;
+            case PM_KING_ARTHUR:
+                otmp = mksobj(LONG_SWORD, FALSE, FALSE);
+                otmp = oname(otmp, "Excalibur", ONAME_RANDOM);
+                otmp->spe = 5;
+                (void) mpickobj(mtmp, otmp);
+                otmp = mksobj(PLATE_MAIL, FALSE, FALSE);
+                otmp->spe = 5;
+                (void) mpickobj(mtmp, otmp);
+                break;
+            case PM_ARCH_PRIEST:
+                otmp = mksobj(ROBE, FALSE, FALSE);
+                otmp->spe = 4;
+                (void) mpickobj(mtmp, otmp);
+                otmp = mksobj(MACE, FALSE, FALSE);
+                otmp->spe = 4;
+                (void) mpickobj(mtmp, otmp);
+                break;
+            case PM_ORION:
+                otmp = mksobj(ARMOR, FALSE, FALSE);
+                otmp->spe = 4;
+                (void) mpickobj(mtmp, otmp);
+                otmp = mksobj(YUMI, FALSE, FALSE);
+                otmp->spe = 4;
+                (void) mpickobj(mtmp, otmp);
+                m_initthrow(mtmp, YA, 50); /* TODO: Enchant these... */
+                break;
+            case PM_GRAND_MASTER:
+                otmp = mksobj(ROBE, FALSE, FALSE);
+                otmp->spe = 6;
+                (void) mpickobj(mtmp, otmp);
+                break;
+            case PM_LORD_SATO:
+                otmp = mksobj(SPLINT_MAIL, FALSE, FALSE);
+                otmp->spe = 5;
+                otmp->oerodeproof = TRUE;
+                otmp->cursed = FALSE;
+                (void) mpickobj(mtmp, otmp);
+                otmp = mksobj(KATANA, FALSE, FALSE);
+                otmp->spe = 4;
+                otmp->oerodeproof = TRUE;
+                otmp->cursed = FALSE;
+                (void) mpickobj(mtmp, otmp);
+                break;
+            case PM_TWOFLOWER:
+                otmp = mksobj(LOW_BOOTS, FALSE, FALSE);
+                otmp->spe = 3;
+                (void) mpickobj(mtmp, otmp);
+                otmp = mksobj(HAWAIIAN_SHIRT, FALSE, FALSE);
+                otmp->spe = 3;
+                (void) mpickobj(mtmp, otmp);
+                break;
+            case PM_NORN:
+                otmp = mksobj(BANDED_MAIL, FALSE, FALSE);
+                otmp->spe = 5;
+                (void) mpickobj(mtmp, otmp);
+                otmp = mksobj(LONG_SWORD, FALSE, FALSE);
+                otmp->spe = 4;
+                (void) mpickobj(mtmp, otmp);
+                break;
+            case PM_NEFERET_THE_GREEN:
+                otmp = mksobj(ELVEN_CLOAK, FALSE, FALSE);
+                otmp->spe = 5;
+                (void) mpickobj(mtmp, otmp);
+                otmp = mksobj(QUARTERSTAFF, FALSE, FALSE);
+                otmp->spe = 5;
+                (void) mpickobj(mtmp, otmp);
+                break;
+            }
         }
         break;
 

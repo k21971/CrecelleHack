@@ -51,6 +51,8 @@
 ## Monsters
 - Lawful monsters that cast clerical spells create force
   fields around the player instead of summoning insects.
+- Fixed randomly generated quest leaders not having
+  their items.
 
 ## Races
 - Elf

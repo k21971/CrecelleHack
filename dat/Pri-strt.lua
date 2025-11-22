@@ -71,10 +71,7 @@ des.door("closed",52,14)
 -- Unattended Altar - unaligned due to conflict - player must align it.
 des.altar({ x=28, y=09, align="noalign", type="altar" })
 -- High Priest
-des.monster({ id = "Arch Priest", coord = {28, 10}, inventory = function()
-   des.object({ id = "robe", spe = 4 });
-   des.object({ id = "mace", spe = 4 });
-end })
+des.monster({ id = "Arch Priest", coord = {28, 10}})
 -- The treasure of High Priest
 des.object("chest", 27, 10)
 -- knight guards for the audience chamber

@@ -95,10 +95,7 @@ des.monster("forest centaur")
 des.monster("forest centaur")
 des.monster("C")
 -- Twoflower
-des.monster({ id = "Twoflower", coord = {64, 03}, inventory = function()
-   des.object({ id = "walking shoes", spe = 3 });
-   des.object({ id = "hawaiian shirt", spe = 3 });
-end })
+des.monster({ id = "Twoflower", coord = {64, 03}})
 -- The treasure of Twoflower
 des.object("chest", 64, 03)
 -- guides for the audience chamber

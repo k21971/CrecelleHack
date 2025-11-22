@@ -60,9 +60,7 @@ des.door("closed",47,08)
 des.door("closed",48,12)
 des.door("locked",50,10)
 -- Hippocrates
-des.monster({ id = "Hippocrates", coord = {37, 10}, inventory = function()
-   des.object({ id = "dagger", material = "silver " spe = 5 });
-end })
+des.monster({ id = "Hippocrates", coord = {37, 10}})
 -- The treasure of Hippocrates
 des.object("chest", 37, 10)
 -- intern guards for the audience chamber
