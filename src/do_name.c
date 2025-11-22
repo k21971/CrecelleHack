@@ -1029,7 +1029,7 @@ x_monnam(
     if (do_saddle && (mtmp->misc_worn_check & W_SADDLE) && !Blind
         && !Hallucination)
         Strcat(buf, "saddled ");
-    if (mtmp->mbaby) {
+    if (mtmp->mbaby && !do_name) {
         Strcat(buf, baby_name(mtmp));
     }
     has_adjectives = (buf[0] != '\0');
