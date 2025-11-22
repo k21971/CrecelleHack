@@ -2195,7 +2195,7 @@ rnd_treefruit_at(coordxy x, coordxy y, coordxy tx, coordxy ty)
        ascension items so we do not need to worry about those. */
     switch (obj->otyp) {
         case WAN_DEATH:
-        case WAN_FECUNDITY:
+        case WAN_GROWTH:
             obj->spe = 0;
             obj->recharged = 7;
             break;

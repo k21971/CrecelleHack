@@ -603,7 +603,7 @@ doengrave_sfx_item_WAN(struct _doengrave_ctx *de)
                     surface(u.ux, u.uy));
         }
         break;
-    case WAN_FECUNDITY:
+    case WAN_GROWTH:
         if (!Blind) {
             Sprintf(de->post_engr_text, "The bugs on the %s grow up!",
                     surface(u.ux, u.uy));

@@ -90,7 +90,7 @@
 - Rename wand of water to wand of aqua bolt.
 - All characters can dual-wield weapons (badly).
 - Breaking a wand of force creates a force field.
-- Zapping a wand of fecundity at a tree will cause it to become
+- Zapping a wand of growth at a tree will cause it to become
   fruitful again.
 
 ## Options

@@ -395,7 +395,7 @@ bhitm(struct monst *mtmp, struct obj *otmp)
         probe_monster(mtmp);
         learn_it = TRUE;
         break;
-    case WAN_FECUNDITY:
+    case WAN_GROWTH:
         if (!mtmp->mtame || !rn2(8)) {
             grow_up(mtmp, (struct monst *) 0);
         }
@@ -2250,10 +2250,10 @@ bhito(struct obj *obj, struct obj *otmp)
     /*
      * Some parts of this function expect the object to be on the floor
      * obj->{ox,oy} to be valid.  The exception to this (so far) is
-     * for the STONE_TO_FLESH spell and the wand of fecundity.
+     * for the STONE_TO_FLESH spell and the wand of growth.
      */
     if (!(obj->where == OBJ_FLOOR || otmp->otyp == SPE_STONE_TO_FLESH
-         || otmp->otyp == WAN_FECUNDITY))
+         || otmp->otyp == WAN_GROWTH))
         impossible("bhito: obj is not floor or Stone To Flesh spell");
 
     if (obj == uball) {
@@ -2480,7 +2480,7 @@ bhito(struct obj *obj, struct obj *otmp)
             if (res)
                 learn_it = TRUE;
             break;
-        case WAN_FECUNDITY:
+        case WAN_GROWTH:
             if (obj->otyp == EGG)
                 revive_egg(obj);
             if (obj->where == OBJ_BURIED && obj->material == VEGGY
@@ -2529,8 +2529,8 @@ bhitpile(
     boolean hidingunder, first;
     int prevotyp, hitanything = 0;
 
-    /* Wand of fecundity only: hit buried objects*/
-    if (obj->otyp == WAN_FECUNDITY && IS_OVERWRITABLE(levl[tx][ty].typ)) {
+    /* Wand of growth only: hit buried objects*/
+    if (obj->otyp == WAN_GROWTH && IS_OVERWRITABLE(levl[tx][ty].typ)) {
         for (otmp = svl.level.buriedobjlist; otmp; otmp = next_obj) {
             if (otmp->otyp == APPLE || otmp->otyp == ORANGE
                 || otmp->otyp == PEAR || otmp->otyp == BANANA
@@ -3067,7 +3067,7 @@ zapyourself(struct obj *obj, boolean ordinary)
             boxlock_invent(obj);
         }
         break;
-    case WAN_FECUNDITY: {
+    case WAN_GROWTH: {
         struct obj *otmp, *onxt;
         for (otmp = gi.invent; otmp; otmp = onxt) {
             onxt = otmp->nobj;
@@ -3426,7 +3426,7 @@ zap_updown(struct obj *obj) /* wand or spell, nonnull */
             (void) openfallingtrap(&gy.youmonst, FALSE, &disclose);
         }
         break;
-    case WAN_FECUNDITY:
+    case WAN_GROWTH:
         if (u.dz > 0) {
             if (Blind && !uarmf)
                 You_feel("some grass tickle your %s.", body_part(FOOT));
@@ -3875,7 +3875,7 @@ zap_map(
                 break;
             }
         } /* find_drawbridge */
-        if (obj->otyp == WAN_FECUNDITY) {
+        if (obj->otyp == WAN_GROWTH) {
             if (cansee(x, y) && !has_coating(x, y, COAT_GRASS)
                 && add_coating(x, y, COAT_GRASS, 0)) {
                 Norep("You see some grass grow.");
