@@ -1872,6 +1872,11 @@ artifact_hit(
             return TRUE;
         }
     }
+    /* Sunsword deals double damage at midday */
+    if (otmp->oartifact == ART_SUNSWORD && midday()) {
+        pline("The blazing blade blasts %s!", hittee);
+        *dmgptr *= 2;
+    }
     return FALSE;
 }
 

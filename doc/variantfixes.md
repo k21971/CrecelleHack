@@ -42,6 +42,7 @@
 - You may dual-wield fire and frost brand together.
 - Unintelligent non-crossaligned artifacts do not resist being
   held second to another artifact. Based on YANI archive #845.
+- Sunsword deals double damage at midday.
 
 ## Spells
 - Force field
