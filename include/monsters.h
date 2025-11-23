@@ -2427,6 +2427,13 @@
         SIZ(750, 200, MS_GROWL, MZ_LARGE), 0, 0, M1_ANIMAL | M1_CARNIVORE,
         M2_HOSTILE, M3_INFRAVISIBLE | M3_TRAITOR, M4_BST_POTION,
         0, 14, CLR_BLUE, DISENCHANTER),
+    MON(NAM("transmuter"), S_RUSTMONST,
+        LVL(15, 15, -12, 0, -3), (G_HELL | G_GENO | 1),
+        A(ATTK(AT_CLAW, AD_TMUT, 4, 4), ATTK(AT_CLAW, AD_POLY, 4, 4),
+          ATTK(AT_NONE, AD_TMUT, 0, 0), NO_ATTK, NO_ATTK, NO_ATTK),
+        SIZ(750, 200, MS_GROWL, MZ_LARGE), 0, 0, M1_ANIMAL | M1_OMNIVORE,
+        M2_HOSTILE | M2_NOPOLY, M3_INFRAVISIBLE | M3_TRAITOR, M4_BST_POTION,
+        0, 18, CLR_BRIGHT_GREEN, TRANSMUTER),
     /*
      * Snakes
      *  Note: in the real world, most snakes are oviparous but some aren't;

@@ -3779,6 +3779,55 @@ mhitm_ad_ench(
 }
 
 void
+mhitm_ad_tmut(
+    struct monst *magr, struct attack *mattk,
+    struct monst *mdef,
+    struct mhitm_data *mhm UNUSED)
+{
+    if (magr == &gy.youmonst) {
+        /* uhitm */
+        /* there's no msomearmor() function, so just do damage */
+    } else if (mdef == &gy.youmonst) {
+        /* mhitu */
+        boolean negated = mhitm_mgc_atk_negated(magr, mdef, FALSE);
+
+        hitmsg(magr, mattk);
+        /* uncancelled is sufficient enough; please
+           don't make this attack less frequent */
+        if (!negated) {
+            struct obj *obj = some_armor(mdef);
+
+            if (!obj) {
+                /* some rings are susceptible;
+                   amulets and blindfolds aren't (at present) */
+                switch (rn2(5)) {
+                case 0:
+                    break;
+                case 1:
+                    obj = uright;
+                    break;
+                case 2:
+                    obj = uleft;
+                    break;
+                case 3:
+                    obj = uamul;
+                    break;
+                case 4:
+                    obj = ublindf;
+                    break;
+                }
+            }
+            if (obj) {
+                transmute_obj(obj, 0);
+            }
+        }
+    } else {
+        /* mhitm */
+        /* there's no msomearmor() function, so just do damage */
+    }
+}
+
+void
 mhitm_ad_slow(
     struct monst *magr, struct attack *mattk,
     struct monst *mdef,
@@ -4998,6 +5047,7 @@ mhitm_adtyping(
     case AD_SLEE: mhitm_ad_slee(magr, mattk, mdef, mhm); break;
     case AD_SLIM: mhitm_ad_slim(magr, mattk, mdef, mhm); break;
     case AD_ENCH: mhitm_ad_ench(magr, mattk, mdef, mhm); break;
+    case AD_TMUT: mhitm_ad_tmut(magr, mattk, mdef, mhm); break;
     case AD_SLOW: mhitm_ad_slow(magr, mattk, mdef, mhm); break;
     case AD_CONF: mhitm_ad_conf(magr, mattk, mdef, mhm); break;
     case AD_POLY: mhitm_ad_poly(magr, mattk, mdef, mhm); break;
@@ -6179,6 +6229,7 @@ passive(
         }
         learn_it = TRUE;
         break;
+    case AD_TMUT:
     case AD_ENCH: /* KMH -- remove enchantment (disenchanter) */
         if (mhitb) {
             if (aatyp == AT_KICK) {
@@ -6340,7 +6391,7 @@ passive_obj(
     /* if caller hasn't specified an object, use uwep, uswapwep or uarmg */
     if (!obj) {
         obj = (u.twoweap && uswapwep && !rn2(2)) ? uswapwep : uwep;
-        if (!obj && mattk->adtyp == AD_ENCH)
+        if (!obj && (mattk->adtyp == AD_ENCH || mattk->adtyp == AD_TMUT))
             obj = uarmg; /* no weapon? then must be gloves */
         if (!obj)
             return; /* no object to affect */
@@ -6378,6 +6429,11 @@ passive_obj(
     case AD_CORR:
         if (!mon->mcan) {
             (void) erode_obj(obj, (char *) 0, ERODE_CORRODE, EF_GREASE);
+        }
+        break;
+    case AD_TMUT:
+        if (!mon->mcan) {
+            (void) transmute_obj(obj, 0);
         }
         break;
     case AD_ENCH:

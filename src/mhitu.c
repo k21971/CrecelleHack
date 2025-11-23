@@ -2565,6 +2565,11 @@ passiveum(
             /* No message */
         }
         return M_ATTK_HIT;
+    case AD_TMUT:
+        if (mon_currwep) {
+            (void) transmute_obj(mon_currwep, 0);
+        }
+        return M_ATTK_HIT;
     default:
         break;
     }

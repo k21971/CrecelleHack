@@ -1261,6 +1261,7 @@ cpostfx(int pm)
     case PM_DOPPELGANGER:
     case PM_SANDESTIN: /* moot--they don't leave corpses */
     case PM_GENETIC_ENGINEER:
+    case PM_TRANSMUTER:
         if (Unchanging) {
             You_feel("momentarily different."); /* same as poly trap */
         } else {

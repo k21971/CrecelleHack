@@ -32,6 +32,7 @@ staticfn void seffect_taming(struct obj **);
 staticfn void seffect_genocide(struct obj **);
 staticfn void seffect_light(struct obj **);
 staticfn void seffect_charging(struct obj **);
+staticfn void seffect_transmute_material(struct obj **);
 staticfn void seffect_amnesia(struct obj **);
 staticfn void seffect_fire(struct obj **);
 staticfn void seffect_earth(struct obj **);
@@ -722,6 +723,26 @@ charge_ok(struct obj *obj)
     /* why are weapons/armor considered charged anyway?
      * make them selectable even so for "feeling of loss" message */
     return GETOBJ_EXCLUDE_SELECTABLE;
+}
+
+/* getobj callback for object to alter material of */
+int
+transmute_ok(struct obj *obj)
+{
+    if (!obj)
+        return GETOBJ_EXCLUDE;
+
+    /* Absolutely not. No. Never. */
+    if (is_ascension_obj(obj))
+        return GETOBJ_EXCLUDE;
+
+    if (obj->oclass == WEAPON_CLASS
+        || obj->oclass == ARMOR_CLASS
+        || obj->oclass == TOOL_CLASS)
+        return GETOBJ_SUGGEST;
+
+    /* For later, when we allow more objects to have materials. */
+    return GETOBJ_EXCLUDE;
 }
 
 /* recharge an object; curse_bless is -1 if the recharging implement
@@ -1774,6 +1795,27 @@ seffect_charging(struct obj **sobjp)
 }
 
 staticfn void
+seffect_transmute_material(struct obj **sobjp)
+{
+    struct obj *sobj = *sobjp;
+    struct obj *otmp;
+    boolean scursed = sobj->cursed;
+    boolean already_known = (sobj->oclass == SPBOOK_CLASS /* spell */
+                             || objects[sobj->otyp].oc_name_known);
+
+    useup(sobj);
+    *sobjp = 0;
+    if (!already_known) {
+        pline("This scroll lets you change the material of an item.");
+        learnscroll(sobj);
+    }
+    otmp = getobj("transmute", transmute_ok, GETOBJ_PROMPT | GETOBJ_ALLOWCNT);
+    if (otmp) {
+        transmute_obj(otmp, scursed ? PLASTIC : 0);
+    }
+}
+
+staticfn void
 seffect_amnesia(struct obj **sobjp)
 {
     struct obj *sobj = *sobjp;
@@ -2330,6 +2372,9 @@ seffects(
         break;
     case SCR_MAZE:
         seffect_maze(&sobj);
+        break;
+    case SCR_TRANSMUTE_MATERIAL:
+        seffect_transmute_material(&sobj);
         break;
     case SCR_STINKING_CLOUD:
         seffect_stinking_cloud(&sobj);

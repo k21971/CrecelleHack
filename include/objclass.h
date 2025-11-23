@@ -30,7 +30,7 @@ enum obj_material_types {
     MITHRIL     = 17,
     PLASTIC     = 18,
     GLASS       = 19,
-    ICECRYSTAL     = 20,
+    ICECRYSTAL  = 20,
     GEMSTONE    = 21,
     MINERAL     = 22,
     NUM_MATERIAL_TYPES

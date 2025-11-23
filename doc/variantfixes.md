@@ -70,11 +70,18 @@
   - Barbarians begin with cram rations rather than food
     rations, potentially resulting in inventory substitutions.
 
-## New Items
+## New Objects
 - Gnomish Pointy Hat
   - Ported from dNetHack. Differences are as follows:
     - Pointy hats do not contain a candle.
     - Pointy hats grant a point of luck when worn by gnomish players.
+- Scroll of Transmute Material
+  - Transform an object's material to another random material.
+
+## New Monsters
+- Transmuter (R)
+  - Originally from SpliceHack, but implemented in original form here.
+  - Changes the material of items.
 
 ## Objects
 - New wand appearances: meat and leek.

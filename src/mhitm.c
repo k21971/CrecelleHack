@@ -1374,6 +1374,12 @@ passivemm(
             /* No message */
         }
         break;
+    case AD_TMUT:
+        if (mhitb && !mdef->mcan && mwep) {
+            (void) transmute_obj(mwep, 0);
+            /* No message */
+        }
+        break;
     default:
         break;
     }

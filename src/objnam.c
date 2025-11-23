@@ -3555,6 +3555,8 @@ static const struct alt_spellings {
     { "bottle", BOTTLE },
     { "flask", BOTTLE },
     { "forcefield", SPE_FORCE_FIELD },
+    { "transmutation", SCR_TRANSMUTE_MATERIAL },
+    { "change material", SCR_TRANSMUTE_MATERIAL },
     { (const char *) 0, 0 },
 };
 

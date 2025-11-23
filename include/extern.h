@@ -1750,6 +1750,8 @@ extern float weight_adj_by_size(int sz);
 extern void set_obj_size(struct obj *, int, boolean);
 extern boolean valid_obj_material(struct obj *, int);
 extern void set_material(struct obj *, int);
+extern void force_material(struct obj *, int);
+extern void transmute_obj(struct obj *, int);
 extern void add_oprop_to_object(struct obj *, int) NONNULLARG1;
 extern int oprop_from_permonst(struct permonst *) NONNULLARG1;
 
@@ -2688,6 +2690,7 @@ extern const char *candy_wrapper_text(struct obj *) NONNULLARG1;
 extern void assign_candy_wrapper(struct obj *) NONNULLARG1;
 extern int doread(void);
 extern int charge_ok(struct obj *) NO_NNARGS;
+extern int transmute_ok(struct obj *) NO_NNARGS;
 extern void recharge(struct obj *, int) NONNULLARG1;
 extern boolean valid_cloud_pos(coordxy, coordxy);
 extern int seffects(struct obj *) NONNULLARG1;
@@ -3464,6 +3467,8 @@ extern void mhitm_ad_slee(struct monst *, struct attack *, struct monst *,
 extern void mhitm_ad_slim(struct monst *, struct attack *, struct monst *,
                           struct mhitm_data *) NONNULLPTRS;
 extern void mhitm_ad_ench(struct monst *, struct attack *, struct monst *,
+                          struct mhitm_data *) NONNULLPTRS;
+extern void mhitm_ad_tmut(struct monst *, struct attack *, struct monst *,
                           struct mhitm_data *) NONNULLPTRS;
 extern void mhitm_ad_slow(struct monst *, struct attack *, struct monst *,
                           struct mhitm_data *) NONNULLPTRS;

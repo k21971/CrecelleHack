@@ -2212,7 +2212,7 @@ rnd_treefruit_at(coordxy x, coordxy y, coordxy tx, coordxy ty)
     /* If the player has made some kind of wacky tree, the objects
        that it grows should still be made of vegetable matter. */
     if (obj->material != VEGGY)
-        set_material(obj, VEGGY);
+        force_material(obj, VEGGY);
     return obj;
 }
 
@@ -4493,10 +4493,8 @@ valid_obj_material(struct obj *obj, int mat)
     }
 }
 
-/* Change the object's material, and any properties derived from it.
- * This includes weight, and erosion/erodeproofing (i.e. materials which
- * can't corrode will not be generated corroded or corrode-proofed).
- */
+/* set the material of an object, but throw a warning if it is
+   an abnormal material. */
 void
 set_material(struct obj *otmp, int material)
 {
@@ -4504,6 +4502,15 @@ set_material(struct obj *otmp, int material)
         impossible("setting material of %s to invalid material %d",
                    OBJ_NAME(objects[otmp->otyp]), material);
     }
+    force_material(otmp, material);
+}
+
+/* Change the object's material, and any properties derived from it.
+ * This includes weight, and erosion/erodeproofing (i.e. materials which
+ * can't corrode will not be generated corroded or corrode-proofed).
+ */
+void force_material(struct obj *otmp, int material)
+{
     otmp->material = material;
     otmp->owt = weight(otmp);
     if (!erosion_matters(otmp))
@@ -4512,6 +4519,30 @@ set_material(struct obj *otmp, int material)
         otmp->oeroded = 0;
     if (!is_corrodeable(otmp) && !is_rottable(otmp))
         otmp->oeroded2 = 0;
+}
+
+/* randomly change the material of an object */
+void
+transmute_obj(struct obj *otmp, int newmat)
+{
+    int oldmat = otmp->material;
+    boolean in_invent = (otmp->where == OBJ_INVENT);
+    if (otmp->oartifact && rn2(20))
+        return;
+    if (!newmat) {
+        do {
+            newmat = 2 + rn2(NUM_MATERIAL_TYPES - 2);
+        } while (newmat == oldmat);
+    }
+    if (in_invent)
+        pline("%s!", Yobjnam2(otmp, "vibrate"));
+    force_material(otmp, newmat);
+    if (in_invent) {
+        pline("It is now %s.", an(xname(otmp)));
+        retouch_object(&otmp, FALSE, FALSE);
+        disp.botl = TRUE;
+        update_inventory();
+    }
 }
 
 /* Oprop probabilities. More powerful or fantastical ones are less likely

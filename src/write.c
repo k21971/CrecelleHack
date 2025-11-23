@@ -51,6 +51,7 @@ cost(struct obj *otmp)
         return 30;
     case SCR_ENCHANT_ARMOR:
     case SCR_ENCHANT_WEAPON:
+    case SCR_TRANSMUTE_MATERIAL:
         return 40;
     case SCR_BLANK_PAPER:
     default:

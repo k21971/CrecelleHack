@@ -1275,6 +1275,8 @@ SCROLL("control weather",               "EKDMOS",  1,  15, 300,
                                                         SCR_CONTROL_WEATHER),
 SCROLL("maze",                   "WAREZ WALL DO",  1,   5, 300,
                                                          SCR_MAZE),
+SCROLL("transmute material",             "TROUT",  1,  25, 200,
+                                                        SCR_TRANSMUTE_MATERIAL),
 SCROLL("stinking cloud",             "FIZZ BUZZ",  1,  15, 300,
                                                         SCR_STINKING_CLOUD),
     /* Extra descriptions, shuffled into use at start of new game.
