@@ -52,6 +52,10 @@
 ## Monsters
 - Lawful monsters that cast clerical spells create force
   fields around the player instead of summoning insects.
+- Chaotic monsters that cast clerical spells cause random
+  potions to rain on the player instead of summoning insects.
+  It is important to note that this impacts Master Kaen.
+- Unaligned priests use a random set of priest spells.
 - Fixed randomly generated quest leaders not having
   their items.
 
