@@ -683,7 +683,7 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
 char *
 potion_coating_text(char *outbuf, int pindex) {
 
-    if (objects[pindex].oc_uname) {
+    if (!objects[pindex].oc_name_known && objects[pindex].oc_uname) {
         Sprintf(outbuf, "tonic called %s", objects[pindex].oc_uname);
     } else {
         Sprintf(outbuf, "%s %s",
