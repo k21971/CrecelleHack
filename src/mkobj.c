@@ -1,4 +1,4 @@
-/* NetHack 3.7	mkobj.c	$NHDT-Date: 1737528890 2025/01/21 22:54:50 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.315 $ */
+/* NetHack 3.7	mkobj.c	$NHDT-Date: 1764044196 2025/11/24 20:16:36 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.326 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Derek S. Ray, 2015. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -1754,7 +1754,7 @@ shrink_glob(
     }
     if (updinv) {
         update_inventory();
-        (void) encumber_msg();
+        encumber_msg();
     }
 }
 
@@ -2214,6 +2214,18 @@ rnd_treefruit_at(coordxy x, coordxy y, coordxy tx, coordxy ty)
     if (obj->material != VEGGY)
         force_material(obj, VEGGY);
     return obj;
+}
+
+/* for describing objects embedded in trees */
+boolean
+is_treefruit(struct obj *otmp)
+{
+    int fruitidx;
+
+    for (fruitidx = 0; fruitidx < SIZE(treefruits); ++fruitidx)
+        if (treefruits[fruitidx] == otmp->otyp)
+            return TRUE;
+    return FALSE;
 }
 
 /* create a stack of N gold pieces; never returns Null */
@@ -3128,8 +3140,8 @@ hornoplenty(
             /* item still in magic horn was weightless; when it's now in
                a carried container, hero's encumbrance could change */
             if (carried(targetbox)) {
-                (void) encumber_msg();
-                update_inventory(); /* for contents count or invweight */
+                encumber_msg();
+                update_inventory(); /* for contents count or wizweight */
             }
         } else {
             /* assumes this is taking place at hero's location */

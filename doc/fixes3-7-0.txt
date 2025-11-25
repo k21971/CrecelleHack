@@ -1,4 +1,4 @@
-NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.1575 $ $NHDT-Date: 1762750699 2025/11/09 20:58:19 $
+NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.1578 $ $NHDT-Date: 1764044196 2025/11/24 20:16:36 $
 
 General Fixes and Modified Features
 -----------------------------------
@@ -1532,6 +1532,15 @@ some food and paper items do no damage when bashing
 improved messages for oilskin sacks protecting from water damage
 some messages by amorous demons and mail daemon were delivered as verbal ones
 	even when the hero is deaf
+travel couldn't find the vibrating square if it was covered by an object or
+	a monster; it isn't really a trap so treat it as special terrain
+travel would stop one step in front of known vibrating square like other traps
+fix bug which delayed burden changes due to monster actions (e.g. reverting to
+        natural form due to damage, changing carry capacity) for one turn
+on arboreal levels (Ranger quest) where STONE terrain is treated as TREE, an
+	object at a tree location would be described as "embedded in stone"
+an item at an ordinary tree location, whether the level is arboreal or not,
+	would be described as itself with no mention of the tree
 
 
 Fixes to 3.7.0-x General Problems Exposed Via git Repository
