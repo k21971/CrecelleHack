@@ -85,7 +85,7 @@ give_may_advance_msg(int skill)
              (skill == P_NONE) ? ""
                  : (skill <= P_LAST_WEAPON) ? "weapon "
                      : (skill <= P_LAST_SPELL) ? "spell casting "
-                         : "fighting ");
+                         : "");
     (void) handle_tip(TIP_ENHANCE);
 }
 
