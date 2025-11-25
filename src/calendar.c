@@ -34,7 +34,8 @@ static const char *weather_strings[] = {
     "Calm", "Drizzle", "Rain", "Downburst", "Acid Rain", "Hail"
 };
 
-static struct weather dungeon_precips[] = {
+/* wizweather_precips must match weather_strings */
+static struct weather wizweather_precips[] = {
     { 0, WTHM_ALL_PRECIPS, 300, 575 },
     { WTH_DRIZZLE, WTHM_ALL_PRECIPS, 200, 200 },
     { WTH_RAIN, WTHM_ALL_PRECIPS, 100, 200 },
@@ -43,18 +44,25 @@ static struct weather dungeon_precips[] = {
     { WTH_HAIL, 0, 20, 10 },
 };
 
+static struct weather dungeon_precips[] = {
+    { 0, WTHM_ALL_PRECIPS, 300, 800 },
+    { WTH_DRIZZLE, WTHM_ALL_PRECIPS, 200, 100 },
+    { WTH_RAIN, WTHM_ALL_PRECIPS, 100, 95 },
+    { WTH_DOWNBURST, WTHM_ALL_PRECIPS, 50, 5 },
+};
+
 static struct weather dungeon_winds[] = {
     { 0, WTHM_ALL_WINDS, 200, 400 },
     { WTH_BREEZE, WTH_GUST, 300, 250 },
     { WTH_WIND, 0, 150, 200 },
-    { WTH_GUST, WTH_BREEZE, 150, 145 },
-    { WTH_TORNADO | WTH_GUST, 0, 50, 5 }
+    { WTH_GUST, WTH_BREEZE, 150, 150 }
 };
 
 static struct weather harassment_precip[] = {
     { WTH_ACIDRAIN, 0, 100, 350 },
     { WTH_FIRERAIN, 0, 100, 350 },
-    { WTH_HAIL, 0, 100, 300 }
+    { WTH_HAIL, 0, 20, 200 },
+    { WTH_TORNADO | WTH_GUST, 0, 50, 100 },
 };
 
 time_t
@@ -328,7 +336,7 @@ struct weather *roll_wind(void)
         total_prob += dungeon_winds[i].prob;
         if (x < total_prob) {
             u.uenvirons.inc_wind = dungeon_winds[i];
-            return &dungeon_precips[i];
+            return &dungeon_winds[i];
         }
     }
     panic("A black wind blows through you... (%d %d)", x, total_prob);
@@ -629,7 +637,7 @@ weather_choice_menu(void)
     u.uenvirons.inc_precip.timeout = rn1(500, 500);
     for (j = 0; j < n; ++j) {
         i = pick_list[j].item.a_int - 1;
-        u.uenvirons.inc_precip.def |= dungeon_precips[i].def;
+        u.uenvirons.inc_precip.def |= wizweather_precips[i].def;
     }
     free(pick_list);
     destroy_nhwindow(win);
