@@ -4672,7 +4672,7 @@ water_damage(
             described = TRUE;
             update_inventory();
         }
-        return ER_NOTHING;
+        return ER_DESTROYED;
     } else if (obj->greased) {
         if (!rn2(2)) {
             obj->greased = 0;
