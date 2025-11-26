@@ -87,6 +87,10 @@
 - Transmuter (R)
   - Originally from SpliceHack, but implemented in original form here.
   - Changes the material of items.
+- Knight Watch (K)
+  - Appears when robbing a shop at night, replacing standard keystone
+    kops. They are more dangerous.
+  - They also appear when a shop is robbed if the player is a knight.
 
 ## Objects
 - New wand appearances: meat and leek.
@@ -115,6 +119,8 @@
 - Looking at a tree now tells you what kind of fruit it grows.
   Tourists simply see trees, because they are not familiar with
   the local flora.
+- Shopkeepers now lock their shops when the sun sets and unlock
+  them when the sun rises.
 
 ## Conducts
 - Conflictless: Never generated conflict (from xNetHack).

@@ -130,6 +130,7 @@ staticfn boolean rob_shop(struct monst *);
 staticfn void deserted_shop(char *);
 staticfn boolean special_stock(struct obj *, struct monst *, boolean);
 staticfn const char *cad(boolean);
+staticfn void close_up_shop(struct monst *, boolean);
 
 /*
         invariants: obj->unpaid iff onbill(obj) [unless bp->useup]
@@ -463,6 +464,7 @@ call_kops(struct monst *shkp, boolean nearshop)
     nokops = ((svm.mvitals[PM_KEYSTONE_KOP].mvflags & G_GONE)
               && (svm.mvitals[PM_KOP_SERGEANT].mvflags & G_GONE)
               && (svm.mvitals[PM_KOP_LIEUTENANT].mvflags & G_GONE)
+              && (svm.mvitals[PM_KNIGHT_WATCH].mvflags & G_GONE)
               && (svm.mvitals[PM_KOP_KAPTAIN].mvflags & G_GONE));
 
     if (!angry_guards(!!Deaf) && nokops) {
@@ -777,6 +779,13 @@ u_entered_shop(char *enterstring)
         } else {
             pline("%s is combing through %s inventory list.",
                   Shknam(shkp), noit_mhis(shkp));
+        }
+    } else if (night()) {
+        if (!Deaf) {
+            pline("%s coughs politely.", Shknam(shkp));
+            verbalize("I was trying to close up for the night...");
+        } else {
+            pline("%s is pointedly checking the time.", Shknam(shkp));
         }
     } else {
         if (!Deaf && !muteshk(shkp)) {
@@ -4301,6 +4310,11 @@ getprice(struct obj *obj, boolean shk_buying)
         if (shk_buying)
             tmp /= 4;
     }
+    /* shopkeepers are grumpy at night */
+    if (night()) {
+        if (shk_buying) tmp /= 2;
+        else tmp *= 2;
+    }
     switch (obj->oclass) {
     case FOOD_CLASS:
         tmp += corpsenm_price_adj(obj);
@@ -5101,6 +5115,9 @@ makekops(coord *mm)
         if ((cnt = k_cnt[k]) == 0)
             break;
         mndx = k_mndx[k];
+        if (mndx == PM_KEYSTONE_KOP
+            && (night() || Role_if(PM_KNIGHT)))
+            mndx = PM_KNIGHT_WATCH;
         if (svm.mvitals[mndx].mvflags & G_GONE)
             continue;
 
@@ -5572,7 +5589,7 @@ shk_chat(struct monst *shkp)
             pline(ROLL_FROM(Izchak_speaks), shkname(shkp));
     } else if (night()) {
         if (!Deaf && !muteshk(shkp))
-            pline("%s complains about having to keep the store open at these hours.", Shknam(shkp));
+            pline("%s complains about having to speak with a customer at such a late hour.", Shknam(shkp));
     } else {
         if (!Deaf && !muteshk(shkp))
             pline("%s talks about the problem of shoplifters.", Shknam(shkp));
@@ -6089,6 +6106,72 @@ use_unpaid_trapobj(struct obj *otmp, coordxy x, coordxy y)
             }
         }
         bill_dummy_object(otmp);
+    }
+}
+
+/* close or open all shops on a level */
+void
+close_shops(boolean loud)
+{
+    struct monst *shkp;
+
+    for (shkp = next_shkp(fmon, FALSE); shkp;
+         shkp = next_shkp(shkp->nmon, FALSE)) {
+        close_up_shop(shkp, loud);
+    }
+}
+
+/* close up the shops for the night, or open them in the morning */
+staticfn void
+close_up_shop(struct monst *shkp, boolean loud)
+{
+    struct eshk *eshkp = ESHK(shkp);
+    struct mkroom *sroom = &svr.rooms[eshkp->shoproom - ROOMOFFSET];
+    int fdoor = sroom->fdoor;
+    int rt = sroom->rtype;
+    coord cc = svd.doors[fdoor];
+
+    /* Can't close up */
+    if (shk_impaired(shkp))
+        return;
+
+    /* No door to close */
+    if (!IS_DOOR(levl[cc.x][cc.y].typ)
+        || (levl[cc.x][cc.y].doormask & D_BROKEN))
+        return;
+    
+    /* Something in the way */
+    if (MON_AT(cc.x, cc.y) || (cc.x == u.ux && cc.y == u.uy))
+        return;
+
+    if (night()
+        && (levl[cc.x][cc.y].doormask == D_ISOPEN
+            || levl[cc.x][cc.y].doormask == D_CLOSED)) {
+        if (loud) {
+            if (canseemon(shkp))
+                pline("%s claps %s hands.", Shknam(shkp), mhis(shkp));
+            verbalize("%s %s is now closed for the evening!",
+                        s_suffix(shkname(shkp)), shtypes[rt - SHOPBASE].name);
+            if (cansee(cc.x, cc.y))
+                pline("The shop door locks.");
+        }
+        levl[cc.x][cc.y].doormask = D_LOCKED;
+        newsym(cc.x, cc.y);
+        block_point(cc.x, cc.y);
+    } else if (!night()
+                && (levl[cc.x][cc.y].doormask == D_LOCKED
+                    || levl[cc.x][cc.y].doormask == D_LOCKED)) {
+        if (loud) {
+            if (canseemon(shkp))
+                pline("%s snaps %s fingers.", Shknam(shkp), mhis(shkp));
+            verbalize("%s %s is open for business!",
+                        s_suffix(shkname(shkp)), shtypes[rt - SHOPBASE].name);
+            if (cansee(cc.x, cc.y))
+                pline("The shop door opens.");
+        }
+        levl[cc.x][cc.y].doormask = D_ISOPEN;
+        newsym(cc.x, cc.y);
+        unblock_point(cc.x, cc.y);
     }
 }
 
