@@ -1722,7 +1722,7 @@ artifact_hit(
                 }
                 *dmgptr = 2 * mdef->mhp + FATAL_DAMAGE_MODIFIER;
                 pline("%s cuts %s in half!", wepdesc, mon_nam(mdef));
-                otmp->dknown = TRUE;
+                observe_object(otmp);
                 return TRUE;
             } else {
                 if (bigmonst(gy.youmonst.data)) {
@@ -1739,7 +1739,7 @@ artifact_hit(
                  */
                 *dmgptr = 2 * (Upolyd ? u.mh : u.uhp) + FATAL_DAMAGE_MODIFIER;
                 pline("%s cuts you in half!", wepdesc);
-                otmp->dknown = TRUE;
+                observe_object(otmp);
                 return TRUE;
             }
         } else if (is_art(otmp, ART_VORPAL_BLADE)
@@ -1774,7 +1774,7 @@ artifact_hit(
                 }
                 if (Hallucination && !flags.female)
                     pline("Good job Henry, but that wasn't Anne.");
-                otmp->dknown = TRUE;
+                observe_object(otmp);
                 return TRUE;
             } else {
                 if (!has_head(gy.youmonst.data)) {
@@ -1791,7 +1791,7 @@ artifact_hit(
                 }
                 *dmgptr = 2 * (Upolyd ? u.mh : u.uhp) + FATAL_DAMAGE_MODIFIER;
                 pline(ROLL_FROM(behead_msg), wepdesc, "you");
-                otmp->dknown = TRUE;
+                observe_object(otmp);
                 /* Should amulets fall off? */
                 return TRUE;
             }
