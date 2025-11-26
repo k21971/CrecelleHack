@@ -6117,7 +6117,8 @@ close_shops(boolean loud)
 
     for (shkp = next_shkp(fmon, FALSE); shkp;
          shkp = next_shkp(shkp->nmon, FALSE)) {
-        close_up_shop(shkp, loud);
+        if (on_level(&(ESHK(shkp)->shoplevel), &u.uz))
+            close_up_shop(shkp, loud);
     }
 }
 
@@ -6132,7 +6133,7 @@ close_up_shop(struct monst *shkp, boolean loud)
     coord cc = svd.doors[fdoor];
 
     /* Can't close up */
-    if (shk_impaired(shkp))
+    if (shk_impaired(shkp) || ANGRY(shkp))
         return;
 
     /* No door to close */

@@ -170,9 +170,8 @@ drop_throw(
     if (obj->otyp == CREAM_PIE || obj->oclass == VENOM_CLASS
         || (ohit && (obj->otyp == EGG || obj->otyp == BOTTLE))) {
         broken = TRUE;
-    } else if (breaks(obj, x, y)) {
-        /* Need this so that we can handle broken bottles */
-        return TRUE;
+    } else if (obj->otyp == BOTTLE) {
+        broken =TRUE;
     } else {
         broken = (ohit && should_mulch_missile(obj));
     }
