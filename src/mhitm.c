@@ -971,6 +971,8 @@ gulpmm(
             remove_monster(dx,dy);
             place_monster(magr, ax, ay);
             place_monster(mdef, dx, dy);
+        } else if (MON_AT(ax, ay)) {
+            place_monster(magr, dx, dy);
         } else {
             place_monster(magr, ax, ay);
         }

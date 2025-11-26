@@ -451,7 +451,7 @@ check_wornmask_slots(void)
             why = "uswapwep is not a melee weapon";
         else if (u_bimanual(uswapwep))
             why = "uswapwep is two-handed";
-        else if (!could_twoweap(gy.youmonst.data))
+        else if (Upolyd && !could_twoweap(gy.youmonst.data))
             why = "without two weapon attacks";
 
         if (why)

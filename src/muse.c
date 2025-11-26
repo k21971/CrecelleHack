@@ -290,6 +290,7 @@ mreadmsg(struct monst *mtmp, struct obj *otmp)
 staticfn void
 mquaffmsg(struct monst *mtmp, struct obj *otmp)
 {
+    struct obj *bottle;
     if (canseemon(mtmp)) {
         observe_object(otmp);
         pline_mon(mtmp, "%s drinks %s!", Monnam(mtmp), singular(otmp, doname));
@@ -298,8 +299,8 @@ mquaffmsg(struct monst *mtmp, struct obj *otmp)
         You_hear("a chugging sound.");
     }
     /* We shouldn't do this here, but it's neater. */
-    otmp = mksobj(BOTTLE, FALSE, FALSE);
-    (void) mpickobj(mtmp, otmp);
+    bottle = mksobj(BOTTLE, FALSE, FALSE);
+    (void) mpickobj(mtmp, bottle);
 }
 
 /* Defines for various types of stuff.  The order in which monsters prefer
