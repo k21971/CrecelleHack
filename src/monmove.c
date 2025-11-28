@@ -1033,8 +1033,8 @@ dochug(struct monst *mtmp)
        to move. Movement itself is handled by the m_move() function. */
     if (!nearby || mtmp->mflee || scared || mtmp->mconf || mtmp->mstun
         || (mtmp->minvis && !rn2(3))
-        || (mdat->mlet == S_LEPRECHAUN && !findgold(gi.invent)
-            && (findgold(mtmp->minvent) || rn2(2)))
+        || (mdat->mlet == S_LEPRECHAUN && !findgold(gi.invent, FALSE)
+            && (findgold(mtmp->minvent, FALSE) || rn2(2)))
         || (is_wanderer(mdat) && !rn2(4)) || (Conflict && !mtmp->iswiz)
         || (!mtmp->mcansee && !rn2(4)) || mtmp->mpeaceful) {
 
@@ -1295,9 +1295,9 @@ leppie_avoidance(struct monst *mtmp)
     struct obj *lepgold, *ygold;
 
     if (mtmp->data == &mons[PM_LEPRECHAUN]
-        && ((lepgold = findgold(mtmp->minvent))
+        && ((lepgold = findgold(mtmp->minvent, TRUE))
             && (lepgold->quan
-                > ((ygold = findgold(gi.invent)) ? ygold->quan : 0L))))
+                > ((ygold = findgold(gi.invent, TRUE)) ? ygold->quan : 0L))))
         return TRUE;
 
     return FALSE;
@@ -1316,7 +1316,7 @@ leppie_stash(struct monst *mtmp)
         && levl[mtmp->mx][mtmp->my].typ == ROOM
         && !t_at(mtmp->mx, mtmp->my)
         && rn2(4)
-        && (gold = findgold(mtmp->minvent)) != 0) {
+        && (gold = findgold(mtmp->minvent, TRUE)) != 0) {
         mdrop_obj(mtmp, gold, FALSE);
         gold = g_at(mtmp->mx, mtmp->my);
         if (gold)
