@@ -385,6 +385,7 @@ writexlentry(FILE *rfile, struct toptenentry *tt, int how)
     Fprintf(rfile, "%cwish_cnt=%ld", XLOG_SEP, u.uconduct.wishes);
     Fprintf(rfile, "%carti_wish_cnt=%ld", XLOG_SEP, u.uconduct.wisharti);
     Fprintf(rfile, "%cbones=%ld", XLOG_SEP, u.uroleplay.numbones);
+    Fprintf(rfile, "%crerolls=%ld", XLOG_SEP, u.uroleplay.numrerolls);
     Fprintf(rfile, "\n");
 #undef XLOG_SEP
 }
@@ -400,6 +401,8 @@ encodexlogflags(void)
         e |= 1L << 1;
     if (!u.uroleplay.numbones)
         e |= 1L << 2;
+    if (u.uroleplay.reroll)
+        e |= 1L << 3;
 
     return e;
 }
@@ -610,6 +613,7 @@ encode_extended_conducts(char *buf)
     add_achieveX(buf, "petless",      !u.uconduct.pets);
     add_achieveX(buf, "conflictless", !u.uconduct.conflicting);
     add_achieveX(buf, "blessless",    !u.uconduct.holy_water);
+    add_achieveX(buf, "unrerolled",   !u.uroleplay.reroll);
 
     return buf;
 }

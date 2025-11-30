@@ -218,10 +218,12 @@ struct u_roleplay {
     boolean nudist; /* has not worn any armor, ever */
     boolean deaf;   /* permanently deaf */
     boolean pauper; /* no starting inventory */
+    boolean reroll;  /* starting inventory/attr rerolling enabled */
     boolean perfect_bestiary; /* automatically know all monsters */
     boolean no_flipped_soko;  /* do not flip sokoban */
     boolean altstarts;  /* alternate location starts for certain roles and races */
     long numbones;  /* # of bones files loaded  */
+    long numrerolls; /* # of rerolls used */
 };
 
 /*** Unified structure containing role information ***/

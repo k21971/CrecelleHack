@@ -2167,6 +2167,12 @@ show_conduct(int final)
         enl_msg(You_, "", "", "began your quest with a pre-filled bestiary", "");
     if (u.uroleplay.altstarts && Race_if(PM_GNOME))
         enl_msg(You_, "", "", "started in the gnomish mines", "");
+    if (u.uroleplay.reroll) {
+        Sprintf(buf, "rerolled your character %ld time%s",
+                u.uroleplay.numrerolls, plur(u.uroleplay.numrerolls));
+        you_have_X(buf);
+    }
+
     /* nudist is far more than a subset of possessionless, and a much
        more impressive accomplishment, but showing "started out without
        possessions" before "faithfully nudist" looks more logical */
