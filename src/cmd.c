@@ -55,7 +55,7 @@ extern int dosuspend(void);          /**/
 extern int doforce(void);            /**/
 extern int doopen(void);             /**/
 extern int doclose(void);            /**/
-extern int do_order(void);          /**/
+extern int doorder(void);          /**/
 extern int dosh(void);               /**/
 extern int dodiscovered(void);       /**/
 extern int doclassdisco(void);       /**/
@@ -1678,8 +1678,8 @@ struct ext_func_tab extcmdlist[] = {
               do_gamelog, IFBURIED | AUTOCOMPLETE | GENERALCMD, NULL },
     { 'c',    "close", "close a door",
               doclose, 0, NULL },
-    { M('P'), "order", "issue orders to a tame monster",
-              do_order, AUTOCOMPLETE, NULL },
+    { M('P'), "order", "give orders to a pet",
+              doorder, IFBURIED | AUTOCOMPLETE, NULL },
     { M('C'), "conduct", "list voluntary challenges you have maintained",
               doconduct, IFBURIED | AUTOCOMPLETE | GENERALCMD, NULL },
     { '\0',   "debugfuzzer", "start the fuzz tester",
@@ -3028,7 +3028,6 @@ key2txt(uchar c, char *txt) /* sufficiently long buffer */
         Strcpy(txt, visctrl((char) c));
     return txt;
 }
-
 
 void
 parseautocomplete(char *autocomplete, boolean condition)

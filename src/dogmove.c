@@ -557,6 +557,32 @@ dog_goal(
 #undef SQSRCHRADIUS
     }
 
+    /* Aggressive pets actively pursue visible enemies */
+    if (edog && (edog->petstrat & PETSTRAT_AGGRO) && mtmp->mcansee) {
+        struct monst *enemy;
+        int best_dist = COLNO * COLNO;  /* large initial value */
+
+        for (enemy = fmon; enemy; enemy = enemy->nmon) {
+            if (DEADMONSTER(enemy))
+                continue;
+            if (enemy->mtame || enemy->mpeaceful)
+                continue;
+            /* Skip if pet is ordered to avoid peacefuls but enemy is peaceful */
+            if ((edog->petstrat & PETSTRAT_AVOIDPEACE) && enemy->mpeaceful)
+                continue;
+            /* Can the pet see this enemy? */
+            if (!m_cansee(mtmp, enemy->mx, enemy->my))
+                continue;
+            /* Is this enemy closer than the current best? */
+            if (dist2(omx, omy, enemy->mx, enemy->my) < best_dist) {
+                best_dist = dist2(omx, omy, enemy->mx, enemy->my);
+                gg.gx = enemy->mx;
+                gg.gy = enemy->my;
+                gg.gtyp = APPORT;  /* treat as goal worth pursuing */
+            }
+        }
+    }
+
     /* follow player if appropriate */
     if (gg.gtyp == UNDEF || (gg.gtyp != DOGFOOD && gg.gtyp != APPORT
                           && svm.moves < edog->hungrytime)) {
@@ -598,6 +624,11 @@ dog_goal(
         }
     } else
         appr = 1; /* gtyp != UNDEF */
+
+    /* Defensive pets try to keep their distance */
+    if (edog && (edog->petstrat & PETSTRAT_COWED) && appr >= 0)
+        appr = -1;  /* prefer to move away, but ranged attacks still work */
+
     if (mtmp->mconf)
         appr = 0;
 
@@ -773,7 +804,7 @@ score_targ(struct monst *mtmp, struct monst *mtarg)
         }
         /* Is the monster peaceful or tame? */
         if (mtarg->mtame || mtarg == &gy.youmonst
-            || (has_edog(mtmp) && (EDOG(mtmp)->petstrat & PETSTRAT_NOPEACE)
+            || (has_edog(mtmp) && (EDOG(mtmp)->petstrat & PETSTRAT_AVOIDPEACE)
                 && mtarg->mpeaceful)) {
             /* Pets will never be targeted */
             score -= 3000L;
@@ -1150,10 +1181,10 @@ dog_move(
 
             if (edog) {
                 if (edog->petstrat & PETSTRAT_AGGRO)
-                    balk += 10;
+                    balk += 5;
                 if (edog->petstrat & PETSTRAT_COWED)
-                    balk = 2;
-                if ((edog->petstrat & PETSTRAT_NOPEACE)
+                    balk -= 5;
+                if ((edog->petstrat & PETSTRAT_AVOIDPEACE)
                     && mtmp2->mpeaceful)
                     continue;
             }

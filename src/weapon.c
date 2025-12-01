@@ -24,7 +24,7 @@ staticfn void skill_advance(int);
 #define PN_RIDING (-3)
 #define PN_TRIPPING (-4)
 #define PN_GRAPPLING (-5)
-#define PN_LEADERSHIP (-6)
+#define PN_PET_HANDLING (-6)
 #define PN_IMPROV (-7)
 #define PN_POLEARMS (-8)
 #define PN_SABER (-9)
@@ -49,14 +49,14 @@ static NEARDATA const short skill_names_indices[P_NUM_SKILLS] = {
     PN_ENCHANTMENT_SPELL, PN_CLERIC_SPELL, PN_ESCAPE_SPELL, PN_MATTER_SPELL,
     /* Other */
     PN_BARE_HANDED, PN_TWO_WEAPONS, PN_RIDING, PN_TRIPPING, PN_GRAPPLING,
-    PN_LEADERSHIP, PN_IMPROV
+    PN_PET_HANDLING, PN_IMPROV
 };
 
 /* note: entry [0] isn't used */
 static NEARDATA const char *const odd_skill_names[] = {
     "no skill", "bare hands", /* use barehands_or_martial[] instead */
     "two weapon combat", "riding", "tripping", "grappling",
-    "leadership", "improvised weaponry",
+    "pet handling", "improvised weaponry",
     "polearms", "saber", "hammer", "whip",
     "attack spells", "healing spells", "divination spells",
     "enchantment spells", "clerical spells", "escape spells", "matter spells",
@@ -1977,9 +1977,9 @@ skill_init(const struct def_skill *class_skill)
     if (Role_if(PM_GRAPPLER))
         P_SKILL(P_GRAPPLING) = P_BASIC;
 
-    /* Rangers know how to handle beasts */
-    if (Role_if(PM_RANGER) && svc.context.startingpet_typ != NON_PM)
-        P_SKILL(P_LEADERSHIP) = P_BASIC;
+    /* Healers know how to handle beasts */
+    if (Role_if(PM_HEALER) && svc.context.startingpet_typ != NON_PM)
+        P_SKILL(P_PET_HANDLING) = P_BASIC;
 
     /* Roles that start with a horse know how to ride it */
     if (can_saddle(&mons[gu.urole.petnum])) 

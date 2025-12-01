@@ -156,6 +156,13 @@ struct emin {
 /***
  **     formerly edog.h -- pet extension
  */
+/* Pet behavior strategy flags - stored in edog->petstrat */
+#define PETSTRAT_AGGRO      0x00000001L  /* Attack aggressively, pursue enemies */
+#define PETSTRAT_COWED      0x00000002L  /* Defensive - avoid combat when possible */
+#define PETSTRAT_STAY       0x00000004L  /* Stay on current level, don't follow */
+#define PETSTRAT_NOAPPORT   0x00000008L  /* Don't pick up items */
+#define PETSTRAT_AVOIDPEACE 0x00000010L  /* Avoid attacking peaceful creatures */
+
 /*      various types of pet food, the lower the value, the better liked */
 enum dogfood_types {
     DOGFOOD = 0,
@@ -168,12 +175,6 @@ enum dogfood_types {
     TABU    = 7
 };
 
-#define PETSTRAT_AGGRO     0x00000001L
-#define PETSTRAT_COWED     0x00000002L
-#define PETSTRAT_STAY      0x00000004L
-#define PETSTRAT_NOAPPORT  0x00000008L
-#define PETSTRAT_NOPEACE   0x00000010L
-
 struct edog {
     unsigned parentmid;       /* make clobber-detection possible */
     long droptime;            /* moment dog dropped object */
@@ -185,7 +186,7 @@ struct edog {
     int abuse;                /* track abuses to this pet */
     int revivals;             /* count pet deaths */
     int mhpmax_penalty;       /* while starving, points reduced */
-    long petstrat;            /* pet strategies */
+    long petstrat;            /* pet strategy flags (PETSTRAT_*) */
     Bitfield(killed_by_u, 1); /* you attempted to kill him */
 };
 

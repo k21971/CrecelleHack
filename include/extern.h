@@ -3085,7 +3085,7 @@ extern void sound_speak(const char *) NO_NNARGS;
 extern int dotaunt(void);
 extern void mcallout(struct monst *) NO_NNARGS;
 extern enum soundlib_ids soundlib_id_from_opt(char *);
-extern int do_order(void);
+extern int doorder(void);
 
 /* ### sp_lev.c ### */
 

@@ -64,7 +64,7 @@ enum p_skills {
     P_RIDING             = 37, /* How well you control your steed */
     P_TRIPPING           = 38, /* How well you can trip others and avoid trips */
     P_GRAPPLING          = 39, /* How well you can grapple others and escape grapples */
-    P_LEADERSHIP         = 40, /* How well you can train your pets */
+    P_PET_HANDLING       = 40, /* How well you command pets */
     P_IMPROV             = 41, /* How well can you improvise weapons */
 
     P_NUM_SKILLS         = 42

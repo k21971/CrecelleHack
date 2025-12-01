@@ -67,6 +67,7 @@ initedog(struct monst *mtmp, boolean everything)
         edogp->mhpmax_penalty = 0;
         edogp->petstrat = 0;
         edogp->killed_by_u = 0;
+        edogp->petstrat = 0;
     } else {
         if (edogp->apport <= 0)
             edogp->apport = 1;
@@ -814,8 +815,8 @@ keepdogs(
     struct monst *mtmp, *mtmp2;
 
     int follow_dist = 0;
-    if (P_SKILL(P_LEADERSHIP) >= P_BASIC) {
-        follow_dist = P_SKILL(P_LEADERSHIP) + 2;
+    if (P_SKILL(P_PET_HANDLING) >= P_BASIC) {
+        follow_dist = P_SKILL(P_PET_HANDLING) + 2;
         follow_dist = follow_dist * follow_dist;
     }
 
@@ -847,8 +848,7 @@ keepdogs(
                    to avoid following */
                 || (mtmp == u.usteed))
             /* monster won't follow if it hasn't noticed you yet */
-            && !(mtmp->mstrategy & STRAT_WAITFORU)
-            && !(has_edog(mtmp) && (EDOG(mtmp)->petstrat & PETSTRAT_STAY))) {
+            && !(mtmp->mstrategy & STRAT_WAITFORU)) {
             int num_segs;
             boolean stay_behind = FALSE;
 
@@ -859,6 +859,12 @@ keepdogs(
                 mtmp->mtrapped = 0;       /* escape trap */
                 mtmp->meating = 0;        /* terminate eating */
                 mdrop_special_objs(mtmp); /* drop Amulet */
+            } else if (!pets_only && has_edog(mtmp)
+                       && (EDOG(mtmp)->petstrat & PETSTRAT_STAY)) {
+                /* pet ordered to stay on this level */
+                if (canseemon(mtmp))
+                    pline("%s stays behind.", Monnam(mtmp));
+                stay_behind = TRUE;
             } else if (mtmp->meating || mtmp->mtrapped) {
                 if (canseemon(mtmp))
                     pline_mon(mtmp, "%s is still %s.", Monnam(mtmp),
@@ -1239,7 +1245,6 @@ tamedog(
                 pline_mon(mtmp, "%s catches %s%s",
                           Monnam(mtmp), the(xname(obj)),
                          !big_corpse ? "." : ", or vice versa!");
-                use_skill(P_LEADERSHIP, 1);
             } else if (cansee(mtmp->mx, mtmp->my))
                 pline("%s.", Tobjnam(obj, "stop"));
             /* dog_eat expects a floor object */
