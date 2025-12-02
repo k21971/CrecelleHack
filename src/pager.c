@@ -2371,9 +2371,7 @@ do_supplemental_item_info(struct obj *otmp)
     /* Display monster info */
     datawin = create_nhwindow(NHW_MENU);
     Sprintf(buf, Doname2(otmp));
-    add_menu_heading(datawin, buf);
-    putstr(datawin, 0, "");
-    add_menu_heading(datawin, "Basics");
+    putstr(datawin, iflags.menu_headings.attr, buf);
     if (not_fully_identified(otmp)) {
         putstr(datawin, 0, "There is more you could learn about it.");
     } else {
@@ -2448,7 +2446,7 @@ do_supplemental_item_info(struct obj *otmp)
         putstr(datawin, 0, buf);
     }
     
-    display_nhwindow(datawin, FALSE);
+    display_nhwindow(datawin, TRUE);
     destroy_nhwindow(datawin), datawin = WIN_ERR;
 }
 
@@ -2465,7 +2463,7 @@ do_supplemental_info(
     char buf[BUFSZ];
     boolean yes_to_moreinfo = FALSE;
     boolean is_marauder = is_orc(pm);
-    boolean auto_know = u.uroleplay.perfect_bestiary;
+    boolean auto_know = (wizard || u.uroleplay.perfect_bestiary);
 
     /*
      * Provide some info on some specific things
@@ -2520,14 +2518,12 @@ do_supplemental_info(
     /* Display monster info */
     datawin = create_nhwindow(NHW_MENU);
     if (strlen(name) && strlen(name) < (BUFSZ - 1)) {
-        add_menu_heading(datawin, name);
+        putstr(datawin, iflags.menu_headings.attr, name);
     } else {
         Sprintf(buf, "%s", pmname(pm, MALE));
         buf[0] = highc(buf[0]);
-        add_menu_heading(datawin, buf);
+        putstr(datawin, iflags.menu_headings.attr, buf);
     }
-    putstr(datawin, 0, "");
-    add_menu_heading(datawin, "Statistics");
     /* Size */
     Sprintf(buf, "%s %s", size_str(pm->msize), def_monsyms[(int) pm->mlet].explain);
     buf[0] = highc(buf[0]);
@@ -2536,24 +2532,28 @@ do_supplemental_info(
     if (auto_know || svm.mvitals[pm->pmidx].know_stats)
         Sprintf(buf, "Speed: %d, AC: %d, MR: %d", pm->mmove, pm->ac, pm->mr);
     else
-        Sprintf(buf, "Speed: ???, AC: ???, MR: ???");
+        Sprintf(buf, "You know nothing of its abilities.");
     putstr(datawin, 0, buf);
     /* Food */
-    Sprintf(buf, "Edibility: %s",
-            !(auto_know || svm.mvitals[pm->pmidx].know_pcorpse) 
-                ? "???" : poisonous(pm) ? "Poisonous" : "Not poisonous");
+    if (!auto_know && !svm.mvitals[pm->pmidx].know_pcorpse)
+        Sprintf(buf, "You know nothing about its edibility.");
+    else
+        Sprintf(buf, "Edibility: %s, %s, %s",
+                    poisonous(pm) ? "poisonous" : "safe",
+                    acidic(pm) ? "acidic" : "bland",
+                    is_domestic(pm) ? "domestic" : "wild");
     putstr(datawin, 0, buf);
     /* Have we seen it? */
     if (!svm.mvitals[pm->pmidx].seen_close) {
-        putstr(datawin, 0, "You have never seen this monster up close.");
-        putstr(datawin, 0, "");
+        putstr(datawin, 0, "You have never seen it up close.");
     }
+    putstr(datawin, 0, "");
     /* Attacks */
-    add_menu_heading(datawin, "Attacks");
+    putstr(datawin, iflags.menu_headings.attr, "Attacks");
     for (int i = 0; i < NATTK; i++) {
         if (!pm->mattk[i].aatyp && !pm->mattk[i].adtyp && !pm->mattk[i].damn && !pm->mattk[i].damd) continue;
         if (!auto_know && !(svm.mvitals[pm->pmidx].know_attacks & (1 << i))) {
-            Sprintf(buf, "- ???");
+            Sprintf(buf, "- Unknown");
         } else {
             Sprintf(buf, "- %s %dd%d %s", mattk_names[pm->mattk[i].aatyp],
                                             pm->mattk[i].damn,
@@ -2563,7 +2563,7 @@ do_supplemental_info(
         buf[2] = highc(buf[2]);
         putstr(datawin, 0, buf);
     }
-    display_nhwindow(datawin, FALSE);
+    display_nhwindow(datawin, TRUE);
     destroy_nhwindow(datawin), datawin = WIN_ERR;
 }
 
