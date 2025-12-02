@@ -2485,6 +2485,7 @@ extern struct obj *pick_obj(struct obj *) NONNULLARG1;
 extern void encumber_msg(void);
 extern int container_at(coordxy, coordxy, boolean);
 extern int doloot(void);
+extern int exchange_objects_with_mon(struct monst *, boolean) NONNULLARG1;
 extern void observe_quantum_cat(struct obj *, boolean, boolean) NONNULLARG1;
 extern boolean container_gone(int(*)(struct obj *)) NONNULLARG1;
 extern boolean u_handsy(void);
