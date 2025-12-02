@@ -11,6 +11,8 @@ at the top of [the opthelp file](dat/opthelp).
 - In addition,
 [an example config file](sys/windows/crecellehackrc.template)
 is available to be copied.
+- If you would like to view these options in game, the top of the
+  #options menu is populated by Crecelle-specific options.
 
 ## Documentation
 
