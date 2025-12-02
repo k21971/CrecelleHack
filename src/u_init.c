@@ -1505,7 +1505,7 @@ fixup_starting_material(struct obj *obj)
 
    this function can be run multiple times and will overwrite the effects of
    previous runs */
-staticfn void
+void
 u_init_inventory_attrs(void)
 {
     gl.lastinvnr = 51;
