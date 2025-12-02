@@ -81,11 +81,12 @@ static NEARDATA const char kebabable[] = {
 staticfn void
 give_may_advance_msg(int skill)
 {
-    You_feel("more confident in your %sskills.",
+    You_feel("more confident in your %s%sskills.",
              (skill == P_NONE) ? ""
-                 : (skill <= P_LAST_WEAPON) ? "weapon "
-                     : (skill <= P_LAST_SPELL) ? "spell casting "
-                         : "");
+                 : (skill <= P_LAST_WEAPON) ? "weapon"
+                     : (skill <= P_LAST_SPELL) ? "spell casting"
+                         : P_NAME(skill),
+             (skill == P_NONE) ? "" : " ");
     (void) handle_tip(TIP_ENHANCE);
 }
 
@@ -1428,7 +1429,7 @@ static const struct skill_range {
     short first, last;
     const char *name;
 } skill_ranges[] = {
-    { P_FIRST_H_TO_H, P_LAST_H_TO_H, "Generic Skills" },
+    { P_FIRST_H_TO_H, P_LAST_H_TO_H, "General Skills" },
     { P_FIRST_WEAPON, P_LAST_WEAPON, "Weapon Skills" },
     { P_FIRST_SPELL, P_LAST_SPELL, "Spellcasting Skills" },
 };
