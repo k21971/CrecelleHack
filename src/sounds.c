@@ -2474,7 +2474,10 @@ doorder(void)
     }
 
     if (!mtmp->mtame) {
-        pline("%s is not your pet.", Monnam(mtmp));
+        if (mtmp->data == &mons[PM_MAIL_DAEMON])
+            pline("%s does not take mail orders.", Monnam(mtmp));
+        else
+            pline("%s is not your pet.", Monnam(mtmp));
         return ECMD_CANCEL;
     }
 
