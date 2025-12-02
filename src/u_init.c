@@ -95,8 +95,6 @@ static const struct trobj Knight[] = {
     { HELMET, 0, ARMOR_CLASS, 1, 1, UNDEF_BLESS },
     { ROUNDSHIELD, 0, ARMOR_CLASS, 1, 1, UNDEF_BLESS },
     { GLOVES, 0, ARMOR_CLASS, 1, 1, UNDEF_BLESS },
-    { APPLE, 0, FOOD_CLASS, 10, 10, 0 },
-    { CARROT, 0, FOOD_CLASS, 10, 10, 0 },
     { 0, 0, 0, 0, 0, 0 }
 };
 static const struct trobj Monk[] = {
@@ -234,6 +232,10 @@ static const struct trobj Darts[] =
       { 0, 0, 0, 0, 0, 0 } };
 static const struct trobj Resizing[] =
     { { RESIZING_KIT, 0, TOOL_CLASS, 1, 1, 0 },
+      { 0, 0, 0, 0, 0, 0 } };
+static const struct trobj Veggies[] =
+    { { APPLE, 0, FOOD_CLASS, 10, 10, 0 },
+      { CARROT, 0, FOOD_CLASS, 10, 10, 0 },
       { 0, 0, 0, 0, 0, 0 } };
 
 /* race-based substitutions for initial inventory;
@@ -768,6 +770,8 @@ u_init_role(void)
         break;
     case PM_KNIGHT:
         ini_inv(Knight);
+        if (!Race_if(PM_ORC) && !Race_if(PM_ELF))
+            ini_inv(Veggies);
         knows_class(WEAPON_CLASS); /* all weapons */
         knows_class(ARMOR_CLASS);
         /* give knights chess-like mobility--idea from wooledge@..cwru.edu */
