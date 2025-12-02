@@ -1985,6 +1985,10 @@ skill_init(const struct def_skill *class_skill)
     if (can_saddle(&mons[gu.urole.petnum])) 
         P_SKILL(P_RIDING) = P_BASIC;
 
+    /* Kobolds know darts */
+    if (Race_if(PM_KOBOLD) && P_MAX_SKILL(P_DART) < P_BASIC)
+        P_MAX_SKILL(P_DART) = P_BASIC;
+
     /*
      * Make sure we haven't missed setting the max on a skill
      * & set advance
