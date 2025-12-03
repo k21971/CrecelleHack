@@ -1853,6 +1853,10 @@ handle_tip(int tip)
         case TIP_GETPOS:
             l_nhcore_call(NHCORE_GETPOS_TIP);
             break;
+        case TIP_ORDER:
+            pline("(Tip: use #order ('%s') to issue commands to pets)",
+                    visctrl(cmd_from_func(doorder)));
+            break;
         default:
             impossible("Unknown tip in handle_tip(%i)", tip);
             break;

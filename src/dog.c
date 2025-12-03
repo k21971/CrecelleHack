@@ -1311,6 +1311,10 @@ tamedog(
         pline_mon(mtmp, "%s seems quite %s.", Monnam(mtmp),
               Hallucination ? "approachable" : "friendly");
 
+    /* give a tip */
+    if (canspotmon(mtmp))
+        handle_tip(TIP_ORDER);
+
     newsym(mtmp->mx, mtmp->my);
     if (mtmp->wormno)
         redraw_worm(mtmp);
