@@ -2546,6 +2546,18 @@ exchange_objects_with_mon(struct monst *mtmp, boolean taking)
             if (maxquan < otmp->quan)
                 otmp = splitobj(otmp, maxquan);
             pline("You give %s %s.", mon_nam(mtmp), yname(otmp));
+            if (otmp->unpaid) {
+                struct monst *shkp = find_objowner(otmp, otmp->ox, otmp->oy);
+                if (shkp && strchr(in_rooms(u.ux, u.uy, SHOPBASE),
+                          ESHK(shkp)->shoproom)) {
+                    int cha = ACURR(A_CHA);
+                    if (cha <= 10)
+                        make_angry_shk(shkp, 0, 0);
+                    else if (cha <= 13 && canseemon(shkp))
+                        pline_mon(shkp, "%s looks suspicious.", Monnam(shkp));
+                }
+                subfrombill(otmp, shop_keeper(*u.ushops));
+            }
             if (otmp->owornmask)
                 setnotworn(otmp); /* reset quivered, wielded, etc, status */
             obj_extract_self(otmp);
