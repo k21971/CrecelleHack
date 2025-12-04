@@ -59,6 +59,10 @@ pre_mm_attack(struct monst *magr, struct monst *mdef)
         showit |= gv.vis;
     }
 
+    /* improve pet handling if we see pet attacking monsters */
+    if (magr->mtame && canspotmon(magr))
+        use_skill(P_PET_HANDLING, 1);
+
     if (gv.vis) {
         if (!canspotmon(magr))
             map_invisible(magr->mx, magr->my);
