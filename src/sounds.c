@@ -2737,8 +2737,15 @@ doorder(void)
     }
 
     /* Only train skill if the order actually changed the pet's behavior */
-    if (EDOG(mtmp)->petstrat != old_petstrat)
+    if (EDOG(mtmp)->petstrat != old_petstrat) {
+        if (is_mercenary(mtmp->data)) {
+            if (!Deaf)
+                verbalize("Yes %s!", flags.female ? "ma'am" : "sir");
+            else if (canseemon(mtmp))
+                pline_mon(mtmp, "%s salutes.", Monnam(mtmp));
+        }
         use_skill(P_PET_HANDLING, 1);
+    }
 
     return ECMD_TIME;  /* action took a turn */
 }
