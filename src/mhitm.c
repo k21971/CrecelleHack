@@ -59,10 +59,6 @@ pre_mm_attack(struct monst *magr, struct monst *mdef)
         showit |= gv.vis;
     }
 
-    /* improve pet handling if we see pet attacking monsters */
-    if (magr->mtame && canspotmon(magr))
-        use_skill(P_PET_HANDLING, 1);
-
     if (gv.vis) {
         if (!canspotmon(magr))
             map_invisible(magr->mx, magr->my);
@@ -1115,6 +1111,10 @@ mdamagem(
             return mhm.hitflags; /* mdef lifesaved */
         else if (mhm.hitflags == M_ATTK_AGR_DIED)
             return (M_ATTK_DEF_DIED | M_ATTK_AGR_DIED);
+
+        /* improve pet handling if we see pet kill monsters */
+        if (magr->mtame && canspotmon(magr))
+            use_skill(P_PET_HANDLING, 1);
 
         if (mattk->adtyp == AD_DGST) {
             /* various checks similar to dog_eat and meatobj.
