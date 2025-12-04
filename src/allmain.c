@@ -326,7 +326,6 @@ moveloop_core(void)
                     mk_dgl_extrainfo();
                 }
 #endif
-
                 gs.saving_grace_turn = FALSE;
 
                 /* One possible result of prayer is healing.  Whether or
