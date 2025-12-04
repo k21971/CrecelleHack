@@ -495,6 +495,15 @@ dog_goal(
     in_masters_sight = couldsee(omx, omy);
     dog_has_minvent = (droppables(mtmp) != 0);
 
+    /* Come command: beeline to player, ignore everything else */
+    if (edog && (edog->petstrat & PETSTRAT_COME)) {
+        gg.gtyp = APPORT;
+        gg.gx = u.ux;
+        gg.gy = u.uy;
+        appr = 1;  /* always approach */
+        return appr;
+    }
+
     if (!edog || mtmp->mleashed) { /* he's not going anywhere... */
         gg.gtyp = APPORT;
         gg.gx = u.ux;
@@ -1084,6 +1093,13 @@ dog_move(
     /* Intelligent pets may rebel (apart from minions, spell beings) */
 	if (!rn2(850) && betrayed(mtmp)) return MMOVE_MOVED;
 
+    /* Pet ordered to come - check if arrived at player's side */
+    if (edog && (edog->petstrat & PETSTRAT_COME) && udist <= 2) {
+        edog->petstrat &= ~PETSTRAT_COME;
+        if (canseemon(mtmp))
+            pline("%s arrives at your side.", Monnam(mtmp));
+    }
+
     nix = omx; /* set before newdogpos */
     niy = omy;
     cursemsg[0] = FALSE; /* lint suppression */
@@ -1091,10 +1107,12 @@ dog_move(
 
     if (edog) {
         j = dog_invent(mtmp, edog, udist);
-        if (j == 2 || mon_offmap(mtmp))
-            return DEADMONSTER(mtmp) ? MMOVE_DIED : MMOVE_DONE;
-        else if (j == 1)
-            goto newdogpos; /* eating something */
+        if (!(edog->petstrat & PETSTRAT_COME)) {
+            if (j == 2 || mon_offmap(mtmp))
+                return DEADMONSTER(mtmp) ? MMOVE_DIED : MMOVE_DONE;
+            else if (j == 1)
+                goto newdogpos; /* eating something */
+        }
 
         whappr = (svm.moves - edog->whistletime < 5);
     } else
@@ -1131,7 +1149,10 @@ dog_move(
     for (i = 0; i < cnt; i++) {
         nx = poss[i].x;
         ny = poss[i].y;
-        if (MON_AT(nx, ny) && !((info[i] & ALLOW_M) || info[i] & ALLOW_MDISP))
+        if (MON_AT(nx, ny) && !((info[i] & ALLOW_M) || info[i] & ALLOW_MDISP)
+            && !(edog->petstrat & PETSTRAT_COME))
+            continue;
+        if (!MON_AT(nx, ny) && (edog->petstrat & PETSTRAT_STATIONARY))
             continue;
         if (cursed_object_at(nx, ny))
             continue;
@@ -1178,6 +1199,10 @@ dog_move(
              * they are willing to attack; note the >= used when comparing it.
              */
             int balk = mtmp->m_lev + ((5 * mtmp->mhp) / mtmp->mhpmax) - 2;
+
+            /* Skip attacking if pet is ordered to come to player */
+            if (edog->petstrat & PETSTRAT_COME)
+                continue;
 
             if (edog) {
                 if (edog->petstrat & PETSTRAT_AGGRO)
@@ -1283,7 +1308,7 @@ dog_move(
 
         /* dog eschews cursed objects, but likes dog food */
         /* (minion isn't interested; `cursemsg' stays FALSE) */
-        if (edog) {
+        if (edog && !(edog->petstrat & PETSTRAT_COME)) {
             boolean can_reach_food = could_reach_item(mtmp, nx, ny);
 
             for (obj = svl.level.objects[nx][ny]; obj; obj = obj->nexthere) {
