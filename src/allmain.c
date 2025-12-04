@@ -876,6 +876,11 @@ newgame(void)
     }
     u_init_skills_discoveries();
 
+    if (wizard) {
+        read_wizkit();
+        obj_delivery(FALSE); /* finish wizkit */
+    }
+
     if (flags.legacy) {
         if (Race_if(PM_GNOME) && u.uroleplay.altstarts)
             com_pager("legacy");

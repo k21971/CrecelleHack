@@ -108,7 +108,7 @@ dowrite(struct obj *pen)
                  : "scroll";
     if (Blind) {
         if (!paper->dknown) {
-            You("don't know if that %s is blank or not.", typeword);
+            You("don't know whether that %s is blank or not.", typeword);
             return ECMD_OK;
         } else if (paper->oclass == SPBOOK_CLASS) {
             /* can't write a magic book while blind */
@@ -123,6 +123,7 @@ dowrite(struct obj *pen)
         exercise(A_WIS, FALSE);
         return ECMD_TIME;
     }
+    makeknown(SCR_BLANK_PAPER);
 
     /* what to write */
     Sprintf(qbuf, "What type of %s do you want to write?", typeword);
