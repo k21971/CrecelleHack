@@ -2439,6 +2439,12 @@ doorder(void)
     int n;
     boolean currently_set;
 
+    /* Player can't be incapacitated */
+    if (Confusion || Stunned) {
+        You_cant("give orders in your current state.");
+        return 0;
+    }
+
     /* Cursor-based targeting */
     cc.x = u.ux;
     cc.y = u.uy;
