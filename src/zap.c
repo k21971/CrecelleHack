@@ -4578,6 +4578,8 @@ zhitm(
         tmp = d(nd, 6);
         break;
     case ZT_ACID:
+        mon->mdriptype = POT_OIL;
+        mon->mdripping = 1;
         if (resists_acid(mon) || defended(mon, AD_ACID)) {
             sho_shieldeff = TRUE;
             break;
@@ -4755,6 +4757,7 @@ zhitu(
             acid_damage(uswapwep);
         if (!rn2(6))
             erode_armor(&gy.youmonst, ERODE_CORRODE);
+        make_dripping(rnd(20), POT_ACID, NON_PM);
         break;
     }
 
