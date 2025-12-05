@@ -462,6 +462,13 @@ make_dripping(long xtime, int otyp, int pm)
 }
 
 void
+make_mdripping(struct monst *mtmp, int otyp)
+{
+    mtmp->mdripping = 1;
+    mtmp->mdriptype = otyp;
+}
+
+void
 make_deaf(long xtime, boolean talk)
 {
     long old = HDeaf;
@@ -1817,7 +1824,7 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
             } else {
                 Your("%s are cut by shards of glass!", makeplural(body_part(FOOT)));
                 if (u.uhp > 1) losehp(1, "stepping on broken glass", KILLED_BY);
-                add_coating(x, y, COAT_BLOOD, gy.youmonst.mnum);
+                make_dripping(rnd(20), POT_BLOOD, gy.youmonst.mnum);
                 disp.botl = TRUE;
             }
         } else {
@@ -1829,7 +1836,7 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
                 else
                     growl(mon);
                 if (mon->mhp > 1) mon->mhp--;
-                add_coating(x, y, COAT_BLOOD, mon->mnum);
+                make_mdripping(mon, -1 * mon->mnum);
             } else if (!Deaf) {
                 You_hear("a soft tinkling.");
             }
@@ -2206,8 +2213,7 @@ potionhit(struct monst *mon, struct obj *obj, int how)
         }
         if (rn2(5) && mon->mhp > 1 && !hit_saddle)
             mon->mhp--;
-        mon->mdripping = 1;
-        mon->mdriptype = (obj->otyp == POT_BLOOD) ? (-1 * obj->corpsenm) : obj->otyp;
+        make_mdripping(mon, (obj->otyp == POT_BLOOD) ? (-1 * obj->corpsenm) : obj->otyp);
     }
 
     /* oil doesn't instantly evaporate; Neither does a saddle hit */

@@ -1182,8 +1182,7 @@ minliquid_core(struct monst *mtmp)
                        * and become a flyer so not need to teleport */
                 } else {
                     water_damage_chain(mtmp->minvent, FALSE);
-                    mtmp->mdripping = 1;
-                    mtmp->mdriptype = POT_WATER;
+                    make_mdripping(mtmp, POT_WATER);
                     if (!rloc(mtmp, RLOC_NOMSG))
                         deal_with_overcrowding(mtmp);
                 }

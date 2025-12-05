@@ -1164,8 +1164,7 @@ hmon_hitmon_misc_obj(
             You("douse %s in oil!", mon_nam(mon));
             makeknown(POT_OIL);
             potion_splatter(mon->mx, mon->my, POT_OIL, NON_PM);
-            mon->mdriptype = POT_OIL;
-            mon->mdripping = 1;
+            make_mdripping(mon, POT_OIL);
             check_unpaid_usage(obj, FALSE);
             if (obj->otyp != MAGIC_LAMP)
                 obj->age -= 9L;
@@ -3938,8 +3937,7 @@ mhitm_ad_soak(struct monst *magr,     /* attacker */
     if (magr == &gy.youmonst) {
         /* uhitm */
         pline_mon(mdef, "You soak %s.", mon_nam(mdef));
-        mdef->mdripping = 1;
-        mdef->mdriptype = POT_WATER;
+        make_mdripping(mdef, POT_WATER);
     } else if (mdef == &gy.youmonst) {
         hitmsg(magr, mattk);
         You("get soaked!");
@@ -3947,8 +3945,7 @@ mhitm_ad_soak(struct monst *magr,     /* attacker */
     } else {
         /* mhitm */
         pline("%s soaks %s.", Monnam(magr), mon_nam(mdef));
-        mdef->mdripping = 1;
-        mdef->mdriptype = POT_WATER;
+        make_mdripping(mdef, POT_WATER);
     }
     if (mhm->done)
         return;

@@ -1745,6 +1745,7 @@ mbhitm(struct monst *mtmp, struct obj *otmp)
                     tmp = (tmp + 1) / 2;
                 losehp(tmp, "jet of water", KILLED_BY_AN);
                 learnit = TRUE;
+                make_dripping(rnd(10), POT_WATER, NON_PM);
             } else {
                 pline_The("jet of %s misses you.", hliquid("water"));
             }

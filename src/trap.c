@@ -1705,9 +1705,7 @@ trapeffect_rust_trap(
                 (void) water_damage(target, "shirt", TRUE);
         }
 
-        mtmp->mdripping = 1;
-        mtmp->mdriptype = POT_WATER;
-
+        make_mdripping(mtmp, POT_WATER);
         if (completelyrusts(mptr)) {
             if (in_sight)
                 pline_mon(mtmp, "%s %s to pieces!", Monnam(mtmp),

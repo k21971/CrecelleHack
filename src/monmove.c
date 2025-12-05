@@ -735,8 +735,13 @@ m_everyturn_effect(struct monst *mtmp)
     }
     /* Drip liquids */
     if (is_u && Dripping && !rn2(3)) {
-        if (flags.verbose) You("drip some liquid.");
-        if (u.udriptype > 0) floor_alchemy(x, y, u.udriptype, NON_PM);
+        if (flags.drip_messages) {
+            char dripbuf[BUFSZ];
+            potion_coating_text(dripbuf, (u.udriptype <= 0) ? POT_BLOOD : u.udriptype);
+            You("drip %s onto the %s.", dripbuf, surface(u.ux, u.uy));
+        }
+        if (u.udriptype > 0)
+            floor_alchemy(x, y, u.udriptype, NON_PM);
         else add_coating(x, y, COAT_BLOOD, -1 * u.udriptype);
     } else if (is_u && uwep && is_art(uwep, ART_WRATH_OF_SANKIS) && !rn2(3)) {
         add_coating(x, y, COAT_BLOOD, PM_DWARF);

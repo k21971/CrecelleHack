@@ -297,6 +297,9 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTC(dogname, Advanced, PL_PSIZ, opt_in, set_gameview,
                 No, Yes, No, No, NoAlias,
                 "name of your starting pet if it is a little dog")
+    NHOPTB(drip_messages, Variant, 0, opt_out, set_in_game,
+           On, Yes, No, No, NoAlias, &flags.drip_messages, Term_False,
+           "display messages about dripping with liquids")
     NHOPTB(dropped_nopick, Behavior, 0, opt_out, set_in_game,
            On, Yes, No, No, NoAlias, &flags.nopick_dropped, Term_False,
            "don't autopickup dropped items")

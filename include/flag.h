@@ -29,6 +29,7 @@ struct flag {
     boolean confirm;         /* confirm before hitting tame monsters */
     boolean dark_room;       /* show shadows in lit rooms */
     boolean debug;           /* in debugging mode (aka wizard mode) */
+    boolean drip_messages;   /* display messages about dripping liquid */
 #define wizard flags.debug
     boolean end_own;         /* list all own scores */
     boolean explore;         /* in exploration mode (aka discover mode) */

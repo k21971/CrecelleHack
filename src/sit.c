@@ -556,7 +556,11 @@ dosit(void)
         pline("Having fun sitting on the %s?", surface(u.ux, u.uy));
     }
     /* Extra sitting effects */
-    if (has_coating(u.ux, u.uy, COAT_BLOOD)) {
+    if (has_coating(u.ux, u.uy, COAT_SHARDS)) {
+        pline("Ouch! You sat on something sharp!");
+        losehp(rnd(3), "sitting on glass", KILLED_BY);
+        make_dripping(rnd(5), POT_BLOOD, gy.youmonst.mnum);
+    } else if (has_coating(u.ux, u.uy, COAT_BLOOD)) {
         blood_data = &mons[levl[u.ux][u.uy].pindex];
         You("sit in blood. How %s.",
             is_vampire(gy.youmonst.data) ? "lovely" : "horrifying");
@@ -566,7 +570,8 @@ dosit(void)
             Sprintf(buf, "bathing in %s blood", pmname(blood_data, MALE));
             instapetrify(buf);
         }
-        
+        make_dripping(rnd(5), POT_BLOOD, gy.youmonst.mnum);
+        remove_coating(u.ux, u.uy, COAT_BLOOD);
     } else if (has_coating(u.ux, u.uy, COAT_POTION)) {
         char liqbuf[BUFSZ];
         if (levl[u.ux][u.uy].pindex == POT_WATER)
@@ -579,7 +584,8 @@ dosit(void)
         fakeobj.cursed = TRUE;
         fakeobj.otyp = levl[u.ux][u.uy].pindex;
         potionbreathe(&fakeobj);
-        if (rn2(3)) remove_coating(u.ux, u.uy, COAT_POTION);
+        make_dripping(rnd(5), fakeobj.otyp, NON_PM);
+        remove_coating(u.ux, u.uy, COAT_POTION);
     }
     return ECMD_TIME;
 }

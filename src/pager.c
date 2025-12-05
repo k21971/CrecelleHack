@@ -686,13 +686,14 @@ potion_coating_text(char *outbuf, int pindex) {
     if (!objects[pindex].oc_name_known && objects[pindex].oc_uname) {
         Sprintf(outbuf, "tonic called %s", objects[pindex].oc_uname);
     } else {
-        Sprintf(outbuf, "%s %s",
+        Sprintf(outbuf, "%s%s",
                     objects[pindex].oc_name_known ? OBJ_NAME(objects[pindex]) 
                                                 : OBJ_DESCR(objects[pindex]),
                     objects[pindex].oc_name_known ?
                         ((pindex == POT_BOOZE
                             || pindex == POT_OIL
-                            || pindex == POT_BLOOD) ? "" : "tonic") : "liquid");
+                            || pindex == POT_WATER
+                            || pindex == POT_BLOOD) ? "" : " tonic") : " liquid");
     }
     return outbuf;
 }

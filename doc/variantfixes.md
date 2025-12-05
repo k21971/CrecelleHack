@@ -128,6 +128,7 @@
 
 ## Misc
 - Added some secret areas to the tutorial.
+- Added many new ways to drip liquid or cause monsters to drip liquid.
 
 # 1.3
 

@@ -230,6 +230,8 @@ bhitm(struct monst *mtmp, struct obj *otmp)
             miss(zap_type_text, mtmp);
             learn_it = FALSE;
         }
+        if (!u.uswallow)
+            make_mdripping(mtmp, POT_WATER);
         break;
     case WAN_SLOW_MONSTER:
     case SPE_SLOW_MONSTER:
@@ -2835,6 +2837,7 @@ zapyourself(struct obj *obj, boolean ordinary)
     case WAN_AQUA_BOLT:
         You("douse yourself in %s!", hliquid("water"));
         learn_it = TRUE;
+        make_dripping(rnd(20), POT_WATER, NON_PM);
         water_damage_chain(gi.invent, FALSE);
         break;
 
@@ -3511,6 +3514,7 @@ zap_updown(struct obj *obj) /* wand or spell, nonnull */
             pline1(nothing_happens);
         } else if (u.dz < 0) { /* we should do more... */
             pline("Blood drips on your %s.", body_part(FACE));
+            make_dripping(rnd(5), POT_BLOOD, PM_HUMAN);
         } else if (u.dz > 0 && !OBJ_AT(u.ux, u.uy)) {
             /*
             Print this message only if there wasn't an engraving
@@ -4578,8 +4582,7 @@ zhitm(
         tmp = d(nd, 6);
         break;
     case ZT_ACID:
-        mon->mdriptype = POT_OIL;
-        mon->mdripping = 1;
+        make_mdripping(mon, POT_ACID);
         if (resists_acid(mon) || defended(mon, AD_ACID)) {
             sho_shieldeff = TRUE;
             break;
