@@ -88,7 +88,7 @@ static const struct propname {
     { HALLUC_RES, "hallucination resistance" },
     { BLND_RES, "light-induced blindness resistance" },
     { FUMBLING, "fumbling" },
-    { DRIPPING, "dripping" },
+    { DRIPPING, "dripping wet" },
     { HUNGER, "voracious hunger" },
     { TELEPAT, "telepathic" },
     { WARNING, "warning" },

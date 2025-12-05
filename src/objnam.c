@@ -3550,6 +3550,7 @@ static const struct alt_spellings {
     { "small shield", ROUNDSHIELD },
     { "large shield", KITE_SHIELD },
     { "upgrade kit", RESIZING_KIT },
+    { "wand of water", WAN_AQUA_BOLT },
     /* I would like to eliminate all mentions of this from the game entirely,
        but unfortunately this is muscle memory for a lot of strong players
        and will lead to wasted wishes. */

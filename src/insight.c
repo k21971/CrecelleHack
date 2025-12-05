@@ -1184,7 +1184,7 @@ status_enlightenment(int mode, int final)
             if (dripping_timeout)
                 Sprintf(eos(buf), " (%ld)", dripping_timeout);
         }
-        enl_msg(You_, "drip ", "dripped ", "with ", buf);
+        enl_msg(You_, "are soaked ", "were soaked ", "with ", buf);
     }
     if (Sleepy) {
         if (magic || cause_known(SLEEPY)) {
