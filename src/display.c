@@ -346,7 +346,7 @@ map_object(struct obj *obj, int show)
             neardist = (r * r) * 2 - r; /* same as r*r + r*(r-1) */
 
         if (distu(x, y) <= neardist) {
-            obj->dknown = 1;
+            observe_object(obj);
             glyph = obj_to_glyph(obj, newsym_rn2);
         }
     }
@@ -601,13 +601,6 @@ display_monster(
                 num = petnum_to_glyph(PM_LONG_WORM_TAIL, mgendercode);
             else
                 num = pet_to_glyph(mon, rn2_on_display_rng);
-#ifdef MON_HARMONICS
-        } else if (!Hallucination && mon_boosted(mon, mon->data->mboost)) {
-            if (worm_tail)
-                num = boosted_monnum_to_glyph(PM_LONG_WORM_TAIL, mgendercode);
-            else
-                num = boosted_to_glyph(mon, rn2_on_display_rng);
-#endif
         } else if (sightflags == DETECTED) {
             if (worm_tail)
                 num = detected_monnum_to_glyph(what_mon(PM_LONG_WORM_TAIL,
@@ -1074,6 +1067,7 @@ newsym(coordxy x, coordxy y)
          * These checks and changes must be here and not in back_to_glyph().
          * They are dependent on the position being out of sight.
          */
+        /* TODO: Remember colors of walls? */
         } else if (Is_rogue_level(&u.uz)) {
             if (lev->glyph == cmap_to_glyph(S_litcorr) && lev->typ == CORR)
                 show_glyph(x, y, lev->glyph = cmap_to_glyph(S_corr));
@@ -1507,7 +1501,7 @@ see_monsters(void)
         if (mon->wormno)
             see_wsegs(mon);
         if (Warn_of_mon
-            && (svc.context.warntype.obj & mon->data->mflags2) != 0L)
+            && (svc.context.warntype.obj & mon->data->mhflags) != 0L)
             new_warn_obj_cnt++;
     }
 
@@ -1592,7 +1586,7 @@ see_nearby_objects(void)
             if (!cansee(ix, iy) || distu(ix, iy) > neardist)
                 continue;
 
-            obj->dknown = 1; /* near enough to see it */
+            observe_object(obj);
             /* operate on remembered glyph rather than current one */
             glyph = levl[ix][iy].glyph;
             if (glyph_is_generic_object(glyph))
@@ -1983,10 +1977,6 @@ show_glyph(coordxy x, coordxy y, int glyph)
             text = "female pet";
         } else if ((offset = (glyph - GLYPH_PET_MALE_OFF)) >= 0) {
             text = "male pet";
-        } else if ((offset = (glyph - GLYPH_BOOSTED_FEM_OFF)) >= 0) {
-            text = "boosted female monster";
-        } else if ((offset = (glyph - GLYPH_BOOSTED_MALE_OFF)) >= 0) {
-            text = "boosted male monster";
         } else if ((offset = (glyph - GLYPH_MON_FEM_OFF)) >= 0) {
             text = "female monster";
         } else if ((offset = (glyph - GLYPH_MON_MALE_OFF)) >= 0) {
@@ -2646,10 +2636,25 @@ map_glyphinfo(
         }
         glyphinfo->gm.glyphflags |= MG_HERO;
     }
+    /* If it has a material, color it */
+    if (glyph_is_object(glyph)) {
+        struct obj* otmp = vobj_at(x, y);
+        if (iflags.use_color && otmp
+            && otmp->material != objects[otmp->otyp].oc_material) {
+            /* Externify this array if it's ever needed anywhere else. */
+            const int materialclr[] = {
+                CLR_BLACK, HI_ORGANIC, CLR_WHITE, HI_ORGANIC, CLR_RED,
+                CLR_WHITE, HI_CLOTH, HI_LEATHER, HI_WOOD, CLR_WHITE, CLR_BLACK,
+                HI_METAL, HI_METAL, HI_COPPER, HI_SILVER, HI_GOLD, CLR_WHITE,
+                HI_SILVER, CLR_WHITE, HI_GLASS, HI_GLASS, CLR_RED, CLR_GRAY
+            };
+            glyphinfo->gm.sym.color = materialclr[otmp->material];
+        } 
+    }
     /* If the floor has extra surface info, we need to track it to swap the color around. */
     if (IS_COATABLE(levl[x][y].typ)
-        && glyph_is_cmap_coatable(glyph) && cansee(x, y)
-        && levl[x][y].coat_info) {
+        && glyph_is_cmap_coatable(glyph) && levl[x][y].coat_info
+        && flags.color_coatings && cansee(x, y)) {
         /* Order matters here. Generally the more important the coating, the higher
             priority it gets. Potions are the highest because they could kill the player. */
         if ((levl[x][y].coat_info & COAT_POTION) != 0) {
@@ -2674,9 +2679,11 @@ map_glyphinfo(
         else if ((levl[x][y].coat_info & COAT_GRASS) != 0)
             glyphinfo->gm.sym.color = CLR_GREEN;
         /* indicator for colorless games */
-        if (!iflags.use_color)
+        if (!iflags.use_color || flags.bold_coatings)
             glyphinfo->gm.glyphflags |= MG_SURFACE;
-    } else if (IS_SUBMASKABLE(levl[x][y].typ) && glyph_is_cmap_a(glyph) && cansee(x, y))  {
+    } else if (IS_SUBMASKABLE(levl[x][y].typ)
+                && (glyph_is_cmap_a(glyph) || levl[x][y].typ == STONE)
+                && flags.color_surfaces && cansee(x, y))  {
         if (levl[x][y].submask == SM_DIRT)
             glyphinfo->gm.sym.color = CLR_BROWN;
         if (levl[x][y].submask == SM_SAND)
@@ -2714,8 +2721,8 @@ const int explodecolors[7] = {
 /* main_walls, mines_walls, gehennom_walls, knox_walls, sokoban_walls */
 int wallcolors[sokoban_walls + 1] = {
     /* default init value is to match defsym[S_vwall + n].color (CLR_GRAY) */
-    CLR_GRAY, CLR_GRAY, CLR_GRAY, CLR_GRAY, CLR_GRAY,
-    /* CLR_GRAY, CLR_BROWN, CLR_RED, CLR_GRAY, CLR_BRIGHT_BLUE, */
+    /* CLR_GRAY, CLR_GRAY, CLR_GRAY, CLR_GRAY, CLR_GRAY, */
+    CLR_GRAY, CLR_BROWN, CLR_RED, CLR_GRAY, CLR_BRIGHT_BLUE,
 };
 
 #define zap_color(n) color = iflags.use_color ? zapcolors[n] : NO_COLOR
@@ -3078,20 +3085,6 @@ reset_glyphmap(enum glyphmap_change_triggers trigger)
             else
                 invis_color(offset);
             gmap->glyphflags |= MG_INVIS;
-        } else if ((offset = (glyph - GLYPH_BOOSTED_FEM_OFF)) >= 0) {
-            gmap->sym.symidx = mons[offset].mlet + SYM_OFF_M;
-            if (has_rogue_color)
-                color = NO_COLOR;
-            else
-                pet_color(offset);
-            gmap->glyphflags |= (MG_BOOST | MG_FEMALE);
-        } else if ((offset = (glyph - GLYPH_BOOSTED_MALE_OFF)) >= 0) {
-            gmap->sym.symidx = mons[offset].mlet + SYM_OFF_M;
-            if (has_rogue_color)
-                color = NO_COLOR;
-            else
-                pet_color(offset);
-            gmap->glyphflags |= (MG_BOOST | MG_MALE);
         } else if ((offset = (glyph - GLYPH_PET_FEM_OFF)) >= 0) {
             gmap->sym.symidx = mons[offset].mlet + SYM_OFF_M;
             if (has_rogue_color)

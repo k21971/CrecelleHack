@@ -81,6 +81,8 @@ enum ms_sounds {
 #define MR2_DISPLACED   0x1000 /* displaced */
 #define MR2_STRENGTH    0x2000 /* gauntlets of power */
 #define MR2_FUMBLING    0x4000 /* clumsy */
+#define MR2_TELEPATHY   0x4000 /* telepathic */
+#define MR2_JUMPING     0x8000 /* can jump */
 
 #define M1_FLY          0x00000001L /* can fly or float */
 #define M1_SWIM         0x00000002L /* can traverse water */
@@ -121,19 +123,19 @@ enum ms_sounds {
 #endif
 
 #define M2_NOPOLY       0x00000001L /* players mayn't poly into one */
-#define M2_UNDEAD       0x00000002L /* is walking dead */
-#define M2_WERE         0x00000004L /* is a lycanthrope */
-#define M2_HUMAN        0x00000008L /* is a human */
-#define M2_ELF          0x00000010L /* is an elf */
-#define M2_DWARF        0x00000020L /* is a dwarf */
-#define M2_GNOME        0x00000040L /* is a gnome */
-#define M2_ORC          0x00000080L /* is an orc */
-#define M2_DEMON        0x00000100L /* is a demon */
+// #define M2_UNDEAD       0x00000002L /* is walking dead */
+// #define M2_WERE         0x00000004L /* is a lycanthrope */
+// #define M2_HUMAN        0x00000008L /* is a human */
+// #define M2_ELF          0x00000010L /* is an elf */
+// #define M2_DWARF        0x00000020L /* is a dwarf */
+// #define M2_GNOME        0x00000040L /* is a gnome */
+// #define M2_ORC          0x00000080L /* is an orc */
+// #define M2_DEMON        0x00000100L /* is a demon */
 #define M2_MERC         0x00000200L /* is a guard or soldier */
 #define M2_LORD         0x00000400L /* is a lord to its kind */
 #define M2_PRINCE       0x00000800L /* is an overlord to its kind */
 #define M2_MINION       0x00001000L /* is a minion of a deity */
-#define M2_GIANT        0x00002000L /* is a giant */
+// #define M2_GIANT        0x00002000L /* is a giant */
 #define M2_SHAPESHIFTER 0x00004000L /* is a shapeshifting species */
 #define M2_MALE         0x00010000L /* always male */
 #define M2_FEMALE       0x00020000L /* always female */
@@ -178,6 +180,19 @@ enum ms_sounds {
 #define M3_TRIPPER      0x2000 /* monster can trip the player */
 #define M3_CALLOUT      0x4000 /* monster coordinates with others by calling out player position */
 
+#define M4_BST_GRASS 0x0001
+#define M4_BST_MUD  0x0002
+#define M4_BST_ROCK  0x0004
+#define M4_BST_WATER 0x0008
+#define M4_BST_ICE   0x0010
+#define M4_BST_ASHES 0x0020
+#define M4_BST_FUNGI 0x0040
+#define M4_BST_BLOOD 0x0080
+#define M4_BST_SAND 0x0100
+#define M4_BST_POTION 0x0200
+#define M4_BST_HONEY  0x0400
+
+#define MZ_RANDOM      -1 /* used in set_obj_size */
 #define MZ_TINY         0 /* < 2' */
 #define MZ_SMALL        1 /* 2-4' */
 #define MZ_MEDIUM       2 /* 4-7' */
@@ -186,32 +201,17 @@ enum ms_sounds {
 #define MZ_HUGE         4 /* 12-25' */
 #define MZ_GIGANTIC     7 /* off the scale */
 
-/* Monster races -- must stay within ROLE_RACEMASK */
-/* Eventually this may become its own field */
-#define MH_HUMAN        M2_HUMAN
-#define MH_ELF          M2_ELF
-#define MH_DWARF        M2_DWARF
-#define MH_GNOME        M2_GNOME
-#define MH_ORC          M2_ORC
-
-/* Boosts */
-#define BST_GRASS 0x0001
-#define BST_MUD  0x0002
-#define BST_ROCK  0x0004
-#define BST_WATER 0x0008
-#define BST_ICE   0x0010
-#define BST_ASHES 0x0020
-#define BST_FUNGI 0x0040
-#define BST_BLOOD 0x0080
-#define BST_SAND 0x0100
-#define BST_POTION 0x0200
-#define BST_HONEY  0x0400
-
-struct boostnam {
-   short boost_short;
-   const char *nam;
-   const char *abbr;
-};
+/* Monster races -- handled as its own flag */
+#define MH_HUMAN        0x00000001L
+#define MH_ELF          0x00000002L
+#define MH_DWARF        0x00000004L
+#define MH_GNOME        0x00000008L
+#define MH_ORC          0x00000010L
+#define MH_WERE         0x00000020L
+#define MH_DEMON        0x00000040L
+#define MH_UNDEAD       0x00000080L
+#define MH_GIANT        0x00000100L
+#define MH_KOBOLD       0x00000200L
 
 /* for mons[].geno (constant during game) */
 #define G_DAY           0x00010000 /* generated only in day */

@@ -11,13 +11,15 @@
  */
 
 #define NO_CALLBACK (-1)
-boolean inside_bonfire(genericptr, genericptr);
 
 void free_region(NhRegion *);
 #ifndef SFCTOOL
 boolean inside_gas_cloud(genericptr, genericptr);
-boolean expire_bonfire(genericptr, genericptr);
+boolean inside_bonfire(genericptr, genericptr);
+boolean inside_force_field(genericptr, genericptr);
 boolean expire_gas_cloud(genericptr, genericptr);
+boolean expire_bonfire(genericptr, genericptr);
+boolean expire_force_field(genericptr, genericptr);
 boolean inside_rect(NhRect *, int, int);
 NhRegion *create_region(NhRect *, int);
 void add_rect_to_reg(NhRegion *, NhRect *);
@@ -36,9 +38,8 @@ void replace_mon_regions(struct monst *,struct monst *);
 void remove_mon_from_regions(struct monst *);
 NhRegion *create_msg_region(coordxy,coordxy,coordxy,coordxy, const char *,
                            const char *);
-boolean enter_force_field(genericptr,genericptr);
-NhRegion *create_force_field(coordxy,coordxy,int,long);
 #endif
+staticfn boolean enter_force_field(genericptr,genericptr);
 
 staticfn void reset_region_mids(NhRegion *);
 staticfn boolean poisongas_damage(NhRegion *, int, struct monst *);
@@ -53,7 +54,13 @@ static const callback_proc callbacks[] = {
 #define INSIDE_BONFIRE 2
     inside_bonfire,
 #define EXPIRE_BONFIRE 3
-    expire_bonfire
+    expire_bonfire,
+#define ENTER_FF 4
+    enter_force_field,
+#define INSIDE_FF 5
+    inside_force_field,
+#define EXPIRE_FF 6
+    expire_force_field
 };
 
 #define REGION_DAMAGE(reg) reg->arg.damage
@@ -432,6 +439,7 @@ run_regions(void)
     /* reset some messaging variables */
     gg.gas_cloud_diss_within = FALSE;
     gg.bonfire_diss_within = FALSE;
+    gg.force_field_diss_within = FALSE;
     gg.gas_cloud_diss_seen = 0;
     gg.bonfire_diss_seen = 0;
 
@@ -488,6 +496,10 @@ run_regions(void)
         pline_The("flames around you dwindle and die out.");
         gg.bonfire_diss_within = 0;
         gg.bonfire_diss_seen = 0;
+    }
+    if (gg.force_field_diss_within) {
+        pline_The("ambient tension around you lessens.");
+        gg.force_field_diss_within = 0;
     }
     if (gg.gas_cloud_diss_seen) {
         You_see("%s gas cloud%s dissipate.",
@@ -770,8 +782,10 @@ visible_region_summary(winid win)
                 Sprintf(typbuf, "poison gas (%d)", damg);
             else
                 Strcpy(typbuf, "vapor");
-        } else {
+        } else if (reg->inside_f == INSIDE_BONFIRE) {
             Sprintf(typbuf, "fire (%d)", damg);
+        } else {
+            Sprintf(typbuf, "force field");
         }
         Sprintf(eos(buf), "%s%-16s", fldsep, typbuf);
         Sprintf(eos(buf), "%s@[%d,%d..%d,%d]", fldsep,
@@ -1067,15 +1081,43 @@ create_msg_region(
     return reg;
 }
 
+#endif /*0*/
+
 
 /*--------------------------------------------------------------*
  *                                                              *
- *                      Force Field Related Cod                 *
- *                      (unused yet)                            *
+ *                      Force Field Related Code                *
  *--------------------------------------------------------------*/
 
 boolean
-enter_force_field(genericptr_t p1, genericptr_t p2)
+expire_force_field(genericptr_t p1, genericptr_t p2 UNUSED)
+{
+    NhRegion *reg;
+
+    reg = (NhRegion *) p1;
+
+    if (u_at(reg->bounding_box.lx, reg->bounding_box.ly)) {
+        if (!u.uswallow)
+            gg.force_field_diss_within = TRUE;
+    }
+    return TRUE;
+}
+
+/* returns True if p2 is killed by region p1, False otherwise */
+boolean
+inside_force_field(genericptr_t p1 UNUSED, genericptr_t p2)
+{
+    struct monst *mtmp = (struct monst *) p2;
+
+    if (!mtmp) {
+        Norep("The air hums with ambient tension.");
+    }
+    return FALSE;
+}
+
+
+staticfn boolean
+enter_force_field(genericptr_t p1 UNUSED, genericptr_t p2)
 {
     struct monst *mtmp;
 
@@ -1118,13 +1160,16 @@ create_force_field(coordxy x, coordxy y, int radius, long ttl)
     ff->ttl = ttl;
     if (!gi.in_mklev && !svc.context.mon_moving)
         set_heros_fault(ff); /* assume player has created it */
- /* ff->can_enter_f = enter_force_field; */
- /* ff->can_leave_f = enter_force_field; */
+    ff->can_enter_f = ENTER_FF;
+    ff->can_leave_f = ENTER_FF;
+    ff->expire_f = EXPIRE_FF;
+    ff->inside_f = INSIDE_FF;
+    ff->visible = TRUE;
+    ff->blocking = FALSE;
+    ff->glyph = cmap_to_glyph(S_force_field);
     add_region(ff);
     return ff;
 }
-
-#endif /*0*/
 
 /*--------------------------------------------------------------*
  *                                                              *
@@ -1271,7 +1316,8 @@ inside_gas_cloud(genericptr_t p1, genericptr_t p2)
         fakeobj.cursed = REGION_CURSED(reg);
         if (!mtmp && (!breathless(gy.youmonst.data) || haseyes(gy.youmonst.data))) {
             potionbreathe(&fakeobj);
-        } else if (mtmp && (!breathless(mtmp->data) || haseyes(mtmp->data))) {
+        } else if (mtmp && (!breathless(mtmp->data) || haseyes(mtmp->data))
+                    && !can_magbreathe(mtmp)) {
             mpotionbreathe(&fakeobj, mtmp, heros_fault(reg));
         }
         return FALSE;
@@ -1559,7 +1605,7 @@ region_safety(void)
         /* cloud dissipated on its own, so nothing needs to be done */
         if (f_indx == INSIDE_GAS_CLOUD)
             pline_The("gas cloud has dissipated.");
-        else
+        else if (f_indx == INSIDE_BONFIRE)
             pline_The("fire has died.");
     }
     /* maybe cure blindness too */
@@ -1721,9 +1767,16 @@ create_bonfire(coordxy x, coordxy y, int lifetime, int damage)
     return flames;
 }
 
+boolean
+is_bonfire(NhRegion *reg) {
+    return (reg->inside_f == INSIDE_BONFIRE);
+}
+
 const char *
 region_string(NhRegion *reg) {
-    if (!is_gasregion(reg)) {
+    if (reg->can_enter_f == ENTER_FF) {
+        return "a forcefield";
+    } else if (reg->inside_f == INSIDE_BONFIRE) {
         return "a bonfire";
     } else if (reg_damg(reg)) {
         return "a cloud of poison gas";

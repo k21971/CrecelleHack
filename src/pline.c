@@ -522,6 +522,10 @@ livelog_printf(long ll_type, const char *line, ...)
     char gamelogbuf[BUFSZ * 2];
     va_list the_args;
 
+    /* Do NOT livelog ANYTHING in the tutorial. */
+    if (In_tutorial(&u.uz))
+        return;
+
     va_start(the_args, line);
     (void) vsnprintf(gamelogbuf, sizeof gamelogbuf, line, the_args);
     va_end(the_args);

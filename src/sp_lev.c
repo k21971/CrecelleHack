@@ -969,6 +969,9 @@ flip_level_rnd(int flp, boolean extras)
 {
     int c = 0;
 
+    if (In_sokoban(&u.uz) && u.uroleplay.no_flipped_soko)
+        return;
+
     /* TODO?
      *  Might change rn2(2) to !rn2(3) or (rn2(5) < 2) in order to bias
      *  the outcome towards the traditional orientation.
@@ -2188,6 +2191,7 @@ create_object(object *o, struct mkroom *croom)
     struct obj *otmp;
     coordxy x, y;
     char c;
+    int omat, oprop = 0;
     boolean named; /* has a name been supplied in level description? */
 
     named = o->name.str ? TRUE : FALSE;
@@ -2274,6 +2278,12 @@ create_object(object *o, struct mkroom *croom)
         otmp->oeroded = otmp->oeroded2 = 0;
         otmp->oerodeproof = 0;
     }
+    if (o->osize) {
+        otmp->osize = o->osize;
+        if (otmp->osize > MZ_GIGANTIC) otmp->osize = MZ_GIGANTIC;
+        if (otmp->osize < MZ_TINY) otmp->osize = MZ_TINY;
+        if (otmp->osize > MZ_HUGE && otmp->osize < MZ_GIGANTIC) otmp->osize = MZ_HUGE;
+    }
     if (o->recharged)
         otmp->recharged = (o->recharged % 8);
     if (o->locked == 0 || o->locked == 1) {
@@ -2293,6 +2303,16 @@ create_object(object *o, struct mkroom *croom)
         otmp->owt = weight(otmp);
     }
 
+    /* set the material and object property */
+    if (o->omat.str) {
+        omat = lookup_material_by_name(o->omat.str, &omat);
+        if (omat) set_material(otmp, omat);
+    }
+    if (o->oprop.str){
+        oprop = lookup_oprop_by_name(o->oprop.str, &oprop);
+        if (oprop) otmp->oprop = oprop;
+    }
+
     /* contents (of a container or monster's inventory) */
     if (o->containment & SP_OBJ_CONTENT || invent_carrying_monster) {
         if (!container_idx) {
@@ -2310,8 +2330,10 @@ create_object(object *o, struct mkroom *croom)
                 remove_object(otmp);
                 if (otmp->otyp == SADDLE && can_saddle(invent_carrying_monster->data))
                     put_saddle_on_mon(otmp, invent_carrying_monster);
-                else
+                else {
+                    set_obj_size(otmp, invent_carrying_monster->data->msize, FALSE);
                     (void) mpickobj(invent_carrying_monster, otmp);
+                }
             }
         } else {
             struct obj *cobj = container_obj[container_idx - 1];
@@ -3556,6 +3578,8 @@ lspo_object(lua_State *L)
 {
     static object zeroobject = {
             { 0 },   /* Str_or_len name */
+            { 0 },   /* omat */
+            { 0 },   /* oprop */
             0,       /* corpsenm */
             0, 0,    /* id, spe */
             0,       /* coord */
@@ -3565,7 +3589,7 @@ lspo_object(lua_State *L)
             0,       /* quan */
             0,       /* buried */
             0,       /* lit */
-            0, 0, 0, 0, 0, /* eroded, locked, trapped, tknown, recharged */
+            0, 0, 0, 0, 0, 0, 0, /* eroded, osize, locked, trapped, tknown, pknown, recharged */
             0, 0, 0, 0, /* invis, greased, broken, achievement */
     };
 #if 0
@@ -3582,10 +3606,13 @@ lspo_object(lua_State *L)
 
     tmpobj = zeroobject;
     tmpobj.name.str = (char *) 0;
+    tmpobj.omat.str = (char *) 0;
+    tmpobj.oprop.str = (char *) 0;
     tmpobj.spe = -127;
     tmpobj.quan = -1;
     tmpobj.trapped = -1;
     tmpobj.tknown = -1;
+    tmpobj.pknown = 0;
     tmpobj.locked = -1;
     tmpobj.corpsenm = NON_PM;
 
@@ -3633,13 +3660,17 @@ lspo_object(lua_State *L)
         tmpobj.curse_state = get_table_buc(L);
         tmpobj.corpsenm = NON_PM;
         tmpobj.name.str = get_table_str_opt(L, "name", (char *) 0);
+        tmpobj.omat.str = get_table_str_opt(L, "material", (char *) 0);
+        tmpobj.oprop.str = get_table_str_opt(L, "oprop", (char *) 0);
         tmpobj.quan = get_table_int_or_random(L, "quantity", -1);
         tmpobj.buried = get_table_boolean_opt(L, "buried", 0);
         tmpobj.lit = get_table_boolean_opt(L, "lit", 0);
         tmpobj.eroded = get_table_int_opt(L, "eroded", 0);
+        tmpobj.osize = get_table_int_opt(L, "osize", MZ_MEDIUM);
         tmpobj.locked = get_table_boolean_opt(L, "locked", -1);
         tmpobj.trapped = get_table_boolean_opt(L, "trapped", -1);
         tmpobj.tknown = get_table_boolean_opt(L, "trap_known", -1);
+        tmpobj.pknown = get_table_boolean_opt(L, "oprop_known", 0);
         tmpobj.recharged = get_table_int_opt(L, "recharged", 0);
         tmpobj.greased = get_table_boolean_opt(L, "greased", 0);
         tmpobj.broken = get_table_boolean_opt(L, "broken", 0);
@@ -3664,6 +3695,7 @@ lspo_object(lua_State *L)
 
     if (tmpobj.id == STATUE || tmpobj.id == EGG
         || tmpobj.id == CORPSE || tmpobj.id == TIN
+        || tmpobj.id == POT_BLOOD
         || tmpobj.id == FIGURINE) {
         struct permonst *pm = NULL;
         boolean nonpmobj = FALSE;
@@ -3746,6 +3778,8 @@ lspo_object(lua_State *L)
         spo_pop_container();
 
     Free(tmpobj.name.str);
+    Free(tmpobj.omat.str);
+    Free(tmpobj.oprop.str);
 
     nhl_push_obj(L, otmp);
 
@@ -4491,7 +4525,7 @@ lspo_gold(lua_State *L)
     if (argc == 3) {
         amount = luaL_checkinteger(L, 1);
         x = gldx = luaL_checkinteger(L, 2);
-        y = gldy = luaL_checkinteger(L, 2);
+        y = gldy = luaL_checkinteger(L, 3);
     } else if (argc == 2 && lua_type(L, 2) == LUA_TTABLE) {
         amount = luaL_checkinteger(L, 1);
         (void) get_coord(L, 2, &gldx, &gldy);

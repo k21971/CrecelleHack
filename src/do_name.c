@@ -421,6 +421,22 @@ oname(
                                "chose %s to be named \"%s\"",
                                ansimpleoname(obj), bare_artifactname(obj));
         }
+        /* set up specific materials for the artifact */
+        /* set up specific materials for the artifact */
+        if (obj->oartifact) {
+            short material = artifact_material(obj->oartifact);
+            if (material == 0) { /* = use default material */
+              /* Don't change the material of the object if it's being created
+               * via naming an existing object, but prevent all other forms of
+               * getting a irregular-material artifact (wishing, dipping for
+               * Excalibur or getting it via crowning from an existing long
+               * sword) */
+              if (!via_naming)
+                  set_material(obj, objects[obj->otyp].oc_material);
+            } else { /* specifically defined material */
+                set_material(obj, material);
+            }
+        }
     }
     if (carried(obj) && !skip_inv_update)
         update_inventory();
@@ -678,7 +694,7 @@ docall(struct obj *obj)
             undiscover_object(obj->otyp);
     } else {
         *uname_p = dupstr(buf);
-        discover_object(obj->otyp, FALSE, TRUE); /* possibly add to disco[] */
+        discover_object(obj->otyp, FALSE, TRUE, TRUE); /* possibly add to disco[] */
     }
 }
 
@@ -1013,7 +1029,7 @@ x_monnam(
     if (do_saddle && (mtmp->misc_worn_check & W_SADDLE) && !Blind
         && !Hallucination)
         Strcat(buf, "saddled ");
-    if (mtmp->mbaby) {
+    if (mtmp->mbaby && !do_name) {
         Strcat(buf, baby_name(mtmp));
     }
     has_adjectives = (buf[0] != '\0');

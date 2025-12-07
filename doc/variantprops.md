@@ -1,48 +1,32 @@
 # Object Properties
 
 ## Boreal
-- Boreal weapons fire shards of ice when standing on frost.
+- Boreal weapons fire ranged projectiles in the form of shards
+  of ice. This only happens when the wielder is standing on
+  frost or solid ice.
+- Boreal armor provides cold resistance.
+- Boreal boots spread frost when walking.
 
 ## Sanguine
-- Sanguine weapons absorb blood to deal double damage.
-
-## Lush
-- Lush weapons grow grass under the opponent. If
-  grass is not already present, the opponent takes 2d6
-  damage.
-
-## Oceanic
-- Oceanic weapons that hit opponents dripping with liquid
-  do a minimum of 10 damage before multipliers are applied.
-  The dripping status is removed. In addition, the dieroll
-  of the attack is set to 1, causing vorpal and magicbane
-  attacks to proc.
+- Sanguine weapons absorb blood. If the wielder is standing on
+  blood, the blood is absorbed and the attack deals double damage.
+- Sanguine boots spread blood when walking.
 
 ## Thermal
-- Thermal weapons create bonfires on hit if the wielder is
-  standing on ash or if the target is standing on grass.
+- Thermal weapons can create a bonfire underneath the target.
+- Thermal armor provides fire resistance.
+- Thermal boots turn any grass walked on to ash.
 
-## Stony
-- Stony weapons have a chance to drop boulders on the target,
-  but only if the wielder is standing on uncovered stone.
+## Crackling
+- Crackling weapons have a 50% chance of creating a 1d6 damage
+  ray of lightning.
+- Crackling armor provides shock resistance when worn.
 
-## Earthen
-- Earthen weapons cover their target with mud, slowing them
-  down.
+## Subtle
+- Subtle weapons are permanently poisoned.
+- Subtle armor provides stealth when worn.
 
-## Fungal
-- Fungal weapons stun a target standing on fungi, but confuse
-  the target when the wielder is standing on fungi. Also, it
-  spreads fungal coatings.
-
-## Alchemical
-- Alchemical weapons have a 25% chance of causing a type of
-  potion dependent on object id to splash onto nearby squares.
-
-## Honeyed
-- Honeyed weapons deposit honey onto the surface beneath the
-  defender on hit.
-
-## Wasting
-- Wasting weapons can cause staggering (as unarmed strikes) if
-  the player is standing on sand.
+## Hexed
+- Hexed weapons have a 100% chance of absorbing curses when uncursed,
+  but immediately become cursed upon doing so.
+- Hexed armor autocurses when worn.

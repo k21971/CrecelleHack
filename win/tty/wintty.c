@@ -3922,9 +3922,6 @@ tty_print_glyph(
         && bkglyphinfo && bkglyphinfo->framecolor != NO_COLOR) {
         ttyDisplay->framecolor = bkglyphinfo->framecolor;
         term_start_bgcolor(bkglyphinfo->framecolor);
-    } else if ((special & MG_BOOST)) {
-        term_start_attr(ATR_ULINE);
-        boostattr = TRUE;
     } else if ((special & MG_PET) != 0 && iflags.hilite_pet) {
         term_start_attr(iflags.wc2_petattr);
         petattr = TRUE;
@@ -3935,9 +3932,11 @@ tty_print_glyph(
                && iflags.use_inverse) {
         term_start_attr(ATR_INVERSE);
         inverse_on = TRUE;
-    } else if ((special & MG_SURFACE) != 0 && iflags.use_inverse) {
-        term_start_attr(ATR_INVERSE);
-        inverse_on = TRUE;
+    }
+
+    /* visual indicator for surfaces */
+    if ((special & MG_SURFACE) != 0) {
+        term_start_attr(ATR_BOLD);
     }
 
 #if defined(TILES_IN_GLYPHMAP) && defined(MSDOS)

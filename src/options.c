@@ -130,7 +130,7 @@ static boolean opt_set_in_config[OPTCOUNT];
 static char *roleoptvals[MAX_ROLEOPT][num_opt_phases];
 
 static NEARDATA const char *OptS_type[OptS_Advanced+1] = {
-    "General", "Behavior", "Map", "Status", "Advanced"
+    "General", "Crecelle", "Behavior", "Map", "Status", "Advanced"
 };
 
 static const char def_inv_order[MAXOCLASSES] = {
@@ -504,6 +504,7 @@ ask_do_tutorial(void)
             free((genericptr_t) sel);
         } else { /* ESC */
             dotut = FALSE;
+            pline("So be it. Press ? and select longer descriptions of game options to view variant-specific options.");
         }
     }
     return dotut;
@@ -1853,6 +1854,46 @@ optfn_gender(
     }
     if (req == get_val) {
         Sprintf(opts, "%s", rolestring(flags.initgend, genders, adj));
+        return optn_ok;
+    }
+    if (req == get_cnf_val) {
+        op = get_cnf_role_opt(optidx);
+        Strcpy(opts, op ? op : "none");
+        return optn_ok;
+    }
+    return optn_ok;
+}
+
+staticfn int
+optfn_orientation(
+    int optidx,
+    int req,
+    boolean negated,
+    char *opts,
+    char *op)
+{
+    int orientation;
+    if (req == do_init) {
+        return optn_ok;
+    }
+    if (req == do_set) {
+        /* gender:string */
+        if (!parse_role_opt(optidx, negated, allopt[optidx].name, opts, &op))
+            return optn_silenterr;
+
+        if (*op != '!') {
+            orientation = str2orientation(op);
+            if (orientation == ROLE_NONE) {
+                config_error_add("Unknown %s '%s'", allopt[optidx].name, op);
+                return optn_err;
+            }
+            flags.orientation = orientation;
+            saveoptstr(optidx, rolestring(flags.orientation, orientations, adj));
+        }
+        return optn_ok;
+    }
+    if (req == get_val) {
+        Sprintf(opts, "%s", rolestring(flags.orientation, orientations, adj));
         return optn_ok;
     }
     if (req == get_cnf_val) {
@@ -4130,8 +4171,8 @@ optfn_statuslines(
         } else if (op != empty_optstr) {
             itmp = atoi(op);
         }
-        if (itmp < 2 || itmp > 3) {
-            config_error_add("'%s:%s' is invalid; must be 2 or 3",
+        if (itmp < 2 || itmp > 4) {
+            config_error_add("'%s:%s' is invalid; must be 2-4 inclusive",
                              allopt[optidx].name, op);
             retval = optn_silenterr;
         } else {
@@ -4143,7 +4184,8 @@ optfn_statuslines(
     }
     if (req == get_val || req == get_cnf_val) {
         if (wc2_supported(allopt[optidx].name))
-            Strcpy(opts, (iflags.wc2_statuslines < 3) ? "2" : "3");
+            Strcpy(opts, (iflags.wc2_statuslines < 3) ? "2"
+                            : (iflags.wc2_statuslines > 3) ? "4" : "3");
         else
             Strcpy(opts, "unknown");
         return optn_ok;
@@ -5375,13 +5417,20 @@ optfn_boolean(
         case opt_fixinv:
         case opt_sortpack:
         case opt_implicit_uncursed:
+        case opt_implicit_medium:
+        case opt_implicit_material:
         case opt_invweight:
+        case opt_obscure_role_obj_names:
+        case opt_shorten_buc:
             if (!flags.invlet_constant)
                 reassign();
             update_inventory();
             break;
         case opt_lit_corridor:
         case opt_dark_room:
+        case opt_color_surfaces:
+        case opt_color_coatings:
+        case opt_bold_coatings:
             /*
              * All corridor squares seen via night vision or
              * candles & lamps change.  Update them by calling

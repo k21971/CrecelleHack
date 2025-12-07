@@ -7,28 +7,28 @@
 /* in makedefs.c, all we care about is the list of names */
 
 #define A(nam, typ, s1, s2, mt, atk, dfn, cry, inv, al, cl, rac, \
-          gs, gv, cost, clr, bn) nam
+          gs, gv, cost, clr, mat, fuzz, bn) nam
 
 static const char *const artifact_names[] = {
 
 #elif defined(ARTI_ENUM)
 #define A(nam, typ, s1, s2, mt, atk, dfn, cry, inv, al, cl, rac, \
-          gs, gv, cost, clr, bn)                                 \
+          gs, gv, cost, clr, mat, fuzz, bn)                            \
     ART_##bn
 
 #elif defined(DUMP_ARTI_ENUM)
 #define A(nam, typ, s1, s2, mt, atk, dfn, cry, inv, al, cl, rac, \
-          gs, gv, cost, clr, bn)                                 \
+          gs, gv, cost, clr, mat, fuzz, bn)                            \
     { ART_##bn, "ART_" #bn }
 #else
 /* in artifact.c, set up the actual artifact list structure;
    color field is for an artifact when it glows, not for the item itself */
 
 #define A(nam, typ, s1, s2, mt, atk, dfn, cry, inv, al, cl, rac, \
-          gs, gv, cost, clr, bn)                                 \
+          gs, gv, cost, clr, mat, fuzz, bn)                            \
     {                                                            \
         typ, nam, s1, s2, mt, atk, dfn, cry, inv, al, cl, rac,   \
-        gs, gv, cost, clr                                        \
+        gs, gv, cost, clr, mat, fuzz                                   \
     }
 
 /* clang-format off */
@@ -44,6 +44,11 @@ static const char *const artifact_names[] = {
 #define     ELEC(a,b)   {0,AD_ELEC,a,b}         /* electrical shock */
 #define     STUN(a,b)   {0,AD_STUN,a,b}         /* magical attack */
 #define     POIS(a,b)   {0,AD_DRST,a,b}         /* poison */
+#define     ACID(a,b)   {0,AD_ACID,a,b}
+
+#define DEFAULT_MAT 0 /* use base object's default material */
+#define FIXED_OTYP 0
+#define FUZZED_OTYP 1
 /* clang-format on */
 
 static NEARDATA struct artifact artilist[] = {
@@ -80,12 +85,12 @@ static NEARDATA struct artifact artilist[] = {
     /*  dummy element #0, so that all interesting indices are non-zero */
     A("", STRANGE_OBJECT, 0, 0, 0, NO_ATTK, NO_DFNS, NO_CARY, 0, A_NONE,
       NON_PM, NON_PM,
-      0, 0, 0L, NO_COLOR, NONARTIFACT),
+      0, 0, 0L, NO_COLOR, DEFAULT_MAT, FIXED_OTYP, NONARTIFACT),
 
     A("Excalibur", LONG_SWORD, (SPFX_NOGEN | SPFX_RESTR | SPFX_SEEK
                                 | SPFX_DEFN | SPFX_INTEL | SPFX_SEARCH),
       0, 0, PHYS(5, 10), DRLI(0, 0), NO_CARY, 0, A_LAWFUL, PM_KNIGHT, NON_PM,
-      0, 10, 4000L, NO_COLOR, EXCALIBUR),
+      0, 10, 4000L, NO_COLOR, DEFAULT_MAT, FIXED_OTYP, EXCALIBUR),
     /*
      *      Stormbringer only has a 2 because it can drain a level,
      *      providing 8 more.
@@ -93,7 +98,7 @@ static NEARDATA struct artifact artilist[] = {
     A("Stormbringer", RUNESWORD,
       (SPFX_RESTR | SPFX_ATTK | SPFX_DEFN | SPFX_INTEL | SPFX_DRLI), 0, 0,
       DRLI(5, 2), DRLI(0, 0), NO_CARY, 0, A_CHAOTIC, NON_PM, NON_PM,
-      0, 9, 8000L, NO_COLOR, STORMBRINGER),
+      0, 9, 8000L, NO_COLOR, DEFAULT_MAT, FIXED_OTYP, STORMBRINGER),
     /*
      *      Mjollnir can be thrown when wielded if hero has 25 Strength
      *      (usually via gauntlets of power but possible with rings of
@@ -109,79 +114,79 @@ static NEARDATA struct artifact artilist[] = {
     A("Mjollnir", WAR_HAMMER, /* Mjo:llnir */
       (SPFX_RESTR | SPFX_ATTK), 0, 0, ELEC(5, 24), NO_DFNS, NO_CARY, 0,
       A_NEUTRAL, PM_VALKYRIE, NON_PM,
-      0, 8, 4000L, NO_COLOR, MJOLLNIR),
+      0, 8, 4000L, NO_COLOR, DEFAULT_MAT, FIXED_OTYP, MJOLLNIR),
 
     A("Cleaver", BATTLE_AXE, SPFX_RESTR, 0, 0, PHYS(3, 6), NO_DFNS, NO_CARY,
       0, A_NEUTRAL, PM_BARBARIAN, NON_PM,
-      0, 8, 1500L, NO_COLOR, CLEAVER),
+      0, 8, 1500L, NO_COLOR, DEFAULT_MAT, FUZZED_OTYP, CLEAVER),
 
     /*
      *      Grimtooth glows in warning when elves are present, but its
      *      damage bonus applies to all targets rather than just elves
      *      (handled as special case in spec_dbon()).
      */
-    A("Grimtooth", ORCISH_DAGGER, (SPFX_RESTR | SPFX_WARN | SPFX_DFLAG2),
-      0, M2_ELF, PHYS(2, 6), POIS(0,0),
+    A("Grimtooth", ORCISH_DAGGER, (SPFX_RESTR | SPFX_WARN | SPFX_DFLAGH),
+      0, MH_ELF, PHYS(2, 6), POIS(0,0),
       NO_CARY, FLING_POISON, A_CHAOTIC, NON_PM, PM_ORC,
-      0, 5, 1200L, CLR_RED, GRIMTOOTH),
+      0, 5, 1200L, CLR_RED, IRON, FIXED_OTYP, GRIMTOOTH),
     /*
      *      Orcrist and Sting have same alignment as elves.
      *
-     *      The combination of SPFX_WARN+SPFX_DFLAG2+M2_value will trigger
-     *      EWarn_of_mon for all monsters that have the M2_value flag.
-     *      Sting and Orcrist will warn of M2_ORC monsters.
+     *      The combination of SPFX_WARN+SPFX_DFLAGH+MH_value will trigger
+     *      EWarn_of_mon for all monsters that have the MH_value flag.
+     *      Sting and Orcrist will warn of MH_ORC monsters.
      */
-    A("Orcrist", ELVEN_BROADSWORD, (SPFX_WARN | SPFX_DFLAG2), 0, M2_ORC,
+    A("Orcrist", ELVEN_BROADSWORD, (SPFX_WARN | SPFX_DFLAGH), 0, MH_ORC,
       PHYS(5, 0), NO_DFNS, NO_CARY, 0, A_CHAOTIC, NON_PM, PM_ELF,
-      3, 4, 2000L, CLR_BRIGHT_BLUE, ORCRIST), /* actually light blue */
+      3, 4, 2000L, CLR_BRIGHT_BLUE, MITHRIL, FIXED_OTYP, ORCRIST), /* actually light blue */
 
-    A("Sting", ELVEN_DAGGER, (SPFX_WARN | SPFX_DFLAG2), 0, M2_ORC,
+    A("Sting", ELVEN_DAGGER, (SPFX_WARN | SPFX_DFLAGH), 0, MH_ORC,
       PHYS(5, 0), NO_DFNS, NO_CARY, 0, A_CHAOTIC, NON_PM, PM_ELF,
-      3, 1, 800L, CLR_BRIGHT_BLUE, STING),
+      3, 1, 800L, CLR_BRIGHT_BLUE, MITHRIL, FIXED_OTYP, STING),
     /*
      *      Magicbane is a bit different!  Its magic fanfare
      *      unbalances victims in addition to doing some damage.
      */
     A("Magicbane", ATHAME, (SPFX_RESTR | SPFX_ATTK | SPFX_DEFN), 0, 0,
       STUN(3, 4), DFNS(AD_MAGM), NO_CARY, 0, A_NEUTRAL, PM_WIZARD, NON_PM,
-      0, 7, 3500L, NO_COLOR, MAGICBANE),
+      0, 7, 3500L, NO_COLOR, DEFAULT_MAT, FUZZED_OTYP, MAGICBANE),
 
     A("Frost Brand", LONG_SWORD, (SPFX_RESTR | SPFX_ATTK | SPFX_DEFN), 0, 0,
       COLD(5, 0), COLD(0, 0), NO_CARY, SNOWSTORM, A_NONE, NON_PM, NON_PM,
-      0, 9, 3000L, NO_COLOR, FROST_BRAND),
+      0, 9, 3000L, NO_COLOR, ICECRYSTAL, FUZZED_OTYP, FROST_BRAND),
 
     A("Fire Brand", LONG_SWORD, (SPFX_RESTR | SPFX_ATTK | SPFX_DEFN), 0, 0,
       FIRE(5, 0), FIRE(0, 0), NO_CARY, FIRESTORM, A_NONE, NON_PM, NON_PM,
-      0, 5, 3000L, NO_COLOR, FIRE_BRAND),
+      0, 5, 3000L, NO_COLOR, COPPER, FUZZED_OTYP, FIRE_BRAND),
 
     A("Dragonbane", BROADSWORD,
       (SPFX_RESTR | SPFX_DCLAS | SPFX_REFLECT), 0, S_DRAGON,
       PHYS(5, 0), NO_DFNS, NO_CARY, 0, A_NONE, NON_PM, NON_PM,
-      2, 5, 500L, NO_COLOR, DRAGONBANE),
+      2, 5, 500L, NO_COLOR, DRAGON_HIDE, FUZZED_OTYP, DRAGONBANE),
 
-    A("Demonbane", SILVER_MACE, (SPFX_RESTR | SPFX_DFLAG2), 0, M2_DEMON,
+    A("Demonbane", MACE, (SPFX_RESTR | SPFX_DFLAGH), 0, MH_DEMON,
       PHYS(5, 0), NO_DFNS, NO_CARY, BANISH, A_LAWFUL, PM_CLERIC, NON_PM,
-      1, 3, 2500L, NO_COLOR, DEMONBANE),
+      1, 3, 2500L, NO_COLOR, SILVER, FIXED_OTYP, DEMONBANE),
 
-    A("Werebane", SILVER_SABER, (SPFX_RESTR | SPFX_DFLAG2), 0, M2_WERE,
+    A("Werebane", SABER, (SPFX_RESTR | SPFX_DFLAGH), 0, MH_WERE,
       PHYS(5, 0), DFNS(AD_WERE), NO_CARY, 0, A_NONE, NON_PM, NON_PM,
-      1, 4, 1500L, NO_COLOR, WEREBANE),
+      1, 4, 1500L, NO_COLOR, SILVER, FUZZED_OTYP, WEREBANE),
 
-    A("Grayswandir", SILVER_SABER, (SPFX_RESTR | SPFX_HALRES), 0, 0,
+    A("Grayswandir", SABER, (SPFX_RESTR | SPFX_HALRES), 0, 0,
       PHYS(5, 0), NO_DFNS, NO_CARY, 0, A_LAWFUL, NON_PM, NON_PM,
-      0, 10, 8000L, NO_COLOR, GRAYSWANDIR),
+      0, 10, 8000L, NO_COLOR, SILVER, FIXED_OTYP, GRAYSWANDIR),
 
-    A("Giantslayer", LONG_SWORD, (SPFX_RESTR | SPFX_DFLAG2), 0, M2_GIANT,
+    A("Giantslayer", LONG_SWORD, (SPFX_RESTR | SPFX_DFLAGH), 0, MH_GIANT,
       PHYS(5, 0), NO_DFNS, NO_CARY, 0, A_NEUTRAL, NON_PM, NON_PM,
-      2, 4, 200L, NO_COLOR, GIANTSLAYER),
+      2, 4, 200L, NO_COLOR, DEFAULT_MAT, FUZZED_OTYP, GIANTSLAYER),
 
     A("Ogresmasher", WAR_HAMMER, (SPFX_RESTR | SPFX_DCLAS), 0, S_OGRE,
       PHYS(5, 0), NO_DFNS, NO_CARY, 0, A_NONE, NON_PM, NON_PM,
-      2, 1, 200L, NO_COLOR, OGRESMASHER),
+      2, 1, 200L, NO_COLOR, DEFAULT_MAT, FUZZED_OTYP, OGRESMASHER),
 
     A("Trollsbane", MORNING_STAR, (SPFX_RESTR | SPFX_DCLAS | SPFX_REGEN), 0,
       S_TROLL, PHYS(5, 0), NO_DFNS, NO_CARY, 0, A_NONE, NON_PM, NON_PM,
-      2, 1, 200L, NO_COLOR, TROLLSBANE),
+      2, 1, 200L, NO_COLOR, DEFAULT_MAT, FUZZED_OTYP, TROLLSBANE),
 
     /*
      *      Two problems:  1) doesn't let trolls regenerate heads,
@@ -190,7 +195,7 @@ static NEARDATA struct artifact artilist[] = {
      */
     A("Vorpal Blade", LONG_SWORD, (SPFX_RESTR | SPFX_BEHEAD), 0, 0,
       PHYS(5, 1), NO_DFNS, NO_CARY, 0, A_NEUTRAL, NON_PM, NON_PM,
-      1, 5, 4000L, NO_COLOR, VORPAL_BLADE),
+      1, 5, 4000L, NO_COLOR, IRON, FUZZED_OTYP, VORPAL_BLADE),
 
     /*
      *      Ah, never shall I forget the cry,
@@ -202,14 +207,42 @@ static NEARDATA struct artifact artilist[] = {
      */
     A("Snickersnee", KATANA, SPFX_RESTR, 0, 0, PHYS(0, 8), NO_DFNS, NO_CARY,
       0, A_LAWFUL, PM_SAMURAI, NON_PM,
-      0, 8, 1200L, NO_COLOR, SNICKERSNEE),
+      0, 8, 1200L, NO_COLOR, DEFAULT_MAT, FIXED_OTYP, SNICKERSNEE),
 
     /* Sunsword emits light when wielded (handled in the core rather than
        via artifact fields), but that light has no particular color */
-    A("Sunsword", LONG_SWORD, (SPFX_RESTR | SPFX_DFLAG2), 0, M2_UNDEAD,
+    A("Sunsword", LONG_SWORD, (SPFX_RESTR | SPFX_DFLAGH), 0, MH_UNDEAD,
       PHYS(5, 0), DFNS(AD_BLND), NO_CARY, BLINDING_RAY, A_LAWFUL, NON_PM,
       NON_PM,
-      0, 6, 1500L, NO_COLOR, SUNSWORD),
+      0, 6, 1500L, NO_COLOR, GEMSTONE, FUZZED_OTYP, SUNSWORD),
+
+    /*
+     *
+     * Crecelle Artifacts
+     *
+     */
+
+    A("Lucifer", MORNING_STAR, (SPFX_RESTR),
+      0, 0, PHYS(4, 0), NO_DFNS, NO_CARY, 0, A_CHAOTIC, NON_PM, NON_PM,
+      1, 3, 400L, NO_COLOR, BONE, FIXED_OTYP, LUCIFER),
+
+    A("Wrath of Sankis", PICK_AXE, (SPFX_RESTR | SPFX_DFLAGH | SPFX_DEFN),
+      0, MH_DWARF, PHYS(5, 0), FIRE(0, 0), NO_CARY, 0, A_NEUTRAL, NON_PM,
+      NON_PM, 2, 1, 200L, NO_COLOR, GOLD, FUZZED_OTYP, WRATH_OF_SANKIS),
+    
+    A("Acidfall", LONG_SWORD, (SPFX_RESTR | SPFX_ATTK | SPFX_DEFN), 0, 0,
+      ACID(5, 0), ACID(0, 0), NO_CARY, STONEPROOF, A_NONE, NON_PM, NON_PM,
+      0, 5, 3000L, NO_COLOR, METAL, FUZZED_OTYP, ACIDFALL),
+
+    A("Skullcrusher", CLUB, (SPFX_RESTR),
+      0, 0, PHYS(3, 0), NO_DFNS, NO_CARY,
+      0, A_LAWFUL, PM_CAVE_DWELLER, NON_PM,
+      0, 4, 2000L, NO_COLOR, MINERAL, FIXED_OTYP, SKULLCRUSHER),
+
+    A("Sympathy", QUARTERSTAFF, (SPFX_RESTR | SPFX_INTEL),
+      0, 0, PHYS(3, 4), NO_DFNS, NO_CARY,
+      0, A_NEUTRAL, NON_PM, NON_PM, 2, 3, 1000L, NO_COLOR, DEFAULT_MAT,
+      FUZZED_OTYP, SYMPATHY),
 
     /*
      *      The artifacts for the quest dungeon, all self-willed.
@@ -220,19 +253,19 @@ static NEARDATA struct artifact artilist[] = {
       (SPFX_NOGEN | SPFX_RESTR | SPFX_INTEL), (SPFX_ESP | SPFX_HSPDAM), 0,
       NO_ATTK, NO_DFNS, CARY(AD_MAGM), INVIS, A_LAWFUL, PM_ARCHEOLOGIST,
       NON_PM,
-      0, 12, 2500L, NO_COLOR, ORB_OF_DETECTION),
+      0, 12, 2500L, NO_COLOR, DEFAULT_MAT, FIXED_OTYP, ORB_OF_DETECTION),
 
     A("The Heart of Ahriman", LUCKSTONE,
       (SPFX_NOGEN | SPFX_RESTR | SPFX_INTEL), SPFX_STLTH, 0,
       /* this stone does double damage if used as a projectile weapon */
       PHYS(5, 0), NO_DFNS, NO_CARY, LEVITATION, A_NEUTRAL, PM_BARBARIAN,
       NON_PM,
-      0, 12, 2500L, NO_COLOR, HEART_OF_AHRIMAN),
+      0, 12, 2500L, NO_COLOR, DEFAULT_MAT, FIXED_OTYP, HEART_OF_AHRIMAN),
 
     A("The Sceptre of Might", MACE,
       (SPFX_NOGEN | SPFX_RESTR | SPFX_INTEL | SPFX_DALIGN), 0, 0, PHYS(5, 0),
       DFNS(AD_MAGM), NO_CARY, CONFLICT, A_LAWFUL, PM_CAVE_DWELLER, NON_PM,
-      0, 12, 2500L, NO_COLOR, SCEPTRE_OF_MIGHT),
+      0, 12, 2500L, NO_COLOR, DEFAULT_MAT, FIXED_OTYP, SCEPTRE_OF_MIGHT),
 
 #if 0   /* OBSOLETE -- from 3.1.0 to 3.2.x, this was quest artifact for the
          * Elf role; in 3.3.0 elf became a race available to several roles
@@ -242,7 +275,7 @@ static NEARDATA struct artifact artilist[] = {
       (SPFX_NOGEN | SPFX_RESTR | SPFX_INTEL),
                                      (SPFX_ESP | SPFX_REGEN | SPFX_HSPDAM), 0,
       NO_ATTK, NO_DFNS, NO_CARY, TAMING, A_CHAOTIC, NON_PM, PM_ELF,
-      0, 12, 8000L, NO_COLOR, PALANTIR_OF_WESTERNESSE),
+      0, 12, 8000L, NO_COLOR, DEFAULT_MAT, FIXED_OTYP, PALANTIR_OF_WESTERNESSE),
 #endif
 
     A("The Staff of Aesculapius", QUARTERSTAFF,
@@ -250,28 +283,28 @@ static NEARDATA struct artifact artilist[] = {
        | SPFX_REGEN),
       0, 0, DRLI(0, 0), DRLI(0, 0), NO_CARY, HEALING, A_NEUTRAL, PM_HEALER,
       NON_PM,
-      0, 12, 5000L, NO_COLOR, STAFF_OF_AESCULAPIUS),
+      0, 12, 5000L, NO_COLOR, DEFAULT_MAT, FIXED_OTYP, STAFF_OF_AESCULAPIUS),
 
     A("The Magic Mirror of Merlin", MIRROR,
       (SPFX_NOGEN | SPFX_RESTR | SPFX_INTEL | SPFX_SPEAK), SPFX_ESP, 0,
       NO_ATTK, NO_DFNS, CARY(AD_MAGM), 0, A_LAWFUL, PM_KNIGHT, NON_PM,
-      0, 12, 1500L, NO_COLOR, MAGIC_MIRROR_OF_MERLIN),
+      0, 12, 1500L, NO_COLOR, DEFAULT_MAT, FIXED_OTYP, MAGIC_MIRROR_OF_MERLIN),
 
     A("The Eyes of the Overworld", LENSES,
       (SPFX_NOGEN | SPFX_RESTR | SPFX_INTEL | SPFX_XRAY), 0, 0, NO_ATTK,
       DFNS(AD_MAGM), NO_CARY, ENLIGHTENING, A_NEUTRAL, PM_MONK, NON_PM,
-      0, 12, 2500L, NO_COLOR, EYES_OF_THE_OVERWORLD),
+      0, 12, 2500L, NO_COLOR, DEFAULT_MAT, FIXED_OTYP, EYES_OF_THE_OVERWORLD),
 
     A("The Mitre of Holiness", HELM_OF_BRILLIANCE,
-      (SPFX_NOGEN | SPFX_RESTR | SPFX_DFLAG2 | SPFX_INTEL | SPFX_PROTECT), 0,
-      M2_UNDEAD, NO_ATTK, NO_DFNS, CARY(AD_FIRE), ENERGY_BOOST, A_LAWFUL,
+      (SPFX_NOGEN | SPFX_RESTR | SPFX_DFLAGH | SPFX_INTEL | SPFX_PROTECT), 0,
+      MH_UNDEAD, NO_ATTK, NO_DFNS, CARY(AD_FIRE), ENERGY_BOOST, A_LAWFUL,
       PM_CLERIC, NON_PM,
-      0, 12, 2000L, NO_COLOR, MITRE_OF_HOLINESS),
+      0, 12, 2000L, NO_COLOR, METAL, FIXED_OTYP, MITRE_OF_HOLINESS),
 
     A("The Longbow of Diana", BOW,
       (SPFX_NOGEN | SPFX_RESTR | SPFX_INTEL | SPFX_REFLECT), SPFX_ESP, 0,
       PHYS(5, 0), NO_DFNS, NO_CARY, CREATE_AMMO, A_CHAOTIC, PM_RANGER, NON_PM,
-      0, 12, 4000L, NO_COLOR, LONGBOW_OF_DIANA),
+      0, 12, 4000L, NO_COLOR, DEFAULT_MAT, FIXED_OTYP, LONGBOW_OF_DIANA),
 
     /* MKoT has an additional carry property if the Key is not cursed (for
        rogues) or blessed (for non-rogues):  #untrap of doors and chests
@@ -280,48 +313,51 @@ static NEARDATA struct artifact artilist[] = {
       (SPFX_NOGEN | SPFX_RESTR | SPFX_INTEL | SPFX_SPEAK),
       (SPFX_WARN | SPFX_TCTRL | SPFX_HPHDAM), 0, NO_ATTK, NO_DFNS, NO_CARY,
       UNTRAP, A_CHAOTIC, PM_ROGUE, NON_PM,
-      0, 12, 3500L, NO_COLOR, MASTER_KEY_OF_THIEVERY),
+      0, 12, 3500L, NO_COLOR, DEFAULT_MAT, FIXED_OTYP, MASTER_KEY_OF_THIEVERY),
 
     A("The Tsurugi of Muramasa", TSURUGI,
       (SPFX_NOGEN | SPFX_RESTR | SPFX_INTEL | SPFX_BEHEAD | SPFX_LUCK
        | SPFX_PROTECT),
       0, 0, PHYS(0, 8), NO_DFNS, NO_CARY, 0, A_LAWFUL, PM_SAMURAI, NON_PM,
-      0, 12, 4500L, NO_COLOR, TSURUGI_OF_MURAMASA),
+      0, 12, 4500L, NO_COLOR, DEFAULT_MAT, FIXED_OTYP, TSURUGI_OF_MURAMASA),
 
     A("The Platinum Yendorian Express Card", CREDIT_CARD,
       (SPFX_NOGEN | SPFX_RESTR | SPFX_INTEL | SPFX_DEFN),
       (SPFX_ESP | SPFX_HSPDAM), 0, NO_ATTK, NO_DFNS, CARY(AD_MAGM),
       CHARGE_OBJ, A_NEUTRAL, PM_TOURIST, NON_PM,
-      0, 12, 7000L, NO_COLOR, YENDORIAN_EXPRESS_CARD),
+      0, 12, 7000L, NO_COLOR, PLATINUM, FIXED_OTYP, YENDORIAN_EXPRESS_CARD),
 
     A("The Orb of Fate", CRYSTAL_BALL,
       (SPFX_NOGEN | SPFX_RESTR | SPFX_INTEL | SPFX_LUCK),
       (SPFX_WARN | SPFX_HSPDAM | SPFX_HPHDAM), 0, NO_ATTK, NO_DFNS, NO_CARY,
       LEV_TELE, A_NEUTRAL, PM_VALKYRIE, NON_PM,
-      0, 12, 3500L, NO_COLOR, ORB_OF_FATE),
+      0, 12, 3500L, NO_COLOR, DEFAULT_MAT, FIXED_OTYP, ORB_OF_FATE),
 
     A("The Belt of Champions", AMULET_OF_LIFE_SAVING,
       (SPFX_NOGEN | SPFX_RESTR | SPFX_INTEL),
                                      (SPFX_ESP | SPFX_HPHDAM), 0,
       NO_ATTK, NO_DFNS, NO_CARY, TAMING, A_CHAOTIC, PM_GRAPPLER, NON_PM,
-      0, 12, 6500L, NO_COLOR, BELT_OF_CHAMPIONS),
+      0, 12, 6500L, NO_COLOR, GOLD, FIXED_OTYP, BELT_OF_CHAMPIONS),
 
     A("The Eye of the Aethiopica", AMULET_OF_ESP,
       (SPFX_NOGEN | SPFX_RESTR | SPFX_INTEL), (SPFX_EREGEN | SPFX_HSPDAM), 0,
       NO_ATTK, DFNS(AD_MAGM), NO_CARY, CREATE_PORTAL, A_NEUTRAL, PM_WIZARD,
       NON_PM,
-      0, 12, 4000L, NO_COLOR, EYE_OF_THE_AETHIOPICA),
+      0, 12, 4000L, NO_COLOR, DEFAULT_MAT, FIXED_OTYP, EYE_OF_THE_AETHIOPICA),
 
 #if !defined(ARTI_ENUM) && !defined(DUMP_ARTI_ENUM)
     /*
      *  terminator; otyp must be zero
      */
     A(0, 0, 0, 0, 0, NO_ATTK, NO_DFNS, NO_CARY, 0, A_NONE, NON_PM, NON_PM,
-      0, 0, 0L, NO_COLOR, TERMINATOR)
+      0, 0, 0L, NO_COLOR, DEFAULT_MAT, FIXED_OTYP, TERMINATOR)
 
 }; /* artilist[] (or artifact_names[]) */
 #endif
 
+#undef DEFAULT_MAT
+#undef FIXED_OTYP
+#undef FUZZED_OTYP
 #undef A
 
 #ifdef NO_ATTK
@@ -334,6 +370,7 @@ static NEARDATA struct artifact artilist[] = {
 #undef FIRE
 #undef ELEC
 #undef STUN
+#undef ACID
 #endif
 
 /*artilist.h*/

@@ -4,7 +4,15 @@ CrecelleHack is an actively maintained variant of NetHack 3.7. Delve into
 a lush, growing dungeon filled with strange creatures and retrieve the
 Amulet of Yendor for your god.
 
-The first release of CrecelleHack is forthcoming.
+## Configuration
+
+- Information about Crecelle-specific config file options are available
+at the top of [the opthelp file](dat/opthelp).
+- In addition,
+[an example config file](sys/windows/crecellehackrc.template)
+is available to be copied.
+- If you would like to view these options in game, the top of the
+  #options menu is populated by Crecelle-specific options.
 
 ## Documentation
 

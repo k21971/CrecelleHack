@@ -462,7 +462,7 @@ int
 freehand(void)
 {
     return (!uwep || !welded(uwep)
-            || (!bimanual(uwep) && (!uarms || !uarms->cursed)));
+            || (!u_bimanual(uwep) && (!uarms || !uarms->cursed)));
 }
 
 /* getobj callback for an object to engrave with */
@@ -603,7 +603,7 @@ doengrave_sfx_item_WAN(struct _doengrave_ctx *de)
                     surface(u.ux, u.uy));
         }
         break;
-    case WAN_FECUNDITY:
+    case WAN_GROWTH:
         if (!Blind) {
             Sprintf(de->post_engr_text, "The bugs on the %s grow up!",
                     surface(u.ux, u.uy));
@@ -651,7 +651,7 @@ doengrave_sfx_item_WAN(struct _doengrave_ctx *de)
                     surface(u.ux, u.uy));
         }
         break;
-    case WAN_WATER:
+    case WAN_AQUA_BOLT:
         if (!Blind)
             Sprintf(de->post_engr_text, "The bugs on the %s are washed away!",
                     surface(u.ux, u.uy));

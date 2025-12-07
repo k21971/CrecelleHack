@@ -599,6 +599,12 @@ ooze
 	penguins and slithering over the glistening floor that it and its
 	kind had swept so evilly free of all litter.
 		[ At the Mountains of Madness, by H.P. Lovecraft ]
+blood
+potion of blood
+tonic of blood
+bloody *
+	Love will have its sacrifices. No sacrifice without blood.
+		[ Carmilla, by J. Sheridan Le Fanu ]
 blue jelly
 ochre jelly
 spotted jelly
@@ -1523,10 +1529,6 @@ dragonbane
 	being who ever joined in the fierce, mad, intoxicating revel
 	of the Dum-Dum.
 		[ Tarzan of the Apes, by Edgar Rice Burroughs ]
-duct tape
-tape
-	This sturdy tape is noted for its extreme versatility, able
-	to repair items, stick things together, and more.
 dunce*
 	A dunce cap, also variously known as a dunce hat, dunce's
 	cap, or dunce's hat, is a tall conical hat.  In popular
@@ -2075,6 +2077,7 @@ gelatinous cube
 		[ Wikipedia, the free encyclopedia ]
 *gem
 gem or rock
+glass*
 	The difference between false memories and true ones is the
 	same as for jewels:  it is always the false ones that look the
 	most real, the most brilliant.
@@ -2125,6 +2128,7 @@ geryon
 *ghost
 valley of *dea*
 poltergeist
+spectre
 	And now the souls of the dead who had gone below came swarming
 	up from Erebus -- fresh brides, unmarried youths, old men
 	with life's long suffering behind them, tender young girls
@@ -2345,6 +2349,7 @@ potion of hallucination
 		[ Fifteen Years in Hell, by Luther Benson ]
 harmony
 harmonic*
+grassy*
 	I awoke to the Bells of Yendor. Do you know what it is for
 	something to be so loud that it hurts you? Their toll resonated
 	in my chest, so heavy and deep that I feared they would shake me
@@ -2727,6 +2732,7 @@ ice
 * ice
 # hallucinating: "frozen <hallucination liquid>"
 frozen *
+icy *
 	Ice, white ice, like a winding-sheet, sheathing each smoke-grimed wall;
 	Ice on the stove-pipe, ice on the bed, ice gleaming over all;
 	Sparkling ice on the dead man's chest, glittering ice in his hair,
@@ -3082,7 +3088,7 @@ knight
 	And was a bugbear in men's eyes;
 	But had the fortune in his age
 	To live a fool and die a sage.
-	  [ Don Quixote of La Mancha, by Miquel de Cervantes Saavedra ]
+	  [ Don Quixote of La Mancha, by Miguel de Cervantes Saavedra ]
 ~kobold ??m*
 *kobold*
 	The race of kobolds are reputed to be an artificial creation
@@ -3092,6 +3098,7 @@ knight
 	for Elves at any time.
 *kop*
 rubber hose
+knight watch
 	The Kops are a brilliant concept.  To take a gaggle of inept
 	policemen and display them over and over again in a series of
 	riotously funny physical punishments plays equally well to the
@@ -3201,7 +3208,7 @@ lance
 	his lance into shivers, carrying him and his horse after it,
 	and finally tumbled him a good way off from it on the field in
 	evil plight.
-	  [ Don Quixote of La Mancha, by Miquel de Cervantes Saavedra ]
+	  [ Don Quixote of La Mancha, by Miguel de Cervantes Saavedra ]
 land mine
 	Your heart is intact, your brain is not badly damaged, but the rest
 	of your injuries are comparable to stepping on a land mine.  You'd
@@ -3216,6 +3223,7 @@ land mine
 # citation is a descriptive passage from the original text adventure game
 lava
 * lava
+ashy *
 	You are on the edge of a breath-taking view.  Far below you
 	is an active volcano, from which great gouts of molten lava
 	come surging out, cascading back down into the depths.  The
@@ -3375,6 +3383,7 @@ loki
 # long worm -- see "worm"
 looking glass
 mirror
+snowball
 	But as Snow White grew, she became more and more beautiful,
 	and by the time she was seven years old she was as beautiful
 	as the day and more beautiful than the queen herself.  One
@@ -4814,6 +4823,7 @@ rothe
 	an aversion to light.  It prefers to live underground near
 	lichen and moss.
 *royal jelly
+sticky *
 	"'Royal Jelly,'" he read aloud, "'must be a substance of
 	tremendous nourishing power, for on this diet alone, the
 	honey-bee larva increases in weight fifteen hundred times in
@@ -5424,6 +5434,8 @@ telephone
 television
 #tricorder
 #phaser
+upgrade kit
+resizing kit
 	Not invented yet.
 sting
 	There was the usual dim grey light of the forest-day about
@@ -5692,6 +5704,9 @@ trapper or lurker above
 	its prey by remaining very still and blending into the
 	surrounding dungeon features, until an unsuspecting creature
 	passes by.  It wraps itself around its prey and digests it.
+transmuter
+	Ask not, what your items can do to it.  Ask what it can do
+	to your items.
 tree
 	I think that I shall never see
 	A poem lovely as a tree.
@@ -6164,6 +6179,7 @@ woodchuck
 long worm tail
 worm tooth
 crysknife
+*wurm
 	[The crysknife] is manufactured in two forms from teeth taken
 	from dead sandworms.  The two forms are "fixed" and "unfixed".
 	An unfixed knife requires proximity to a human body's

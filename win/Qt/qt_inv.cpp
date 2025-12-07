@@ -237,7 +237,7 @@ void NetHackQtInvUsageWindow::paintEvent(QPaintEvent*)
        never be Null when the corresponding tests pass */
     if (u.twoweap)
         drawWorn(painter, uswapwep, 2, 1, NULL); // secondary weapon, in use
-    else if (uwep && bimanual(uwep)) // show two-handed uwep twice
+    else if (uwep && u_bimanual(uwep)) // show two-handed uwep twice
         drawWorn(painter, uwep,     2, 1, NULL, dollReverse); // uwep on right
     else
         drawWorn(painter, uarms,    2, 1, "no shield");

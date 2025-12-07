@@ -1,4 +1,4 @@
-/* NetHack 3.7	invent.c	$NHDT-Date: 1737384766 2025/01/20 06:52:46 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.531 $ */
+/* NetHack 3.7	invent.c	$NHDT-Date: 1762680996 2025/11/09 01:36:36 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.543 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Derek S. Ray, 2015. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -178,7 +178,7 @@ loot_classify(Loot *sort_item, struct obj *obj)
      * will put lower valued ones before higher valued ones.
      */
     if (!Blind)
-        obj->dknown = 1; /* xname(obj) does this; we want it sooner */
+        observe_object(obj); /* xname(obj) does this; we want it sooner */
     seen = obj->dknown ? TRUE : FALSE,
     /* class order */
     classorder = flags.sortpack ? flags.inv_order : def_srt_order;
@@ -229,14 +229,14 @@ loot_classify(Loot *sort_item, struct obj *obj)
             k = 1; /* regular container or unknown bag of tricks */
         else
             switch (otyp) {
-            case WOODEN_FLUTE:
+            case FLUTE:
             case MAGIC_FLUTE:
             case TOOLED_HORN:
             case FROST_HORN:
             case FIRE_HORN:
             case ACOUSTIC_GUITAR:
             case ELECTRIC_GUITAR:
-            case WOODEN_HARP:
+            case HARP:
             case MAGIC_HARP:
             case BUGLE:
             case LEATHER_DRUM:
@@ -333,6 +333,7 @@ loot_xname(struct obj *obj)
     saveo.blessed = obj->blessed, saveo.cursed = obj->cursed;
     saveo.spe = obj->spe;
     saveo.owt = obj->owt;
+    saveo.material = obj->material;
     save_oname = has_oname(obj) ? ONAME(obj) : 0;
     save_debug = flags.debug;
     /* suppress "diluted" for potions and "holy/unholy" for water;
@@ -350,6 +351,8 @@ loot_xname(struct obj *obj)
        have the same size adjective hence same "small glob of " prefix */
     if (obj->globby)
         obj->owt = 20; /* weight of a fresh glob (one pudding's worth) */
+    /* suppress material by setting to default */
+    obj->material = objects[obj->otyp].oc_material;
     /* suppress user-assigned name */
     if (save_oname && !obj->oartifact)
         ONAME(obj) = 0;
@@ -368,6 +371,7 @@ loot_xname(struct obj *obj)
         program_state.something_worth_saving = 1;
     }
     /* restore the object */
+    obj->material = saveo.material;
     if (obj->oclass == POTION_CLASS) {
         obj->odiluted = saveo.odiluted;
         if (obj->otyp == POT_WATER)
@@ -419,6 +423,7 @@ sortloot_cmp(const genericptr vptr1, const genericptr vptr2)
     struct obj *obj1 = sli1->obj,
                *obj2 = sli2->obj;
     char *nam1, *nam2, *tmpstr;
+    const char *mat1, *mat2;
     int val1, val2, namcmp;
 
     /* in-use takes precedence over all others */
@@ -517,6 +522,14 @@ sortloot_cmp(const genericptr vptr1, const genericptr vptr2)
     val2 = obj2->bknown ? (obj2->blessed ? 3 : !obj2->cursed ? 2 : 1) : 0;
     if (val1 != val2)
         return val2 - val1; /* bigger is better */
+
+    /* Sort alphabetically by material. */
+    mat1 = (obj1->material != objects[obj1->otyp].oc_material)
+           ? materialnm[obj1->material] : "";
+    mat2 = (obj2->material != objects[obj2->otyp].oc_material)
+           ? materialnm[obj2->material] : "";
+    if ((namcmp = strcmpi(mat1, mat2)) != 0)
+        return namcmp;
 
     /* Sort by greasing.  This will put the objects in degreasing order. */
     val1 = obj1->greased;
@@ -967,8 +980,6 @@ merged(struct obj **potmp, struct obj **pobj)
  * This is called when adding objects to the hero's inventory normally (via
  * addinv) or when an object in the hero's inventory has been polymorphed
  * in-place.
- *
- * It may be valid to merge this code with addinv_core2().
  */
 void
 addinv_core1(struct obj *obj)
@@ -1019,21 +1030,46 @@ addinv_core1(struct obj *obj)
 }
 
 /*
- * Adjust hero intrinsics as if this object was being added to the hero's
- * inventory.  Called _after_ the object has been added to the hero's
- * inventory.
+ * Adjust hero intrinsics (and perform other side effects) as if this
+ * object was being added to the hero's inventory.  Called _after_ the
+ * object has been added to the hero's inventory.
+ *
+ * This can be used either for updating intrinsics, or to allow the hero to
+ * react to objects that are now in inventory.
  *
  * This is called when adding objects to the hero's inventory normally (via
- * addinv) or when an object in the hero's inventory has been polymorphed
- * in-place.
+ * addinv), when an object in the hero's inventory has been polymorphed
+ * in-place, or when the hero re-examines objects that they picked up while
+ * blind.
+ *
+ * This may occasionally be called on an item that was already in inventory,
+ * so it should be written to work even if called multiple times in a row
+ * (e.g. do not assume that the object was not in inventory already).
  */
 void
 addinv_core2(struct obj *obj)
 {
     if (confers_luck(obj)) {
         /* new luckstone must be in inventory by this point
-         * for correct calculation */
+           for correct calculation */
         set_moreluck();
+    }
+
+    /* Archeologists can decipher the writing on a scroll label to work out
+       what they are (exception: unlabeled scrolls don't have a label to
+       decipher) */
+    if (Role_if(PM_ARCHEOLOGIST) && obj->oclass == SCROLL_CLASS &&
+        obj->otyp != SCR_BLANK_PAPER && !Blind &&
+        !objects[obj->otyp].oc_name_known) {
+        observe_object(obj);
+        pline("You decipher the label on %s.", yname(obj));
+        makeknown(obj->otyp);
+
+        /* conduct: this is avoidable via not picking up / wishing for
+           scrolls */
+        if (!u.uconduct.literate++)
+            livelog_printf(LL_CONDUCT,
+                           "became literate by deciphering a scroll label");
     }
 }
 
@@ -1198,7 +1234,7 @@ hold_another_object(
     char buf[BUFSZ];
 
     if (!Blind)
-        obj->dknown = 1; /* maximize mergeability */
+        observe_object(obj); /* maximize mergeability */
     if (obj->oartifact) {
         /* place_object may change these */
         boolean crysknife = (obj->otyp == CRYSKNIFE);
@@ -1271,7 +1307,7 @@ hold_another_object(
                 prinv(hold_msg, obj, oquan);
             /* obj made it into inventory and is staying there */
             update_inventory();
-            (void) encumber_msg();
+            encumber_msg();
         }
     }
     return obj;
@@ -2447,8 +2483,11 @@ askchain(
                              ininv ? safeq_xprname : doname,
                              ininv ? safeq_shortxprname : ansimpleoname,
                              "item");
-            sym = (takeoff || ident || otmp->quan < 2L) ? nyaq(qbuf)
-                                                        : nyNaq(qbuf);
+            /* nyaq(qbuf) or nyNaq(qbuf), bypassing canned input for ^A */
+            sym = yn_function(qbuf,
+                              (takeoff || ident || otmp->quan < 2L)
+                                ? ynaqchars : ynNaqchars,
+                              'n', FALSE);
         } else
             sym = 'y';
 
@@ -2521,6 +2560,87 @@ askchain(
     return cnt;
 }
 
+
+/* The menu for rerolling attributes and inventory.
+
+   This is similar to the other inventory menus, but simpler to help it fit on
+   the screen (there's more text around it and rerolling is difficult if you
+   can't see the whole list at once).
+
+   Returns TRUE (and increases numrerolls) if a reroll was requested. */
+boolean
+reroll_menu(void)
+{
+    winid win;
+    anything any;
+    menu_item *pick_list = NULL;
+    struct obj *otmp;
+    int tmpglyph;
+    glyph_info tmpglyphinfo;
+    char option;
+    char buf[BUFSZ];
+
+    win = create_nhwindow(NHW_MENU);
+    start_menu(win, MENU_BEHAVE_STANDARD);
+    any = cg.zeroany;
+
+    any.a_char = 'n';
+    add_menu(win, &nul_glyphinfo, &any, flags.lootabc ? 0 : 'p', 0,
+             ATR_NONE, NO_COLOR, "start the game with this character",
+             MENU_ITEMFLAGS_NONE);
+    any.a_char = 'y';
+    add_menu(win, &nul_glyphinfo, &any, flags.lootabc ? 0 : 'r', 0,
+             ATR_NONE, NO_COLOR, "reroll another character",
+             MENU_ITEMFLAGS_NONE);
+    any.a_char = 0;
+    add_menu(win, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "",
+             MENU_ITEMFLAGS_NONE);
+
+    ++gd.distantname;     /* avoid adding items to discoveries */
+    ++iflags.override_ID; /* identify them */
+    for (otmp = gi.invent; otmp; otmp = otmp->nobj) {
+        tmpglyph = obj_to_glyph(otmp, rn2_on_display_rng);
+        map_glyphinfo(0, 0, tmpglyph, 0U, &tmpglyphinfo);
+        add_menu(win, &tmpglyphinfo, &any, 0, 0,
+                 ATR_NONE, NO_COLOR, doname(otmp), MENU_ITEMFLAGS_NONE);
+    }
+    --iflags.override_ID;
+    --gd.distantname;
+
+    add_menu(win, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "",
+             MENU_ITEMFLAGS_NONE);
+    Sprintf(buf, "St:%s Dx:%-1d Co:%-1d In:%-1d Wi:%-1d Ch:%-1d",
+            get_strength_str(),
+            ACURR(A_DEX), ACURR(A_CON), ACURR(A_INT), ACURR(A_WIS),
+            ACURR(A_CHA));
+    add_menu(win, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR,
+             buf, MENU_ITEMFLAGS_NONE);
+
+    end_menu(win, "Reroll this character?");
+    if (select_menu(win, PICK_ONE, &pick_list) > 0) {
+        option = pick_list[0].item.a_char;
+        free((genericptr_t) pick_list);
+    } else {
+        /* user closed the menu without selecting; unclear what their choice
+           is here so ask again; but (e.g. for hangup handling) stop asking if
+           the user cancels out again */
+        option = y_n("Reroll this character?");
+    }
+    destroy_nhwindow(win);
+
+    if (option == 'y') {
+        ++u.uroleplay.numrerolls;
+        /* rate-limit rerolls to prevent CPU abuse */
+#if defined(UNIX) || defined(MACOS)
+        sleep(1);
+#elif defined(WIN32)
+        Sleep(1000);
+#endif
+        return TRUE;
+    }
+    return FALSE;
+}
+
 /*
  *      Object identification routines:
  */
@@ -2531,7 +2651,7 @@ set_cknown_lknown(struct obj *obj)
 {
     if (Is_container(obj) || obj->otyp == STATUE)
         obj->cknown = obj->lknown = 1;
-    else if (obj->otyp == TIN)
+    else if (obj->otyp == TIN || obj->otyp == POT_BLOOD)
         obj->cknown = 1;
     /* TODO? cknown might be extended to candy bar, where it would mean that
        wrapper's text was known which in turn indicates candy bar's content */
@@ -2545,7 +2665,8 @@ fully_identify_obj(struct obj *otmp)
     makeknown(otmp->otyp);
     if (otmp->oartifact)
         discover_artifact((xint16) otmp->oartifact);
-    otmp->known = otmp->dknown = otmp->bknown = otmp->rknown = 1;
+    observe_object(otmp);
+    otmp->known = otmp->bknown = otmp->rknown = otmp->pknown = 1;
     set_cknown_lknown(otmp); /* set otmp->{cknown,lknown} if applicable */
     if (otmp->otyp == EGG && otmp->corpsenm != NON_PM)
         learn_egg_type(otmp->corpsenm);
@@ -2661,12 +2782,15 @@ learn_unseen_invent(void)
         return; /* sanity check */
 
     for (otmp = gi.invent; otmp; otmp = otmp->nobj) {
-        if (otmp->dknown && (otmp->bknown || !Role_if(PM_CLERIC)))
+        if (otmp->dknown && (otmp->bknown || !Role_if(PM_CLERIC)) &&
+            (otmp->oclass != SCROLL_CLASS || !Role_if(PM_ARCHEOLOGIST)))
             continue; /* already seen */
         invupdated = TRUE;
         /* xname() will set dknown, perhaps bknown (for priest[ess]);
            result from xname() is immediately released for re-use */
         maybereleaseobuf(xname(otmp));
+        addinv_core2(otmp); /* you react to seeing the object */
+
         /*
          * If object->eknown gets implemented (see learnwand(zap.c)),
          * handle deferred discovery here.
@@ -2982,142 +3106,142 @@ ia_addmenu(winid win, int act, char let, const char *txt)
              ATR_NONE, clr, txt, MENU_ITEMFLAGS_NONE);
 }
 
+/* set up a command to execute on a specific item next */
 staticfn void
 itemactions_pushkeys(struct obj *otmp, int act)
 {
-        switch (act) {
-        default:
-            impossible("Unknown item action");
-            break;
-        case IA_NONE:
-            break;
-        case IA_UNWIELD:
-            cmdq_add_ec(CQ_CANNED, (otmp == uwep) ? dowield
-                        : (otmp == uswapwep) ? remarm_swapwep
-                          : (otmp == uquiver) ? dowieldquiver
-                            : donull); /* can't happen */
-            cmdq_add_key(CQ_CANNED, '-');
-            break;
-        case IA_APPLY_OBJ:
-            cmdq_add_ec(CQ_CANNED, doapply);
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_DIP_OBJ:
-            /* #altdip instead of normal #dip - takes potion to dip into
-               first (the inventory item instigating this) and item to
-               be dipped second, also ignores floor features such as
-               fountain/sink so we don't need to force m-prefix here */
-            cmdq_add_ec(CQ_CANNED, dip_into);
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_NAME_OBJ:
-        case IA_NAME_OTYP:
-            cmdq_add_ec(CQ_CANNED, docallcmd);
-            cmdq_add_key(CQ_CANNED, (act == IA_NAME_OBJ) ? 'i' : 'o');
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_DROP_OBJ:
-            cmdq_add_ec(CQ_CANNED, dodrop);
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_EAT_OBJ:
-            /* start with m-prefix; for #eat, it means ignore floor food
-               if present and eat food from invent */
-            cmdq_add_ec(CQ_CANNED, do_reqmenu);
-            cmdq_add_ec(CQ_CANNED, doeat);
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_ENGRAVE_OBJ:
-            cmdq_add_ec(CQ_CANNED, doengrave);
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_FIRE_OBJ:
-            cmdq_add_ec(CQ_CANNED, dofire);
-            break;
-        case IA_ADJUST_OBJ:
-            cmdq_add_ec(CQ_CANNED, doorganize); /* #adjust */
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_ADJUST_STACK:
-            cmdq_add_ec(CQ_CANNED, adjust_split); /* #altadjust */
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_SACRIFICE:
-            cmdq_add_ec(CQ_CANNED, dosacrifice);
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_BUY_OBJ:
-            cmdq_add_ec(CQ_CANNED, dopay);
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_QUAFF_OBJ:
-            /* start with m-prefix; for #quaff, it means ignore fountain
-               or sink if present and drink a potion from invent */
-            cmdq_add_ec(CQ_CANNED, do_reqmenu);
-            cmdq_add_ec(CQ_CANNED, dodrink);
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_QUIVER_OBJ:
-            cmdq_add_ec(CQ_CANNED, dowieldquiver);
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_READ_OBJ:
-            cmdq_add_ec(CQ_CANNED, doread);
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_RUB_OBJ:
-            cmdq_add_ec(CQ_CANNED, dorub);
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_THROW_OBJ:
-            cmdq_add_ec(CQ_CANNED, dothrow);
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_TAKEOFF_OBJ:
-            cmdq_add_ec(CQ_CANNED, dotakeoff);
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_TIP_CONTAINER:
-            /* start with m-prefix to skip floor containers;
-               for menustyle:Traditional when more than one floor
-               container is present, player will get a #tip menu and
-               have to pick the "tip something being carried" choice,
-               then this item will be already chosen from inventory;
-               suboptimal but possibly an acceptable tradeoff since
-               combining item actions with use of traditional ggetobj()
-               is an unlikely scenario */
-            cmdq_add_ec(CQ_CANNED, do_reqmenu);
-            cmdq_add_ec(CQ_CANNED, dotip);
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_INVOKE_OBJ:
-            cmdq_add_ec(CQ_CANNED, doinvoke);
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_WIELD_OBJ:
-            cmdq_add_ec(CQ_CANNED, dowield);
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_WEAR_OBJ:
-            cmdq_add_ec(CQ_CANNED, dowear);
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_SWAPWEAPON:
-            cmdq_add_ec(CQ_CANNED, doswapweapon);
-            break;
-        case IA_TWOWEAPON:
-            cmdq_add_ec(CQ_CANNED, dotwoweapon);
-            break;
-        case IA_ZAP_OBJ:
-            cmdq_add_ec(CQ_CANNED, dozap);
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        case IA_WHATIS_OBJ:
-            cmdq_add_ec(CQ_CANNED, dowhatis); /* "/" command */
-            cmdq_add_key(CQ_CANNED, 'i');     /* "i" == item from inventory */
-            cmdq_add_key(CQ_CANNED, otmp->invlet);
-            break;
-        }
+    switch (act) {
+    default:
+        impossible("Unknown item action %d", act);
+        break;
+    case IA_NONE:
+        break;
+    case IA_UNWIELD:
+        cmdq_add_ec(CQ_CANNED, (otmp == uwep) ? dowield
+                    : (otmp == uswapwep) ? remarm_swapwep
+                      : (otmp == uquiver) ? dowieldquiver
+                        : donull); /* can't happen */
+        cmdq_add_key(CQ_CANNED, HANDS_SYM);
+        break;
+    case IA_APPLY_OBJ:
+        cmdq_add_ec(CQ_CANNED, doapply);
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_DIP_OBJ:
+        /* #altdip instead of normal #dip - takes potion to dip into
+           first (the inventory item instigating this) and item to
+           be dipped second, also ignores floor features such as
+           fountain/sink so we don't need to force m-prefix here */
+        cmdq_add_ec(CQ_CANNED, dip_into);
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_NAME_OBJ:
+    case IA_NAME_OTYP:
+        cmdq_add_ec(CQ_CANNED, docallcmd);
+        cmdq_add_key(CQ_CANNED, (act == IA_NAME_OBJ) ? 'i' : 'o');
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_DROP_OBJ:
+        cmdq_add_ec(CQ_CANNED, dodrop);
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_EAT_OBJ:
+        /* start with m-prefix; for #eat, it means ignore floor food
+           if present and eat food from invent */
+        cmdq_add_ec(CQ_CANNED, do_reqmenu);
+        cmdq_add_ec(CQ_CANNED, doeat);
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_ENGRAVE_OBJ:
+        cmdq_add_ec(CQ_CANNED, doengrave);
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_FIRE_OBJ:
+        cmdq_add_ec(CQ_CANNED, dofire);
+        break;
+    case IA_ADJUST_OBJ:
+        cmdq_add_ec(CQ_CANNED, doorganize); /* #adjust */
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_ADJUST_STACK:
+        cmdq_add_ec(CQ_CANNED, adjust_split); /* #altadjust */
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_SACRIFICE:
+        cmdq_add_ec(CQ_CANNED, dosacrifice);
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_BUY_OBJ:
+        cmdq_add_ec(CQ_CANNED, dopay);
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_QUAFF_OBJ:
+        /* start with m-prefix; for #quaff, it means ignore fountain
+           or sink if present and drink a potion from invent */
+        cmdq_add_ec(CQ_CANNED, do_reqmenu);
+        cmdq_add_ec(CQ_CANNED, dodrink);
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_QUIVER_OBJ:
+        cmdq_add_ec(CQ_CANNED, dowieldquiver);
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_READ_OBJ:
+        cmdq_add_ec(CQ_CANNED, doread);
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_RUB_OBJ:
+        cmdq_add_ec(CQ_CANNED, dorub);
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_THROW_OBJ:
+        cmdq_add_ec(CQ_CANNED, dothrow);
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_TAKEOFF_OBJ:
+        cmdq_add_ec(CQ_CANNED, ia_dotakeoff); /* #altdotakeoff */
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_TIP_CONTAINER:
+        /* start with m-prefix to skip floor containers;
+           for menustyle:Traditional when more than one floor container
+           is present, player will get a #tip menu and have to pick
+           the "tip something being carried" choice, then this item
+           will be already chosen from inventory; suboptimal but
+           possibly an acceptable tradeoff since combining item actions
+           with use of traditional ggetobj() is an unlikely scenario */
+        cmdq_add_ec(CQ_CANNED, do_reqmenu);
+        cmdq_add_ec(CQ_CANNED, dotip);
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_INVOKE_OBJ:
+        cmdq_add_ec(CQ_CANNED, doinvoke);
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_WIELD_OBJ:
+        cmdq_add_ec(CQ_CANNED, dowield);
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_WEAR_OBJ:
+        cmdq_add_ec(CQ_CANNED, dowear);
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_SWAPWEAPON:
+        cmdq_add_ec(CQ_CANNED, doswapweapon);
+        break;
+    case IA_TWOWEAPON:
+        cmdq_add_ec(CQ_CANNED, dotwoweapon);
+        break;
+    case IA_ZAP_OBJ:
+        cmdq_add_ec(CQ_CANNED, dozap);
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    case IA_WHATIS_OBJ:
+        cmdq_add_ec(CQ_CANNED, dowhatis); /* "/" command */
+        cmdq_add_key(CQ_CANNED, 'i');     /* "i" == item from inventory */
+        cmdq_add_key(CQ_CANNED, otmp->invlet);
+        break;
+    }
 }
 
 /* Show menu of possible actions hero could do with item otmp */
@@ -3178,12 +3302,14 @@ itemactions(struct obj *otmp)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Use this tool to pick a lock");
     else if (otmp->otyp == TINNING_KIT)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Use this kit to tin a corpse");
+    else if (otmp->otyp == RESIZING_KIT)
+        ia_addmenu(win, IA_APPLY_OBJ, 'a', "Use this kit to resize an object");
     else if (otmp->otyp == LEASH)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Tie a pet to this leash");
     else if (otmp->otyp == SADDLE)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Place this saddle on a pet");
     else if (otmp->otyp == MAGIC_WHISTLE
-             || otmp->otyp == TIN_WHISTLE)
+             || otmp->otyp == PEA_WHISTLE)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Blow this whistle");
     else if (otmp->otyp == EUCALYPTUS_LEAF)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Use this leaf as a whistle");
@@ -3202,7 +3328,7 @@ itemactions(struct obj *otmp)
                 simpleonames(otmp));
         ia_addmenu(win, IA_APPLY_OBJ, 'a', buf);
     } else if (otmp->otyp == OIL_LAMP || otmp->otyp == MAGIC_LAMP
-               || otmp->otyp == BRASS_LANTERN) {
+               || otmp->otyp == LANTERN) {
         Sprintf(buf, "%s this light source", light);
         ia_addmenu(win, IA_APPLY_OBJ, 'a', buf);
     } else if (otmp->otyp == POT_OIL && objects[otmp->otyp].oc_name_known) {
@@ -3215,8 +3341,6 @@ itemactions(struct obj *otmp)
         ia_addmenu(win, IA_DIP_OBJ, 'a', buf);
     } else if (otmp->otyp == EXPENSIVE_CAMERA)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Take a photograph");
-    else if (otmp->otyp == DUCT_TAPE)
-        ia_addmenu(win, IA_APPLY_OBJ, 'a', "Use the tape to combine items");
     else if (otmp->otyp == TOWEL)
         ia_addmenu(win, IA_APPLY_OBJ, 'a',
                    "Clean yourself off with this towel");
@@ -3232,7 +3356,7 @@ itemactions(struct obj *otmp)
     else if (otmp->otyp == HORN_OF_PLENTY
              && objects[otmp->otyp].oc_name_known)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Blow into the horn of plenty");
-    else if (otmp->otyp >= WOODEN_FLUTE && otmp->otyp <= DRUM_OF_EARTHQUAKE)
+    else if (otmp->otyp >= FLUTE && otmp->otyp <= DRUM_OF_EARTHQUAKE)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Play this musical instrument");
     else if (otmp->otyp == LAND_MINE || otmp->otyp == BEARTRAP)
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Arm this trap");
@@ -3337,15 +3461,33 @@ itemactions(struct obj *otmp)
 
     /* P: put on accessory */
     if (!already_worn) {
-        if (otmp->oclass == RING_CLASS || otmp->otyp == MEAT_RING)
-            ia_addmenu(win, IA_WEAR_OBJ, 'P', "Put this ring on");
-        else if (otmp->oclass == AMULET_CLASS)
-            ia_addmenu(win, IA_WEAR_OBJ, 'P', "Put this amulet on");
-        else if (otmp->otyp == TOWEL || otmp->otyp == BLINDFOLD)
-            ia_addmenu(win, IA_WEAR_OBJ, 'P',
-                       "Use this to blindfold yourself");
-        else if (is_glasses(otmp))
-            ia_addmenu(win, IA_WEAR_OBJ, 'P', "Put these glasses on");
+        /* if 'otmp' is worn, we'll skip 'P' and show 'R' below;
+           if not worn, we show 'P - Put on this <simple-item>' if
+           the slot is available, or 'P - <unavailable>'; for the latter,
+           'P' will fail but we don't want to omit the choice because
+           item actions can be used to learn commands */
+        *buf = '\0';
+        if (otmp->oclass == AMULET_CLASS) {
+            Strcpy(buf, !uamul ? "Put this amulet on"
+                               : "[already wearing an amulet]");
+        } else if (otmp->oclass == RING_CLASS || otmp->otyp == MEAT_RING) {
+            if (!uleft || !uright)
+                Strcpy(buf, "Put this ring on");
+            else
+                Sprintf(buf, "[both ring %s in use]",
+                        makeplural(body_part(FINGER)));
+        } else if (otmp->otyp == BLINDFOLD || otmp->otyp == TOWEL
+                   || otmp->otyp == LENSES) {
+            if (ublindf)
+                Strcpy(buf, "[already wearing eyewear]");
+            else if (otmp->otyp == LENSES)
+                Strcpy(buf, "Put these lenses on");
+            else
+                Sprintf(buf, "Put this on%s",
+                        (otmp->otyp == TOWEL) ? " to blindfold yourself" : "");
+        }
+        if (*buf)
+            ia_addmenu(win, IA_WEAR_OBJ, 'P', buf);
     }
 
     /* q: drink item */
@@ -3369,10 +3511,16 @@ itemactions(struct obj *otmp)
         ia_addmenu(win, IA_READ_OBJ, 'r', buf);
 
     /* R: remove accessory or rub item */
-    if (otmp->owornmask & W_ACCESSORY)
-        ia_addmenu(win, IA_TAKEOFF_OBJ, 'R', "Remove this accessory");
+    if (otmp->owornmask & W_ACCESSORY) {
+        Sprintf(buf, "Remove this %s",
+                (otmp->owornmask & W_AMUL) ? "amulet"
+                : (otmp->owornmask & W_RING) ? "ring"
+                  : (otmp->owornmask & W_TOOL) ? "eyewear"
+                    : "accessory"); /* catchall -- can't happen */
+        ia_addmenu(win, IA_TAKEOFF_OBJ, 'R', buf);
+    }
     if (otmp->otyp == OIL_LAMP || otmp->otyp == MAGIC_LAMP
-        || otmp->otyp == BRASS_LANTERN) {
+        || otmp->otyp == LANTERN) {
         Sprintf(buf, "Rub this %s", simpleonames(otmp));
         ia_addmenu(win, IA_RUB_OBJ, 'R', buf);
     } else if (otmp->oclass == GEM_CLASS && is_graystone(otmp))
@@ -3448,8 +3596,22 @@ itemactions(struct obj *otmp)
 
     /* W: wear armor */
     if (!already_worn) {
-        if (otmp->oclass == ARMOR_CLASS)
-            ia_addmenu(win, IA_WEAR_OBJ, 'W', "Wear this armor");
+        if (otmp->oclass == ARMOR_CLASS) {
+            /* if 'otmp' is worn we skip 'W' (and show 'T' above instead);
+               if it isn't, we either show "W - wear this" if otmp's slot
+               isn't populated, or "W - [already wearing <simple-armor>]";
+               for the latter, picking 'W' will fail but we don't want to
+               omit 'W' in this situation */
+            long Wmask = armcat_to_wornmask(objects[otmp->otyp].oc_armcat);
+            struct obj *o = wearmask_to_obj(Wmask);
+
+            if (!o)
+                Strcpy(buf, "Wear this armor");
+            else
+                Sprintf(buf, "[already wearing %s]", an(armor_simple_name(o)));
+
+            ia_addmenu(win, IA_WEAR_OBJ, 'W', buf);
+        }
     }
 
     /* x: Swap main and readied weapon */
@@ -3471,7 +3633,7 @@ itemactions(struct obj *otmp)
     ((((obj)->oclass == WEAPON_CLASS)                           \
       ? !(is_launcher(obj) || is_ammo(obj) || is_missile(obj))  \
       : is_weptool(obj))                                        \
-     && !bimanual(obj))
+     && !u_bimanual(obj))
 
     /* X: Toggle two-weapon mode on or off */
     if ((otmp == uwep || otmp == uswapwep)
@@ -4023,6 +4185,13 @@ display_inventory(const char *lets, boolean want_reply)
     }
     return display_pickinv(lets, (char *) 0, (char *) 0,
                            FALSE, want_reply, (long *) 0);
+}
+
+void
+repopulate_perminvent(void)
+{
+        (void) display_pickinv(NULL, (char *) 0, (char *) 0,
+                               FALSE, FALSE, (long *) 0);
 }
 
 /*
@@ -4657,9 +4826,14 @@ dfeature_at(coordxy x, coordxy y, char *buf)
         cmap = S_vcdbridge; /* "raised drawbridge" */
     else if (IS_GRAVE(ltyp))
         cmap = S_grave; /* "grave" */
-    else if (ltyp == TREE)
-        cmap = S_tree; /* "tree" */
-    else if (ltyp == IRONBARS)
+    else if (ltyp == TREE) {
+        if (levl[x][y].fruit_otyp && !(levl[x][y].flags & T_LOOTED)
+            && !Role_if(PM_TOURIST)) {
+            Sprintf(altbuf, "%s tree",  OBJ_NAME(objects[levl[x][y].fruit_otyp]));
+            dfeature = altbuf;
+        } else
+            cmap = S_tree; /* "tree" */
+    } else if (ltyp == IRONBARS)
         dfeature = "set of iron bars";
     else if (IS_COATABLE(ltyp)) {
         Sprintf(altbuf, "patch of ");
@@ -4692,7 +4866,7 @@ dfeature_at(coordxy x, coordxy y, char *buf)
             listing = TRUE;
         }
         if ((lev->coat_info & COAT_FROST) != 0) {
-            Sprintf(eos(altbuf), "%sice", listing ? " and " : "");
+            Sprintf(eos(altbuf), "%ssnow", listing ? " and " : "");
             listing = TRUE;
         }
         if ((lev->coat_info & COAT_MUD) != 0) {
@@ -5009,6 +5183,12 @@ mergable(
     if (obj->oclass == COIN_CLASS)
         return TRUE;
 
+    if (otmp->otyp == obj->otyp
+        && (otmp->oclass == WEAPON_CLASS || otmp->oclass == ARMOR_CLASS
+            || is_weptool(otmp))
+        && otmp->osize != obj->osize)
+        return FALSE;
+
     if (obj->cursed != otmp->cursed || obj->blessed != otmp->blessed)
         return FALSE;
     if ((obj->how_lost & ~LOSTOVERRIDEMASK) != 0)
@@ -5040,7 +5220,8 @@ mergable(
         || (obj->bknown != otmp->bknown && !Role_if(PM_CLERIC) &&
             (Blind || Hallucination))
         || obj->oeroded != otmp->oeroded || obj->oeroded2 != otmp->oeroded2
-        || obj->greased != otmp->greased || obj->booster != otmp->booster)
+        || obj->greased != otmp->greased || obj->oprop != otmp->oprop
+        || obj->material != otmp->material)
         return FALSE;
 
     if ((erosion_matters(obj))
@@ -6143,7 +6324,7 @@ display_binventory(coordxy x, coordxy y, boolean as_if_seen)
     for (n = 0, obj = svl.level.buriedobjlist; obj; obj = obj->nobj)
         if (obj->ox == x && obj->oy == y) {
             if (as_if_seen)
-                obj->dknown = 1;
+                observe_object(obj);
             n++;
         }
 

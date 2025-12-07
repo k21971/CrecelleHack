@@ -114,7 +114,7 @@ burnarmor(struct monst *victim)
         case 0:
             item = hitting_u ? uarmh : which_armor(victim, W_ARMH);
             if (item) {
-                mat_idx = objects[item->otyp].oc_material;
+                mat_idx = item->material;
                 Sprintf(buf, "%s %s", materialnm[mat_idx],
                         helm_simple_name(item));
             }
@@ -456,6 +456,10 @@ hole_destination(d_level *dst)
     }
 }
 
+static const int hellgas[] = { POT_SLEEPING, POT_HALLUCINATION, POT_PARALYSIS,
+                                        POT_POLYMORPH, POT_SICKNESS, POT_BLINDNESS,
+                                        POT_CONFUSION };
+
 struct trap *
 maketrap(coordxy x, coordxy y, int typ)
 {
@@ -577,9 +581,6 @@ maketrap(coordxy x, coordxy y, int typ)
         }
         break;
     case SLP_GAS_TRAP:
-        static const int hellgas[] = { POT_SLEEPING, POT_HALLUCINATION, POT_PARALYSIS,
-                                        POT_POLYMORPH, POT_SICKNESS, POT_BLINDNESS,
-                                        POT_CONFUSION };
         if (In_hell(&u.uz)) {
             ttmp->launch_otyp = ROLL_FROM(hellgas);
         } else {
@@ -1137,6 +1138,8 @@ m_harmless_trap(struct monst *mtmp, struct trap *ttmp)
     case ROLLING_BOULDER_TRAP:
         break;
     case SLP_GAS_TRAP:
+        if (can_magbreathe(mtmp))
+            return TRUE;
         if ((!Inhell && (resists_sleep(mtmp) || defended(mtmp, AD_SLEE)))
             || (Inhell && breathless(mtmp->data)))
             return TRUE;
@@ -1221,7 +1224,7 @@ trapeffect_arrow_trap(
         } else {
             place_object(otmp, u.ux, u.uy);
             if (!Blind)
-                otmp->dknown = 1;
+                observe_object(otmp);
             stackobj(otmp);
             newsym(u.ux, u.uy);
         }
@@ -1291,7 +1294,7 @@ trapeffect_dart_trap(
         } else {
             place_object(otmp, u.ux, u.uy);
             if (!Blind)
-                otmp->dknown = 1;
+                observe_object(otmp);
             stackobj(otmp);
             newsym(u.ux, u.uy);
         }
@@ -1368,7 +1371,7 @@ trapeffect_rocktrap(
                 harmless = TRUE;
             }
             if (!Blind)
-                otmp->dknown = 1;
+                observe_object(otmp);
             stackobj(otmp);
             newsym(u.ux, u.uy); /* map the rock */
 
@@ -1503,7 +1506,7 @@ trapeffect_bear_trap(
                   A_Your[trap->madeby_u]);
             return Trap_Effect_Finished;
         }
-        if (!u.usteed && gy.youmonst.data->msize <= MZ_SMALL) {
+        if (!u.usteed && USIZE <= MZ_SMALL) {
             pline("%s bear trap closes harmlessly over you.",
                   A_Your[trap->madeby_u]);
             return Trap_Effect_Finished;
@@ -1608,7 +1611,7 @@ trapeffect_rust_trap(
             pline("%s your left %s!", A_gush_of_water_hits, body_part(ARM));
             if (water_damage(uarms, "shield", TRUE) != ER_NOTHING)
                 break;
-            if (u.twoweap || (uwep && bimanual(uwep)))
+            if (u.twoweap || (uwep && u_bimanual(uwep)))
                 (void) water_damage(u.twoweap ? uswapwep : uwep, 0, TRUE);
  uglovecheck:
             (void) water_damage(uarmg, gloves_simple_name(uarmg), TRUE);
@@ -1671,7 +1674,7 @@ trapeffect_rust_trap(
             if (water_damage(target, "shield", TRUE) != ER_NOTHING)
                 break;
             target = MON_WEP(mtmp);
-            if (target && bimanual(target))
+            if (target && u_bimanual(target))
                 (void) water_damage(target, 0, TRUE);
  mglovecheck:
             target = which_armor(mtmp, W_ARMG);
@@ -1702,9 +1705,7 @@ trapeffect_rust_trap(
                 (void) water_damage(target, "shirt", TRUE);
         }
 
-        mtmp->mdripping = 1;
-        mtmp->mdriptype = POT_WATER;
-
+        make_mdripping(mtmp, POT_WATER);
         if (completelyrusts(mptr)) {
             if (in_sight)
                 pline_mon(mtmp, "%s %s to pieces!", Monnam(mtmp),
@@ -3921,7 +3922,7 @@ float_up(void)
     float_vs_flight(); /* set BFlying, also BLevitation if still trapped */
     /* levitation gives maximum carrying capacity, so encumbrance
        state might be reduced */
-    (void) encumber_msg();
+    encumber_msg();
     return;
 }
 
@@ -3968,7 +3969,7 @@ float_down(
                       : (u.utraptype == TT_BURIEDBALL) ? "chain"
                           : (u.utraptype == TT_LAVA) ? "lava"
                               : "ground"); /* TT_INFLOOR */
-        (void) encumber_msg(); /* carrying capacity might have changed */
+        encumber_msg(); /* carrying capacity might have changed */
         return 0;
     }
     disp.botl = TRUE;
@@ -3979,14 +3980,14 @@ float_down(
                             * unless hero is stuck in floor */
         if (Flying) {
             You("have stopped levitating and are now flying.");
-            (void) encumber_msg(); /* carrying capacity might have changed */
+            encumber_msg(); /* carrying capacity might have changed */
             return 1;
         }
     }
     if (u.uswallow) {
         You("float down, but you are still %s.",
             digests(u.ustuck->data) ? "swallowed" : "engulfed");
-        (void) encumber_msg();
+        encumber_msg();
         return 1;
     }
 
@@ -4070,7 +4071,7 @@ float_down(
     /* levitation gives maximum carrying capacity, so having it end
        potentially triggers greater encumbrance; do this after
        'come down' messages, before trap activation or autopickup */
-    (void) encumber_msg();
+    encumber_msg();
 
     /* can't rely on u.uz0 for detecting trap door-induced level change;
        it gets changed to reflect the new level before we can check it */
@@ -4507,7 +4508,7 @@ lava_damage(struct obj *obj, coordxy x, coordxy y)
        and books--let fire damage deal with them), cloth, leather, wood, bone
        unless it's inherently or explicitly fireproof or contains something;
        note: potions are glass so fall through to fire_damage() and boil */
-    if (objects[otyp].oc_material < DRAGON_HIDE
+    if (obj->material < DRAGON_HIDE
         && ocls != SCROLL_CLASS && ocls != SPBOOK_CLASS
         && objects[otyp].oc_oprop != FIRE_RES
         && otyp != WAN_FIRE && otyp != FIRE_HORN
@@ -4554,6 +4555,13 @@ acid_damage(struct obj *obj)
 
     if (obj->greased) {
         grease_protect(obj, (char *) 0, victim);
+    } else if (obj->otyp == BOTTLE) {
+        if (carried(obj))
+            pline_The("%s fills up your %s.", hliquid("acid"), cxname(obj));
+        poly_obj(obj, POT_ACID);
+        if (carried(obj))
+            update_inventory();
+        return;
     } else if (obj->oclass == SCROLL_CLASS && obj->otyp != SCR_BLANK_PAPER) {
         if (obj->otyp != SCR_BLANK_PAPER
 #ifdef MAIL_STRUCTURES
@@ -4655,6 +4663,14 @@ water_damage(
            final spe is 1..7 and always greater than its starting value */
         wet_a_towel(obj, -rnd(7 - obj->spe), TRUE);
         return ER_NOTHING;
+    } else if (obj->otyp == BOTTLE) {
+        poly_obj(obj, POT_WATER);
+        if (in_invent) {
+            pline_The("%s fills up your %s.", hliquid("water"), ostr);
+            described = TRUE;
+            update_inventory();
+        }
+        return ER_DESTROYED;
     } else if (obj->greased) {
         if (!rn2(2)) {
             obj->greased = 0;
@@ -4679,8 +4695,8 @@ water_damage(
         water_damage_chain(obj->cobj, FALSE);
         return ER_DAMAGED; /* contents were damaged */
     } else if (Waterproof_container(obj)) {
-        if (in_invent) {
-            pline_The("%s slides right off your %s.", hliquid("water"), ostr);
+        if (in_invent && !Blind && !Underwater) {
+            pline_The("%s cannot get into your %s.", hliquid("water"), ostr);
             gm.mentioned_water = !Hallucination;
             makeknown(obj->otyp); /* if an oilskin sack, discover it; doesn't
                                    * matter for chest, large box, ice box */
@@ -5190,7 +5206,7 @@ could_untrap(boolean verbosely, boolean check_floor)
         Strcpy(buf, "And just how do you expect to do that?");
     } else if (u.ustuck && sticks(gy.youmonst.data)) {
         Sprintf(buf, "You'll have to let go of %s first.", mon_nam(u.ustuck));
-    } else if (u.ustuck || (welded(uwep) && bimanual(uwep))) {
+    } else if (u.ustuck || (welded(uwep) && u_bimanual(uwep))) {
         Sprintf(buf, "Your %s seem to be too busy for that.",
                 makeplural(body_part(HAND)));
     } else if (check_floor && !can_reach_floor(FALSE)) {
@@ -5467,6 +5483,10 @@ reward_untrap(struct trap *ttmp, struct monst *mtmp)
             adjalign(1);
             You_feel("that you did the right thing.");
         }
+        /* Helping a pet out of a trap improves your ability to
+           handle pets. */
+        if (mtmp->mtame)
+            use_skill(P_PET_HANDLING, 1);
     }
 }
 
@@ -5755,7 +5775,7 @@ untrap_box(
         else
             pline("There's a trap on %s.", the(xname(box)));
         box->tknown = 1;
-        box->dknown = 1;
+        observe_object(box);
         if (!confused)
             exercise(A_WIS, TRUE);
 
@@ -6663,6 +6683,10 @@ thitm(
             dam = dmgval(obj, mon);
             if (dam < 1)
                 dam = 1;
+            if (mon_hates_material(mon, obj->material)) {
+                /* extra damage already applied by dmgval() */
+                searmsg(NULL, mon, obj, TRUE);
+            }
         }
         if (!harmless) {
             mon->mhp -= dam;

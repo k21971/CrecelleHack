@@ -66,6 +66,8 @@ resetobjs(struct obj *ochain, boolean restore)
             /* artifact bookkeeping needs to be done during
                restore; other fixups are done while saving */
             if (otmp->oartifact) {
+                fix_bones_artifact_otyp(otmp);
+
                 if (exist_artifact(otmp->otyp, safe_oname(otmp))
                     || is_quest_artifact(otmp)) {
                     /* prevent duplicate--revert to ordinary obj */
@@ -97,6 +99,10 @@ resetobjs(struct obj *ochain, boolean restore)
                                    && *(p = in_rooms(ox, oy, SHOPBASE))
                                  && tended_shop(&svr.rooms[*p - ROOMOFFSET]));
             }
+            /* prevent materials from differing on things like rings */
+            if (!valid_obj_material(otmp, otmp->material)) {
+                set_material(otmp, objects[otmp->otyp].oc_material);
+            }
         } else { /* saving */
             /* do not zero out o_ids for ghost levels anymore */
 
@@ -107,6 +113,7 @@ resetobjs(struct obj *ochain, boolean restore)
             otmp->lknown = 0;
             otmp->cknown = 0;
             otmp->tknown = 0;
+            otmp->pknown = 0;
             otmp->invlet = 0;
             otmp->no_charge = 0;
             otmp->how_lost = LOST_NONE;
@@ -170,11 +177,13 @@ resetobjs(struct obj *ochain, boolean restore)
             } else if (otmp->otyp == AMULET_OF_YENDOR) {
                 /* no longer the real Amulet */
                 otmp->otyp = FAKE_AMULET_OF_YENDOR;
+                set_material(otmp, PLASTIC);
                 curse(otmp);
             } else if (otmp->otyp == CANDELABRUM_OF_INVOCATION) {
                 if (otmp->lamplit)
                     end_burn(otmp, TRUE);
                 otmp->otyp = WAX_CANDLE;
+                set_material(otmp, WAX);
                 otmp->age = 50L; /* assume used */
                 if (otmp->spe > 0)
                     otmp->quan = (long) otmp->spe;
@@ -183,6 +192,7 @@ resetobjs(struct obj *ochain, boolean restore)
                 curse(otmp);
             } else if (otmp->otyp == BELL_OF_OPENING) {
                 otmp->otyp = BELL;
+                set_material(otmp, SILVER);
                 curse(otmp);
             } else if (otmp->otyp == SPE_BOOK_OF_THE_DEAD) {
                 otmp->otyp = SPE_BLANK_PAPER;
@@ -720,6 +730,7 @@ getbones(void)
             resetobjs(fobj, TRUE);
             resetobjs(svl.level.buriedobjlist, TRUE);
             fix_shop_damage();
+            close_shops(FALSE);
         }
     }
     close_nhfile(nhfp);

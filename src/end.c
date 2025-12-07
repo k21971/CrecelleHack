@@ -50,7 +50,7 @@ static NEARDATA const char *deaths[] = {
     /* the array of death */
     "died", "choked", "poisoned", "starvation", "drowning", "burning",
     "dissolving under the heat and pressure", "crushed", "turned to stone",
-    "turned into slime", "genocided", "panic", "trickery", "quit",
+    "turned into slime", "erased from existence", "panic", "trickery", "quit",
     "escaped", "ascended"
 };
 
@@ -60,7 +60,7 @@ static NEARDATA const char *ends[] = {
     "starved", "drowned", "burned",
     "dissolved in the lava",
     "were crushed", "turned to stone",
-    "turned into slime", "were genocided",
+    "turned into slime", "were erased",
     "panicked", "were tricked", "quit",
     "escaped", "ascended"
 };
@@ -330,6 +330,8 @@ done_in_by(struct monst *mtmp, int how)
         u.ugrave_arise = PM_GHOUL;
     else if (how == DROWNING && rn2(2))
         u.ugrave_arise = PM_SODDEN_ONE;
+    else if (mptr == &mons[PM_SPECTRE] || u.ulevel > 22)
+        u.ugrave_arise = PM_SPECTRE;
     /* this could happen if a high-end vampire kills the hero
        when ordinary vampires are genocided; ditto for wraiths */
     if (u.ugrave_arise >= LOW_PM
@@ -601,13 +603,15 @@ dump_everything(
     /* overview of the game up to this point */
     show_gamelog((how >= PANICKED) ? ENL_GAMEOVERALIVE : ENL_GAMEOVERDEAD);
     putstr(0, 0, "");
-    list_vanquished('d', FALSE); /* 'd' => 'y' */
-    putstr(NHW_DUMPTXT, 0, "");
-    list_genocided('d', FALSE); /* 'd' => 'y' */
-    putstr(NHW_DUMPTXT, 0, "");
+    show_spells(); /* ends with a blank line */
+    show_skills(); /* ends with a blank line */
     show_conduct((how >= PANICKED) ? 1 : 2);
     putstr(NHW_DUMPTXT, 0, "");
     show_overview((how >= PANICKED) ? 1 : 2, how);
+    putstr(NHW_DUMPTXT, 0, "");
+    list_vanquished('d', FALSE); /* 'd' => 'y' */
+    putstr(NHW_DUMPTXT, 0, "");
+    list_genocided('d', FALSE); /* 'd' => 'y' */
     putstr(NHW_DUMPTXT, 0, "");
     dump_redirect(FALSE);
 #else
@@ -923,7 +927,8 @@ artifact_score(
             if (counting) {
                 u.urexp = nowrap_add(u.urexp, points);
             } else {
-                discover_object(otmp->otyp, TRUE, FALSE);
+                discover_object(otmp->otyp, TRUE, TRUE, FALSE);
+                /* not observe_object; dead characters don't observe */
                 otmp->known = otmp->dknown = otmp->bknown = otmp->rknown = 1;
                 /* assumes artifacts don't have quan > 1 */
                 Sprintf(pbuf, "%s%s (worth %ld %s and %ld points)",
@@ -1132,7 +1137,7 @@ really_done(int how)
     boolean taken;
     char pbuf[BUFSZ];
     winid endwin = WIN_ERR;
-    boolean bones_ok, have_windows = iflags.window_inited;
+    boolean bones_ok, have_windows = iflags.window_inited, startscummed;
     struct obj *corpse = (struct obj *) 0;
     time_t endtime;
     long umoney;
@@ -1178,7 +1183,11 @@ really_done(int how)
     if (how == ASCENDED)
         record_achievement(ACH_UWIN);
 
-    dump_open_log(endtime);
+    /* Don't produce a dumplog for scummed games */
+    startscummed = ((how == QUIT || how == ESCAPED) && svm.moves <= 100L);
+
+    if (!startscummed)
+        dump_open_log(endtime);
     /* Sometimes you die on the first move.  Life's not fair.
      * On those rare occasions you get hosed immediately, go out
      * smiling... :-)  -3.
@@ -1256,7 +1265,8 @@ really_done(int how)
          */
         for (obj = gi.invent; obj; obj = nextobj) {
             nextobj = obj->nobj;
-            discover_object(obj->otyp, TRUE, FALSE);
+            discover_object(obj->otyp, TRUE, TRUE, FALSE);
+            /* observe_object not necessary after discover_object */
             obj->known = obj->bknown = obj->dknown = obj->rknown = 1;
             set_cknown_lknown(obj); /* set flags when applicable */
             /* we resolve Schroedinger's cat now in case of both
@@ -1286,7 +1296,8 @@ really_done(int how)
             Strcpy(pbuf, deaths[how]);
         livelog_printf(LL_DUMP, "%s", pbuf);
 
-        dump_everything(how, endtime);
+        if (!startscummed)
+            dump_everything(how, endtime);
     }
 
     /* if pets will contribute to score, populate gm.mydogs list now
@@ -1508,9 +1519,10 @@ really_done(int how)
                 if (objects[typ].oc_class != GEM_CLASS
                     || typ <= LAST_REAL_GEM) {
                     otmp = mksobj(typ, FALSE, FALSE);
-                    discover_object(otmp->otyp, TRUE, FALSE);
-                    otmp->known = 1;  /* for fake amulets */
+                    discover_object(otmp->otyp, TRUE, TRUE, FALSE);
                     otmp->dknown = 1; /* seen it (blindness fix) */
+                    /* observe_object not necessary after discover_object */
+                    otmp->known = 1;  /* for fake amulets */
                     if (has_oname(otmp))
                         free_oname(otmp);
                     otmp->quan = count;
@@ -1562,7 +1574,8 @@ really_done(int how)
     if (endwin != WIN_ERR)
         destroy_nhwindow(endwin);
 
-    dump_close_log();
+    if (!startscummed)
+        dump_close_log();
 
     /* shut down soundlib */
     if (soundprocs.sound_exit_nhsound)
@@ -1594,7 +1607,8 @@ really_done(int how)
         raw_print("");
         raw_print("");
     }
-    livelog_dump_url(LL_DUMP_ALL | (how == ASCENDED ? LL_DUMP_ASC : 0));
+    if (!startscummed)
+        livelog_dump_url(LL_DUMP_ALL | (how == ASCENDED ? LL_DUMP_ASC : 0));
     nh_terminate(EXIT_SUCCESS);
 }
 
@@ -1611,8 +1625,7 @@ container_contents(
     boolean cat, dumping = iflags.in_dumplog;
 
     for (box = list; box; box = box->nobj) {
-        if (Is_container(box) || box->otyp == STATUE
-            || (list->oclass == WAND_CLASS && list->cobj)) {
+        if (Is_container(box) || box->otyp == STATUE) {
             if (!box->cknown || (identified && !box->lknown)) {
                 box->cknown = 1; /* we're looking at the contents now */
                 if (identified)
@@ -1648,9 +1661,9 @@ container_contents(
                                           (boolean (*)(OBJ_P)) 0);
                     for (srtc = sortedcobj; (obj = srtc->obj) != 0; ++srtc) {
                         if (identified) {
-                            discover_object(obj->otyp, TRUE, FALSE);
-                            obj->known = obj->bknown = obj->dknown
-                                = obj->rknown = 1;
+                            discover_object(obj->otyp, TRUE, TRUE, FALSE);
+                            obj->dknown = 1; /* observe_object unnecessary */
+                            obj->known = obj->bknown = obj->rknown = 1;
                             if (Is_container(obj) || obj->otyp == STATUE)
                                 obj->cknown = obj->lknown = 1;
                         }

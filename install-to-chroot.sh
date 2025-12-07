@@ -22,9 +22,9 @@ COMPRESSBIN="/bin/gzip"
 NH_GIT="/home/build/CrecelleHack"
 NH_BRANCH="master"
 # HACKDIR from include/config.h; aka nethack subdir inside chroot
-NHSUBDIR="crecellehack-1.2.2"
+NHSUBDIR="crecellehack-1.4.0"
 # VAR_PLAYGROUND from include/unixconf.h
-NH_VAR_PLAYGROUND="/crecellehack-1.2.2/var/"
+NH_VAR_PLAYGROUND="/crecellehack-1.4.0/var/"
 # only define this if dgl was configured with --enable-sqlite
 SQLITE_DBFILE="/dgldir/dgamelaunch.db"
 # END OF CONFIG
@@ -51,8 +51,8 @@ set -e
 umask 022
 
 echo "Creating inprogress and extrainfo directories"
-mkdir -p "$NAO_CHROOT/dgldir/inprogress-cre122"
-chown "$USRGRP" "$NAO_CHROOT/dgldir/inprogress-cre122"
+mkdir -p "$NAO_CHROOT/dgldir/inprogress-cre140"
+chown "$USRGRP" "$NAO_CHROOT/dgldir/inprogress-cre140"
 mkdir -p "$NAO_CHROOT/dgldir/extrainfo-cre"
 chown "$USRGRP" "$NAO_CHROOT/dgldir/extrainfo-cre"
 

@@ -65,7 +65,9 @@ initedog(struct monst *mtmp, boolean everything)
         edogp->abuse = 0;
         edogp->revivals = 0;
         edogp->mhpmax_penalty = 0;
+        edogp->petstrat = 0;
         edogp->killed_by_u = 0;
+        edogp->petstrat = 0;
     } else {
         if (edogp->apport <= 0)
             edogp->apport = 1;
@@ -96,6 +98,11 @@ pet_type(void)
             gu.urole.petnum = PM_WARG;
         else if (Race_if(PM_ELF))
             gu.urole.petnum = PM_JAGUAR;
+        else if (Race_if(PM_GNOME))
+            gu.urole.petnum = PM_LARGE_DOG;
+    }
+    if (Race_if(PM_KOBOLD)) {
+        gu.urole.petnum = PM_KOBOLD;
     }
 
     /* Standard pets */
@@ -238,7 +245,9 @@ makedog(void)
     }
 
     pettype = svc.context.startingpet_typ = pet_type();
-    petname = (pettype == PM_LITTLE_DOG) ? gd.dogname
+    petname = (pettype == PM_LITTLE_DOG 
+                || pettype == PM_LARGE_DOG 
+                || pettype == PM_KOBOLD) ? gd.dogname
               : (pettype == PM_KITTEN) ? gc.catname
                 : (pettype == PM_PONY) ? gh.horsename
                   : "";
@@ -268,6 +277,11 @@ makedog(void)
 
     /* chance that the pet is a baby. has no impact on gameplay */
     if (!rn2(6)) mtmp->mbaby = 1;
+
+    /* Kobolds are usually very slow */
+    if (pettype == PM_KOBOLD) {
+        mon_adjust_speed(mtmp, 2, (struct obj *) 0);
+    }
 
     if (!svc.context.startingpet_mid) {
         svc.context.startingpet_mid = mtmp->m_id;
@@ -800,6 +814,12 @@ keepdogs(
 {
     struct monst *mtmp, *mtmp2;
 
+    int follow_dist = 0;
+    if (P_SKILL(P_PET_HANDLING) >= P_BASIC) {
+        follow_dist = P_SKILL(P_PET_HANDLING) + 2;
+        follow_dist = follow_dist * follow_dist;
+    }
+
     for (mtmp = fmon; mtmp; mtmp = mtmp2) {
         mtmp2 = mtmp->nmon;
         if (DEADMONSTER(mtmp))
@@ -817,11 +837,12 @@ keepdogs(
             mtmp->mfrozen = 0;
             mtmp->mcanmove = 1;
         }
-        if (((monnear(mtmp, u.ux, u.uy) && levl_follower(mtmp))
+        if ((((monnear(mtmp, u.ux, u.uy) || (mtmp->mtame && mdistu(mtmp) < follow_dist))
+                && levl_follower(mtmp))
              /* the wiz will level t-port from anywhere to chase
                 the amulet; if you don't have it, will chase you
                 only if in range. -3. */
-             || (u.uhave.amulet && mtmp->iswiz))
+            || (u.uhave.amulet && mtmp->iswiz))
             && (!helpless(mtmp)
                 /* eg if level teleport or new trap, steed has no control
                    to avoid following */
@@ -838,6 +859,12 @@ keepdogs(
                 mtmp->mtrapped = 0;       /* escape trap */
                 mtmp->meating = 0;        /* terminate eating */
                 mdrop_special_objs(mtmp); /* drop Amulet */
+            } else if (!pets_only && has_edog(mtmp)
+                       && (EDOG(mtmp)->petstrat & PETSTRAT_STAY)) {
+                /* pet ordered to stay on this level */
+                if (canseemon(mtmp))
+                    pline("%s stays behind.", Monnam(mtmp));
+                stay_behind = TRUE;
             } else if (mtmp->meating || mtmp->mtrapped) {
                 if (canseemon(mtmp))
                     pline_mon(mtmp, "%s is still %s.", Monnam(mtmp),
@@ -1015,7 +1042,8 @@ dogfood(struct monst *mon, struct obj *obj)
 
     switch (obj->oclass) {
     case FOOD_CLASS:
-        fx = (obj->otyp == CORPSE || obj->otyp == TIN || obj->otyp == EGG)
+        fx = (obj->otyp == CORPSE || obj->otyp == TIN || obj->otyp == EGG
+                || obj->otyp == POT_BLOOD)
                 /* corpsenm might be NON_PM (special tin, unhatchable egg) */
                 ? obj->corpsenm
                 : NON_PM;
@@ -1123,7 +1151,7 @@ dogfood(struct monst *mon, struct obj *obj)
         if (obj->otyp == AMULET_OF_STRANGULATION
             || obj->otyp == RIN_SLOW_DIGESTION)
             return TABU;
-        if (mon_hates_silver(mon) && objects[obj->otyp].oc_material == SILVER)
+        if (mon_hates_material(mon, obj->material))
             return TABU;
         if (mptr == &mons[PM_GELATINOUS_CUBE] && is_organic(obj))
             return ACCFOOD;
@@ -1219,6 +1247,7 @@ tamedog(
                          !big_corpse ? "." : ", or vice versa!");
             } else if (cansee(mtmp->mx, mtmp->my))
                 pline("%s.", Tobjnam(obj, "stop"));
+            use_skill(P_PET_HANDLING, 1);
             /* dog_eat expects a floor object */
             place_object(obj, mtmp->mx, mtmp->my);
             (void) dog_eat(mtmp, obj, mtmp->mx, mtmp->my, FALSE);
@@ -1283,6 +1312,10 @@ tamedog(
         pline_mon(mtmp, "%s seems quite %s.", Monnam(mtmp),
               Hallucination ? "approachable" : "friendly");
 
+    /* give a tip */
+    if (canspotmon(mtmp))
+        handle_tip(TIP_ORDER);
+
     newsym(mtmp->mx, mtmp->my);
     if (mtmp->wormno)
         redraw_worm(mtmp);
@@ -1317,6 +1350,7 @@ wary_dog(struct monst *mtmp, boolean was_dead)
         mtmp->mhpmax += edog->mhpmax_penalty;
         mtmp->mhp += edog->mhpmax_penalty; /* heal it */
         edog->mhpmax_penalty = 0;
+        edog->petstrat = 0;
     }
 
     if (edog && (edog->killed_by_u == 1 || edog->abuse > 2)) {

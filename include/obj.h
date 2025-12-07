@@ -44,6 +44,7 @@ struct obj {
     coordxy ox, oy;
     short otyp; /* object class number */
     unsigned owt;
+    unsigned fuzzwt;
     long quan; /* number of items */
 
 #define SPE_LIM 99 /* abs(obj->spe) <= 99, cap for enchanted and charged
@@ -107,7 +108,9 @@ struct obj {
                              * or enchantment); many items have this preset if
                              * they lack anything interesting to discover */
     Bitfield(dknown, 1);    /* description known (item seen "up close");
-                             * some types of items always have dknown set */
+                             * some types of items always have dknown set;
+                             * use observe_object to set to TRUE so that the
+                             * discoveries list is still correct */
     Bitfield(bknown, 1);    /* BUC (blessed/uncursed/cursed) known */
     Bitfield(rknown, 1);    /* rustproofing status known */
     Bitfield(cknown, 1); /* for containers (including statues): the contents
@@ -153,7 +156,10 @@ struct obj {
                           * [maybe for remaining stack of used potion too] */
     /* 5 free bits */
 #else
-    /* 6 free bits */
+    Bitfield(osize, 3);   /* the size of the weapon or armor */
+    Bitfield(material, 5); /* material this obj is made of */
+    Bitfield(pknown, 1); /* oprop known */
+    /* 5 free bits */
 #endif
 
     int corpsenm;         /* type of corpse is mons[corpsenm] */
@@ -167,7 +173,7 @@ struct obj {
 #define spestudied usecount /* # of times a spellbook has been studied */
 #define wishedfor usecount  /* flag for hold_another_object() if from wish */
     unsigned oeaten;        /* nutrition left in food, if partly eaten */
-    short booster;          /* What terrain the object boosts on */
+    int oprop;              /* The oprop of the item */
     long age;               /* creation date */
     long owornmask;        /* bit mask indicating which equipment slot(s) an
                             * item is worn in [by hero or by monster; could
@@ -306,20 +312,22 @@ struct obj {
      && objects[otmp->otyp].oc_armcat == ARM_SHIRT)
 #define is_suit(otmp) \
     (otmp->oclass == ARMOR_CLASS && objects[otmp->otyp].oc_armcat == ARM_SUIT)
-#define is_elven_armor(otmp)                                              \
-    ((otmp)->otyp == ELVEN_LEATHER_HELM                                   \
-     || (otmp)->otyp == ELVEN_MITHRIL_COAT || (otmp)->otyp == ELVEN_CLOAK \
+#define is_elven_armor(otmp)                                             \
+    ((otmp)->otyp == ELVEN_HELM                                          \
+     || (otmp)->otyp == ELVEN_CHAIN_MAIL || (otmp)->otyp == ELVEN_CLOAK  \
      || (otmp)->otyp == ELVEN_SHIELD || (otmp)->otyp == ELVEN_BOOTS)
 #define is_orcish_armor(otmp)                                            \
     ((otmp)->otyp == ORCISH_HELM || (otmp)->otyp == ORCISH_CHAIN_MAIL    \
      || (otmp)->otyp == ORCISH_RING_MAIL || (otmp)->otyp == ORCISH_CLOAK \
      || (otmp)->otyp == FELL_ORC_SHIELD || (otmp)->otyp == ORCISH_SHIELD)
 #define is_dwarvish_armor(otmp)               \
-    ((otmp)->otyp == DWARVISH_IRON_HELM       \
-     || (otmp)->otyp == DWARVISH_MITHRIL_COAT \
+    ((otmp)->otyp == DWARVISH_HELM            \
+     || (otmp)->otyp == DWARVISH_CHAIN_MAIL   \
      || (otmp)->otyp == DWARVISH_CLOAK        \
+     || (otmp)->otyp == DWARVISH_BOOTS        \
      || (otmp)->otyp == DWARVISH_ROUNDSHIELD)
-#define is_gnomish_armor(otmp) (FALSE)
+#define is_gnomish_armor(otmp)                  \
+    ((otmp)->otyp == GNOMISH_POINTY_HAT)
 
 /* Eggs and other food */
 #define MAX_EGG_HATCH_TIME 200 /* longest an egg can remain unhatched */
@@ -396,7 +404,7 @@ struct obj {
 /* age field of this is relative age rather than absolute; does not include
    magic lamp */
 #define age_is_relative(otmp) \
-    ((otmp)->otyp == BRASS_LANTERN || (otmp)->otyp == OIL_LAMP      \
+    ((otmp)->otyp == LANTERN || (otmp)->otyp == OIL_LAMP      \
      || (otmp)->otyp == CANDELABRUM_OF_INVOCATION                   \
      || (otmp)->otyp == TALLOW_CANDLE || (otmp)->otyp == WAX_CANDLE \
      || (otmp)->otyp == POT_OIL)
@@ -405,7 +413,7 @@ struct obj {
      (ignitable(obj) || obj->otyp == MAGIC_LAMP)
    so include it; brass lantern can be lit but not by fire */
 #define ignitable(otmp) \
-    ((otmp)->otyp == BRASS_LANTERN || (otmp)->otyp == OIL_LAMP      \
+    ((otmp)->otyp == LANTERN || (otmp)->otyp == OIL_LAMP      \
      || ((otmp)->otyp == MAGIC_LAMP && (otmp)->spe > 0)             \
      || (otmp)->otyp == CANDELABRUM_OF_INVOCATION                   \
      || (otmp)->otyp == TALLOW_CANDLE || (otmp)->otyp == WAX_CANDLE \
@@ -424,10 +432,14 @@ struct obj {
     ((obj)->otyp == LUCKSTONE || (obj)->otyp == LOADSTONE \
      || (obj)->otyp == FLINT || (obj)->otyp == TOUCHSTONE)
 
+/* worthless glass -- assumes all GLASS * are worthless glass */
+#define is_worthless_glass(obj) \
+    ((obj)->oclass == GEM_CLASS && obj->material == GLASS)
+
 /* misc helpers, simple enough to be macros */
-#define is_flimsy(otmp)                           \
-    (objects[(otmp)->otyp].oc_material <= LEATHER \
-     || (otmp)->otyp == RUBBER_HOSE)
+#define is_flimsy(otmp) \
+    (otmp->material <= LEATHER || otmp->material == DRAGON_HIDE \
+        || otmp->otyp == RUBBER_HOSE)
 #define is_plural(o) \
     ((o)->quan != 1L                                                    \
      /* "the Eyes of the Overworld" are plural, but                     \

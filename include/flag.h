@@ -22,15 +22,23 @@ struct flag {
     boolean autoopen;        /* open doors by walking into them */
     boolean beginner;        /* True early in each game; affects feedback */
     boolean biff;            /* enable checking for mail */
+    boolean bold_coatings;   /* use bold to indicate coatings*/
     boolean bones;           /* allow saving/loading bones */
+    boolean color_coatings;  /* use colors to indicate floor coatings*/
+    boolean color_surfaces;   /* display dirt and sand with special colors */
     boolean confirm;         /* confirm before hitting tame monsters */
     boolean dark_room;       /* show shadows in lit rooms */
     boolean debug;           /* in debugging mode (aka wizard mode) */
+    boolean drip_messages;   /* display messages about dripping liquid */
 #define wizard flags.debug
     boolean end_own;         /* list all own scores */
     boolean explore;         /* in exploration mode (aka discover mode) */
 #define discover flags.explore
     boolean female;
+    uchar orientation; /* index into orientations[] */
+#define ORIENT_STRAIGHT 0
+#define ORIENT_GAY 1
+#define ORIENT_BISEXUAL 2
     boolean friday13;        /* it's Friday the 13th */
     boolean goldX;           /* for BUCX filtering, whether gold is X or U */
     boolean help;            /* look in data file for info about stuff */
@@ -38,6 +46,8 @@ struct flag {
     boolean tutorial;        /* ask if player wants tutorial level? */
     boolean ignintr;         /* ignore interrupts */
     boolean implicit_uncursed; /* maybe omit "uncursed" status in inventory */
+    boolean implicit_medium; /* maybe omit "medium" from weapon sizes */
+    boolean implicit_material; /* maybe omit default material from items*/
     boolean ins_chkpt;       /* checkpoint as appropriate; INSURANCE */
     boolean invlet_constant; /* let objects keep their inventory symbol */
     boolean legacy;          /* print game entry "story" */
@@ -47,15 +57,18 @@ struct flag {
     boolean nap;             /* `timed_delay' option for display effects */
     boolean nopick_dropped;  /* items you dropped may be autopicked */
     boolean null;            /* OK to send nulls to the terminal */
+    boolean obscure_role_obj_names; /* disable role-specific object names */
     boolean pickup;          /* whether you pickup or move and look */
     boolean pickup_stolen;   /* auto-pickup items stolen by a monster */
     boolean pickup_thrown;   /* auto-pickup items you threw */
+    boolean player_sized_wishes; /* coerce wishes to player size unless specified */
     boolean pushweapon; /* When wielding, push old weapon into second slot */
     boolean quick_farsight;  /* True disables map browsing during random
                               * clairvoyance */
     boolean rest_on_space;   /* space means rest */
     boolean safe_dog;        /* give complete protection to the dog */
     boolean safe_wait;       /* prevent wait or search next to hostile */
+    boolean shorten_buc;     /* shorten full buc text to [b][u][c]*/
     boolean showexp;         /* show experience points */
     boolean showscore;       /* show score */
     boolean showvers;        /* show version on status lines */
@@ -254,6 +267,7 @@ struct instance_flags {
     boolean remember_getpos; /* save getpos() positioning in do-again queue */
     boolean sad_feeling;   /* unseen pet is dying */
     boolean showdamage;    /* extra message reporting damage hero has taken */
+    boolean pending_customizations; /* at least one custom. was specified */
     xint8 debug_fuzzer;    /* fuzz testing */
     int at_midnight;       /* only valid during end of game disclosure */
     int at_night;          /* also only valid during end of game disclosure */

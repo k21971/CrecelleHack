@@ -118,6 +118,14 @@ is_edible(struct obj *obj)
             as engulfed items, but poly'd player can't do that] */
         && !Has_contents(obj))
         return TRUE;
+    
+    /* Departure from EvilHack into the cursed land that is
+       Crecelle: You can eat anything. If you somehow end up with
+       a mace made out of flesh, that's a meal. */
+    if (obj->material != objects[obj->otyp].oc_material
+        && (obj->material == FLESH || obj->material == VEGGY)
+        && !Has_contents(obj) && !is_ascension_obj(obj))
+        return TRUE;
 
     return (boolean) (obj->oclass == FOOD_CLASS);
 }
@@ -132,7 +140,7 @@ init_uhunger(void)
     u.uhs = NOT_HUNGRY;
     if (ATEMP(A_STR) < 0) {
         ATEMP(A_STR) = 0;
-        (void) encumber_msg();
+        encumber_msg();
     }
 }
 
@@ -1253,6 +1261,7 @@ cpostfx(int pm)
     case PM_DOPPELGANGER:
     case PM_SANDESTIN: /* moot--they don't leave corpses */
     case PM_GENETIC_ENGINEER:
+    case PM_TRANSMUTER:
         if (Unchanging) {
             You_feel("momentarily different."); /* same as poly trap */
         } else {
@@ -1384,9 +1393,13 @@ void
 violated_vegetarian(void)
 {
     u.uconduct.unvegetarian++;
-    if (Role_if(PM_MONK)) {
+    if (Role_if(PM_MONK) || Race_if(PM_ELF)) {
         You_feel("guilty.");
         adjalign(-1);
+    }
+    if (Race_if(PM_ELF)) {
+        make_vomiting((long) rn1(10, 6),
+                              FALSE);
     }
     return;
 }
@@ -1555,7 +1568,8 @@ consume_tin(const char *mesg)
         mnum = tin->corpsenm;
         if (mnum == NON_PM) {
             pline("It turns out to be empty.");
-            tin->dknown = tin->known = 1;
+            observe_object(tin);
+            tin->known = 1;
             tin = costly_tin(COST_OPEN);
             use_up_tin(tin);
             if (always_eat)
@@ -1587,8 +1601,10 @@ consume_tin(const char *mesg)
             if (y_n("Eat it?") == 'n') {
                 if (flags.verbose)
                     You("discard the open tin.");
-                if (!Hallucination)
-                    tin->dknown = tin->known = 1;
+                if (!Hallucination) {
+                    observe_object(tin);
+                    tin->known = 1;
+                }
                 tin = costly_tin(COST_OPEN);
                 use_up_tin(tin);
                 return;
@@ -1602,7 +1618,8 @@ consume_tin(const char *mesg)
 
         eating_conducts(&mons[mnum]);
 
-        tin->dknown = tin->known = 1;
+        observe_object(tin);
+        tin->known = 1;
         /* charge for one at pre-eating cost */
         tin = svc.context.tin.tin = costly_tin(COST_OPEN);
 
@@ -1649,7 +1666,8 @@ consume_tin(const char *mesg)
                   Blind ? "" : " ", Blind ? "" : hcolor(NH_GREEN));
         } else {
             pline("It contains spinach.");
-            tin->dknown = tin->known = 1;
+            observe_object(tin);
+            tin->known = 1;
         }
 
         if (!always_eat && y_n("Eat it?") == 'n') {
@@ -1748,7 +1766,6 @@ start_tin(struct obj *otmp)
             tmp = rn2(uwep->cursed ? 3 : !uwep->blessed ? 2 : 1);
             break;
         case DAGGER:
-        case SILVER_DAGGER:
         case ELVEN_DAGGER:
         case ORCISH_DAGGER:
         case ATHAME:
@@ -2130,7 +2147,8 @@ fprefx(struct obj *otmp)
     case TRIPE_RATION:
         if (carnivorous(gy.youmonst.data) && !humanoid(gy.youmonst.data)) {
             pline("This tripe ration is surprisingly good!");
-        } else if (maybe_polyd(is_orc(gy.youmonst.data), Race_if(PM_ORC))) {
+        } else if (maybe_polyd(is_orc(gy.youmonst.data), Race_if(PM_ORC))
+                    || maybe_polyd(is_kobold(gy.youmonst.data), Race_if(PM_KOBOLD))) {
             pline(Hallucination ? "Tastes great!  Less filling!"
                                 : "Mmm, tripe... not bad!");
         } else {
@@ -2274,7 +2292,8 @@ eataccessory(struct obj *otmp)
         if (u.uhp <= 0)
             return; /* died from sink fall */
     }
-    otmp->known = otmp->dknown = 1; /* by taste */
+    observe_object(otmp);
+    otmp->known = 1; /* by taste */
     if (!rn2(otmp->oclass == RING_CLASS ? 3 : 5)) {
         switch (otmp->otyp) {
         default:
@@ -2427,7 +2446,7 @@ eatspecial(void)
         vault_gd_watching(GD_EATGOLD);
         return;
     }
-    if (objects[otmp->otyp].oc_material == PAPER) {
+    if (otmp->material == PAPER) {
 #ifdef MAIL_STRUCTURES
         if (otmp->otyp == SCR_MAIL)
             /* no nutrition */
@@ -2497,10 +2516,9 @@ foodword(struct obj *otmp)
 {
     if (otmp->oclass == FOOD_CLASS)
         return "food";
-    if (otmp->oclass == GEM_CLASS && objects[otmp->otyp].oc_material == GLASS
-        && otmp->dknown)
+    if (is_worthless_glass(otmp) && otmp->dknown)
         makeknown(otmp->otyp);
-    return foodwords[objects[otmp->otyp].oc_material];
+    return foodwords[otmp->material];
 }
 
 /* called after consuming (non-corpse) food */
@@ -2638,7 +2656,7 @@ edibility_prompts(struct obj *otmp)
          it_or_they[QBUFSZ];
     /* 3.7: decaying globs don't become tainted anymore; in 3.6, they did */
     boolean cadaver = (otmp->otyp == CORPSE), stoneorslime = FALSE;
-    int material = objects[otmp->otyp].oc_material, mnum = otmp->corpsenm;
+    int material = otmp->material, mnum = otmp->corpsenm;
     long rotted = 0L;
 
     Strcpy(foodsmell, Tobjnam(otmp, "smell"));
@@ -2772,7 +2790,7 @@ doeat_nonfood(struct obj *otmp)
         livelog_printf(LL_CONDUCT, "ate for the first time (%s)",
                        food_xname(otmp, FALSE));
     }
-    material = objects[otmp->otyp].oc_material;
+    material = otmp->material;
     if (material == LEATHER || material == BONE
         || material == DRAGON_HIDE || material == WAX) {
         if (!u.uconduct.unvegan++ && !ll_conduct) {
@@ -2793,8 +2811,16 @@ doeat_nonfood(struct obj *otmp)
     if (otmp->cursed) {
         (void) rottenfood(otmp);
         nodelicious = TRUE;
-    } else if (objects[otmp->otyp].oc_material == PAPER)
+    } else if (otmp->material == PAPER)
         nodelicious = TRUE;
+    
+    if (otmp->otyp == WAN_DEATH) {
+        pline("Eating a wand of death is instantly fatal.");
+        Sprintf(svk.killer.name, "ate a wand of death");
+        svk.killer.format = NO_KILLER_PREFIX;
+        done(DIED);
+        exercise(A_WIS, FALSE);
+    }
 
     if (otmp->oclass == WEAPON_CLASS && otmp->opoisoned) {
         pline("Ecch - that must have been poisonous!");
@@ -2873,7 +2899,7 @@ doeat(void)
         /* let them eat rings */
         You_cant("eat %s you're wearing.", something);
         return ECMD_OK;
-    } else if (!(carried(otmp) ? retouch_object(&otmp, FALSE)
+    } else if (!(carried(otmp) ? retouch_object(&otmp, !uarmg, FALSE)
                                : touch_artifact(otmp, &gy.youmonst))) {
         return ECMD_TIME; /* got blasted so use a turn */
     }
@@ -2999,7 +3025,7 @@ doeat(void)
         /* No checks for WAX, LEATHER, BONE, DRAGON_HIDE.  These are
          * all handled in the != FOOD_CLASS case, above.
          */
-        switch (objects[otmp->otyp].oc_material) {
+        switch (otmp->material) {
         case FLESH:
             if (!u.uconduct.unvegan++ && !ll_conduct) {
                 livelog_printf(LL_CONDUCT,
@@ -3178,7 +3204,7 @@ gethungry(void)
         && (carnivorous(gy.youmonst.data)
             || herbivorous(gy.youmonst.data)
             || metallivorous(gy.youmonst.data))
-        && !Slow_digestion)
+        && !(Slow_digestion || Race_if(PM_GNOME)))
         u.uhunger--; /* ordinary food consumption */
 
     /*

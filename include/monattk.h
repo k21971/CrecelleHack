@@ -84,11 +84,13 @@ static const char *const mattk_names[] = { MATK_LIST };
     MAD(AD_FAMN, "famine"), \
     MAD(AD_SLIM, "slime"), \
     MAD(AD_ENCH, "disenchant"), \
+    MAD(AD_TMUT, "transmute"), \
     MAD(AD_CORR, "corrode"), \
     MAD(AD_POLY, "polymorph"), \
     MAD(AD_WORM, "spam mail"), \
     MAD(AD_HONY, "spread honey"), \
     MAD(AD_SOAK, "soak"), \
+    MAD(AD_TLAW, "teleport away"), \
     MAD(AD_CLRC, "clerical"), \
     MAD(AD_SPEL, "arcane"), \
     MAD(AD_RBRE, "random"), \

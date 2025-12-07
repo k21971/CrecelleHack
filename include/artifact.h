@@ -35,7 +35,7 @@
 #define SPFX_DMONS  0x00100000L /* attack bonus on one monster type */
 #define SPFX_DCLAS  0x00200000L /* attack bonus on monsters w/ symbol mtype */
 #define SPFX_DFLAG1 0x00400000L /* attack bonus on monsters w/ mflags1 flag */
-#define SPFX_DFLAG2 0x00800000L /* attack bonus on monsters w/ mflags2 flag */
+#define SPFX_DFLAGH 0x00800000L /* attack bonus on monsters w/ mhflags flag */
 #define SPFX_DALIGN 0x01000000L /* attack bonus on non-aligned monsters  */
 #define SPFX_DBONUS 0x01F00000L /* attack bonus mask */
 #define SPFX_XRAY   0x02000000L /* gives X-RAY vision to player */
@@ -57,6 +57,8 @@ struct artifact {
     uchar gift_value;   /* minimum sacrifice value to be gifted this */
     long cost;          /* price when sold to hero (default 100 x base cost) */
     char acolor;        /* color to use if artifact 'glows' */
+    short material;     /* material it's made out of (0 = base type's default)*/
+    boolean fuzz;       /* fuzz the otyp? */
 };
 
 /* invoked properties with special powers */
@@ -74,7 +76,8 @@ enum invoke_prop_types {
     FLING_POISON,
     FIRESTORM,
     SNOWSTORM,
-    BLINDING_RAY
+    BLINDING_RAY,
+    STONEPROOF,
 };
 
 /* artifact tracking; gift and wish imply found; it also gets set for items

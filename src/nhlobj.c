@@ -210,7 +210,7 @@ l_obj_objects_to_table(lua_State *L)
     nhl_add_table_entry_int(L, "name_known", o->oc_name_known);
     nhl_add_table_entry_int(L, "merge", o->oc_merge);
     nhl_add_table_entry_int(L, "uses_known", o->oc_uses_known);
-    nhl_add_table_entry_int(L, "pre_discovered", o->oc_pre_discovered);
+    nhl_add_table_entry_int(L, "encountered", o->oc_encountered);
     nhl_add_table_entry_int(L, "magic", o->oc_magic);
     nhl_add_table_entry_int(L, "charged", o->oc_charged);
     nhl_add_table_entry_int(L, "unique", o->oc_unique);
@@ -297,6 +297,7 @@ l_obj_to_table(lua_State *L)
     nhl_add_table_entry_int(L, "bknown", obj->bknown);
     nhl_add_table_entry_int(L, "rknown", obj->rknown);
     nhl_add_table_entry_int(L, "tknown", obj->tknown);
+    nhl_add_table_entry_int(L, "pknown", obj->pknown);
     if (obj->oclass == POTION_CLASS)
         nhl_add_table_entry_int(L, "odiluted", obj->odiluted);
     else

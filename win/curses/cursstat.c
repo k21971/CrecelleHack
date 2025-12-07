@@ -221,7 +221,9 @@ draw_status(void)
        statusbar. */
     if (horiz) {
         int ax = 0, ay = 0;
-        int cy = (iflags.wc2_statuslines < 3) ? 2 : 3;
+        int cy = iflags.wc2_statuslines;
+        if (cy < 3) cy = 4;
+        if (cy > 3) cy = 4;
 
         /* actual y (and x) */
         getmaxyx(win, ay, ax);
@@ -254,7 +256,7 @@ draw_horizontal(boolean border)
     /* almost all fields already come with a leading space;
        "xspace" indicates places where we'll generate an extra one */
     static const enum statusfields
-    twolineorder[3][16] = {
+    twolineorder[4][16] = {
         { BL_TITLE,
           /*xspace*/ BL_STR, BL_DX, BL_CO, BL_IN, BL_WI, BL_CH,
           /*xspace*/ BL_ALIGN,
@@ -270,9 +272,11 @@ draw_horizontal(boolean border)
           /*xspace*/ BL_HUNGER, BL_CAP, BL_CONDITION, BL_VERS,
           BL_FLUSH },
         { BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD,
+          blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD },
+        { BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD,
           blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD }
     },
-    threelineorder[3][16] = { /* moves align to line 2, leveldesc+ to 3 */
+    threelineorder[4][16] = { /* moves align to line 2, leveldesc+ to 3 */
         { BL_TITLE,
           /*xspace*/ BL_STR, BL_DX, BL_CO, BL_IN, BL_WI, BL_CH,
           /*xspace*/ BL_SCORE,
@@ -290,7 +294,31 @@ draw_horizontal(boolean border)
           /*xspecial*/ BL_CONDITION,
           /*xspecial*/ BL_VERS,
           BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD,
-          blPAD, blPAD, blPAD, blPAD, blPAD }
+          blPAD, blPAD, blPAD, blPAD, blPAD },
+        { BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD,
+          blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD }
+    },
+    fourlineorder[4][16] = {
+        { BL_TITLE,
+          /*xspace*/ BL_STR, BL_DX, BL_CO, BL_IN, BL_WI, BL_CH,
+          /*xspace*/ BL_SCORE,
+          BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD },
+        { BL_ALIGN,
+          /*xspace*/ BL_GOLD,
+          /*xspace*/ BL_HP, BL_HPMAX,
+          /*xspace*/ BL_ENE, BL_ENEMAX,
+          /*xspace*/ BL_AC, BL_MC,
+          /*xspace*/ BL_XP, BL_EXP, BL_HD,
+          /*xspace*/ BL_HUNGER, BL_CAP,
+          BL_FLUSH, blPAD, blPAD },
+        { BL_LEVELDESC,
+          /*xspace*/ BL_TOD, BL_TIME,
+          /*xspecial*/ blPAD,
+          /*xspecial*/ blPAD,
+          BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD,
+          blPAD, blPAD, blPAD, blPAD, blPAD },
+        { BL_CONDITION, BL_VERS, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD,
+          blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD }
     };
     const enum statusfields (*fieldorder)[16];
     coordxy spacing[MAXBLSTATS], valline[MAXBLSTATS];
@@ -342,8 +370,19 @@ draw_horizontal(boolean border)
      *  window gets clipped to fit a narrow terminal.)
      */
 
-    number_of_lines = (iflags.wc2_statuslines < 3) ? 2 : 3;
-    fieldorder = (number_of_lines != 3) ? twolineorder : threelineorder;
+    number_of_lines = iflags.wc2_statuslines;
+    if (number_of_lines < 3) number_of_lines = 2;
+    if (number_of_lines > 3) number_of_lines = 4;
+    switch (number_of_lines) {
+    case 2:
+        fieldorder = twolineorder;
+        break;
+    case 3:
+        fieldorder = threelineorder;
+        break;
+    default:
+        fieldorder = fourlineorder;
+    }
 
     cbuf[0] = '\0';
     x = y = border ? 1 : 0; /* origin; ignored by curs_stat_conds(0) */
@@ -528,7 +567,7 @@ draw_horizontal(boolean border)
                     continue;
                 break;
             case BL_HUNGER:
-                if (number_of_lines == 3) {
+                if (number_of_lines >= 3) {
                     /* remember hunger's position */
                     getyx(win, conddummy, condstart);
                     /* if hunger won't be shown, figure out where cap
@@ -630,7 +669,7 @@ draw_horizontal(boolean border)
                         x = width - (border ? -1 : 0), /* (width-=2 above) */
                         y = j + (border ? 1 : 0);
                     /* cbuf[] was populated above; clen is its length */
-                    if (number_of_lines == 3) {
+                    if (number_of_lines >= 3) {
                         int vlen = (sho_vers
                                     && fieldorder[j][i + 1] == BL_VERS)
                                    ? ((int) strlen(status_vals[BL_VERS])

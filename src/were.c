@@ -130,6 +130,7 @@ void
 new_were(struct monst *mon)
 {
     int pm;
+    struct permonst *olddata = mon->data;
 
     /* neither hero nor werecreature can change from human form to
        critter form if hero has Protection_from_shape_changers extrinsic;
@@ -165,7 +166,7 @@ new_were(struct monst *mon)
     /* regenerate by 1/4 of the lost hit points */
     healmon(mon, (mon->mhpmax - mon->mhp) / 4, 0);
     newsym(mon->mx, mon->my);
-    mon_break_armor(mon, FALSE);
+    mon_break_armor(mon, olddata, FALSE);
     possibly_unwield(mon, FALSE);
 
     /* vision capability isn't changing so we don't call set_apparxy() to

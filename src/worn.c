@@ -205,6 +205,70 @@ wearmask_to_obj(long wornmask)
     return (struct obj *) 0;
 }
 
+/* convert an armor wornmask to corresponding category */
+int
+wornmask_to_armcat(long mask)
+{
+    int cat = 0;
+
+    switch (mask & W_ARMOR) {
+    case W_ARM:
+        cat = ARM_SUIT;
+        break;
+    case W_ARMC:
+        cat = ARM_CLOAK;
+        break;
+    case W_ARMH:
+        cat = ARM_HELM;
+        break;
+    case W_ARMS:
+        cat = ARM_SHIELD;
+        break;
+    case W_ARMG:
+        cat = ARM_GLOVES;
+        break;
+    case W_ARMF:
+        cat = ARM_BOOTS;
+        break;
+    case W_ARMU:
+        cat = ARM_SHIRT;
+        break;
+    }
+    return cat;
+}
+
+/* convert an armor category to corresponding wornmask */
+long
+armcat_to_wornmask(int cat)
+{
+    long mask = 0L;
+
+    switch (cat) {
+    case ARM_SUIT:
+        mask = W_ARM;
+        break;
+    case ARM_CLOAK:
+        mask = W_ARMC;
+        break;
+    case ARM_HELM:
+        mask = W_ARMH;
+        break;
+    case ARM_SHIELD:
+        mask = W_ARMS;
+        break;
+    case ARM_GLOVES:
+        mask = W_ARMG;
+        break;
+    case ARM_BOOTS:
+        mask = W_ARMF;
+        break;
+    case ARM_SHIRT:
+        mask = W_ARMU;
+        break;
+    }
+    return mask;
+}
+
 /* return a bitmask of the equipment slot(s) a given item might be worn in */
 long
 wearslot(struct obj *obj)
@@ -378,16 +442,16 @@ check_wornmask_slots(void)
             why = "uwep is not a weapon";
         else if (is_launcher(uwep) || is_ammo(uwep) || is_missile(uwep))
             why = "uwep is not a melee weapon";
-        else if (bimanual(uwep))
+        else if (u_bimanual(uwep))
             why = "uwep is two-handed";
         else if (uswapwep->oclass != WEAPON_CLASS && !is_weptool(uswapwep))
             why = "uswapwep is not a weapon";
         else if (is_launcher(uswapwep) || is_ammo(uswapwep)
                  || is_missile(uswapwep))
             why = "uswapwep is not a melee weapon";
-        else if (bimanual(uswapwep))
+        else if (u_bimanual(uswapwep))
             why = "uswapwep is two-handed";
-        else if (!could_twoweap(gy.youmonst.data))
+        else if (Upolyd && !could_twoweap(gy.youmonst.data))
             why = "without two weapon attacks";
 
         if (why)
@@ -532,6 +596,15 @@ update_mon_extrinsics(
             gi.in_mklev = save_in_mklev;
             break;
         }
+        case WWALKING:
+            mon->mextrinsics |= MR2_WATERWALK;
+            break;
+        case JUMPING:
+            mon->mextrinsics |= MR2_JUMPING;
+            break;
+        case TELEPAT:
+            mon->mextrinsics |= MR2_TELEPATHY;
+            break;
         /* properties handled elsewhere */
         case ANTIMAGIC:
         case REFLECTING:
@@ -540,22 +613,21 @@ update_mon_extrinsics(
         /* properties which have no effect for monsters */
         case CLAIRVOYANT:
         case STEALTH:
-        case TELEPAT:
             break;
         /* properties which should have an effect but aren't implemented */
         case LEVITATION:
         case FLYING:
-        case WWALKING:
             break;
         /* properties which maybe should have an effect but don't */
         case DISPLACED:
         case FUMBLING:
-        case JUMPING:
             break;
         default:
             mon->mextrinsics |= (unsigned short) res_to_mr(which);
             break;
         }
+        if (obj->otyp == GAUNTLETS_OF_POWER)
+            mon->mextrinsics |= MR2_STRENGTH;
     } else { /* off */
         switch (which) {
         case INVIS:
@@ -569,6 +641,15 @@ update_mon_extrinsics(
             gi.in_mklev = save_in_mklev;
             break;
         }
+        case WWALKING:
+            mon->mextrinsics &= ~(MR2_WATERWALK);
+            break;
+        case JUMPING:
+            mon->mextrinsics &= ~(MR2_JUMPING);
+            break;
+        case TELEPAT:
+            mon->mextrinsics &= ~(MR2_TELEPATHY);
+            break;
         case FIRE_RES:
         case COLD_RES:
         case SLEEP_RES:
@@ -607,6 +688,8 @@ update_mon_extrinsics(
         default:
             break;
         }
+        if (obj->otyp == GAUNTLETS_OF_POWER)
+            mon->mextrinsics &= ~MR2_STRENGTH;
     }
 
     /* worn alchemy smock/apron confers both poison resistance and acid
@@ -652,9 +735,9 @@ find_mac(struct monst *mon)
                 base -= 2; /* fixed amount, not impacted by erosion */
             else
                 base -= ARM_BONUS(obj);
+            if (is_shield(obj))
+                base -= (min(MZ_HUGE + 1, obj->osize) - mon->data->msize);
             /* since ARM_BONUS is positive, subtracting it increases AC */
-            if (!mon->mprone)
-                base -= mon_boosted(mon, obj->booster);
         }
     }
     if (mon->mprone)
@@ -714,7 +797,7 @@ m_dowear(struct monst *mon, boolean creation)
     if (can_wear_armor || WrappingAllowed(mon->data))
         m_dowear_type(mon, W_ARMC, creation, FALSE);
     m_dowear_type(mon, W_ARMH, creation, FALSE);
-    if (!MON_WEP(mon) || !bimanual(MON_WEP(mon)))
+    if (!MON_WEP(mon) || !is_bimanual(MON_WEP(mon), mon->data))
         m_dowear_type(mon, W_ARMS, creation, FALSE);
     m_dowear_type(mon, W_ARMG, creation, FALSE);
     m_dowear_type(mon, W_TOOL, creation, FALSE);
@@ -761,6 +844,8 @@ m_dowear_type(
                 || (obj->otyp != AMULET_OF_LIFE_SAVING
                     && obj->otyp != AMULET_OF_REFLECTION
                     && obj->otyp != AMULET_OF_GUARDING
+                    && obj->otyp != AMULET_OF_ESP
+                    && obj->otyp != AMULET_OF_MAGICAL_BREATHING
                     && obj->otyp != AMULET_OF_CHANGE))
                 continue;
             /* for 'best' to be non-Null, it must be an amulet of guarding;
@@ -826,6 +911,10 @@ m_dowear_type(
         }
         if (obj->owornmask)
             continue;
+        if (wrong_size_armor(obj, mon->data) != 0)
+            continue;
+        if (mon_hates_material(mon, obj->material))
+            continue;
         /* I'd like to define a VISIBLE_ARM_BONUS which doesn't assume the
          * monster knows obj->spe, but if I did that, a monster would keep
          * switching forever between two -2 caps since when it took off one
@@ -843,7 +932,8 @@ m_dowear_type(
 
     /* same auto-cursing behavior as for hero */
     autocurse = ((best->otyp == HELM_OF_OPPOSITE_ALIGNMENT
-                  || best->otyp == DUNCE_CAP) && !best->cursed);
+                  || best->otyp == DUNCE_CAP
+                  || best->oprop == OPROP_HEXED) && !best->cursed);
     /* if wearing a cloak, account for the time spent removing
        and re-wearing it when putting on a suit or shirt */
     if ((flag == W_ARM || flag == W_ARMU) && (mon->misc_worn_check & W_ARMC))
@@ -1120,16 +1210,18 @@ nxt_unbypassed_loot(Loot *lootarray, struct obj *listhead)
 }
 
 void
-mon_break_armor(struct monst *mon, boolean polyspot)
+mon_break_armor(struct monst *mon, struct permonst *olddata, boolean polyspot)
 {
     struct obj *otmp;
     struct permonst *mdat = mon->data;
     boolean vis = cansee(mon->mx, mon->my),
-            handless_or_tiny = (nohands(mdat) || verysmall(mdat)),
             noride = FALSE;
     const char *pronoun = mhim(mon), *ppronoun = mhis(mon);
 
-    if (breakarm(mdat)) {
+    boolean breakage = breakarm(mdat) || (olddata->msize < mdat->msize);
+    boolean slippage = sliparm(mdat) || (olddata->msize > mdat->msize);
+
+    if (breakage) {
         if ((otmp = which_armor(mon, W_ARM)) != 0) {
             if ((Is_dragon_scales(otmp) && mdat == Dragon_scales_to_pm(otmp))
                 || (Is_dragon_mail(otmp) && mdat == Dragon_mail_to_pm(otmp))) {
@@ -1172,7 +1264,7 @@ mon_break_armor(struct monst *mon, boolean polyspot)
                 You_hear("a ripping sound.");
             m_useup(mon, otmp);
         }
-    } else if (sliparm(mdat)) {
+    } else if (slippage) {
         /* sliparm checks whirly, noncorporeal, and small or under */
         boolean passes_thru_clothes = !(mdat->msize <= MZ_SMALL);
 
@@ -1211,7 +1303,7 @@ mon_break_armor(struct monst *mon, boolean polyspot)
             m_lose_armor(mon, otmp, polyspot);
         }
     }
-    if (handless_or_tiny) {
+    if (nohands(mdat) || breakage || slippage) {
         /* [caller needs to handle weapon checks] */
         if ((otmp = which_armor(mon, W_ARMG)) != 0) {
             if (vis)
@@ -1230,10 +1322,10 @@ mon_break_armor(struct monst *mon, boolean polyspot)
             m_lose_armor(mon, otmp, polyspot);
         }
     }
-    if (handless_or_tiny || has_horns(mdat)) {
+    if (nohands(mdat) || has_horns(mdat) || breakage || slippage) {
         if ((otmp = which_armor(mon, W_ARMH)) != 0
             /* flimsy test for horns matches polyself handling */
-            && (handless_or_tiny || !is_flimsy(otmp))) {
+            && (nohands(mdat) || !is_flimsy(otmp))) {
             if (vis)
                 pline_mon(mon, "%s helmet falls to the %s!",
                           s_suffix(Monnam(mon)), surface(mon->mx, mon->my));
@@ -1242,7 +1334,8 @@ mon_break_armor(struct monst *mon, boolean polyspot)
             m_lose_armor(mon, otmp, polyspot);
         }
     }
-    if (handless_or_tiny || slithy(mdat) || mdat->mlet == S_CENTAUR) {
+    if (nohands(mdat) || slithy(mdat) || mdat->mlet == S_CENTAUR
+        || breakage || slippage) {
         if ((otmp = which_armor(mon, W_ARMF)) != 0) {
             if (vis) {
                 if (is_whirly(mon->data))

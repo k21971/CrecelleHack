@@ -21,7 +21,7 @@ enum Y_N { No, Yes };
 enum Off_On { Off, On };
 /* Advanced options are only shown in the full, traditional options menu */
 enum OptSection {
-    OptS_General, OptS_Behavior, OptS_Map, OptS_Status, OptS_Advanced
+    OptS_General, OptS_Variant, OptS_Behavior, OptS_Map, OptS_Status, OptS_Advanced
 };
 enum menu_terminology_preference {
     Term_False, Term_Off, Term_Disabled, Term_Excluded, num_terms
@@ -164,6 +164,9 @@ static int optfn_##a(int, int, boolean, char *, char *);
            Off, Yes, No, No, NoAlias, (boolean *) 0, Term_False,
            (char *)0)
 #endif
+    NHOPTB(altstarts, Advanced, 0, opt_out, set_in_config,
+           On, Yes, No, No, NoAlias, &u.uroleplay.altstarts, Term_False,
+           "start in gnomish mines if playing a gnome")
     NHOPTB(ascii_map, Advanced, 0, opt_in, set_in_game,
                 ascii_map_Def, Yes, No, No, NoAlias, &iflags.wc_ascii_map,
            Term_False, "show map as text")
@@ -207,6 +210,9 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTB(blind, Advanced, 0, opt_in, set_in_config,
            Off, Yes, No, No, "permablind", &u.uroleplay.blind, Term_False,
            "your character is permanently blind")
+    NHOPTB(bold_coatings, Variant, 0, opt_out, set_in_game,
+           On, Yes, No, No, NoAlias, &flags.bold_coatings, Term_False,
+           "use color to indicate floor coatings")
     NHOPTB(bones, Advanced, 0, opt_out, set_in_config,
            On, Yes, No, No, NoAlias, &flags.bones, Term_False,
            "allow loading bones files")
@@ -233,6 +239,12 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTB(color, Map, 0, opt_in, set_in_game,
            On, Yes, No, No, "colour", &iflags.wc_color, Term_False,
            "use color in map")
+    NHOPTB(color_coatings, Variant, 0, opt_out, set_in_game,
+           On, Yes, No, No, NoAlias, &flags.color_coatings, Term_False,
+           "use color to indicate floor coatings")
+    NHOPTB(color_surfaces, Variant, 0, opt_out, set_in_game,
+           On, Yes, No, No, NoAlias, &flags.color_surfaces, Term_False,
+           "use color to indicate dirt and sand")
     NHOPTB(confirm, Advanced, 0, opt_out, set_in_game,
            On, Yes, No, No, NoAlias, &flags.confirm, Term_False,
            "ask before hitting tame or peaceful monsters")
@@ -285,6 +297,9 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTC(dogname, Advanced, PL_PSIZ, opt_in, set_gameview,
                 No, Yes, No, No, NoAlias,
                 "name of your starting pet if it is a little dog")
+    NHOPTB(drip_messages, Variant, 0, opt_out, set_in_game,
+           On, Yes, No, No, NoAlias, &flags.drip_messages, Term_False,
+           "display messages about dripping with liquids")
     NHOPTB(dropped_nopick, Behavior, 0, opt_out, set_in_game,
            On, Yes, No, No, NoAlias, &flags.nopick_dropped, Term_False,
            "don't autopickup dropped items")
@@ -396,8 +411,14 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTB(implicit_uncursed, Advanced, 0, opt_out, set_in_game,
            On, Yes, No, No, NoAlias, &flags.implicit_uncursed, Term_False,
            "omit \"uncursed\" from inventory")
-    NHOPTB(invweight, Advanced, 0, opt_out, set_in_game,
-           On, Yes, No, No, NoAlias, &iflags.invweight, Term_False,
+    NHOPTB(implicit_material, Variant, 0, opt_out, set_in_game,
+           On, Yes, No, No, NoAlias, &flags.implicit_material, Term_False,
+           "omit default materials from inventory")
+    NHOPTB(implicit_medium, Variant, 0, opt_out, set_in_game,
+           On, Yes, No, No, NoAlias, &flags.implicit_medium, Term_False,
+           "omit \"medium\" from inventory")
+    NHOPTB(invweight, Variant, 0, opt_out, set_in_game,
+           On, Yes, No, No, "wizweight", &iflags.invweight, Term_False,
            "display weight of items" )
 #if 0   /* obsolete - pre-OSX Mac */
     NHOPTB(large_font, Advanced, 0, opt_in, set_in_config,
@@ -532,9 +553,18 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTC(number_pad, General, 1, opt_in, set_in_game,
                 No, Yes, No, Yes, NoAlias,
                 "use the number pad for movement")
+    NHOPTB(no_flipped_soko, Advanced, 0, opt_in, set_in_config,
+           Off, Yes, No, No, NoAlias, &u.uroleplay.no_flipped_soko, Term_False,
+           "disable flipped sokoban")
     NHOPTC(objects, Advanced, MAXOCLASSES, opt_in, set_in_config,
                 No, Yes, No, No, NoAlias,
                 "list of symbols to use for objects")
+    NHOPTB(obscure_role_obj_names, Variant, 0, opt_in, set_in_game,
+           On, Yes, No, No, NoAlias, &flags.obscure_role_obj_names, Term_False,
+           "disable role-specific object names")
+    NHOPTC(orientation,  Advanced, 12, opt_in, set_gameview,
+                Yes, Yes, Yes, No, "sexuality",
+                "your sexual orientation")
     NHOPTC(packorder, Advanced, MAXOCLASSES, opt_in, set_in_game,
                 No, Yes, No, No, NoAlias,
                 "the inventory order of the items in your pack")
@@ -556,6 +586,9 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTB(pauper, Advanced, 0, opt_in, set_in_config,
            Off, Yes, No, No, NoAlias, &u.uroleplay.pauper, Term_False,
            "start your character without any items")
+    NHOPTB(perfect_bestiary, Advanced, 0, opt_in, set_in_config,
+           Off, Yes, No, No, NoAlias, &u.uroleplay.perfect_bestiary, Term_False,
+           "automatically know the stats of all monsters")
     NHOPTB(perm_invent, Advanced, 0, opt_in, set_in_game,
                 Off, Yes, No, No, NoAlias, &iflags.perm_invent, Term_Off,
                 "show persistent inventory window")
@@ -585,6 +618,9 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTC(player_selection, Advanced, 12, opt_in, set_gameview,
                 No, Yes, No, No, NoAlias,
                 "choose character via dialog or prompts")
+    NHOPTB(player_sized_wishes, Variant, 0, opt_out, set_in_game,
+           On, Yes, No, No, NoAlias, &flags.player_sized_wishes, Term_False,
+           "size wishes to player by default")
  /* NHOPTC(playmode) -- moved to top */
     NHOPTB(popup_dialog, Advanced, 0, opt_in, set_in_game,
            Off, Yes, No, No, NoAlias, &iflags.wc_popup_dialog, Term_False,
@@ -611,6 +647,9 @@ static int optfn_##a(int, int, boolean, char *, char *);
            Off, No, No, No, NoAlias, (boolean *) 0, Term_False,
            (char *)0)
 #endif
+    NHOPTB(reroll, Advanced, 0, opt_in, set_in_config,
+           Off, Yes, No, No, NoAlias, &u.uroleplay.reroll, Term_False,
+           "allow rerolling of starting inventory and items")
     NHOPTB(rest_on_space, Advanced, 0, opt_in, set_in_game, Off,
            Yes, No, No, NoAlias, &flags.rest_on_space, Term_False,
            "space bar is bound to the rest-command")
@@ -642,6 +681,9 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTB(selectsaved, Advanced, 0, opt_out, set_in_config,
            On, Yes, No, No, NoAlias, &iflags.wc2_selectsaved, Term_False,
            (char *)0)
+    NHOPTB(shorten_buc, Variant, 0, opt_in, set_in_game,
+           Off, Yes, No, No, NoAlias, &flags.shorten_buc, Term_False,
+           "shorten full buc text to [B][U][C]")
     NHOPTB(showdamage, Advanced, 0, opt_in, set_in_game,
            Off, Yes, No, No, NoAlias, &iflags.showdamage, Term_False,
            "show damage hero takes in message line")
@@ -734,7 +776,7 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTC(symset, Map, 70, opt_in, set_in_game,
                 No, Yes, No, Yes, NoAlias,
                 "load a set of display symbols from symbols file")
-    NHOPTC(taunt, General, PL_TSIZ, opt_in, set_in_game,
+    NHOPTC(taunt, Variant, PL_TSIZ, opt_in, set_in_game,
                 No, Yes, No, No, NoAlias, "custom taunt text")
     NHOPTC(term_cols, Advanced, 6, opt_in, set_in_config,
                 No, Yes, No, No, "termcolumns", "number of columns")

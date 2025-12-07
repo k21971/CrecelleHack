@@ -24,7 +24,7 @@
 staticfn void check_strangling(boolean);
 staticfn void polyman(const char *, const char *);
 staticfn void dropp(struct obj *);
-staticfn void break_armor(void);
+staticfn void break_armor(struct permonst *);
 staticfn void drop_weapon(int);
 staticfn int armor_to_dragon(int);
 staticfn void newman(void);
@@ -425,7 +425,7 @@ newman(void)
             done(DIED);
             /* must have been life-saved to get here */
             newuhs(FALSE);
-            (void) encumber_msg(); /* used to be done by redist_attr() */
+            encumber_msg(); /* used to be done by redist_attr() */
             return; /* lifesaved */
         }
     }
@@ -454,7 +454,7 @@ newman(void)
 
     disp.botl = TRUE;
     see_monsters();
-    (void) encumber_msg();
+    encumber_msg();
 
     retouch_equipment(2);
     if (!uarmg)
@@ -646,7 +646,7 @@ polyself(int psflags)
                        re-converting scales to mail poses risk
                        of evaporation due to over enchanting */
                     uarm->otyp += GRAY_DRAGON_SCALES - GRAY_DRAGON_SCALE_MAIL;
-                    uarm->dknown = 1;
+                    observe_object(uarm);
                     disp.botl = TRUE; /* AC is changing */
                 }
                 uskin = uarm;
@@ -735,6 +735,7 @@ polymon(int mntmp)
             was_blind = !!Blind, dochange = FALSE, was_expelled = FALSE,
             was_hiding_under = u.uundetected && hides_under(gy.youmonst.data);
     int mlvl, newMaxStr;
+    struct permonst *olduasmon = &mons[Upolyd ? u.umonnum : gu.urace.mnum];
 
     if (svm.mvitals[mntmp].mvflags & G_GENOD) { /* allow G_EXTINCT */
         You_feel("rather %s-ish.",
@@ -869,7 +870,7 @@ polymon(int mntmp)
 
     if (uskin && mntmp != armor_to_dragon(uskin->otyp))
         skinback(FALSE);
-    break_armor();
+    break_armor(olduasmon);
     drop_weapon(1);
     find_ac(); /* (repeated below) */
     /* if hiding under something and can't hide anymore, unhide now;
@@ -1000,7 +1001,7 @@ polymon(int mntmp)
     disp.botl = TRUE;
     gv.vision_full_recalc = 1;
     see_monsters();
-    (void) encumber_msg();
+    encumber_msg();
 
     retouch_equipment(2);
     /* this might trigger a recursive call to polymon() [stone golem
@@ -1138,12 +1139,15 @@ dropp(struct obj *obj)
 }
 
 staticfn void
-break_armor(void)
+break_armor(struct permonst *old)
 {
     struct obj *otmp;
     struct permonst *uptr = gy.youmonst.data;
 
-    if (breakarm(uptr)) {
+    boolean breakage = breakarm(uptr) || (old->msize < uptr->msize);
+    boolean slippage = sliparm(uptr) || (old->msize > uptr->msize);
+
+    if (breakage) {
         if ((otmp = uarm) != 0) {
             if (donning(otmp))
                 cancel_don();
@@ -1174,7 +1178,7 @@ break_armor(void)
             Your("shirt rips to shreds!");
             useup(uarmu);
         }
-    } else if (sliparm(uptr)) {
+    } else if (slippage) {
         if ((otmp = uarm) != 0 && racial_exception(&gy.youmonst, otmp) < 1) {
             if (donning(otmp))
                 cancel_don();
@@ -1224,15 +1228,7 @@ break_armor(void)
             }
         }
     }
-    if (((otmp = uarmh) != 0) && otmp->otyp == SKULL 
-        && has_head(uptr) && uptr->msize > mons[otmp->corpsenm].msize) {
-        if (donning(otmp))
-            cancel_don();
-        Your("%s splinters!", helm_simple_name(otmp));
-        (void) Helmet_off();
-        useup(otmp);
-    }
-    if (nohands(uptr) || verysmall(uptr)) {
+    if (nohands(uptr) || slippage || breakage) {
         if ((otmp = uarmg) != 0) {
             if (donning(otmp))
                 cancel_don();
@@ -1243,7 +1239,7 @@ break_armor(void)
             /* Glib manipulation (ends immediately) handled by Gloves_off */
             dropp(otmp);
         }
-        if ((otmp = uarms) != 0) {
+        if ((otmp = uarms) != 0 && nohands(uptr)) {
             You("can no longer hold your shield!");
             (void) Shield_off();
             dropp(otmp);
@@ -1257,7 +1253,7 @@ break_armor(void)
             dropp(otmp);
         }
     }
-    if (nohands(uptr) || verysmall(uptr)
+    if (nohands(uptr) || slippage || breakage
         || slithy(uptr) || uptr->mlet == S_CENTAUR) {
         if ((otmp = uarmf) != 0) {
             if (donning(otmp))
@@ -1367,7 +1363,7 @@ rehumanize(void)
             return; /* don't rehumanize after all */
         } else if (uamul && uamul->otyp == AMULET_OF_UNCHANGING) {
             Your("%s %s!", simpleonames(uamul), otense(uamul, "fail"));
-            uamul->dknown = 1;
+            observe_object(uamul);
             makeknown(AMULET_OF_UNCHANGING);
         }
     }
@@ -1394,7 +1390,7 @@ rehumanize(void)
 
     disp.botl = TRUE;
     gv.vision_full_recalc = 1;
-    (void) encumber_msg();
+    encumber_msg();
     if (was_flying && !Flying && u.usteed)
         You("and %s return gently to the %s.",
             mon_nam(u.usteed), surface(u.ux, u.uy));
@@ -2235,7 +2231,7 @@ polysense(void)
         break;
     case PM_VAMPIRE:
     case PM_VAMPIRE_LEADER:
-        svc.context.warntype.polyd = M2_HUMAN | M2_ELF;
+        svc.context.warntype.polyd = MH_HUMAN | MH_ELF;
         HWarn_of_mon |= FROMRACE;
         return;
     }

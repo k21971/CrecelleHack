@@ -178,12 +178,13 @@ ready_weapon(struct obj *wep)
     } else if (wep->otyp == CORPSE && cant_wield_corpse(wep)) {
         /* hero must have been life-saved to get here; use a turn */
         res = ECMD_TIME; /* corpse won't be wielded */
-    } else if (uarms && bimanual(wep)) {
+    } else if (uarms && u_bimanual(wep)) {
         You("cannot wield a two-handed %s while wearing a shield.",
             is_sword(wep) ? "sword" : wep->otyp == BATTLE_AXE ? "axe"
                                                               : "weapon");
         res = ECMD_FAIL;
-    } else if (!retouch_object(&wep, FALSE)) {
+    } else if (!uarmg && !retouch_object(&wep, !uarmg, FALSE)) {
+        /* don't retouch and take material damage if you're wearing gloves */
         res = ECMD_TIME; /* takes a turn even though it doesn't get wielded */
     } else {
         /* Weapon WILL be wielded after this point */
@@ -197,9 +198,9 @@ ready_weapon(struct obj *wep)
                 tmp = "";
             pline("%s%s %s to your %s%s!", tmp, aobjnam(wep, "weld"),
                   (wep->quan == 1L) ? "itself" : "themselves", /* a3 */
-                  bimanual(wep) ? "" :
+                  u_bimanual(wep) ? "" :
                       (URIGHTY ? "dominant right " : "dominant left "),
-                  bimanual(wep) ? (const char *) makeplural(body_part(HAND))
+                  u_bimanual(wep) ? (const char *) makeplural(body_part(HAND))
                                 : body_part(HAND));
             set_bknown(wep, 1);
         } else {
@@ -227,7 +228,7 @@ ready_weapon(struct obj *wep)
             /* skip this message if we already got "empty handed" one above;
                also, Null is not safe for neither TWOWEAPOK() or bimanual() */
             if (uwep)
-                You("%s.", ((TWOWEAPOK(uwep) && !bimanual(uwep))
+                You("%s.", ((TWOWEAPOK(uwep) && !u_bimanual(uwep))
                             ? are_no_longer_twoweap
                             : can_no_longer_twoweap));
         }
@@ -243,15 +244,34 @@ ready_weapon(struct obj *wep)
                 pline("%s to shine %s!", Tobjnam(wep, "begin"),
                       arti_light_description(wep));
         }
-#if 0
-        /* we'll get back to this someday, but it's not balanced yet */
+
+        if (wep->oartifact == ART_SYMPATHY) {
+            if (uarmg) {
+                pline("%s the material of your %s!",
+                        Tobjnam(wep, "mimic"), gloves_simple_name(uarmg));
+                force_material(wep, uarmg->material);
+            } else if (monmaterial(gy.youmonst.mnum)) {
+                pline("%s your body!", Tobjnam(wep, "mimic"));
+                force_material(wep, monmaterial(gy.youmonst.mnum));
+            } else {
+                pline("%s in time with your pulse.", Tobjnam(wep, "throb"));
+            }
+        }
+
         if (Race_if(PM_ELF) && !wep->oartifact
-            && objects[wep->otyp].oc_material == IRON) {
+            && wep->material == IRON) {
             /* Elves are averse to wielding cold iron */
             You("have an uneasy feeling about wielding cold iron.");
             change_luck(-1);
         }
-#endif
+
+        if (Race_if(PM_ORC) && !wep->oartifact
+            && wep->material == MITHRIL) {
+            /* Orcs are averse to wielding mithril */
+            You("have a weird feeling about wielding mithril.");
+            change_luck(-1);
+        }
+
         if (wep->unpaid) {
             struct monst *this_shkp;
 
@@ -261,6 +281,8 @@ ready_weapon(struct obj *wep)
                       shkname(this_shkp), xname(wep));
             }
         }
+        if (size_matters(wep) && wep->osize != USIZE)
+            pline("%s awkward to wield due to your size.", Yobjnam2(wep, "are"));
     }
     if ((had_wep != (uwep != 0)) && condtests[bl_bareh].enabled)
         disp.botl = TRUE;
@@ -699,7 +721,7 @@ wield_tool(struct obj *obj,
         if (flags.verbose) {
             const char *hand = body_part(HAND);
 
-            if (bimanual(uwep))
+            if (u_bimanual(uwep))
                 hand = makeplural(hand);
             if (strstri(what, "pair of ") != 0)
                 more_than_1 = FALSE;
@@ -716,7 +738,7 @@ wield_tool(struct obj *obj,
         return FALSE;
     }
     /* check shield */
-    if (uarms && bimanual(obj)) {
+    if (uarms && u_bimanual(obj)) {
         You("cannot %s a two-handed %s while wearing a shield.", verb,
             (obj->oclass == WEAPON_CLASS) ? "weapon" : "tool");
         return FALSE;
@@ -757,13 +779,8 @@ can_twoweapon(void)
 {
     struct obj *otmp;
 
-    if (!could_twoweap(gy.youmonst.data)) {
-        if (Upolyd)
-            You_cant("use two weapons in your current form.");
-        else
-            pline("%s aren't able to use two weapons at once.",
-                  makeplural((flags.female && gu.urole.name.f)
-                             ? gu.urole.name.f : gu.urole.name.m));
+    if (!could_twoweap(gy.youmonst.data) && Upolyd) {
+        You_cant("use two weapons in your current form.");
     } else if (!uwep || !uswapwep) {
         const char *hand_s = body_part(HAND);
 
@@ -778,12 +795,12 @@ can_twoweapon(void)
               is_plural(otmp) ? "aren't" : "isn't a",
               (otmp == uwep) ? "primary" : "secondary",
               plur(otmp->quan));
-    } else if (bimanual(uwep) || bimanual(uswapwep)) {
-        otmp = bimanual(uwep) ? uwep : uswapwep;
+    } else if (u_bimanual(uwep) || u_bimanual(uswapwep)) {
+        otmp = u_bimanual(uwep) ? uwep : uswapwep;
         pline("%s isn't one-handed.", Yname2(otmp));
     } else if (uarms) {
         You_cant("use two weapons while wearing a shield.");
-    } else if (uswapwep->oartifact) {
+    } else if (uswapwep->oartifact && !can_hold_second(uswapwep)) {
         pline("%s being held second to another weapon!",
               Yobjnam2(uswapwep, "resist"));
     } else if (uswapwep->otyp == CORPSE && cant_wield_corpse(uswapwep)) {
@@ -958,6 +975,7 @@ chwepon(struct obj *otmp, int amount)
              multiple ? "fuse, and become" : "is");
         uwep->otyp = CRYSKNIFE;
         uwep->oerodeproof = 0;
+        set_material(uwep, objects[CRYSKNIFE].oc_material);
         if (multiple) {
             uwep->quan = 1L;
             uwep->owt = weight(uwep);
@@ -970,7 +988,7 @@ chwepon(struct obj *otmp, int amount)
         if (otyp != STRANGE_OBJECT)
             makeknown(otyp);
         if (multiple)
-            (void) encumber_msg();
+            encumber_msg();
         return 1;
     } else if (uwep->otyp == CRYSKNIFE && amount < 0) {
         multiple = (uwep->quan > 1L);
@@ -980,6 +998,7 @@ chwepon(struct obj *otmp, int amount)
         costly_alteration(uwep, COST_DEGRD); /* DECHNT? other? */
         uwep->otyp = WORM_TOOTH;
         uwep->oerodeproof = 0;
+        set_material(uwep, objects[WORM_TOOTH].oc_material);
         if (multiple) {
             uwep->quan = 1L;
             uwep->owt = weight(uwep);
@@ -987,7 +1006,7 @@ chwepon(struct obj *otmp, int amount)
         if (otyp != STRANGE_OBJECT && otmp->bknown)
             makeknown(otyp);
         if (multiple)
-            (void) encumber_msg();
+            encumber_msg();
         return 1;
     }
 
@@ -999,7 +1018,6 @@ chwepon(struct obj *otmp, int amount)
         return 1;
     }
     /* there is a (soft) upper and lower limit to uwep->spe */
-    #if 0
     if (((uwep->spe > 5 && amount >= 0) || (uwep->spe < -5 && amount < 0))
         && rn2(3)) {
         if (!Blind)
@@ -1012,7 +1030,6 @@ chwepon(struct obj *otmp, int amount)
         useupall(uwep); /* let all of them disappear */
         return 1;
     }
-    #endif
     if (!Blind) {
         xtime = (amount * amount == 1) ? "moment" : "while";
         pline("%s %s for a %s.",
@@ -1024,10 +1041,7 @@ chwepon(struct obj *otmp, int amount)
     }
     if (amount < 0)
         costly_alteration(uwep, COST_DECHNT);
-    if (amount > 0)
-        boost_object(uwep, 0);
-    else
-        uwep->spe += amount;
+    uwep->spe += amount;
     if (amount > 0) {
         if (uwep->cursed)
             uncurse(uwep);
@@ -1071,7 +1085,7 @@ weldmsg(struct obj *obj)
     long savewornmask;
     const char *hand = body_part(HAND);
 
-    if (bimanual(obj))
+    if (u_bimanual(obj))
         hand = makeplural(hand);
     savewornmask = obj->owornmask;
     obj->owornmask = 0L; /* suppress doname()'s "(weapon in hand)";
@@ -1089,6 +1103,31 @@ mwelded(struct obj *obj)
     if (obj && (obj->owornmask & W_WEP) && will_weld(obj))
         return TRUE;
     return FALSE;
+}
+
+/* This function uses the size of a monster to determine whether an item is
+   bimanual. Compare to bimanual(), which is a macro which simply pulls out
+   the bimanual flagg in a piece of equipment.*/
+boolean
+is_bimanual(struct obj *obj, struct permonst *ptr)
+{
+    int mon_size = ptr->msize;
+    int obj_size = obj->osize;
+    if (mon_size == obj_size)
+        return bimanual(obj);
+    else if (mon_size > obj_size)
+        return FALSE;
+    else
+        return TRUE;
+
+}
+
+/* Check if an object is bimanual for the player. Should be favored over
+   u_bimanual(obj). */
+boolean
+u_bimanual(struct obj *obj)
+{
+    return is_bimanual(obj, &mons[Upolyd ? u.umonnum : gu.urace.mnum]);
 }
 
 /*wield.c*/

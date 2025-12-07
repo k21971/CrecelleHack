@@ -16,6 +16,7 @@ enum nh_tips {
     TIP_SWIM,        /* walking into water */
     TIP_UNTRAP_MON,  /* walking into trapped peaceful */
     TIP_GETPOS,      /* getpos/farlook */
+    TIP_ORDER,       /* order pets */
 
     NUM_TIPS
 };

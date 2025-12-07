@@ -462,6 +462,13 @@ make_dripping(long xtime, int otyp, int pm)
 }
 
 void
+make_mdripping(struct monst *mtmp, int otyp)
+{
+    mtmp->mdripping = 1;
+    mtmp->mdriptype = otyp;
+}
+
+void
 make_deaf(long xtime, boolean talk)
 {
     long old = HDeaf;
@@ -588,7 +595,7 @@ dodrink(void)
             }
             ++drink_ok_extra;
         }
-        if (has_coating(u.ux, u.uy, POT_WATER)
+        if (has_coating(u.ux, u.uy, COAT_POTION)
             || has_coating(u.ux, u.uy, COAT_BLOOD)) {
             if (y_n("Drink liquid on the floor?") == 'y') {
                 pline("Do you know how many bugs there are on the floor?");
@@ -1594,6 +1601,7 @@ H2Opotion_dip(
             glowcolor = NH_LIGHT_BLUE;
             costchange = COST_alter;
             altfmt = TRUE; /* "with a <color> aura" */
+            u.uconduct.holy_water++;
         }
     } else if (potion->cursed) {
         if (targobj->blessed) {
@@ -1814,9 +1822,9 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
             } else if (thick_skinned(mon->data)) {
                 pline("Shards of glass crunch under your %s.", makeplural(body_part(FOOT)));
             } else {
-                if (u.uhp > 1) u.uhp--;
                 Your("%s are cut by shards of glass!", makeplural(body_part(FOOT)));
-                add_coating(x, y, COAT_BLOOD, gy.youmonst.mnum);
+                if (u.uhp > 1) losehp(1, "stepping on broken glass", KILLED_BY);
+                make_dripping(rnd(20), POT_BLOOD, gy.youmonst.mnum);
                 disp.botl = TRUE;
             }
         } else {
@@ -1828,7 +1836,7 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
                 else
                     growl(mon);
                 if (mon->mhp > 1) mon->mhp--;
-                add_coating(x, y, COAT_BLOOD, mon->mnum);
+                make_mdripping(mon, -1 * mon->mnum);
             } else if (!Deaf) {
                 You_hear("a soft tinkling.");
             }
@@ -1880,13 +1888,14 @@ evaporate_potion_puddles(coordxy x, coordxy y) {
     if (!IS_COATABLE(levl[x][y].typ))
         return;
     if (levl[x][y].coat_info & COAT_POTION) {
-        fakeobj.otyp = levl[x][y].pindex == POT_WATER ? 0 : levl[x][y].pindex;
-        create_gas_cloud(x, y, 1, &fakeobj, levl[x][y].pindex == POT_WATER ? 0 : 3);
+        fakeobj.otyp = levl[x][y].pindex;
+        create_gas_cloud(x, y, 1,
+                            levl[x][y].pindex == POT_WATER ? 0 : &fakeobj,
+                            levl[x][y].pindex == POT_WATER ? 0 : 3);
         remove_coating(x, y, COAT_POTION);
     }
     if ((levl[x][y].coat_info & COAT_BLOOD) && !rn2(4)) {
-        fakeobj.otyp = 0;
-        create_gas_cloud(x, y, 1, &fakeobj, 0);
+        create_gas_cloud(x, y, 1, 0, 0);
         remove_coating(x, y, COAT_BLOOD);
     }
 }
@@ -1926,7 +1935,7 @@ floor_alchemy(int x, int y, int otyp, int corpsenm) {
         }
         if (bomb || !rn2(10)) {
             remove_coating(x, y, COAT_POTION);
-            explode(x, y, 11, d(1, 10), 0, EXPL_NOXIOUS);
+            explode(x, y, PHYS_EXPL_TYPE, d(1, 10), 0, EXPL_NOXIOUS);
             return;
         }
     }
@@ -2036,7 +2045,8 @@ do_illness:
     case POT_SLEEPING:
         /* wakeup() doesn't rouse victims of temporary sleep */
         if (sleep_monst(mon, rnd(12), POTION_CLASS)) {
-            pline("%s falls asleep.", Monnam(mon));
+            if (canseemon(mon))
+                pline("%s falls asleep.", Monnam(mon));
             slept_monst(mon);
         }
         break;
@@ -2203,9 +2213,8 @@ potionhit(struct monst *mon, struct obj *obj, int how)
         }
         if (rn2(5) && mon->mhp > 1 && !hit_saddle)
             mon->mhp--;
+        make_mdripping(mon, (obj->otyp == POT_BLOOD) ? (-1 * obj->corpsenm) : obj->otyp);
     }
-    mon->mdripping = 1;
-    mon->mdriptype = (obj->otyp == POT_BLOOD) ? (-1 * obj->corpsenm) : obj->otyp;
 
     /* oil doesn't instantly evaporate; Neither does a saddle hit */
     #if 0
@@ -2271,8 +2280,8 @@ potionhit(struct monst *mon, struct obj *obj, int how)
     }
 
     /* potions splatter */
-    potion_splatter(mon->mx, mon->my, obj->otyp, obj->corpsenm);
-    potion_fumigate(mon->mx, mon->my, obj);
+    potion_splatter(tx, ty, obj->otyp, obj->corpsenm);
+    potion_fumigate(tx, ty, obj);
     if (obj->dknown && cansee(tx, ty))
         trycall(obj);
 
@@ -2393,7 +2402,7 @@ potionbreathe(struct obj *obj)
         }
         break;
     case POT_HALLUCINATION:
-        Norep("have a momentary vision.");
+        Norep("You have a momentary vision.");
         break;
     case POT_CONFUSION:
     case POT_BOOZE:
@@ -2641,6 +2650,12 @@ mixtype(struct obj *o1, struct obj *o2)
         o2typ = o1->otyp;
     }
 
+    /* Dipping anything in hazardous waste does not make it less hazardous.
+       The potion has probably already exploded before this point, however. */
+    if (o1->oclass == POTION_CLASS
+        && o2->otyp == POT_HAZARDOUS_WASTE)
+        return POT_HAZARDOUS_WASTE;
+
     switch (o1typ) {
     case POT_HEALING:
         if (o2typ == POT_SPEED)
@@ -2663,6 +2678,7 @@ mixtype(struct obj *o1, struct obj *o2)
         case POT_BLINDNESS:
         case POT_CONFUSION:
         case POT_BLOOD:
+        case POT_HAZARDOUS_WASTE:
             return POT_WATER;
         }
         break;
@@ -2820,7 +2836,24 @@ dodip(void)
        fountains, and sinks plus the extra prompting which those entail */
     if (!iflags.menu_requested) {
         /* Is there a fountain to dip into here? */
-        if (!can_reach_floor(FALSE)) {
+        if (u.uswallow && u.ustuck && acidic(u.ustuck->data)) {
+            Snprintf(qbuf, sizeof(qbuf), "%s%s into your surroundings?", Dip_,
+                     flags.verbose ? obuf : shortestname);
+            if (y_n(qbuf) == 'y') {
+                if (obj->oclass == POTION_CLASS && obj->otyp != POT_ACID) {
+                    pline("KABOOM!");
+                    useupall(obj);
+                    losehp(d(10, 10), /* not physical damage */
+                        "creativity in a confined space", KILLED_BY_AN);
+                    if (u.uswallow)
+                        expels(u.ustuck, u.ustuck->data, TRUE);
+                } else {
+                    acid_damage(obj);
+                }
+                return ECMD_TIME;
+            }
+            ++drink_ok_extra;
+        } else if (!can_reach_floor(FALSE)) {
             ; /* can't dip something into fountain or pool if can't reach */
         } else if (at_fountain) {
             Snprintf(qbuf, sizeof(qbuf), "%s%s into the fountain?", Dip_,
@@ -2862,6 +2895,7 @@ dodip(void)
                 } else if (obj->otyp == BOTTLE) {
                     You("fill %s in the %s.", yobjnam(obj, (const char *) 0), pooltype);
                     poly_obj(obj, POT_WATER);
+                    update_inventory();
                 } else {
                     obj->pickup_prev = 0;
                     if (obj->otyp == POT_ACID)
@@ -3304,10 +3338,10 @@ potion_dip(struct obj *obj, struct obj *potion)
         else
             singlepotion->cursed = obj->cursed; /* odiluted left as-is */
         singlepotion->bknown = FALSE;
-        if (Blind) {
-            singlepotion->dknown = FALSE;
-        } else {
-            singlepotion->dknown = !Hallucination;
+        singlepotion->dknown = FALSE; /* provisionally */
+        if (!Blind) {
+            if (!Hallucination)
+                observe_object(singlepotion);
             *newbuf = '\0';
             if (mixture == POT_WATER && singlepotion->dknown)
                 Sprintf(newbuf, "clears");
@@ -3327,7 +3361,7 @@ potion_dip(struct obj *obj, struct obj *potion)
                 struct obj fakeobj;
 
                 fakeobj = cg.zeroobj;
-                fakeobj.dknown = 1;
+                fakeobj.dknown = 1; /* no need to observe_object */
                 fakeobj.otyp = old_otyp;
                 fakeobj.oclass = POTION_CLASS;
                 docall(&fakeobj);
@@ -3413,7 +3447,7 @@ djinni_from_bottle(struct obj *obj)
         mongone(mtmp);
         break;
     default:
-        verbalize("You disturbed me, fool!");
+        verbalize("You disturbed %s, fool!", night() ? "my sleep" : "me");
         mtmp->mpeaceful = FALSE;
         set_malign(mtmp);
         break;

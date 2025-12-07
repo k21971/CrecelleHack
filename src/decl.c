@@ -90,8 +90,9 @@ NEARDATA struct accessibility_data a11y;
 const char *materialnm[] = { "mysterious", "liquid",  "wax",        "organic",
                              "flesh",      "paper",   "cloth",      "leather",
                              "wooden",     "bone",    "dragonhide", "iron",
-                             "metal",      "copper",  "silver",     "gold",
+                             "steel",      "copper",  "silver",     "gold",
                              "platinum",   "mithril", "plastic",    "glass",
+                             "ice",
                              "gemstone",   "stone" };
 const char quitchars[] = " \r\n\033";
 const int shield_static[SHIELD_COUNT] = {
@@ -128,7 +129,7 @@ static const struct Role urole_init_data = {
     "L", "N", "C",
     "Xxx", "home", "locate",
     NON_PM, NON_PM, NON_PM, NON_PM, NON_PM, NON_PM, NON_PM,
-    0, 0, 0, 0,
+    0, 0, 0, 0, 0,
     /* Str Int Wis Dex Con Cha */
     { 7, 7, 7, 7, 7, 7 },
     { 20, 15, 15, 20, 20, 10 },
@@ -381,6 +382,7 @@ static const struct instance_globals_g g_init_g = {
     /* region.c */
     FALSE, /* gas_cloud_diss_within */
     FALSE, /* bonfire_diss_within */
+    FALSE, /* force_field_diss_within */
     0, /* gas_cloud_diss_seen */
     0, /* bonfire_diss_seen */
     /* new */
@@ -418,6 +420,7 @@ static const struct instance_globals_i g_init_i = {
     /* invent.c */
     NULL, /* invbuf */
     0U, /* invbufsize */
+    FALSE, /* item_action_in_progress */
     0,       /* in_sync_perminvent */
     /* mon.c */
     NULL, /* itermonarr */
@@ -678,6 +681,8 @@ static const struct instance_globals_r g_init_r = {
 };
 
 static const struct instance_globals_s g_init_s = {
+    /* allmain.c */
+    FALSE, /* saving_grace_turn */
     /* artifact.c */
     0,  /* spec_dbon_applies */
     /* decl.c */
@@ -768,6 +773,8 @@ static const struct instance_globals_t g_init_t = {
 };
 
 static const struct instance_globals_u g_init_u = {
+    /* allmain.c */
+    0, /* uhp_at_start_of_monster_turn */
     /* botl.c */
     FALSE, /* update_all */
     /* decl.c */
@@ -874,7 +881,7 @@ static const struct instance_globals_saved_c init_svc = {
 
 static const struct instance_globals_saved_d init_svd = {
     /* dungeon.c */
-    { { {0},{0},{0},{0}, 0, {0}, 0, 0, 0, 0, 0 } }, /* dungeons */
+    { { {0},{0},{0},{0},{0},{0}, 0, {0}, 0, 0, 0, 0, 0 } }, /* dungeons */
     { {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
     {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
     0, 0, 0, 0, 0, 0,

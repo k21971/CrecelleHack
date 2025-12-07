@@ -25,7 +25,6 @@ staticfn boolean ok_to_obliterate(struct monst *);
 staticfn void m_respond_shrieker(struct monst *);
 staticfn void m_respond_medusa(struct monst *);
 staticfn void qst_guardians_respond(void);
-staticfn void peacefuls_respond(struct monst *);
 staticfn void wake_nearto_core(coordxy, coordxy, int, boolean);
 staticfn void m_restartcham(struct monst *);
 staticfn boolean restrap(struct monst *);
@@ -319,7 +318,8 @@ m_poisongas_ok(struct monst *mtmp)
 
     /* Non living, non breathing, immune monsters are not concerned */
     if (nonliving(mtmp->data) || is_vampshifter(mtmp)
-        || breathless(mtmp->data) || immune_poisongas(mtmp->data))
+        || breathless(mtmp->data) || immune_poisongas(mtmp->data)
+        || can_magbreathe(mtmp))
         return M_POISONGAS_OK;
     /* not is_swimmer(); assume that non-fish are swimming on
        the surface and breathing the air above it periodically
@@ -352,6 +352,18 @@ m_bonfire_ok(struct monst *mtmp)
     if (is_you ? Fire_resistance : resists_fire(mtmp))
         return M_BONFIRE_MINOR;
     return M_BONFIRE_BAD;
+}
+
+/* Would a monster try to walk through a force field? */
+int
+m_force_field_ok(struct monst *mtmp)
+{
+    boolean is_you = (mtmp == &gy.youmonst);
+    if (is_you)
+        return M_FORCE_FIELD_BAD;
+    if (mindless(mtmp->data) || is_animal(mtmp->data))
+        return M_FORCE_FIELD_OK;
+    return M_FORCE_FIELD_BAD;
 }
 
 /* return True if mon is capable of converting other monsters into zombies */
@@ -660,15 +672,27 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
         /*FALLTHRU*/
     case PM_IRON_GOLEM:
         num = d(2, 6);
-        while (num--)
-            obj = mksobj_at(IRON_CHAIN, x, y, TRUE, FALSE);
+        while (num--) {
+            obj = mkobj_at(RANDOM_CLASS, x, y, FALSE);
+            if (!valid_obj_material(obj, IRON)) {
+                delobj(obj);
+                obj = mksobj_at(IRON_CHAIN, x, y, TRUE, FALSE);
+            }
+            set_material(obj, IRON);
+        }
         free_mgivenname(mtmp); /* don't christen obj */
         break;
     case PM_GLASS_GOLEM:
         num = d(2, 4); /* very low chance of creating all glass gems */
-        while (num--)
-            obj = mksobj_at(FIRST_GLASS_GEM + rn2(NUM_GLASS_GEMS),
-                            x, y, TRUE, FALSE);
+        while (num--) {
+            obj = mkobj_at(RANDOM_CLASS, x, y, FALSE);
+            if (!valid_obj_material(obj, GLASS)
+                || obj->oclass == POTION_CLASS) {
+                delobj(obj);
+                obj = mksobj_at((JADE + rnd(9)), x, y, TRUE, FALSE);
+            }
+            set_material(obj, GLASS);
+        }
         add_coating(x, y, COAT_SHARDS, 0);
         free_mgivenname(mtmp);
         break;
@@ -692,13 +716,12 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_WOOD_GOLEM:
         num = d(2, 4);
         while (num--) {
-            obj = mksobj_at(
-                            rn2(2) ? QUARTERSTAFF
-                            : rn2(3) ? ROUNDSHIELD
-                            : rn2(3) ? CLUB
-                            : rn2(3) ? ELVEN_SPEAR
-                            : rn2(3) ? SHEPHERD_S_CROOK : BOOMERANG,
-                            x, y, TRUE, FALSE);
+            obj = mkobj_at(RANDOM_CLASS, x, y, FALSE);
+            if (!valid_obj_material(obj, WOOD)) {
+                delobj(obj);
+                obj = mksobj_at(QUARTERSTAFF, x, y, TRUE, FALSE);
+            }
+            set_material(obj, WOOD);
         }
         free_mgivenname(mtmp);
         break;
@@ -711,8 +734,14 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
         break;
     case PM_LEATHER_GOLEM:
         num = d(2, 4);
-        while (num--)
-            obj = mksobj_at(LEATHER_ARMOR, x, y, TRUE, FALSE);
+        while (num--) {
+            obj = mkobj_at(RANDOM_CLASS, x, y, FALSE);
+            if (!valid_obj_material(obj, LEATHER)) {
+                delobj(obj);
+                obj = mksobj_at(ARMOR, x, y, TRUE, FALSE);
+            }
+            set_material(obj, LEATHER);
+        }
         free_mgivenname(mtmp);
         break;
     case PM_GOLD_GOLEM:
@@ -723,8 +752,15 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_PAPER_GOLEM:
     case PM_SCROLEM:
         num = rnd(4);
-        while (num--)
-            obj = mksobj_at(SCR_BLANK_PAPER, x, y, TRUE, FALSE);
+        while (num--) {
+            obj = mkobj_at(RANDOM_CLASS, x, y, FALSE);
+            if (!valid_obj_material(obj, PAPER) || obj->oclass == SCROLL_CLASS
+                || obj->oclass == SPBOOK_CLASS) {
+                delobj(obj);
+                obj = mksobj_at(SCR_BLANK_PAPER, x, y, TRUE, FALSE);
+            }
+            set_material(obj, PAPER);
+        }
         free_mgivenname(mtmp);
         break;
     /* expired puddings will congeal into a large blob;
@@ -787,7 +823,8 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_FEN_ORC: case PM_FELL_ORC: case PM_ORC_SHAMAN:
     case PM_ORC_CAPTAIN:
     case PM_ROCK_PIERCER: case PM_IRON_PIERCER: case PM_GLASS_PIERCER:
-    case PM_ROTHE: case PM_SQUONK: case PM_MUMAK: case PM_LEOCROTTA: case PM_WUMPUS:
+    case PM_ROTHE: case PM_SQUONK: case PM_MUMAK: case PM_LEOCROTTA:
+    case PM_GOAT: case PM_WUMPUS:
     case PM_TITANOTHERE: case PM_BALUCHITHERIUM: case PM_MASTODON:
     case PM_SEWER_RAT: case PM_GIANT_RAT: case PM_RABID_RAT:
     case PM_WERERAT:
@@ -823,10 +860,12 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
 
     case PM_STALKER: case PM_AIR_ELEMENTAL: case PM_FIRE_ELEMENTAL:
     case PM_EARTH_ELEMENTAL: case PM_WATER_ELEMENTAL:
+    case PM_ACID_PARAELEMENTAL: case PM_ICE_PARAELEMENTAL:
+    case PM_MAGMA_PARAELEMENTAL: case PM_SMOKE_PARAELEMENTAL:
 
     case PM_NIGHTCRUST: case PM_LICHEN: case PM_BROWN_MOLD: case PM_YELLOW_MOLD:
     case PM_GREEN_MOLD: case PM_RED_MOLD: case PM_SHRIEKER:
-    case PM_VIOLET_FUNGUS:
+    case PM_VIOLET_FUNGUS: case PM_PHANTOM_FUNGUS:
 
     case PM_GNOME: case PM_GNOME_LEADER: case PM_GNOMISH_WIZARD:
     case PM_GNOME_RULER: case PM_GWTWOD:
@@ -835,7 +874,8 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_STORM_GIANT: case PM_TITAN:
 
     case PM_MINOTAUR: case PM_JABBERWOCK: case PM_KEYSTONE_KOP:
-    case PM_KOP_SERGEANT: case PM_KOP_LIEUTENANT: case PM_KOP_KAPTAIN:
+    case PM_KOP_SERGEANT: case PM_KOP_LIEUTENANT: 
+    case PM_KNIGHT_WATCH: case PM_KOP_KAPTAIN:
     case PM_LICH: case PM_DEMILICH:
     case PM_MASTER_LICH: case PM_ARCH_LICH:
 
@@ -848,6 +888,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
 
     case PM_QUANTUM_MECHANIC: case PM_GENETIC_ENGINEER:
     case PM_RUST_MONSTER: case PM_DISENCHANTER:
+    case PM_TRANSMUTER:
 
     case PM_GARTER_SNAKE: case PM_SNAKE: case PM_WATER_MOCCASIN:
     case PM_PYTHON: case PM_PIT_VIPER: case PM_COBRA:
@@ -864,6 +905,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_GHOUL: case PM_SKELETON:
 
     case PM_STRAW_GOLEM: case PM_FLESH_GOLEM: case PM_SALT_GOLEM:
+    case PM_SAND_GOLEM:
 
     case PM_HUMAN: case PM_HUMAN_WERERAT: case PM_HUMAN_WEREJACKAL:
     case PM_HUMAN_WEREWOLF: case PM_ELF: case PM_WOODLAND_ELF:
@@ -877,7 +919,8 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_WATCH_CAPTAIN:
 
     case PM_MEDUSA: case PM_WIZARD_OF_YENDOR: case PM_CROESUS:
-    case PM_ILLUSION: case PM_POLTERGEIST: case PM_GHOST: case PM_SHADE: case PM_WATER_DEMON:
+    case PM_ILLUSION: case PM_POLTERGEIST: case PM_GHOST: case PM_SPECTRE:
+    case PM_SHADE: case PM_WATER_DEMON:
     case PM_AMOROUS_DEMON: case PM_HORNED_DEVIL:
     case PM_ERINYS: case PM_BARBED_DEVIL: case PM_MARILITH: case PM_VROCK:
     case PM_HEZROU: case PM_BONE_DEVIL: case PM_ICE_DEVIL: case PM_SHADOW_FIEND: case PM_NALFESHNEE:
@@ -911,6 +954,9 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_PAGE: case PM_ABBOT: case PM_ACOLYTE: case PM_HUNTER:
     case PM_THUG: case PM_NINJA: case PM_ROSHI: case PM_GUIDE:
     case PM_WARRIOR: case PM_TRAINEE: case PM_APPRENTICE:
+
+    case PM_PILE_OF_KILLER_COINS: case PM_HEAP_OF_KILLER_COINS:
+    case PM_HOARD_OF_KILLER_COINS:
 #else
     default:
 #endif
@@ -1105,7 +1151,7 @@ minliquid_core(struct monst *mtmp)
          * be handled here.  Swimmers are able to protect their stuff...
          */
         if ((waterwall || !is_clinger(mtmp->data))
-            && !cant_drown(mtmp->data)) {
+            && !cant_drown(mtmp->data) && !can_wwalk(mtmp)) {
             /* like hero with teleport intrinsic or spell, teleport away
                if possible */
             if (can_teleport(mtmp->data) && !tele_restrict(mtmp)) {
@@ -1136,8 +1182,7 @@ minliquid_core(struct monst *mtmp)
                        * and become a flyer so not need to teleport */
                 } else {
                     water_damage_chain(mtmp->minvent, FALSE);
-                    mtmp->mdripping = 1;
-                    mtmp->mdriptype = POT_WATER;
+                    make_mdripping(mtmp, POT_WATER);
                     if (!rloc(mtmp, RLOC_NOMSG))
                         deal_with_overcrowding(mtmp);
                 }
@@ -1317,7 +1362,8 @@ movemon_singlemon(struct monst *mtmp)
 
     if (is_hider(mtmp->data)
         || (mud_hider(mtmp->data)
-                && has_coating(mtmp->mx, mtmp->my, COAT_MUD))) {
+                && has_coating(mtmp->mx, mtmp->my, COAT_MUD)
+                && !(mtmp->mtame || mtmp->mpeaceful))) {
         /* unwatched mimics and piercers may hide again  [MRS] */
         if (restrap(mtmp))
             return FALSE;
@@ -1608,6 +1654,7 @@ meatobj(struct monst *mtmp) /* for gelatinous cubes */
                     && !resists_ston(mtmp))
                    /* don't engulf boulders and statues or ball&chain */
                    || otmp->oclass == ROCK_CLASS
+                   || otmp->otyp == WAN_DEATH
                    || otmp == uball || otmp == uchain
                    /* normally mtmp won't have stepped onto scare monster
                       scroll, but if it does, don't eat or engulf that
@@ -1865,7 +1912,7 @@ mpickgold(struct monst *mtmp)
     int mat_idx;
 
     if ((gold = g_at(mtmp->mx, mtmp->my)) != 0) {
-        mat_idx = objects[gold->otyp].oc_material;
+        mat_idx = gold->material;
         obj_extract_self(gold);
         add_to_minv(mtmp, gold);
         if (cansee(mtmp->mx, mtmp->my)) {
@@ -1980,13 +2027,14 @@ max_mon_load(struct monst *mtmp)
      */
     if (!mtmp->data->cwt)
         maxload = (MAX_CARR_CAP * (long) mtmp->data->msize) / MZ_HUMAN;
-    else if (!strongmonst(mtmp->data)
-             || (strongmonst(mtmp->data) && (mtmp->data->cwt > WT_HUMAN)))
+    else if (!(strongmonst(mtmp->data) || extra_strength(mtmp))
+             || ((strongmonst(mtmp->data) || extra_strength(mtmp))
+                && (mtmp->data->cwt > WT_HUMAN)))
         maxload = (MAX_CARR_CAP * (long) mtmp->data->cwt) / WT_HUMAN;
     else
         maxload = MAX_CARR_CAP; /*strong monsters w/cwt <= WT_HUMAN*/
 
-    if (!strongmonst(mtmp->data))
+    if (!strongmonst(mtmp->data) && !extra_strength(mtmp))
         maxload /= 2;
 
     if (maxload < 1)
@@ -2007,7 +2055,7 @@ can_touch_safely(struct monst *mtmp, struct obj *otmp)
         return FALSE;
     if (otyp == CORPSE && is_rider(&mons[otmp->corpsenm]))
         return FALSE;
-    if (objects[otyp].oc_material == SILVER && mon_hates_silver(mtmp)
+    if (mon_hates_material(mtmp, otmp->material)
         && (otyp != BELL_OF_OPENING || !is_covetous(mdat)))
         return FALSE;
     if (!touch_artifact(otmp, mtmp))
@@ -2233,11 +2281,14 @@ mfndpos(
     boolean rockok = FALSE, treeok = FALSE, thrudoor;
     int maxx, maxy;
     boolean poisongas_ok, in_poisongas, bonfire_ok, in_bonfire;
+    boolean force_field_ok, in_force_field;
     NhRegion *gas_reg;
     NhRegion *bonf_reg;
+    NhRegion *ff_reg;
     int gas_glyph = cmap_to_glyph(S_poisoncloud);
     int vapor_glyph = cmap_to_glyph(S_potioncloud);
     int bonfire_glyph = cmap_to_glyph(S_bonfire);
+    int force_field_glyph = cmap_to_glyph(S_force_field);
 
     x = mon->mx;
     y = mon->my;
@@ -2246,7 +2297,8 @@ mfndpos(
     nodiag = NODIAG(mdat - mons);
     wantpool = (mdat->mlet == S_EEL);
     poolok = ((!Is_waterlevel(&u.uz) && m_in_air(mon))
-              || (is_swimmer(mdat) && !wantpool));
+              || (is_swimmer(mdat) && !wantpool)
+              || can_wwalk(mon));
     /* note: floating eye is the only is_floater() so this could be
        simplified, but then adding another floater would be error prone */
     lavaok = (m_in_air(mon) || likes_lava(mdat));
@@ -2255,10 +2307,13 @@ mfndpos(
     thrudoor = ((flag & (ALLOW_WALL | BUSTDOOR)) != 0L);
     poisongas_ok = (m_poisongas_ok(mon) == M_POISONGAS_OK);
     bonfire_ok = (m_bonfire_ok(mon) == M_BONFIRE_OK);
+    force_field_ok = (m_force_field_ok(mon) == M_FORCE_FIELD_OK);
     in_poisongas = ((gas_reg = visible_region_at(x,y)) != 0
                     && (gas_reg->glyph == gas_glyph || gas_reg->glyph == vapor_glyph));
     in_bonfire = ((bonf_reg = visible_region_at(x,y)) != 0
                     && bonf_reg->glyph == bonfire_glyph);
+    in_force_field = ((ff_reg = visible_region_at(x,y)) != 0
+                    && ff_reg->glyph == force_field_glyph);
 
     if (flag & ALLOW_DIG) {
         struct obj *mw_tmp;
@@ -2332,6 +2387,15 @@ mfndpos(
             if (!bonfire_ok && !in_bonfire
                 && (bonf_reg = visible_region_at(nx,ny)) != 0
                 && bonf_reg->glyph == bonfire_glyph)
+                continue;
+            /* avoid force field (both in and out)? */
+            if (!force_field_ok && !in_force_field
+                && (ff_reg = visible_region_at(nx,ny)) != 0
+                && ff_reg->glyph == force_field_glyph)
+                continue;
+            if (!force_field_ok && in_force_field
+                && (((ff_reg = visible_region_at(nx,ny)) == 0)
+                    || ff_reg->glyph != force_field_glyph))
                 continue;
             /* first diagonal checks (tight squeezes handled below) */
             if (nx != x && ny != y
@@ -3279,6 +3343,7 @@ corpse_chance(
 {
     struct permonst *mdat = mon->data;
     int i, tmp;
+    struct obj *otmp;
 
     /* maybe leave behind some blood */
     if (rn2(4) && has_blood(mon->data) && !touch_petrifies(mon->data) && !was_swallowed) {
@@ -3295,13 +3360,39 @@ corpse_chance(
         return FALSE;
     }
 
+    /* Handle magma paraelementals melting */
+    if (mdat == &mons[PM_MAGMA_PARAELEMENTAL]) {
+        if (IS_OVERWRITABLE(levl[mon->mx][mon->my].typ)) {
+            levl[mon->mx][mon->my].typ = LAVAPOOL;
+            newsym(mon->mx, mon->my);
+            if (cansee(mon->mx, mon->my) && !was_swallowed)
+                pline("%s body dissolves into a pool of lava.",
+                    s_suffix(Monnam(mon)));
+            if ((otmp = sobj_at(BOULDER, mon->mx, mon->my)) != 0) {
+                obj_extract_self(otmp);
+                boulder_hits_pool(otmp, mon->mx, mon->my, FALSE);
+            }
+        }
+        return FALSE;
+    }
+    /* Handle coin explosions */
+    if (mdat->mlet == S_BAD_COINS) {
+        if (canseemon(mon))
+            pline_mon(mon, "%s explodes in a shower of gold!", Monnam(mon));
+        (void) mkgold((long) rnd(mon->m_lev * 10), mon->mx, mon->my);
+        (void) scatter(mon->mx, mon->my, 5, MAY_DESTROY | MAY_HIT | MAY_FRACTURE
+                                           | VIS_EFFECTS, (struct obj *) 0);
+        return FALSE;
+    }
+    /* Handle crimson death blood clouds */
     if (mdat == &mons[PM_CRIMSON_DEATH]) {
         struct obj fakeobj = cg.zeroobj;
         fakeobj.cursed = TRUE;
         fakeobj.otyp = POT_BLOOD;
         create_gas_cloud(mon->mx, mon->my, 5, &fakeobj, 8);
+        return FALSE;
     }
-
+    /* Handle illusion vanishing */
     if (mdat == &mons[PM_ILLUSION]) {
         /* Illusions killed while undiscovered yield a message. */
         if (cansee(mon->mx, mon->my) && mon->mappearance) {
@@ -3309,7 +3400,7 @@ corpse_chance(
         }
         return FALSE;
     }
-
+    /* Handle nymphs returning to grass */
     if (mdat == &mons[PM_WOOD_NYMPH]) {
         if (cansee(mon->mx, mon->my) && !was_swallowed) {
             pline_mon(mon, "%s body returns to the earth.",
@@ -4302,7 +4393,7 @@ qst_guardians_respond(void)
 }
 
 /* how other peacefuls react when you attack monster */
-staticfn void
+void
 peacefuls_respond(struct monst *mtmp)
 {
     struct monst *mon;
@@ -4830,6 +4921,13 @@ restrap(struct monst *mtmp)
         return FALSE;
 
     if (mtmp->data->mlet == S_MIMIC) {
+        if (mtmp->msleeping || mtmp->mfrozen) {
+        /*
+         * The mimic needs to be awake to disguise itself
+         * as something else.
+         */
+            return FALSE;
+        }
         set_mimic_sym(mtmp);
         return TRUE;
     } else if (levl[mtmp->mx][mtmp->my].typ == ROOM) {
@@ -5396,7 +5494,7 @@ accept_newcham_form(struct monst *mon, int mndx)
     if (is_shapeshifter(mdat)
         && ismnum(mon->cham) && mdat == &mons[mon->cham])
         return mdat;
-    /* polyok() rules out M2_PNAME, M2_WERE, and all humans except Kops */
+    /* polyok() rules out M2_PNAME, MH_WERE, and all humans except Kops */
     return polyok(mdat) ? mdat : 0;
 }
 
@@ -5631,7 +5729,7 @@ newcham(
         mtmp->cham = pm_to_cham(monsndx(mdat));
 
     possibly_unwield(mtmp, polyspot); /* might lose use of weapon */
-    mon_break_armor(mtmp, polyspot);
+    mon_break_armor(mtmp, olddata, polyspot);
     if (!(mtmp->misc_worn_check & W_ARMG))
         mselftouch(mtmp, "No longer petrify-resistant, ",
                    !svc.context.mon_moving);
@@ -6063,6 +6161,10 @@ usmellmon(struct permonst *mdat)
                     pline("A foul stench makes you feel a little nauseated.");
                 msg_given = TRUE;
                 break;
+            case S_BAD_COINS:
+                You("smell something akin to gold.");
+                msg_given = TRUE;
+                break;
             default:
                 break;
             }
@@ -6267,65 +6369,6 @@ flash_mon(struct monst *mtmp)
     flash_glyph_at(mx, my, mon_to_glyph(mtmp, newsym_rn2), count);
     gv.viz_array[my][mx] = saveviz;
     newsym(mx, my);
-}
-
-boolean 
-is_boosted(int x, int y, short boost) {
-    if ((boost & BST_BLOOD)
-        && has_coating(x, y, COAT_BLOOD)) {
-        return TRUE;
-    } else if ((boost & (BST_POTION | BST_WATER))
-        && has_coating(x, y, COAT_POTION)) {
-        if (boost & BST_WATER) return levl[x][y].pindex == POT_WATER;
-        if (boost & BST_POTION) return levl[x][y].pindex != POT_WATER;
-    } 
-    /* Non-exclusive coatings */
-    if ((boost & BST_GRASS)
-        && has_coating(x, y, COAT_GRASS)) {
-        return TRUE;
-    }
-    if ((boost & BST_ASHES)
-        && has_coating(x, y, COAT_ASHES)) {
-        return TRUE;
-    } 
-    if ((boost & BST_FUNGI)
-        && has_coating(x, y, COAT_FUNGUS)) {
-        return TRUE;
-    }
-    if ((boost & BST_HONEY) && has_coating(x, y, COAT_HONEY)) {
-        return TRUE;
-    }
-    if ((boost & BST_MUD)
-        && has_coating(x, y, COAT_MUD)) {
-        return TRUE;
-    } 
-    if ((boost & BST_ICE)
-                && ((levl[x][y].typ == ICE && !levl[x][y].coat_info) 
-                    || has_coating(x, y, COAT_FROST))) {
-        return TRUE;
-    }
-    /* Submasks */
-    if (((boost & BST_ROCK)
-                && !levl[x][y].submask
-                && !levl[x][y].coat_info
-                && IS_SUBMASKABLE(levl[x][y].typ)) || levl[x][y].typ == STONE) {
-        return TRUE;
-    } else if ((boost & BST_SAND) && IS_SUBMASKABLE(levl[x][y].typ)
-        && !levl[x][y].coat_info
-        && levl[x][y].submask == SM_SAND) {
-        return TRUE;
-    } 
-    return FALSE;
-}
-
-boolean
-u_boosted(short boost) {
-    return is_boosted(u.ux, u.uy, boost);
-}
-
-boolean
-mon_boosted(struct monst *mtmp, short boost) {
-    return is_boosted(mtmp->mx, mtmp->my, boost);
 }
 
 /*mon.c*/

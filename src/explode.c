@@ -306,6 +306,7 @@ explode(
     if (type == PHYS_EXPL_TYPE) {
         /* currently only gas spores */
         adtyp = AD_PHYS;
+        str = "explosion";
     } else {
         /* If str is e.g. "flaming sphere's explosion" from above, we want to
          * still assign adtyp appropriately, but not replace str. */
@@ -805,8 +806,8 @@ scatter(coordxy sx, coordxy sy,  /* location of objects to scatter */
 
             /* 1 in 10 chance of destruction of obj; glass, egg destruction */
         } else if ((scflags & MAY_DESTROY) != 0
-                   && (!rn2(10) || (objects[otmp->otyp].oc_material == GLASS
-                                    || otmp->otyp == BLUEICE
+                   && (!rn2(10) || (otmp->material == GLASS
+                                    || otmp->material == ICECRYSTAL
                                     || otmp->otyp == EGG))) {
             if (breaks(otmp, sx, sy))
                 used_up = TRUE;

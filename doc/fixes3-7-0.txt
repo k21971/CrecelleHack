@@ -1,4 +1,4 @@
-NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.1535 $ $NHDT-Date: 1740629713 2025/02/26 20:15:13 $
+NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.1580 $ $NHDT-Date: 1764109066 2025/11/25 22:17:46 $
 
 General Fixes and Modified Features
 -----------------------------------
@@ -215,7 +215,7 @@ if riding or levitating, hero could apply bullwhip downward to pull up things
 some monster code was checking whether pets or engulfers were eating green
 	slime by checking for green slime corpse instead of glob
 change light radius of stack of candles to square root
-could get redundate "mon hits other-mon" messages when mon wields an artifact
+could get redundant "mon hits other-mon" messages when mon wields an artifact
 failed untrap while mounted that moved hero onto the trap would leave steed
 	with stale coordinates, triggering warnings if 'sanity_check' is On
 when digging a pit results in it being filled by adjacent pool or lava, any
@@ -530,7 +530,7 @@ innocuous items like scrolls or eucalyptus leaves did harm when falling on
 	hero's head after being thrown upward
 fighter types who start out knowing all non-magic armor should not know
 	cornuthaum and dunce cap
-prediscovered weapons adjustmens:  only knights and samurai know polearms;
+prediscovered weapons adjustments:  only knights and samurai know polearms;
 	rangers know launchers (bows), ammo (arrows), and spears regardless
 	of their race/species; likewise, rogues know all daggers
 if the move counter ever reaches 1000000000, end the game
@@ -715,7 +715,7 @@ selection of random engravings, epitaphs, and hallucinatory monster names had
 	follow longer than average lines are most likely to be chosen and
 	ones which follow shorter than average lines are least likely; use
 	same workaround as for rumors:  pad the shortest lines; result isn't
-	uniforn distribution but is better (tradeoff vs size; see makedefs)
+	uniform distribution but is better (tradeoff vs size; see makedefs)
 make selection of random rumors, engravings, epitaphs, and hallucinatory monst
 	names have uniform distribution by handling long lines specially
 when filling a special room with monsters, if one that can come in groups got
@@ -1237,7 +1237,7 @@ restore the ability for trap creation via magic which creates pits to destroy
 allow #sit while flying over a squeaky board trap to trigger it
 weight of statues of wraiths and of monsters which never leave a corpse was 0
 when a werecreature in human form attacked hero, it could transform to critter
-	despite hero having the Protection_from_shape_changers_attibute
+	despite hero having the Protection_from_shape_changers_attribute
 status highlighting for hit points didn't work as intended for up or down HP
 	changes; 'up' rule was used for both, 'down' rule was ignored
 unhide an unseen water monster using a polymorph trap on land
@@ -1528,6 +1528,29 @@ a gas spore that was killed when an engulfer swallowed it produced an explosion
 hallucination can display objects on the map that have a description (for
 	shuffling into play at game start) but no name; examining those might
 	trigger a crash
+some food and paper items do no damage when bashing
+improved messages for oilskin sacks protecting from water damage
+some messages by amorous demons and mail daemon were delivered as verbal ones
+	even when the hero is deaf
+travel couldn't find the vibrating square if it was covered by an object or
+	a monster; it isn't really a trap so treat it as special terrain
+travel would stop one step in front of known vibrating square like other traps
+fix bug which delayed burden changes due to monster actions (e.g. reverting to
+        natural form due to damage, changing carry capacity) for one turn
+on arboreal levels (Ranger quest) where STONE terrain is treated as TREE, an
+	object at a tree location would be described as "embedded in stone"
+an item at an ordinary tree location, whether the level is arboreal or not,
+	would be described as itself with no mention of the tree
+some types of shopkeeper now start with a scroll of charging
+objects are now accurately tracked as discovered even if not type-named nor
+        formally identified (fixing some bugs in scroll writing, and making
+        the discoveries list more accurate)
+you cannot sacrifice objects/corpses while stunned or confused
+'whatis' actions // and /? didn't work when the lootabc option was on, they
+	required /a and /c instead; add '/' and '?' as group accelerators so
+	that they work; /y and /n for them now only work when lootabc is off
+writing on an unidentified scroll of blank paper identifies blank paper
+dumplogs include spells and skills
 
 
 Fixes to 3.7.0-x General Problems Exposed Via git Repository
@@ -1855,7 +1878,7 @@ after the fix for zombie reviving near hero (which now interrupts hero's
 	occupation), could get "revive panic" when eating a troll corpse if
 	it revived on the same turn that eating the corpse would finish
 a wizard's starting equipment was supposed to include a random spellbook of
-	spell level 1 through 3 but it was being foced to be level 1
+	spell level 1 through 3 but it was being forced to be level 1
 earlier fix for prices of unpaid objects going away in persistent inventory
 	display when hero bought something during itemized billing didn't work
 	if paying for a used-up shop item--prices of any unpaid items vanished
@@ -1945,7 +1968,7 @@ don't blame/credit hero for stinking cloud if dying quest nemesis releases one
 Lua selection operations 'subtract' and 'xor' didn't always work as intended
 accept 'true' or 'false' as value for des.object field 'trapped'
 special level loader didn't check for bad coordinates supplied by <level>.lua
-	file thorougnly enough
+	file thoroughly enough
 hero might not be credited with "entered Mine Town" achievement for the town
 	variations which treat the whole level as the town if that level gets
 	entered via falling or level teleport
@@ -2069,7 +2092,7 @@ restoring a save file could trigger impossible "rnd(0) attempted" if it tried
 	a released version, it would crash due to divide by 0 error instead
 fix regression of a post-3.6 fix:  if 2 Wizards of Yendor were in play and 1
 	escaped the dungeon, bookkeeping for current number of Wizards stayed
-	at 2, interferring with future Wizard behavior
+	at 2, interfering with future Wizard behavior
 sometimes a repeat count from the preceding command carried over to most
 	recent one when using do-again (^A); if the most recent one was an
 	extended command, the spurious repeat was for '#'
@@ -2128,6 +2151,23 @@ successfully disarming a chest trap was clearing the chest's 'tknown' bit
 when game ended with 'force_invmenu' On, final disclosure of inventory would
 	contain spurious menu entry "? - (list likely candidates)"
 avoid reporting "a gold pieces appears next to you" for mimic
+don't try to split a pudding that got jousted into a hole and is off the map
+mounted hero was able to deliver joust hits when trapped
+timer sanity check for melting ice gave false complaint about non-ice for
+	frozen moat under open drawbridge
+mhitm_ad_phys() was not applying Half_physical_damage when hero was target
+throwing crystal plate mail or helm of brilliance up against the ceiling could
+	result in the item being cracked and then vanishing
+yn_function (used all over the place) sometimes triggered an impossible()
+	during do-again (^A) processing [ongoing revisions; more are probably
+	needed; listed here in case ^A behavior changes]
+uncursed genocide while hallucinating deliberately mis-reports hero's role as
+	target but was also inappropriately showing it to livelog/#chronicle
+livelog/#chronicle for bribing a demon lord reported random monster and
+	currency if hero was hallucinating
+livelog/#chronicle for saving-grace: if saving-grace prevents hero's death,
+	report it [at present, it uses the livelog classification for breaking
+	a conduct]
 
 
 Fixes to 3.7.0-x Platform and/or Interface Problems Exposed Via git Repository
@@ -2475,6 +2515,8 @@ Unix: add ../include/nhlua.h to the alloc.o dependencies in Makefile.utl to
 Unix: implement SELF_RECOVER compile-time option, on by default on linux
 Unix: allow build to succeed with musl (instead of glibc), by specifying
 	musl=1 on the make command line
+Unix: support tilde expansion for home directory path, "~/relative-path", in
+	command line --nethackrc=path and environment NETHACKOPTIONS=@path
 user_sounds: move the message hook from inside individual window display ports
 	to the core where it allows MSGTYP_NOSHOW msgtyp's to still trigger
 	sounds to correct a reported github issue; also fixes a past reported
@@ -2794,9 +2836,6 @@ wand of secret door detection, spell of detect unseen, and wizard mode ^E now
 	flash the cursor at each location where detection finds something
 saving-grace: once per game if receiving a killing blow from full or nearly
 	full HP, survive with 1 HP
-livelog/#chronicle for saving-grace: if saving-grace prevents hero's death,
-	report it [at present, it uses the livelog classification for breaking
-	a conduct]
 enlightenment/attribute disclosure for saving-grace: include a line for have
 	or haven't been saved (game in progress) or did or didn't get saved
 	(game over) via saving-grace
@@ -2814,6 +2853,7 @@ archeologists' fedora is lucky
 telepathic hero can discern which particular monster just read a scroll
 add "make fetch-docs" to download pre-formatted documentation
 monsters will use throw-and-return weapons such as an aklys
+archeologists can identify scrolls by deciphering their labels
 
 
 Platform- and/or Interface-Specific New Features

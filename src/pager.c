@@ -1,4 +1,4 @@
-/* NetHack 3.7	pager.c	$NHDT-Date: 1737013431 2025/01/15 23:43:51 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.287 $ */
+/* NetHack 3.7	pager.c	$NHDT-Date: 1764044196 2025/11/24 20:16:36 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.292 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2018. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -31,7 +31,7 @@ staticfn void look_region_nearby(coordxy *, coordxy *, coordxy *, coordxy *,
 staticfn void look_all(boolean, boolean);
 staticfn void look_traps(boolean);
 staticfn void look_engrs(boolean);
-staticfn void do_supplemental_item_info(struct obj *) NONNULLPTRS;
+staticfn void do_supplemental_item_info(struct obj *);
 staticfn void do_supplemental_info(char *, struct permonst *,
                                                          boolean) NONNULLPTRS;
 staticfn void whatdoes_help(void);
@@ -323,6 +323,7 @@ object_from_map(
         if (OBJ_NAME(objects[glyphotyp])) {
             /* map shows a regular object, but one that's not actually here */
             otmp = mksobj(glyphotyp, FALSE, FALSE);
+            set_material(otmp, objects[otmp->otyp].oc_material);
         } else {
             /* map shows a non-item that holds an extra object type (shown
                on map due to hallucination) for a name which might have been
@@ -374,11 +375,11 @@ object_from_map(
         && (fakeobj || otmp->where == OBJ_FLOOR) /* not buried */
         /* terrain mode views what's already known, doesn't learn new stuff */
         && !iflags.terrainmode) /* so don't set dknown when in terrain mode */
-        otmp->dknown = 1; /* if a pile, clearly see the top item only */
+        observe_object(otmp); /* if a pile, clearly see the top item only */
     if (fakeobj && mtmp && mimic_obj
         && (otmp->dknown || (M_AP_FLAG(mtmp) & M_AP_F_DKNOWN))) {
         mtmp->m_ap_type |= M_AP_F_DKNOWN;
-        otmp->dknown = 1;
+        observe_object(otmp);
     }
     *obj_p = otmp;
     return fakeobj; /* when True, caller needs to dealloc *obj_p */
@@ -402,11 +403,17 @@ look_at_object(
             otmp->where = OBJ_FREE; /* object_from_map set it to OBJ_FLOOR */
             dealloc_obj(otmp), otmp = NULL; /* has no contents */
         }
-    } else
+    } else {
         Strcpy(buf, something); /* sanity precaution */
+    }
 
     if (otmp && otmp->where == OBJ_BURIED)
         Strcat(buf, " (buried)");
+    /* check TREE before STONE due to level.flags.arboreal */
+    else if (IS_TREE(levl[x][y].typ))
+        /* "dangling": "hanging" could imply that it's growing on this tree */
+        Snprintf(eos(buf), BUFSZ - strlen(buf), " %s in a tree",
+                 (otmp && is_treefruit(otmp)) ? "dangling" : "stuck");
     else if (levl[x][y].typ == STONE || levl[x][y].typ == SCORR)
         Strcat(buf, " embedded in stone");
     else if (IS_WALL(levl[x][y].typ) || levl[x][y].typ == SDOOR)
@@ -464,11 +471,7 @@ look_at_monster(
     else if ((mtmp->mstrategy & STRAT_WAITMASK) != 0)
         /* arbitrary reason why it isn't moving */
         Strcat(buf, ", meditating");
-
-#ifdef MON_HARMONICS
-    if (mon_boosted(mtmp, mtmp->data->mboost))
-        Strcat(buf, ", harmonizing");
-#endif
+        
     if (mtmp->mleashed)
         Strcat(buf, ", leashed to you");
     if (mtmp->mprone)
@@ -539,11 +542,11 @@ look_at_monster(
                 } else {
                     unsigned long mW = (svc.context.warntype.obj
                                         | svc.context.warntype.polyd),
-                                  m2 = mtmp->data->mflags2;
-                    const char *whom = ((mW & M2_HUMAN & m2) ? "human"
-                                        : (mW & M2_ELF & m2) ? "elf"
-                                          : (mW & M2_ORC & m2) ? "orc"
-                                            : (mW & M2_DEMON & m2) ? "demon"
+                                  mh = mtmp->data->mhflags;
+                    const char *whom = ((mW & MH_HUMAN & mh) ? "human"
+                                        : (mW & MH_ELF & mh) ? "elf"
+                                          : (mW & MH_ORC & mh) ? "orc"
+                                            : (mW & MH_DEMON & mh) ? "demon"
                                               : pmname(mtmp->data,
                                                        Mgender(mtmp)));
 
@@ -621,11 +624,13 @@ waterbody_name(coordxy x, coordxy y)
 /* describe the floor itself */
 staticfn const char *
 floor_descr(coordxy x, coordxy y, short symidx) {
-    if (IS_SUBMASKABLE(levl[x][y].typ)) {
-        if (levl[x][y].submask == SM_DIRT) {
-            return "dirt";
-        } else if (levl[x][y].submask == SM_SAND) {
-            return "sand";
+    short sm = levl[x][y].submask;
+    int typ = levl[x][y].typ;
+    if (IS_SUBMASKABLE(typ)) {
+        if (sm == SM_DIRT) {
+            return (typ == CORR) ? "lit dirt" : "dirt";
+        } else if (sm == SM_SAND) {
+            return (typ == CORR) ? "lit sand" : "sand";
         } else if (svl.level.flags.outdoors) {
             return "earth";
         } else {
@@ -664,7 +669,7 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
     } else if ((levl[x][y].coat_info & COAT_BLOOD) != 0) {
         if (ismnum(levl[x][y].pindex)
                 && (Role_if(PM_HEALER) || touch_petrifies(&mons[levl[x][y].pindex])))
-            Sprintf(buf, "%s covered in %s blood", floor_descr(x, y, symidx),  mons[levl[x][y].pindex].pmnames[NEUTRAL]);
+            Sprintf(buf, "%s covered in %s blood", floor_descr(x, y, symidx), mons[levl[x][y].pindex].pmnames[NEUTRAL]);
         else
             Sprintf(buf, "%s covered in blood", floor_descr(x, y, symidx));
     } else
@@ -678,16 +683,17 @@ coat_descr(coordxy x, coordxy y, short symidx, char *outbuf) {
 char *
 potion_coating_text(char *outbuf, int pindex) {
 
-    if (objects[pindex].oc_uname) {
+    if (!objects[pindex].oc_name_known && objects[pindex].oc_uname) {
         Sprintf(outbuf, "tonic called %s", objects[pindex].oc_uname);
     } else {
-        Sprintf(outbuf, "%s %s",
+        Sprintf(outbuf, "%s%s",
                     objects[pindex].oc_name_known ? OBJ_NAME(objects[pindex]) 
                                                 : OBJ_DESCR(objects[pindex]),
                     objects[pindex].oc_name_known ?
                         ((pindex == POT_BOOZE
                             || pindex == POT_OIL
-                            || pindex == POT_BLOOD) ? "" : "tonic") : "liquid");
+                            || pindex == POT_WATER
+                            || pindex == POT_BLOOD) ? "" : " tonic") : " liquid");
     }
     return outbuf;
 }
@@ -857,6 +863,13 @@ lookat(coordxy x, coordxy y, char *buf, char *monbuf)
         case S_fountain:
             Strcpy(buf, FOUNTAIN_IS_FROZEN(x, y) ? "frozen fountain" : "fountain");
             break;
+        case S_tree:
+            if (levl[x][y].fruit_otyp && !(levl[x][y].flags & T_LOOTED)
+                && !Role_if(PM_TOURIST))
+                Sprintf(buf, "%s tree", OBJ_NAME(objects[levl[x][y].fruit_otyp]));
+            else
+                Strcpy(buf, defsyms[symidx].explanation);
+            break;
         case S_pool:
         case S_water: /* was Plane of Water, now that or "wall of water" */
         case S_lava:
@@ -876,9 +889,6 @@ lookat(coordxy x, coordxy y, char *buf, char *monbuf)
                 /* "unknown" == previously mapped but not visible when
                    submerged; better terminology appreciated... */
                 Strcpy(buf, (next2u(x, y)) ? "land" : "unknown");
-                break;
-            } else if (levl[x][y].typ == STONE || levl[x][y].typ == SCORR) {
-                Strcpy(buf, "stone");
                 break;
             }
             FALLTHROUGH;
@@ -1811,61 +1821,93 @@ do_look(int mode, coord *click_cc)
             any = cg.zeroany;
             win = create_nhwindow(NHW_MENU);
             start_menu(win, MENU_BEHAVE_STANDARD);
+
+            /*
+             * Originally this was just a y|n question about whether to
+             * use the cursor or to type a word.  When other choices were
+             * added, it was changed to be a menu.  Using 'y' and 'n' as
+             * unshown accelerators keeps backwards compatibility with
+             * the old y|n behavior.
+             *
+             * Initially the menu included a third choice and always used
+             * 'a', 'b', and 'c'.  Then it was changed to be controlled by
+             * the 'lootabc' option instead, defaulting to '/', 'i', '?'
+             * when that's false.  Eventually additional entries have been
+             * introduced.
+             *
+             * When lootabc is set, abandon the 'y'|'n' compatibility in
+             * favor of newer '/' and '?' compatobility instead.
+             */
+
             any.a_char = '/';
-            /* 'y' and 'n' to keep backwards compatibility with previous
-               versions: "Specify unknown object by cursor?" */
             add_menu(win, &nul_glyphinfo, &any,
-                     flags.lootabc ? 0 : any.a_char, 'y', ATR_NONE,
+                     flags.lootabc ? 0 : any.a_char,
+                     flags.lootabc ? '/' : 'y', ATR_NONE,
                      clr, "something on the map", MENU_ITEMFLAGS_NONE);
             any.a_char = 'i';
             add_menu(win, &nul_glyphinfo, &any,
+                     /* [don't use 'i' as lootabc group accelerator because
+                        it will make the regular 'i' choice inaccessible] */
                      flags.lootabc ? 0 : any.a_char, 0, ATR_NONE,
                      clr, "something you're carrying", MENU_ITEMFLAGS_NONE);
             any.a_char = '?';
             add_menu(win, &nul_glyphinfo, &any,
-                     flags.lootabc ? 0 : any.a_char, 'n', ATR_NONE,
+                     flags.lootabc ? 0 : any.a_char,
+                     flags.lootabc ? '?' : 'n', ATR_NONE,
                      clr, "something else (by symbol or name)",
                      MENU_ITEMFLAGS_NONE);
             if (!u.uswallow && !Hallucination) {
                 any = cg.zeroany;
                 add_menu_str(win, "");
-                /* these options work sensibly for the swallowed case,
-                   but there's no reason for the player to use them then;
+                /* these options work sensibly for swallowed case, but
+                   there's no reason for player to use them then because
+                   the swallowed display hides all applicable targets;
                    objects work fine when hallucinating, but screen
                    symbol/monster class letter doesn't match up with
                    bogus monster type, so suppress when hallucinating */
                 any.a_char = 'm';
                 add_menu(win, &nul_glyphinfo, &any,
-                         flags.lootabc ? 0 : any.a_char, 0, ATR_NONE,
+                         flags.lootabc ? 0 : any.a_char,
+                         flags.lootabc ? any.a_char : 0, ATR_NONE,
                          clr, "nearby monsters", MENU_ITEMFLAGS_NONE);
                 any.a_char = 'M';
                 add_menu(win, &nul_glyphinfo, &any,
-                         flags.lootabc ? 0 : any.a_char, 0, ATR_NONE, clr,
-                         "all monsters shown on map", MENU_ITEMFLAGS_NONE);
+                         flags.lootabc ? 0 : any.a_char,
+                         flags.lootabc ? any.a_char : 0, ATR_NONE,
+                         clr, "all monsters shown on map",
+                         MENU_ITEMFLAGS_NONE);
                 any.a_char = 'o';
                 add_menu(win, &nul_glyphinfo, &any,
-                         flags.lootabc ? 0 : any.a_char, 0, ATR_NONE,
+                         flags.lootabc ? 0 : any.a_char,
+                         flags.lootabc ? any.a_char : 0, ATR_NONE,
                          clr, "nearby objects", MENU_ITEMFLAGS_NONE);
                 any.a_char = 'O';
                 add_menu(win, &nul_glyphinfo, &any,
-                         flags.lootabc ? 0 : any.a_char, 0, ATR_NONE, clr,
-                         "all objects shown on map", MENU_ITEMFLAGS_NONE);
+                         flags.lootabc ? 0 : any.a_char,
+                         flags.lootabc ? any.a_char : 0, ATR_NONE,
+                         clr, "all objects shown on map",
+                         MENU_ITEMFLAGS_NONE);
                 any.a_char = 't';
                 add_menu(win, &nul_glyphinfo, &any,
-                         flags.lootabc ? 0 : any.a_char, '^', ATR_NONE,
+                         flags.lootabc ? 0 : any.a_char,
+                         flags.lootabc ? any.a_char : '^', ATR_NONE,
                          clr, "nearby traps", MENU_ITEMFLAGS_NONE);
                 any.a_char = 'T';
                 add_menu(win, &nul_glyphinfo, &any,
-                         flags.lootabc ? 0 : any.a_char, '\"', ATR_NONE,
+                         flags.lootabc ? 0 : any.a_char,
+                         flags.lootabc ? any.a_char : '\"', ATR_NONE,
                          clr, "all seen or remembered traps",
                          MENU_ITEMFLAGS_NONE);
                 any.a_char = 'e';
                 add_menu(win, &nul_glyphinfo, &any,
-                         flags.lootabc ? 0 : any.a_char, '`', ATR_NONE,
+                         flags.lootabc ? 0 : any.a_char,
+                         /* [don't use 'e' as lootabc group accelerator] */
+                         flags.lootabc ? 0 : '`', ATR_NONE,
                          clr, "nearby engravings", MENU_ITEMFLAGS_NONE);
                 any.a_char = 'E';
                 add_menu(win, &nul_glyphinfo, &any,
-                         flags.lootabc ? 0 : any.a_char, '|', ATR_NONE,
+                         flags.lootabc ? 0 : any.a_char,
+                         flags.lootabc ? any.a_char : '|', ATR_NONE,
                          clr, "all seen or remembered engravings",
                          MENU_ITEMFLAGS_NONE);
             }
@@ -1903,7 +1945,8 @@ do_look(int mode, coord *click_cc)
                     Strcpy(out_str, singular(invobj, xname));
                     break;
                 }
-            do_supplemental_item_info(invobj);
+            if (invobj)
+                do_supplemental_item_info(invobj);
             if (*out_str)
                 (void) checkfile(out_str, pm, chkfilUsrTyped | chkfilDontAsk,
                                  (char *) 0);
@@ -2328,10 +2371,22 @@ do_supplemental_item_info(struct obj *otmp)
     int dbonus;
     /* Display monster info */
     datawin = create_nhwindow(NHW_MENU);
-    Sprintf(buf, doname(otmp));
-    buf[0] = highc(buf[0]);
-    putstr(datawin, 0, buf);
+    Sprintf(buf, Doname2(otmp));
+    putstr(datawin, iflags.menu_headings.attr, buf);
+    if (not_fully_identified(otmp)) {
+        putstr(datawin, 0, "There is more you could learn about it.");
+    } else {
+        putstr(datawin, 0, "It is fully identified.");
+    }
+    /* Scroll Writing */
+    if ((otmp->oclass == SCROLL_CLASS || otmp->oclass == SPBOOK_CLASS)
+        && objects[otmp->otyp].oc_name_known) {
+        Sprintf(buf, "It would cost ~%d ink to write.", cost(otmp));
+        putstr(datawin, 0, buf);
+    }
     putstr(datawin, 0, "");
+    /* Class info */
+    add_menu_heading(datawin, "Statistics");
     if (otmp->oclass == WEAPON_CLASS) {
         dbonus = otmp->known ? (otmp->spe - greatest_erosion(otmp)) : greatest_erosion(otmp);
         if (dbonus) {
@@ -2340,20 +2395,28 @@ do_supplemental_item_info(struct obj *otmp)
         Sprintf(buf, "Type: %s%sweapon", objects[otmp->otyp].oc_bimanual ? "two-handed " : "one-handed ",
                                  objects[otmp->otyp].oc_finesse ? "finesse " : "");
         putstr(datawin, 0, buf);
-        Sprintf(buf, "Damage (S): 1d%d%s%s%s", objects[otmp->otyp].oc_wsdam,
+        #if 0
+        Sprintf(buf, "Damage (S): 1d%d%s%s%s", objects[otmp->otyp].oc_wsdam + size_mult(otmp->osize),
                                             stringify_dmgval(otmp->otyp, FALSE),
                                             dbonus ? dam_buf : "",
                                             otmp->known ? "" : "?");
         putstr(datawin, 0, buf);
-        Sprintf(buf, "Damage (L): 1d%d%s%s%s", objects[otmp->otyp].oc_wldam,
+        Sprintf(buf, "Damage (L): 1d%d%s%s%s", objects[otmp->otyp].oc_wldam + size_mult(otmp->osize),
                                             stringify_dmgval(otmp->otyp, TRUE),
                                             dbonus ? dam_buf : "",
                                             otmp->known ? "" : "?");
         putstr(datawin, 0, buf);
+        #endif
     } else {
         Sprintf(buf, "Class: %s", OBJ_DESCR(objects[(int) otmp->oclass]));
         putstr(datawin, 0, buf);
     }
+    /* Appearance */
+    if (OBJ_DESCR(objects[otmp->otyp])) {
+        Sprintf(buf, "Appearance: %s", OBJ_DESCR(objects[otmp->otyp]));
+        putstr(datawin, 0, buf);
+    }
+    /* Armor stats */
     if (otmp->oclass == ARMOR_CLASS) {
         Sprintf(buf, "AC: %d%s", (objects[otmp->otyp].a_ac + (otmp->known ? otmp->spe : 0)),
                                 otmp->known ? "" : "?");
@@ -2362,20 +2425,29 @@ do_supplemental_item_info(struct obj *otmp)
                                  otmp->known ? "" : "?");
         putstr(datawin, 0, buf);
     }
-    if (otmp->booster) {
-        Sprintf(buf, "Harmonies: ");
-        print_obj_harmonies(otmp, buf);
+    if (size_matters(otmp)) {
+        Sprintf(buf,"Size: %s", size_str(otmp->osize));
         putstr(datawin, 0, buf);
     }
-    Sprintf(buf, "Weight: %d aum (Average %d aum)", otmp->owt, objects[otmp->otyp].oc_weight);
+    Sprintf(buf, "Weight: %d aum (average %d aum)", otmp->owt, objects[otmp->otyp].oc_weight);
     putstr(datawin, 0, buf);
-    Sprintf(buf, "Material: %s", materialnm[objects[otmp->otyp].oc_material]);
+    Sprintf(buf, "Material: %s (usually %s)", materialnm[otmp->material],
+                                                materialnm[objects[otmp->otyp].oc_material]);
     putstr(datawin, 0, buf);
     Sprintf(buf, "Rarity: %s, %s", objects[otmp->otyp].oc_unique ? "unique" : "common",
                                     objects[otmp->otyp].oc_nowish ? "unwishable" : "wishable");
     putstr(datawin, 0, buf);
+    if (otmp->oprop) {
+        if (otmp->pknown) {
+            Sprintf(buf, "Harmony: ");
+            add_oprop_text(otmp, otmp->pknown, buf);
+        } else {
+            Sprintf(buf, "Harmony: Unknown");
+        }
+        putstr(datawin, 0, buf);
+    }
     
-    display_nhwindow(datawin, FALSE);
+    display_nhwindow(datawin, TRUE);
     destroy_nhwindow(datawin), datawin = WIN_ERR;
 }
 
@@ -2392,6 +2464,7 @@ do_supplemental_info(
     char buf[BUFSZ];
     boolean yes_to_moreinfo = FALSE;
     boolean is_marauder = is_orc(pm);
+    boolean auto_know = (wizard || u.uroleplay.perfect_bestiary);
 
     /*
      * Provide some info on some specific things
@@ -2446,44 +2519,42 @@ do_supplemental_info(
     /* Display monster info */
     datawin = create_nhwindow(NHW_MENU);
     if (strlen(name) && strlen(name) < (BUFSZ - 1)) {
-        putstr(datawin, 0, name);
+        putstr(datawin, iflags.menu_headings.attr, name);
     } else {
         Sprintf(buf, "%s", pmname(pm, MALE));
         buf[0] = highc(buf[0]);
-        putstr(datawin, 0, buf);
+        putstr(datawin, iflags.menu_headings.attr, buf);
     }
-    putstr(datawin, 0, "");
     /* Size */
     Sprintf(buf, "%s %s", size_str(pm->msize), def_monsyms[(int) pm->mlet].explain);
     buf[0] = highc(buf[0]);
     putstr(datawin, 0, buf);
     /* Stats */
-    if (svm.mvitals[pm->pmidx].know_stats)
+    if (auto_know || svm.mvitals[pm->pmidx].know_stats)
         Sprintf(buf, "Speed: %d, AC: %d, MR: %d", pm->mmove, pm->ac, pm->mr);
     else
-        Sprintf(buf, "Speed: ???, AC: ???, MR: ???");
+        Sprintf(buf, "You know nothing of its abilities.");
     putstr(datawin, 0, buf);
     /* Food */
-    Sprintf(buf, "Edibility: %s",
-            !svm.mvitals[pm->pmidx].know_pcorpse 
-                ? "???" : poisonous(pm) ? "Poisonous" : "Not poisonous");
+    if (!auto_know && !svm.mvitals[pm->pmidx].know_pcorpse)
+        Sprintf(buf, "You know nothing about its edibility.");
+    else
+        Sprintf(buf, "Edibility: %s, %s, %s",
+                    poisonous(pm) ? "poisonous" : "safe",
+                    acidic(pm) ? "acidic" : "bland",
+                    is_domestic(pm) ? "domestic" : "wild");
     putstr(datawin, 0, buf);
-    /* Harmony */
-    Sprintf(buf, "Harmonies: ");
-    print_mon_harmonies(pm, buf);
-    putstr(datawin, 0, buf);
-    putstr(datawin, 0, "");
     /* Have we seen it? */
     if (!svm.mvitals[pm->pmidx].seen_close) {
-        putstr(datawin, 0, "You have never seen this monster up close.");
+        putstr(datawin, 0, "You have never seen it up close.");
     }
     putstr(datawin, 0, "");
     /* Attacks */
-    putstr(datawin, 0, "Attacks:");
+    putstr(datawin, iflags.menu_headings.attr, "Attacks");
     for (int i = 0; i < NATTK; i++) {
         if (!pm->mattk[i].aatyp && !pm->mattk[i].adtyp && !pm->mattk[i].damn && !pm->mattk[i].damd) continue;
-        if (!(svm.mvitals[pm->pmidx].know_attacks & (1 << i))) {
-            Sprintf(buf, "- ???");
+        if (!auto_know && !(svm.mvitals[pm->pmidx].know_attacks & (1 << i))) {
+            Sprintf(buf, "- Unknown");
         } else {
             Sprintf(buf, "- %s %dd%d %s", mattk_names[pm->mattk[i].aatyp],
                                             pm->mattk[i].damn,
@@ -2493,7 +2564,7 @@ do_supplemental_info(
         buf[2] = highc(buf[2]);
         putstr(datawin, 0, buf);
     }
-    display_nhwindow(datawin, FALSE);
+    display_nhwindow(datawin, TRUE);
     destroy_nhwindow(datawin), datawin = WIN_ERR;
 }
 

@@ -23,6 +23,8 @@
     MSPEL("blind", 4, BLIND_YOU), \
     MSPEL("strength of newt", 5, WEAKEN_YOU), \
     MSPEL("summon vermin", 5, INSECTS), \
+    MSPEL("force field", 5, FORCE_FIELD), \
+    MSPEL("chaos rain", 5, CHAOS_RAIN), \
     MSPEL("destroy armor", 6, DESTRY_ARMR), \
     MSPEL("curse", 7, CURSE_ITEMS), \
     MSPEL("lightning bolt", 7, LIGHTNING), \
@@ -56,6 +58,14 @@ int mon_mage_spells[MAX_MON_SPELLS] = { MCU_PSI_BOLT, MCU_CURE_SELF, MCU_HASTE_S
 
 int mon_cleric_spells[MAX_MON_SPELLS] = { MCU_OPEN_WOUNDS, MCU_CURE_SELF, MCU_CONFUSE_YOU,
                                           MCU_PARALYZE, MCU_BLIND_YOU, MCU_INSECTS,
+                                          MCU_CURSE_ITEMS, MCU_LIGHTNING, MCU_FIRE_PILLAR,
+                                          MCU_GEYSER, -1, -1 };
+int mon_law_cleric_spells[MAX_MON_SPELLS] = { MCU_OPEN_WOUNDS, MCU_CURE_SELF, MCU_CONFUSE_YOU,
+                                          MCU_PARALYZE, MCU_BLIND_YOU, MCU_FORCE_FIELD,
+                                          MCU_CURSE_ITEMS, MCU_LIGHTNING, MCU_FIRE_PILLAR,
+                                          MCU_GEYSER, -1, -1 };
+int mon_chaos_cleric_spells[MAX_MON_SPELLS] = { MCU_OPEN_WOUNDS, MCU_CURE_SELF, MCU_CONFUSE_YOU,
+                                          MCU_PARALYZE, MCU_BLIND_YOU, MCU_CHAOS_RAIN,
                                           MCU_CURSE_ITEMS, MCU_LIGHTNING, MCU_FIRE_PILLAR,
                                           MCU_GEYSER, -1, -1 };
 
@@ -123,6 +133,11 @@ choose_monster_spell(struct monst *mtmp, int adtyp) {
     int n;
     int spellval;
     int spell;
+    int a;
+
+    a = mon_aligntyp(mtmp);
+    if (a == A_NONE)
+        a = aligns[(mtmp->m_id % 3)].value;
     do {
         n = rn2(MAX_MON_SPELLS);
         if (is_undead(mtmp->data) || mtmp->data == &mons[PM_ORCUS])
@@ -130,9 +145,16 @@ choose_monster_spell(struct monst *mtmp, int adtyp) {
         else if (mtmp->data->mlet == S_GNOME || mtmp->data->mlet == S_KOBOLD
                  || mtmp->data == &mons[PM_DISPATER])
             spell = mon_trickster_spells[n];
-        else if (adtyp == AD_SPEL)
-            spell = mon_cleric_spells[n];
-        else
+        else if (adtyp == AD_CLRC) {
+            if (a == A_LAWFUL)
+                spell = mon_law_cleric_spells[n];
+            else if (a == A_CHAOTIC)
+                spell = mon_chaos_cleric_spells[n];
+            else if (a == A_NONE) {
+
+            } else
+                spell = mon_cleric_spells[n];
+        } else
             spell = mon_mage_spells[n];
         spellval = mon_all_spells[spell].lev;
     } while (spell == -1 || spellval > mtmp->m_lev );
@@ -850,6 +872,27 @@ cast_monster_spell(struct monst *mtmp, int dmg, int spellnum)
         rndcurse();
         dmg = 0;
         break;
+    case MCU_FORCE_FIELD:
+        pline("A wall of force slams down around you!");
+        create_force_field(u.ux, u.uy, 2, (long) rn1(5, 5));
+        dmg = 0;
+        break;
+    case MCU_CHAOS_RAIN: {
+        int startx = max(u.ux - 1, 0);
+        int starty = max(u.uy - 1, 0);
+        int stopx = min(u.ux + 1, COLNO - 1);
+        int stopy = min(u.uy + 1, ROWNO - 1);
+        int otyp;
+        pline("Raw chaos rains down around you!");
+        for (int i = startx; i <= stopx; i++) {
+            for (int j = starty; j <= stopy; j++) {
+                otyp = POT_GAIN_ABILITY + rn2(POT_OIL - POT_GAIN_ABILITY);
+                floor_alchemy(i, j, otyp, PM_HUMAN);
+            }
+        }
+        dmg = d(1, 6);
+        break;
+    }
     case MCU_INSECTS: {
         /* Try for insects, and if there are none
            left, go for (sticks to) snakes.  -3. */
@@ -1053,6 +1096,8 @@ is_undirected_spell(int spellnum)
     case MCU_RAISE_DEAD:
     case MCU_GRAVITY:
     case MCU_INSECTS:
+    case MCU_CHAOS_RAIN:
+    case MCU_FORCE_FIELD:
     case MCU_CURE_SELF:
     case MCU_MIRROR_IMAGE:
     case MCU_DISGUISE:
@@ -1075,6 +1120,7 @@ spell_would_be_useless(struct monst *mtmp, int spellnum)
      * We really want something like "if the monster could see mux, muy".
      */
     boolean mcouldseeu = couldsee(mtmp->mx, mtmp->my);
+    NhRegion *ff;
 
     /* aggravate monsters, etc. won't be cast by peaceful monsters */
     if (mtmp->mpeaceful
@@ -1127,13 +1173,20 @@ spell_would_be_useless(struct monst *mtmp, int spellnum)
     if (Protection_from_shape_changers
         && (spellnum == MCU_DISGUISE || spellnum == MCU_MIRROR_IMAGE))
         return TRUE;
-    if (mtmp->mpeaceful && spellnum == MCU_INSECTS)
+    if (mtmp->mpeaceful
+        && (spellnum == MCU_INSECTS || spellnum == MCU_CHAOS_RAIN))
+        return TRUE;
+    if (spellnum == MCU_FORCE_FIELD &&
+        (mtmp->mpeaceful || distu(mtmp->mx, mtmp->my) <= 4
+        || (((ff = visible_region_at(u.ux, u.uy)) != 0)
+            && ff->glyph == S_force_field)))
         return TRUE;
     /* healing when already healed */
     if (mtmp->mhp == mtmp->mhpmax && spellnum == MCU_CURE_SELF)
         return TRUE;
     /* don't summon insects if it doesn't think you're around */
-    if (!mcouldseeu && spellnum == MCU_INSECTS)
+    if (!mcouldseeu &&
+        (spellnum == MCU_INSECTS || spellnum == MCU_CHAOS_RAIN))
         return TRUE;
     /* blindness spell on blinded player */
     if (Blinded && spellnum == MCU_BLIND_YOU)

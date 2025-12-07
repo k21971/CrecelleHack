@@ -15,6 +15,7 @@ staticfn void generate_stairs(void);
 staticfn void mkfount(struct mkroom *);
 staticfn boolean find_okay_roompos(struct mkroom *, coord *) NONNULLARG12;
 staticfn void mksink(struct mkroom *);
+staticfn void mktree(struct mkroom *);
 staticfn void mkaltar(struct mkroom *);
 staticfn void mkgrave(struct mkroom *);
 staticfn void mkinvpos(coordxy, coordxy, int);
@@ -455,8 +456,6 @@ join(int a, int b, boolean nxcor)
     if (troom->lx > croom->hx) {
         dx = 1;
         dy = 0;
-        xx = croom->hx + 1;
-        tx = troom->lx - 1;
         if (!finddpos(&cc, DIR_E, croom))
             return;
         if (!finddpos(&tt, DIR_W, troom))
@@ -464,8 +463,6 @@ join(int a, int b, boolean nxcor)
     } else if (troom->hy < croom->ly) {
         dy = -1;
         dx = 0;
-        yy = croom->ly - 1;
-        ty = troom->hy + 1;
         if (!finddpos(&cc, DIR_N, croom))
             return;
         if (!finddpos(&tt, DIR_S, troom))
@@ -473,8 +470,6 @@ join(int a, int b, boolean nxcor)
     } else if (troom->hx < croom->lx) {
         dx = -1;
         dy = 0;
-        xx = croom->lx - 1;
-        tx = troom->hx + 1;
         if (!finddpos(&cc, DIR_W, croom))
             return;
         if (!finddpos(&tt, DIR_E, troom))
@@ -482,8 +477,6 @@ join(int a, int b, boolean nxcor)
     } else {
         dy = 1;
         dx = 0;
-        yy = croom->hy + 1;
-        ty = troom->ly - 1;
         if (!finddpos(&cc, DIR_S, croom))
             return;
         if (!finddpos(&tt, DIR_N, troom))
@@ -950,7 +943,7 @@ fill_ordinary_room(
     struct monst *tmonst; /* always put a web with a spider */
     coordxy x, y;
     boolean skip_chests = FALSE;
-    short coatings;
+    short coatings = 0;
 
     if (croom->rtype != OROOM && croom->rtype != THEMEROOM)
         return;
@@ -983,7 +976,7 @@ fill_ordinary_room(
             && !occupied(pos.x, pos.y))
             (void) maketrap(pos.x, pos.y, WEB);
     }
-    if (croom->rlit) {
+    if (croom->rlit && IS_BIOME(BIOME_FUNGAL)) {
         somexyspace(croom, &pos);
         makemon(&mons[PM_NIGHTCRUST], pos.x, pos.y, MM_NOCOUNTBIRTH);
     }
@@ -1003,6 +996,8 @@ fill_ordinary_room(
         mksink(croom);
     if (!rn2(60))
         mkaltar(croom);
+    if (IS_BIOME(BIOME_WOODLAND) && !rn2(3 + u.uz.dnum))
+        mktree(croom);
     x = 80 - (depth(&u.uz) * 2);
     if (x < 2)
         x = 2;
@@ -1164,12 +1159,15 @@ fill_ordinary_room(
         }
     }
 
-    /* grow some grass */
-    coatings = COAT_GRASS;
-    if (svl.level.flags.has_swamp || (u.uz.dlevel >= 5 && !rn2(u.uz.dlevel)))
+    /* set up room coatings */
+    if (IS_BIOME(BIOME_WOODLAND))
+        coatings |= COAT_GRASS;
+    if (IS_BIOME(BIOME_FUNGAL))
         coatings |= COAT_FUNGUS;
-    if (svl.level.flags.has_swamp)
+    if (svl.level.flags.has_swamp) {
         coatings |= COAT_MUD;
+        coatings |= COAT_GRASS;
+    }
     coat_room(croom, coatings);
 
  skip_nonrogue:
@@ -1197,7 +1195,7 @@ coat_room(struct mkroom *croom, unsigned char coat_type) {
     int hx = croom->hx;
     int hy = croom->hy;
 
-    if (croom->rtype >= VAULT && croom->rtype <= CANDLESHOP)
+    if (croom->rtype >= VAULT && croom->rtype < SHOPBASE)
         return;
     
     for (x = lx - 1; x <= hx + 1; x++) {
@@ -1212,20 +1210,16 @@ coat_room(struct mkroom *croom, unsigned char coat_type) {
                     if (IS_SUBMASKABLE(levl[x][y].typ)) {
                         levl[x][y].submask = SM_DIRT;
                     }
-                } else if (rn2(2) && IS_SUBMASKABLE(levl[x][y].typ)) {
-                    levl[x][y].submask = SM_SAND;
                 }
                 if (IS_SUBMASKABLE(levl[x][y].typ) &&
-                    (!rn2(u.uz.dlevel) || croom->rtype == MORGUE)) {
+                    croom->rtype == MORGUE) {
                     levl[x][y].submask = SM_DIRT;
                 }
             }
             if ((coat_type & COAT_FUNGUS) != 0)
                 if (!rn2(max(2, abs(13 - u.uz.dlevel)))) add_coating(x, y, COAT_FUNGUS, 0);
             if ((coat_type & COAT_MUD) != 0)
-                if (!rn2(2)) add_coating(x, y, COAT_MUD, 0);
-            if (svl.level.flags.temperature == 1)
-                if (rn2(4)) add_coating(x, y, COAT_ASHES, 0);
+                if (!rn2(3)) add_coating(x, y, COAT_MUD, 0);
         }
     }
 }
@@ -1324,6 +1318,17 @@ makelevel(void)
     oinit(); /* assign level dependent obj probabilities */
     clear_level_structures();
 
+    /* Assign the biome */
+    if (!Is_rogue_level(&u.uz)) {
+        for (i = 0; i < DGN_BIOMES; i++) {
+            if (svd.dungeons[u.uz.dnum].biome_cutoff[i] > u.uz.dlevel)
+                break;
+        }
+        svl.level.flags.biome = svd.dungeons[u.uz.dnum].biome_ids[i];
+    } else {
+        svl.level.flags.biome = BIOME_ODUNGEON;
+    }
+
     slev = Is_special(&u.uz);
     /* check for special levels */
     if (slev && !Is_rogue_level(&u.uz)) {
@@ -1359,6 +1364,13 @@ makelevel(void)
         }
         assert(svn.nroom > 0);
         sort_rooms();
+
+        /* Set biome temperature. Must be done here, since initializing
+           the level coder will clobber the temperature flag. */
+        if (IS_BIOME(BIOME_SNOWY)) {
+            svl.level.flags.temperature = -1;
+        } else if (IS_BIOME(BIOME_TROPICAL))
+            svl.level.flags.temperature = 1;
 
         generate_stairs(); /* up and down stairs */
 
@@ -1607,19 +1619,18 @@ coat_floors(void)
 {
     for (int x = 0; x < COLNO; x++) {
         for (int y = 0; y < ROWNO; y++) {
+            if (IS_SUBMASKABLE(levl[x][y].typ)) {
+                if (Is_medusa_level(&u.uz) || IS_BIOME(BIOME_TROPICAL))
+                    levl[x][y].submask = SM_SAND;
+                else if (IS_BIOME(BIOME_WOODLAND))
+                    levl[x][y].submask = SM_DIRT;
+            }
             if (!IS_COATABLE(levl[x][y].typ) || IS_STWALL(levl[x][y].typ))
                 continue;
-            if (IS_SUBMASKABLE(levl[x][y].typ)) {
-                if (Is_medusa_level(&u.uz))
-                    levl[x][y].submask = SM_SAND;
-                else if (rn2(3)) {
-                    levl[x][y].submask = SM_DIRT;
-                } else if (rn2(2)) {
-                    levl[x][y].submask = SM_SAND;
-                }
-                if (!has_ceiling(&u.uz) && !rn2(3)) 
-                    add_coating(x, y,  COAT_GRASS, 0);
-            }
+            if (!has_ceiling(&u.uz) && !rn2(3)) 
+                add_coating(x, y,  COAT_GRASS, 0);
+            if (IS_BIOME(BIOME_SNOWY))
+                add_coating(x, y, COAT_FROST, 0);
         }
     }
 }
@@ -1632,8 +1643,7 @@ level_finalize_topology(void)
 
     bound_digging();
     mineralize(-1, -1, -1, -1, FALSE);
-    if (!In_endgame(&u.uz) && !In_hell(&u.uz) && !In_sokoban(&u.uz)
-        && (svl.level.flags.is_maze_lev || In_mines(&u.uz)))
+    if (!In_endgame(&u.uz) && !In_hell(&u.uz) && !In_sokoban(&u.uz))
         coat_floors();
     gi.in_mklev = FALSE;
     /* avoid coordinates in future lua-loads for this level being thrown off
@@ -1652,7 +1662,6 @@ level_finalize_topology(void)
 #else
             topologize(croom);
 #endif
-            coat_room(croom, COAT_GRASS);
         }
     }
     set_wall_state();
@@ -1904,8 +1913,7 @@ staticfn void
 mktrap_victim(struct trap *ttmp)
 {
     /* Object generated by the trap; initially NULL, stays NULL if
-       we fail to generate an object or if the trap doesn't
-       generate objects. */
+       the trap doesn't generate objects. */
     struct obj *otmp = NULL;
     int victim_mnum; /* race of the victim */
     unsigned lvl = level_difficulty();
@@ -1959,14 +1967,18 @@ mktrap_victim(struct trap *ttmp)
             break;
         }
 
-        otmp = mkobj(poss_class, FALSE);
         /* these items are always cursed, both for flavour (owned
            by a dead adventurer, bones-pile-style) and for balance
            (less useful to use, and encourage pets to avoid the trap) */
-        if (otmp) {
-            otmp->blessed = 0;
-            otmp->cursed = 1;
-            otmp->owt = weight(otmp);
+        otmp = mkobj(poss_class, FALSE);
+        curse(otmp);
+        /* for mktrap_victim(), PIT is actually an exploded LANDMINE */
+        if (ttmp->ttyp == PIT && breaktest(otmp)) {
+            /* landmine: if fragile object has been created, destroy it;
+               don't worry about non-empty containers--they aren't
+               breakable--nor about breakable contents of such */
+            dealloc_obj(otmp);
+        } else {
             place_object(otmp, x, y);
         }
 
@@ -2015,7 +2027,8 @@ mktrap_victim(struct trap *ttmp)
        instead (always human); no role-specific equipment is provided */
     if (victim_mnum == PM_HUMAN && rn2(25))
         victim_mnum = rn1(PM_WIZARD - PM_ARCHEOLOGIST, PM_ARCHEOLOGIST);
-    otmp = mkcorpstat(rn2(9) ? SKELETON : CORPSE, NULL, &mons[victim_mnum],
+    otmp = mkcorpstat((IS_BIOME(BIOME_TROPICAL) || rn2(2))
+                        ? SKELETON : CORPSE, NULL, &mons[victim_mnum],
                         x, y, CORPSTAT_INIT);
     otmp->age -= (TAINT_AGE + 1); /* died too long ago to safely eat */
 }
@@ -2151,7 +2164,7 @@ mktrap(
     m.x = m.y = 0;
 
     /* no traps in pools */
-    if (tm && is_pool(tm->x, tm->y))
+    if (tm && is_pool_or_lava(tm->x, tm->y))
         return;
 
     if (num > NO_TRAP && num < TRAPNUM) {
@@ -2223,7 +2236,8 @@ mktrap(
        immediately lethal). Finally, pits are excluded because it's
        weird to see an item in a pit and yet not be able to identify
        that the pit is there. */
-    if (kind != NO_TRAP && !(mktrapflags & MKTRAP_NOVICTIM)
+    if (gi.in_mklev
+        && kind != NO_TRAP && !(mktrapflags & MKTRAP_NOVICTIM)
         && lvl <= (unsigned) rnd(4)
         && kind != SQKY_BOARD && kind != RUST_TRAP
         /* rolling boulder trap might not have a boulder if there was no
@@ -2232,8 +2246,15 @@ mktrap(
         && !(kind == ROLLING_BOULDER_TRAP
              && t->launch.x == t->tx && t->launch.y == t->ty)
         && !is_pit(kind) && (kind < HOLE || kind == MAGIC_TRAP)) {
+        if (kind == LANDMINE) {
+            /* if victim was killed by a land mine, we won't scatter objects;
+               treat it as exploded, converting it into an unconcealed pit */
+            t->ttyp = PIT;
+            t->tseen = 1;
+        }
         mktrap_victim(t);
     }
+    return;
 }
 
 /* Create stairs up or down at x,y.
@@ -2378,6 +2399,9 @@ mkfount(struct mkroom *croom)
     /* Is it a "blessed" fountain? (affects drinking from fountain) */
     if (!rn2(7))
         levl[m.x][m.y].blessedftn = 1;
+    /* This does not actually work */
+    if (svl.level.flags.temperature == -1)
+        SET_FOUNTAIN_FROZEN(m.x, m.y);
 
     svl.level.flags.nfountains++;
 }
@@ -2409,6 +2433,19 @@ mksink(struct mkroom *croom)
         return;
 
     svl.level.flags.nsinks++;
+}
+
+staticfn void
+mktree(struct mkroom *croom)
+{
+    coord m;
+
+    if (!find_okay_roompos(croom, &m))
+        return;
+
+    /* Put a sink at m.x, m.y */
+    if (!set_levltyp(m.x, m.y, TREE))
+        return;
 }
 
 staticfn void

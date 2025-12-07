@@ -34,7 +34,8 @@ static const char *weather_strings[] = {
     "Calm", "Drizzle", "Rain", "Downburst", "Acid Rain", "Hail"
 };
 
-static struct weather dungeon_precips[] = {
+/* wizweather_precips must match weather_strings */
+static struct weather wizweather_precips[] = {
     { 0, WTHM_ALL_PRECIPS, 300, 575 },
     { WTH_DRIZZLE, WTHM_ALL_PRECIPS, 200, 200 },
     { WTH_RAIN, WTHM_ALL_PRECIPS, 100, 200 },
@@ -43,18 +44,25 @@ static struct weather dungeon_precips[] = {
     { WTH_HAIL, 0, 20, 10 },
 };
 
+static struct weather dungeon_precips[] = {
+    { 0, WTHM_ALL_PRECIPS, 300, 800 },
+    { WTH_DRIZZLE, WTHM_ALL_PRECIPS, 200, 100 },
+    { WTH_RAIN, WTHM_ALL_PRECIPS, 100, 95 },
+    { WTH_DOWNBURST, WTHM_ALL_PRECIPS, 50, 5 },
+};
+
 static struct weather dungeon_winds[] = {
     { 0, WTHM_ALL_WINDS, 200, 400 },
     { WTH_BREEZE, WTH_GUST, 300, 250 },
     { WTH_WIND, 0, 150, 200 },
-    { WTH_GUST, WTH_BREEZE, 150, 145 },
-    { WTH_TORNADO | WTH_GUST, 0, 50, 5 }
+    { WTH_GUST, WTH_BREEZE, 150, 150 }
 };
 
 static struct weather harassment_precip[] = {
     { WTH_ACIDRAIN, 0, 100, 350 },
     { WTH_FIRERAIN, 0, 100, 350 },
-    { WTH_HAIL, 0, 100, 300 }
+    { WTH_HAIL, 0, 20, 200 },
+    { WTH_TORNADO | WTH_GUST, 0, 50, 100 },
 };
 
 time_t
@@ -328,7 +336,7 @@ struct weather *roll_wind(void)
         total_prob += dungeon_winds[i].prob;
         if (x < total_prob) {
             u.uenvirons.inc_wind = dungeon_winds[i];
-            return &dungeon_precips[i];
+            return &dungeon_winds[i];
         }
     }
     panic("A black wind blows through you... (%d %d)", x, total_prob);
@@ -528,6 +536,32 @@ weatherchange_message(boolean rain)
 void
 timechange_message(boolean new_game)
 {
+    struct monst *mtmp;
+    boolean guards_called = FALSE;
+    /* Monster reactions. */
+    for (mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
+        if (mtmp->mfrozen || !mtmp->mcanmove)
+            continue;
+        if (u.uenvirons.tod == TOD_EARLYNIGHT
+                && !guards_called && is_mercenary(mtmp->data)
+                && mtmp->data != &mons[PM_GUARD] && mtmp->mpeaceful
+                && in_town(u.ux, u.uy)) {
+            guards_called = TRUE;
+            if (Deaf && canseemon(mtmp))
+                pline_mon(mtmp, "%s waves to you.", Monnam(mtmp));
+            else
+                verbalize("Sunset come and all's well!");
+        } else if (u.uenvirons.tod == TOD_MORNING 
+                    && !mtmp->female && mtmp->data->mlet == S_COCKATRICE) {
+            if (canseemon(mtmp))
+                pline_mon(mtmp, "%s crows at the rising sun.", Monnam(mtmp));
+            else
+                You_hear("a rooster crowing.");
+            wake_nearto(mtmp->mx, mtmp->my, 5 * 5);
+        }
+    }
+    close_shops(TRUE);
+    /* Messages */
     if (has_no_tod_cycles(&u.uz)) return;
     if (u.uenvirons.tod == TOD_MORNING) {
         if (Blind)
@@ -573,9 +607,12 @@ init_environs(void)
 {
     u.uenvirons.tod_cnt = TOD_QUARTER;
     roll_precip();
+    do {
+        roll_wind();
+    } while (INC_WIND(WTH_TORNADO));
     roll_wind();
-    u.uenvirons.precip_cnt = rn1(400, 200);
-    u.uenvirons.wind_cnt = rn1(200, 100);
+    u.uenvirons.precip_cnt = rn1(1000, 500);
+    u.uenvirons.wind_cnt = rn1(500, 500);
     u.uenvirons.tod = TOD_MORNING;
     /* sometimes we start with a little breeze */
     if (!rn2(2))
@@ -603,7 +640,7 @@ weather_choice_menu(void)
     u.uenvirons.inc_precip.timeout = rn1(500, 500);
     for (j = 0; j < n; ++j) {
         i = pick_list[j].item.a_int - 1;
-        u.uenvirons.inc_precip.def |= dungeon_precips[i].def;
+        u.uenvirons.inc_precip.def |= wizweather_precips[i].def;
     }
     free(pick_list);
     destroy_nhwindow(win);

@@ -1,3 +1,8 @@
+Crecelle-Specific Quick Reference:
+
+#wizbiome       == regenerate the current biomes
+#wizweather     == check the weather and potentially change it
+
 Debug-Mode Quick Reference:
 
 ^E  ==  detect secret doors and traps nearby

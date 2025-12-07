@@ -37,7 +37,7 @@ wiz_wish(void) /* Unlimited wishes for debug mode by Paul Polderman */
         flags.verbose = FALSE;
         makewish();
         flags.verbose = save_verbose;
-        (void) encumber_msg();
+        encumber_msg();
     } else
         pline(unavailcmd, ecname_from_fn(wiz_wish));
     return ECMD_OK;
@@ -195,6 +195,45 @@ wiz_map(void)
         HHallucination = save_Hhallu;
     } else
         pline(unavailcmd, ecname_from_fn(wiz_map));
+    return ECMD_OK;
+}
+
+/* #wizbiome - randomize the biomes, or set a specific one */
+int
+wiz_biome(void)
+{
+    char buf[BUFSZ], dummy = '\0';
+    int newbiome = 0;
+    int ret;
+
+    if (y_n("Regenerate all biomes?") == 'y') {
+        init_biomes();
+        pline("Regenerated the biomes of the current dungeon.");
+        return ECMD_OK;
+    }
+    /* Input */
+    buf[0] = '\0'; /* in case EDIT_GETLIN is enabled */
+    getlin("Set current biome to which index?", buf);
+    (void) mungspaces(buf);
+    if (buf[0] == '\033' || buf[0] == '\0')
+        ret = 0;
+    else
+        ret = sscanf(buf, "%d%c", &newbiome, &dummy);
+    /* Result */
+    if (ret != 1) {
+        pline1(Never_mind);
+        return ECMD_OK;
+    }
+    if (newbiome >= BIOME_MAX || newbiome < 0) {
+        pline("Invalid biome; biome must be less than %d", DGN_BIOMES);
+        return ECMD_OK;
+    }
+    for (int i = 0; i < DGN_BIOMES; i++) {
+        if (svd.dungeons[u.uz.dnum].biome_cutoff[i] > u.uz.dlevel)
+            svd.dungeons[u.uz.dnum].biome_ids[i] = newbiome;
+    }
+    svl.level.flags.biome = newbiome;
+    pline("Set biome to %d.", newbiome);
     return ECMD_OK;
 }
 

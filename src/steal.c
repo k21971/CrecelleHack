@@ -34,21 +34,34 @@ somegold(long lmoney)
 }
 
 /*
- * Find the first (and hopefully only) gold object in a chain.
+ * Find the first gold object in a chain.
  * Used when leprechaun (or you as leprechaun) looks for
  * someone else's gold.  Returns a pointer so the gold may
  * be seized without further searching.
  * May search containers too.
- * Deals in gold only, as leprechauns don't care for lesser coins.
+ * Deals in gold only, as leprechauns don't care for lesser materials.
+ * If only_coins is FALSE, it will return the first actual gold object in this
+ * chain, not just gold pieces. If it's TRUE, it will only look for gold
+ * pieces.
 */
 struct obj *
-findgold(struct obj *argchain)
+findgold(struct obj *chain, boolean only_coins)
 {
-    struct obj *chain = argchain; /* allow arg to be nonnull */
-
-    while (chain && chain->otyp != GOLD_PIECE)
+    struct obj* gold = (struct obj *) 0;
+    int ngoldobjs = 0;
+    while (chain) {
+        if (only_coins && chain->otyp == GOLD_PIECE) {
+            /* assume no multiple gold stacks */
+            return chain;
+        } else if (!only_coins && chain->material == GOLD) {
+            ngoldobjs++;
+            if (!rn2(ngoldobjs)) {
+                gold = chain;
+            }
+        }
         chain = chain->nobj;
-    return chain;
+    }
+    return gold;
 }
 
 /*
@@ -57,18 +70,19 @@ findgold(struct obj *argchain)
 void
 stealgold(struct monst *mtmp)
 {
-    struct obj *fgold = g_at(u.ux, u.uy);
+    struct obj *fgold;
     struct obj *ygold;
-    long tmp;
+    register long tmp;
     struct monst *who;
     const char *whose, *what;
 
-    /* skip lesser coins on the floor */
-    while (fgold && fgold->otyp != GOLD_PIECE)
+    /* look for gold on the floor */
+    fgold = svl.level.objects[u.ux][u.uy];
+    while (fgold && fgold->material != GOLD)
         fgold = fgold->nexthere;
 
     /* Do you have real gold? */
-    ygold = findgold(gi.invent);
+    ygold = findgold(gi.invent, FALSE);
 
     if (fgold && (!ygold || fgold->quan > ygold->quan || !rn2(5))) {
         obj_extract_self(fgold);
@@ -93,25 +107,32 @@ stealgold(struct monst *mtmp)
               (Levitation || Flying) ? "beneath" : "between", whose, what);
         if (!ygold || !rn2(5)) {
             if (!tele_restrict(mtmp))
-                (void) rloc(mtmp, RLOC_MSG);
+                (void) rloc(mtmp, TRUE);
             monflee(mtmp, 0, FALSE, FALSE);
         }
     } else if (ygold) {
-        const int gold_price = objects[GOLD_PIECE].oc_cost;
+        if (ygold->otyp == GOLD_PIECE) {
+            const int gold_price = objects[GOLD_PIECE].oc_cost;
 
-        tmp = (somegold(money_cnt(gi.invent)) + gold_price - 1) / gold_price;
-        tmp = min(tmp, ygold->quan);
-        if (tmp < ygold->quan)
-            ygold = splitobj(ygold, tmp);
-        else
-            setnotworn(ygold);
+            tmp = (somegold(money_cnt(gi.invent)) + gold_price - 1) / gold_price;
+            tmp = min(tmp, ygold->quan);
+            if (tmp < ygold->quan)
+                ygold = splitobj(ygold, tmp);
+            else
+                setnotworn(ygold);
+            Your("purse feels lighter.");
+        } else {
+            pline("%s steals %s!", Monnam(mtmp),
+                  ygold->oartifact ? bare_artifactname(ygold)
+                                   : yname(ygold));
+            remove_worn_item(ygold, TRUE);
+        }
         freeinv(ygold);
         add_to_minv(mtmp, ygold);
-        Your("purse feels lighter.");
         if (!tele_restrict(mtmp))
-            (void) rloc(mtmp, RLOC_MSG);
+            (void) rloc(mtmp, TRUE);
         monflee(mtmp, 0, FALSE, FALSE);
-        disp.botl = TRUE;
+        disp.botl = 1;
     }
 }
 
@@ -454,6 +475,8 @@ steal(struct monst *mtmp, char *objnambuf)
             goto retry;
         goto cant_take;
     }
+    if (mon_hates_material(mtmp, otmp->material))
+        goto cant_take;
     /* animals can't overcome curse stickiness nor unlock chains */
     if (monkey_business) {
         boolean ostuck;
@@ -470,18 +493,20 @@ steal(struct monst *mtmp, char *objnambuf)
                          cursed weapon but animals can't */
                       || (otmp == RING_ON_PRIMARY && welded(uwep))
                       || (otmp == RING_ON_SECONDARY && welded(uwep)
-                          && bimanual(uwep)));
+                          && u_bimanual(uwep)));
 
         if (ostuck || can_carry(mtmp, otmp) == 0) {
             static const char *const how[] = {
                 "steal", "snatch", "grab", "take"
             };
  cant_take:
-            pline("%s tries to %s %s%s but gives up.", Monnambuf,
+            pline("%s tries to %s %s%s but %s.", Monnambuf,
                   ROLL_FROM(how),
                   (otmp->owornmask & W_ARMOR) ? "your " : "",
                   (otmp->owornmask & W_ARMOR) ? armor_simple_name(otmp)
-                                              : yname(otmp));
+                                              : yname(otmp),
+                  mon_hates_material(mtmp, otmp->material) ? "can't handle it"
+                                                            : "gives up");
             /* the fewer items you have, the less likely the thief
                is going to stick around to try again (0) instead of
                running away (1) */
@@ -601,7 +626,7 @@ steal(struct monst *mtmp, char *objnambuf)
         && mtmp->data->mlet == S_NYMPH)
         ++named;
     urgent_pline("%s stole %s.", named ? "She" : Monnambuf, doname(otmp));
-    (void) encumber_msg();
+    encumber_msg();
     could_petrify = (otmp->otyp == CORPSE
                      && touch_petrifies(&mons[otmp->corpsenm]));
     otmp->how_lost = LOST_STOLEN;
@@ -762,7 +787,7 @@ stealamulet(struct monst *mtmp)
         pline("%s steals %s!", Some_Monnam(mtmp), buf);
         if (can_teleport(mtmp->data) && !tele_restrict(mtmp))
             (void) rloc(mtmp, RLOC_MSG);
-        (void) encumber_msg();
+        encumber_msg();
     }
 }
 
@@ -793,13 +818,13 @@ maybe_absorb_item(
         } else {
             const char *hand_s = body_part(HAND);
 
-            if (bimanual(obj))
+            if (u_bimanual(obj))
                 hand_s = makeplural(hand_s);
             pline("%s %s pulled from your %s!", upstart(yname(obj)),
                   otense(obj, "are"), hand_s);
         }
         freeinv(obj);
-        (void) encumber_msg();
+        encumber_msg();
     } else {
         /* not carried; presumably thrown or kicked */
         if (canspotmon(mon))
@@ -881,7 +906,7 @@ relobj(
     int omx = mtmp->mx, omy = mtmp->my;
 
     /* vault guard's gold goes away rather than be dropped... */
-    if (mtmp->isgd && (otmp = findgold(mtmp->minvent)) != 0) {
+    if (mtmp->isgd && (otmp = findgold(mtmp->minvent, TRUE)) != 0) {
         if (canspotmon(mtmp))
             pline("%s gold %s.", s_suffix(Monnam(mtmp)),
                   canseemon(mtmp) ? "vanishes" : "seems to vanish");

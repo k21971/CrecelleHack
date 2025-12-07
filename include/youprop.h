@@ -243,7 +243,7 @@
 /*** Transportation ***/
 #define HJumping u.uprops[JUMPING].intrinsic
 #define EJumping u.uprops[JUMPING].extrinsic
-#define Jumping (HJumping || EJumping)
+#define Jumping (HJumping || EJumping || is_jumper(gy.youmonst.data))
 
 #define HTeleportation u.uprops[TELEPORT].intrinsic
 #define ETeleportation u.uprops[TELEPORT].extrinsic
@@ -423,11 +423,14 @@
    redundant but allows the function calls to be skipped most of the time */
 #define Unaware (gm.multi < 0 && (unconscious() || is_fainted()))
 
-#define Hate_silver (u.ulycn >= LOW_PM || hates_silver(gy.youmonst.data))
-
 /* _The_Hitchhikers_Guide_to_the_Galaxy_ on uses for 'towel': "wrap it round
    your head to ward off noxious fumes" [we require it to be damp or wet] */
 #define Half_gas_damage \
     (ublindf && ublindf->otyp == TOWEL && ublindf->spe > 0)
+/* Whether the hero is in a form that dislikes a certain material */
+#define Hate_material(material) \
+    (hates_material(gy.youmonst.data, material) \
+     || (!Upolyd && hates_material(&mons[gu.urace.mnum], material)) \
+     || (material == SILVER && u.ulycn >= LOW_PM))
 
 #endif /* YOUPROP_H */

@@ -108,12 +108,14 @@ start: Blank
         S_expl_bl: \032
         S_expl_bc: \032
         S_expl_br: \032
+				S_bad_coins: \032
         S_eye: \032
         S_falling_rock_trap: \032
         S_feline: \032
         S_fire_trap: \032
         S_flashbeam: \032
         S_food: \032
+				S_force_field: \032
         S_fountain: \032
         S_fungus: \032
         S_gem: \032

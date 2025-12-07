@@ -151,7 +151,7 @@ typedef struct {
 } monster;
 
 typedef struct {
-    Str_or_Len name;
+    Str_or_Len name, omat, oprop;
     int corpsenm;
     short id, spe;
     packed_coord coord;
@@ -161,7 +161,7 @@ typedef struct {
     int quan;
     short buried;
     short lit;
-    short eroded, locked, trapped, tknown, recharged, invis, greased, broken,
+    short eroded, osize, locked, trapped, tknown, pknown, recharged, invis, greased, broken,
           achievement;
 } object;
 

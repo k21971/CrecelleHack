@@ -21,8 +21,8 @@ enum obj_material_types {
     WOOD        =  8,
     BONE        =  9,
     DRAGON_HIDE = 10, /* not leather! */
-    IRON        = 11, /* Fe - includes steel */
-    METAL       = 12, /* Sn, &c. */
+    IRON        = 11, /* Fe*/
+    METAL       = 12, /* Stainless steel, Sn, &c. */
     COPPER      = 13, /* Cu - includes brass */
     SILVER      = 14, /* Ag */
     GOLD        = 15, /* Au */
@@ -30,9 +30,10 @@ enum obj_material_types {
     MITHRIL     = 17,
     PLASTIC     = 18,
     GLASS       = 19,
-    BLUEICE     = 20,
+    ICECRYSTAL  = 20,
     GEMSTONE    = 21,
-    MINERAL     = 22
+    MINERAL     = 22,
+    NUM_MATERIAL_TYPES
 };
 
 enum obj_armor_types {
@@ -45,6 +46,16 @@ enum obj_armor_types {
     ARM_SHIRT  = 6
 };
 
+enum obj_oprops {
+    OPROP_SANGUINE = 1,
+    OPROP_BOREAL = 2,
+    OPROP_THERMAL = 3,
+    OPROP_CRACKLING = 4,
+    OPROP_SUBTLE = 5,
+    OPROP_HEXED = 6,
+    NUM_OPROPS
+};
+
 struct objclass {
     short oc_name_idx;              /* index of actual name */
     short oc_descr_idx;             /* description when name unknown */
@@ -55,8 +66,8 @@ struct objclass {
                                      * otherwise, obj->dknown and obj->bknown
                                      * tell all, and obj->known should always
                                      * be set for proper merging behavior. */
-    Bitfield(oc_pre_discovered, 1); /* already known at start of game; flagged
-                                     * as such when discoveries are listed */
+    Bitfield(oc_encountered, 1);    /* hero has observed such an item at least
+                                       once (perhaps without naming it) */
     Bitfield(oc_magic, 1);          /* inherently magical object */
     Bitfield(oc_charged, 1);        /* may have +n or (n) charges */
     Bitfield(oc_unique, 1);         /* special one-of-a-kind object */
@@ -78,9 +89,9 @@ struct objclass {
 #define IMMEDIATE 2 /* directional beam that doesn't ricochet */
 #define RAY       3 /* beam that does bounce off walls */
     /* overloaded oc_dir: strike mode bit mask for weapons and weptools */
-#define PIERCE   01 /* pointed weapon punctures target */
-#define SLASH    02 /* sharp weapon cuts target */
-#define WHACK    04 /* blunt weapon bashes target */
+#define PIERCE    1 /* pointed weapon punctures target */
+#define SLASH     2 /* sharp weapon cuts target */
+#define WHACK     4 /* blunt weapon bashes target */
     Bitfield(oc_material, 5); /* one of obj_material_types */
 
     schar oc_subtyp;
@@ -187,26 +198,43 @@ extern NEARDATA struct objdescr obj_descr[NUM_OBJECTS + 1];
 #define OBJ_NAME(obj) (obj_descr[(obj).oc_name_idx].oc_name)
 #define OBJ_DESCR(obj) (obj_descr[(obj).oc_descr_idx].oc_descr)
 
-#define is_organic(otmp) (objects[otmp->otyp].oc_material <= WOOD)
+#define is_organic(otmp) (otmp->material <= WOOD)
+#define is_dragonhide(otmp) (otmp->material == DRAGON_HIDE)
+#define is_mithril(otmp) (otmp->material == MITHRIL)
+#define is_iron(otmp) (otmp->material == IRON)
+#define is_glass(otmp) (otmp->material == GLASS)
+#define is_wood(otmp) (otmp->material == WOOD)
+#define is_bone(otmp) (otmp->material == BONE)
+#define is_stone(otmp) (otmp->material == MINERAL)
 #define is_metallic(otmp) \
-    (objects[otmp->otyp].oc_material >= IRON            \
-     && objects[otmp->otyp].oc_material <= MITHRIL)
+    (otmp->material >= IRON && otmp->material <= MITHRIL)
+#define is_heavy_metallic(otmp) \
+    (otmp->material >= IRON && otmp->material <= PLATINUM)
 
 /* primary damage: fire/rust/--- */
 /* is_flammable(otmp), is_rottable(otmp) in mkobj.c */
-#define is_rustprone(otmp) (objects[otmp->otyp].oc_material == IRON)
+#define is_rustprone(otmp) (otmp->material == IRON)
 #define is_crackable(otmp) \
-    ((objects[(otmp)->otyp].oc_material == GLASS \
-        || objects[(otmp)->otyp].oc_material == ICE) \
+    ((otmp->material == GLASS || otmp->material == ICECRYSTAL) \
      && ((otmp)->oclass == ARMOR_CLASS || (otmp)->oclass == TOOL_CLASS)) /* erosion_matters() */
 /* secondary damage: rot/acid/acid */
 #define is_corrodeable(otmp) \
-    (objects[otmp->otyp].oc_material == COPPER          \
-     || objects[otmp->otyp].oc_material == IRON)
+    (otmp->material == COPPER          \
+     || otmp->material == IRON)
 /* subject to any damage */
 #define is_damageable(otmp) \
     (is_rustprone(otmp) || is_flammable(otmp)           \
      || is_rottable(otmp) || is_corrodeable(otmp)       \
      || is_crackable(otmp))
+/* has a fuzzed weight */
+#define is_fuzzy_weight(otmp) \
+    ((otmp->oclass == WEAPON_CLASS || otmp->oclass == ARMOR_CLASS \
+        || is_weptool(otmp)) && !(objects[otmp->otyp].oc_merge || otmp->nomerge || is_ammo(otmp)))
+/* is necessary to win the game */
+#define is_ascension_obj(otmp) \
+    (otmp->otyp == AMULET_OF_YENDOR \
+        || otmp->otyp == CANDELABRUM_OF_INVOCATION \
+        || otmp->otyp == BELL_OF_OPENING \
+        || otmp->otyp == SPE_BOOK_OF_THE_DEAD)
 
 #endif /* OBJCLASS_H */

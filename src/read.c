@@ -1,4 +1,4 @@
-/* NetHack 3.7	read.c	$NHDT-Date: 1715889745 2024/05/16 20:02:25 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.308 $ */
+/* NetHack 3.7	read.c	$NHDT-Date: 1762577372 2025/11/07 20:49:32 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.323 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2012. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -32,6 +32,7 @@ staticfn void seffect_taming(struct obj **);
 staticfn void seffect_genocide(struct obj **);
 staticfn void seffect_light(struct obj **);
 staticfn void seffect_charging(struct obj **);
+staticfn void seffect_transmute_material(struct obj **);
 staticfn void seffect_amnesia(struct obj **);
 staticfn void seffect_fire(struct obj **);
 staticfn void seffect_earth(struct obj **);
@@ -659,7 +660,7 @@ stripspe(struct obj *obj)
         pline("%s briefly.", Yobjnam2(obj, "vibrate"));
         costly_alteration(obj, COST_UNCHRG);
         obj->spe = 0;
-        if (obj->otyp == OIL_LAMP || obj->otyp == BRASS_LANTERN)
+        if (obj->otyp == OIL_LAMP || obj->otyp == LANTERN)
             obj->age = 0;
     }
 }
@@ -704,7 +705,7 @@ charge_ok(struct obj *obj)
 
     if (obj->oclass == TOOL_CLASS) {
         /* suggest tools that aren't oc_charged but can still be recharged */
-        if (obj->otyp == BRASS_LANTERN
+        if (obj->otyp == LANTERN
             || (obj->otyp == OIL_LAMP)
             /* only list magic lamps if they are not identified yet */
             || (obj->otyp == MAGIC_LAMP
@@ -722,6 +723,26 @@ charge_ok(struct obj *obj)
     /* why are weapons/armor considered charged anyway?
      * make them selectable even so for "feeling of loss" message */
     return GETOBJ_EXCLUDE_SELECTABLE;
+}
+
+/* getobj callback for object to alter material of */
+int
+transmute_ok(struct obj *obj)
+{
+    if (!obj)
+        return GETOBJ_EXCLUDE;
+
+    /* Absolutely not. No. Never. */
+    if (is_ascension_obj(obj))
+        return GETOBJ_EXCLUDE;
+
+    if (obj->oclass == WEAPON_CLASS
+        || obj->oclass == ARMOR_CLASS
+        || obj->oclass == TOOL_CLASS)
+        return GETOBJ_SUGGEST;
+
+    /* For later, when we allow more objects to have materials. */
+    return GETOBJ_EXCLUDE;
 }
 
 /* recharge an object; curse_bless is -1 if the recharging implement
@@ -894,7 +915,7 @@ recharge(struct obj *obj, int curse_bless)
             }
             break;
         case OIL_LAMP:
-        case BRASS_LANTERN:
+        case LANTERN:
             if (is_cursed) {
                 stripspe(obj);
                 if (obj->lamplit) {
@@ -957,7 +978,6 @@ recharge(struct obj *obj, int curse_bless)
         case HORN_OF_PLENTY:
         case BAG_OF_TRICKS:
         case CAN_OF_GREASE:
-        case DUCT_TAPE:
             if (is_cursed) {
                 stripspe(obj);
             } else if (is_blessed) {
@@ -1178,7 +1198,6 @@ seffect_enchant_armor(struct obj **sobjp)
         same_color = FALSE;
 
     /* KMH -- catch underflow */
-    #if 0
     s = scursed ? -otmp->spe : otmp->spe;
     if (s > (special_armor ? 5 : 3) && rn2(s)) {
         otmp->in_use = TRUE;
@@ -1192,7 +1211,6 @@ seffect_enchant_armor(struct obj **sobjp)
         useup(otmp);
         return;
     }
-    #endif
     s = scursed ? -1
         : (otmp->spe >= 9)
         ? (rn2(otmp->spe) == 0)
@@ -1225,6 +1243,7 @@ seffect_enchant_armor(struct obj **sobjp)
         otmp->lamplit = was_lit;
         if (old_light)
             maybe_adjust_light(otmp, old_light);
+        set_obj_size(otmp, USIZE, TRUE);
         return;
     } else if (s >= 0 && otmp->otyp == SKULL) {
         pline("%s morphs into a fearsome helmet!", Yname2(otmp));
@@ -1237,7 +1256,7 @@ seffect_enchant_armor(struct obj **sobjp)
                 bless(otmp);
         } else if (otmp->cursed)
             uncurse(otmp);
-        boost_object(otmp, mons[otmp->corpsenm].mboost);
+        add_oprop_to_object(otmp, oprop_from_permonst(&mons[otmp->corpsenm]));
         otmp->known = 1;
         setworn(otmp, W_ARMH);
         if (otmp->unpaid)
@@ -1266,10 +1285,7 @@ seffect_enchant_armor(struct obj **sobjp)
         /* despite being schar, it shouldn't be possible for spe to wrap
            here because it has been capped at 99 and s is quite small;
            however, might need to change s if it takes spe past 99 */
-        if (s < 0)
-            otmp->spe += s;
-        else
-            boost_object(otmp, 0);
+        otmp->spe += s;
         cap_spe(otmp); /* make sure that it doesn't exceed SPE_LIM */
         s = otmp->spe - oldspe; /* cap_spe() might have throttled 's' */
         if (s) /* skip if it got changed to 0 */
@@ -1779,6 +1795,27 @@ seffect_charging(struct obj **sobjp)
 }
 
 staticfn void
+seffect_transmute_material(struct obj **sobjp)
+{
+    struct obj *sobj = *sobjp;
+    struct obj *otmp;
+    boolean scursed = sobj->cursed;
+    boolean already_known = (sobj->oclass == SPBOOK_CLASS /* spell */
+                             || objects[sobj->otyp].oc_name_known);
+
+    useup(sobj);
+    *sobjp = 0;
+    if (!already_known) {
+        pline("This scroll lets you change the material of an item.");
+        learnscroll(sobj);
+    }
+    otmp = getobj("transmute", transmute_ok, GETOBJ_PROMPT | GETOBJ_ALLOWCNT);
+    if (otmp) {
+        transmute_obj(otmp, scursed ? PLASTIC : 0);
+    }
+}
+
+staticfn void
 seffect_amnesia(struct obj **sobjp)
 {
     struct obj *sobj = *sobjp;
@@ -2007,7 +2044,10 @@ seffect_maze(struct obj **sobjp)
         }
         if (!(cc.x == u.ux && cc.y == u.uy)) {
             mtmp = m_at(cc.x, cc.y);
-            if (is_rider(mtmp->data)) {
+            if (!mtmp) {
+                pline1(nothing_happens);
+                return;
+            } else if (is_rider(mtmp->data)) {
                 You("lack the authority...");
                 return;
             } else if (mtmp) {
@@ -2332,6 +2372,9 @@ seffects(
         break;
     case SCR_MAZE:
         seffect_maze(&sobj);
+        break;
+    case SCR_TRANSMUTE_MATERIAL:
+        seffect_transmute_material(&sobj);
         break;
     case SCR_STINKING_CLOUD:
         seffect_stinking_cloud(&sobj);
@@ -2886,7 +2929,7 @@ do_genocide(
               * 3 = forced genocide of player
               * 5 (4 | 1) = normal genocide from throne */
 {
-    char buf[BUFSZ], promptbuf[QBUFSZ];
+    char buf[BUFSZ], realbuf[BUFSZ], promptbuf[QBUFSZ];
     int i, killplayer = 0;
     int mndx;
     struct permonst *ptr;
@@ -2991,27 +3034,31 @@ do_genocide(
     }
 
     which = "all ";
+    Strcpy(realbuf, ptr->pmnames[NEUTRAL]); /* standard singular */
     if (Hallucination) {
-        if (Upolyd)
+        /* hallucinate hero's type */
+        if (Upolyd) {
             Strcpy(buf, pmname(gy.youmonst.data,
                                flags.female ? FEMALE : MALE));
-        else {
+        } else {
             Strcpy(buf, (flags.female && gu.urole.name.f) ? gu.urole.name.f
-                                                       : gu.urole.name.m);
+                                                          : gu.urole.name.m);
             buf[0] = lowc(buf[0]);
         }
     } else {
-        Strcpy(buf, ptr->pmnames[NEUTRAL]); /* standard singular */
+        /* use actual type */
+        Strcpy(buf, realbuf);
         if ((ptr->geno & G_UNIQ) && ptr != &mons[PM_HIGH_CLERIC])
             which = !type_is_pname(ptr) ? "the " : "";
     }
+
     if (how & REALLY) {
         if (!num_genocides())
             livelog_printf(LL_CONDUCT | LL_GENOCIDE,
                            "performed %s first erasure (%s)",
-                           uhis(), makeplural(buf));
+                           uhis(), makeplural(realbuf));
         else
-            livelog_printf(LL_GENOCIDE, "erased %s", makeplural(buf));
+            livelog_printf(LL_GENOCIDE, "erased %s", makeplural(realbuf));
 
         /* setting no-corpse affects wishing and random tin generation */
         svm.mvitals[mndx].mvflags |= (G_GENOD | G_NOCORPSE);
@@ -3033,13 +3080,13 @@ do_genocide(
             }
 
             /* Polymorphed characters will die as soon as they're rehumanized.
-             */
-            /* KMH -- Unchanging prevents rehumanization */
+               KMH -- Unchanging prevents rehumanization. */
             if (Upolyd && ptr != gy.youmonst.data) {
                 delayed_killer(POLYMORPH, svk.killer.format, svk.killer.name);
                 You_feel("%s inside.", udeadinside());
-            } else
+            } else {
                 done(GENOCIDED);
+            }
         } else if (ptr == gy.youmonst.data) {
             rehumanize();
         }

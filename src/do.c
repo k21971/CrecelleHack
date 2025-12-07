@@ -316,7 +316,8 @@ flooreffects(
                && cansee(x,y)) {
         doaltarobj(obj);
     } else if (obj->oclass == POTION_CLASS && svl.level.flags.temperature > 0
-               && (levl[x][y].typ == ROOM || levl[x][y].typ == CORR)) {
+               && (levl[x][y].typ == ROOM || levl[x][y].typ == CORR)
+               && In_hell(&u.uz)) {
         /* Potions are sometimes destroyed when landing on very hot
            ground. The basic odds are 50% for nonblessed potions and
            30% for blessed potions; if you have handled the object
@@ -730,7 +731,7 @@ canletgo(struct obj *obj, const char *word)
         if (*word) {
             const char *hand = body_part(HAND);
 
-            if (bimanual(uwep))
+            if (u_bimanual(uwep))
                 hand = makeplural(hand);
             Norep("You cannot %s %s welded to your %s.", word, something,
                   hand);
@@ -894,7 +895,7 @@ dropz(struct obj *obj, boolean with_impact)
             map_object(obj, 0);
         newsym(u.ux, u.uy); /* remap location under self */
     }
-    (void) encumber_msg();
+    encumber_msg();
 }
 
 /* when swallowed, move dropped object from OBJ_FREE to u.ustuck's inventory;
@@ -969,6 +970,7 @@ obj_no_longer_held(struct obj *obj)
                 costly_alteration(obj, COST_DEGRD);
             obj->otyp = WORM_TOOTH;
             obj->oerodeproof = 0;
+            set_material(obj, objects[WORM_TOOTH].oc_material);
         }
         break;
     }
@@ -1712,7 +1714,8 @@ goto_level(
     if (cant_go_back) {
         /* discard unreachable levels; keep #0 */
         for (l_idx = maxledgerno(); l_idx > 0; --l_idx)
-            if (!leaving_tutorial || ledger_to_dnum(l_idx) == tutorial_dnum)
+            if (!leaving_tutorial || ledger_to_dnum(l_idx) == tutorial_dnum
+                || ledger_to_dnum(l_idx) == maze_dnum)
                 delete_levelfile(l_idx);
         /* mark #overview data for all dungeon branches as uninteresting */
         for (l_idx = 0; l_idx < svn.n_dgns; ++l_idx)
@@ -2032,8 +2035,10 @@ goto_level(
     /* shop repair is normally done when shopkeepers move, but we may
        need to catch up for lost time here; do this before maybe dying
        so bones map will include it */
-    if (!new)
+    if (!new) {
         fix_shop_damage();
+    }
+    close_shops(FALSE);
 
     /* fall damage? */
     if (do_fall_dmg) {
@@ -2491,7 +2496,7 @@ set_wounded_legs(long side, int timex)
        direct assignment instead of bitwise-OR so getting wounded in
        one leg mysteriously healed the other */
     EWounded_legs |= side;
-    (void) encumber_msg();
+    encumber_msg();
 }
 
 void
@@ -2530,7 +2535,7 @@ heal_legs(
            more when steed becomes healthy, then possible floor
            feedback, then able to carry less when back on foot]. */
         if (how == 0)
-            (void) encumber_msg();
+            encumber_msg();
     }
 }
 

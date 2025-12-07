@@ -130,6 +130,7 @@ staticfn boolean rob_shop(struct monst *);
 staticfn void deserted_shop(char *);
 staticfn boolean special_stock(struct obj *, struct monst *, boolean);
 staticfn const char *cad(boolean);
+staticfn void close_up_shop(struct monst *, boolean);
 
 /*
         invariants: obj->unpaid iff onbill(obj) [unless bp->useup]
@@ -156,7 +157,7 @@ static const char *const angrytexts[] = {
 long
 money2mon(struct monst *mon, long amount)
 {
-    struct obj *ygold = findgold(gi.invent);
+    struct obj *ygold = findgold(gi.invent, TRUE);
 
     if (amount <= 0) {
         impossible("%s payment in money2mon!", amount ? "negative" : "zero");
@@ -185,7 +186,7 @@ money2mon(struct monst *mon, long amount)
 void
 money2u(struct monst *mon, long amount)
 {
-    struct obj *mongold = findgold(mon->minvent);
+    struct obj *mongold = findgold(mon->minvent, TRUE);
 
     if (amount <= 0) {
         impossible("%s payment in money2u!", amount ? "negative" : "zero");
@@ -463,6 +464,7 @@ call_kops(struct monst *shkp, boolean nearshop)
     nokops = ((svm.mvitals[PM_KEYSTONE_KOP].mvflags & G_GONE)
               && (svm.mvitals[PM_KOP_SERGEANT].mvflags & G_GONE)
               && (svm.mvitals[PM_KOP_LIEUTENANT].mvflags & G_GONE)
+              && (svm.mvitals[PM_KNIGHT_WATCH].mvflags & G_GONE)
               && (svm.mvitals[PM_KOP_KAPTAIN].mvflags & G_GONE));
 
     if (!angry_guards(!!Deaf) && nokops) {
@@ -778,6 +780,13 @@ u_entered_shop(char *enterstring)
             pline("%s is combing through %s inventory list.",
                   Shknam(shkp), noit_mhis(shkp));
         }
+    } else if (night()) {
+        if (!Deaf) {
+            pline("%s coughs politely.", Shknam(shkp));
+            verbalize("I was trying to close up for the night...");
+        } else {
+            pline("%s is pointedly checking the time.", Shknam(shkp));
+        }
     } else {
         if (!Deaf && !muteshk(shkp)) {
             set_voice(shkp, 0, 80, 0);
@@ -1060,6 +1069,16 @@ tended_shop(struct mkroom *sroom)
     struct monst *mtmp = sroom->resident;
 
     return !mtmp ? FALSE : (boolean) inhishop(mtmp);
+}
+
+void
+noisy_shop(struct mkroom *sroom)
+{
+    struct monst *mtmp = sroom->resident;
+
+    if (mtmp && inhishop(mtmp)) {
+        wake_nearto(mtmp->mx, mtmp->my, 11 * 11);
+    }
 }
 
 staticfn struct bill_x *
@@ -2796,11 +2815,40 @@ oid_price_adjustment(struct obj *obj, unsigned int oid)
     int res = 0, otyp = obj->otyp;
 
     if (!(obj->dknown && objects[otyp].oc_name_known)
-        && (obj->oclass != GEM_CLASS || objects[otyp].oc_material != GLASS)) {
+        && (obj->oclass != GEM_CLASS || is_worthless_glass(obj))) {
         res = ((oid % 4) == 0); /* id%4 ==0 -> +1, ==1..3 -> 0 */
     }
     return res;
 }
+
+/* Relative prices for the different materials.
+ * Units for this are much more poorly defined than for weights; the best
+ * approximation would be something like "zorkmids per aum".
+ * We only care about the ratio of two of these together. */
+static const int matprices[] = {
+     0,
+     1, /* LIQUID */
+     1, /* WAX */
+     1, /* VEGGY */
+     3, /* FLESH */
+     2, /* PAPER */
+     3, /* CLOTH */
+     5, /* LEATHER */
+     8, /* WOOD */
+    20, /* BONE */
+   200, /* DRAGON_HIDE - DSM to scale mail */
+    10, /* IRON */
+    15, /* METAL */
+    18, /* COPPER */
+    30, /* SILVER */
+    60, /* GOLD */
+    80, /* PLATINUM */
+    50, /* MITHRIL - mithril-coat to regular chain mail */
+    10, /* PLASTIC */
+    20, /* GLASS */
+   500, /* GEMSTONE */
+    10  /* MINERAL */
+};
 
 /* calculate the value that the shk will charge for [one of] an object */
 staticfn long
@@ -2825,8 +2873,7 @@ get_cost(
     /* shopkeeper may notice if the player isn't very knowledgeable -
        especially when gem prices are concerned */
     if (!obj->dknown || !objects[obj->otyp].oc_name_known) {
-        if (obj->oclass == GEM_CLASS
-            && objects[obj->otyp].oc_material == GLASS) {
+        if (is_worthless_glass(obj)) {
             int i;
             /* get a value that's 'random' from game to game, but the
                same within the same game */
@@ -2874,6 +2921,10 @@ get_cost(
             divisor *= 3L;
         }
     }
+    /* adjust for different material */
+    multiplier *= matprices[obj->material];
+    divisor *= matprices[objects[obj->otyp].oc_material];
+
     if (uarmh && uarmh->otyp == DUNCE_CAP)
         multiplier *= 4L, divisor *= 3L;
     else if ((Role_if(PM_TOURIST) && u.ulevel < (MAXULEV / 2))
@@ -2911,7 +2962,7 @@ get_cost(
         tmp *= 4L;
 
     /* harmonic objects cost significantly more */
-    if (obj->booster)
+    if (obj->oprop)
         tmp *= 2L;
 
     /* anger surcharge should match rile_shk's, so we do it separately
@@ -3085,6 +3136,10 @@ set_cost(struct obj *obj, struct monst *shkp)
 
     tmp = get_pricing_units(obj) * unit_price;
 
+    /* adjust for different material */
+    multiplier *= matprices[obj->material];
+    divisor *= matprices[objects[obj->otyp].oc_material];
+
     if (uarmh && uarmh->otyp == DUNCE_CAP)
         divisor *= 3L;
     else if ((Role_if(PM_TOURIST) && u.ulevel < (MAXULEV / 2))
@@ -3098,9 +3153,9 @@ set_cost(struct obj *obj, struct monst *shkp)
     if (!obj->dknown || !objects[obj->otyp].oc_name_known) {
         if (obj->oclass == GEM_CLASS) {
             /* different shop keepers give different prices */
-            if (objects[obj->otyp].oc_material == GEMSTONE
-                || objects[obj->otyp].oc_material == GLASS) {
-                tmp = ((obj->otyp - FIRST_REAL_GEM) % (6 - shkp->m_id % 3));
+            if (obj->material == GEMSTONE
+                || is_worthless_glass(obj)) {
+                tmp = (obj->otyp % (6 - shkp->m_id % 3));
                 tmp = (tmp + 3) * obj->quan;
                 divisor = 1L;
             }
@@ -3353,7 +3408,7 @@ shk_names_obj(
     char *obj_name, fmtbuf[BUFSZ];
     boolean was_unknown = !obj->dknown;
 
-    obj->dknown = TRUE;
+    observe_object(obj);
     /* Use real name for ordinary weapons/armor, and spell-less
      * scrolls/books (that is, blank and mail), but only if the
      * object is within the shk's area of interest/expertise.
@@ -4205,7 +4260,8 @@ corpsenm_price_adj(struct obj *obj)
 {
     long val = 0L;
 
-    if ((obj->otyp == TIN || obj->otyp == EGG || obj->otyp == CORPSE)
+    if ((obj->otyp == TIN || obj->otyp == EGG || obj->otyp == CORPSE
+         || obj->otyp ==BLOOD)
         && ismnum(obj->corpsenm)) {
         int i;
         long tmp = 1L;
@@ -4253,6 +4309,11 @@ getprice(struct obj *obj, boolean shk_buying)
         tmp = arti_cost(obj);
         if (shk_buying)
             tmp /= 4;
+    }
+    /* shopkeepers are grumpy at night */
+    if (night()) {
+        if (shk_buying) tmp /= 2;
+        else tmp *= 2;
     }
     switch (obj->oclass) {
     case FOOD_CLASS:
@@ -5054,6 +5115,9 @@ makekops(coord *mm)
         if ((cnt = k_cnt[k]) == 0)
             break;
         mndx = k_mndx[k];
+        if (mndx == PM_KEYSTONE_KOP
+            && (night() || Role_if(PM_KNIGHT)))
+            mndx = PM_KNIGHT_WATCH;
         if (svm.mvitals[mndx].mvflags & G_GONE)
             continue;
 
@@ -5523,6 +5587,9 @@ shk_chat(struct monst *shkp)
     } else if (is_izchak(shkp, FALSE)) {
         if (!Deaf && !muteshk(shkp))
             pline(ROLL_FROM(Izchak_speaks), shkname(shkp));
+    } else if (night()) {
+        if (!Deaf && !muteshk(shkp))
+            pline("%s complains about having to speak with a customer at such a late hour.", Shknam(shkp));
     } else {
         if (!Deaf && !muteshk(shkp))
             pline("%s talks about the problem of shoplifters.", Shknam(shkp));
@@ -5589,7 +5656,7 @@ cost_per_charge(
             tmp /= 5L;
     } else if (otmp->otyp == CRYSTAL_BALL               /* 1 - 5 */
                || otmp->otyp == OIL_LAMP                /* 1 - 10 */
-               || otmp->otyp == BRASS_LANTERN
+               || otmp->otyp == LANTERN
                || (otmp->otyp >= MAGIC_FLUTE
                    && otmp->otyp <= DRUM_OF_EARTHQUAKE) /* 5 - 9 */
                || otmp->oclass == WAND_CLASS) {         /* 3 - 11 */
@@ -5598,7 +5665,7 @@ cost_per_charge(
     } else if (otmp->oclass == SPBOOK_CLASS) {
         tmp -= tmp / 5L;
     } else if (otmp->otyp == CAN_OF_GREASE || otmp->otyp == TINNING_KIT
-               || otmp->otyp == EXPENSIVE_CAMERA || otmp->otyp == DUCT_TAPE) {
+               || otmp->otyp == EXPENSIVE_CAMERA) {
         tmp /= 10L;
     } else if (otmp->otyp == POT_OIL) {
         tmp /= 5L;
@@ -6039,6 +6106,73 @@ use_unpaid_trapobj(struct obj *otmp, coordxy x, coordxy y)
             }
         }
         bill_dummy_object(otmp);
+    }
+}
+
+/* close or open all shops on a level */
+void
+close_shops(boolean loud)
+{
+    struct monst *shkp;
+
+    for (shkp = next_shkp(fmon, FALSE); shkp;
+         shkp = next_shkp(shkp->nmon, FALSE)) {
+        if (on_level(&(ESHK(shkp)->shoplevel), &u.uz))
+            close_up_shop(shkp, loud);
+    }
+}
+
+/* close up the shops for the night, or open them in the morning */
+staticfn void
+close_up_shop(struct monst *shkp, boolean loud)
+{
+    struct eshk *eshkp = ESHK(shkp);
+    struct mkroom *sroom = &svr.rooms[eshkp->shoproom - ROOMOFFSET];
+    int fdoor = sroom->fdoor;
+    int rt = sroom->rtype;
+    coord cc = svd.doors[fdoor];
+
+    /* Can't close up */
+    if (shk_impaired(shkp) || ANGRY(shkp))
+        return;
+
+    /* No door to close */
+    if (!IS_DOOR(levl[cc.x][cc.y].typ)
+        || (levl[cc.x][cc.y].doormask & D_BROKEN))
+        return;
+    
+    /* Something in the way */
+    if (MON_AT(cc.x, cc.y) || (cc.x == u.ux && cc.y == u.uy))
+        return;
+
+    if (night()
+        && (levl[cc.x][cc.y].doormask == D_ISOPEN
+            || levl[cc.x][cc.y].doormask == D_CLOSED)) {
+        if (loud) {
+            if (canseemon(shkp))
+                pline("%s claps %s hands.", Shknam(shkp), mhis(shkp));
+            verbalize("%s %s is now closed for the evening!",
+                        s_suffix(shkname(shkp)), shtypes[rt - SHOPBASE].name);
+            if (cansee(cc.x, cc.y))
+                pline("The shop door locks.");
+        }
+        levl[cc.x][cc.y].doormask = D_LOCKED;
+        newsym(cc.x, cc.y);
+        block_point(cc.x, cc.y);
+    } else if (!night()
+                && (levl[cc.x][cc.y].doormask == D_LOCKED
+                    || levl[cc.x][cc.y].doormask == D_LOCKED)) {
+        if (loud) {
+            if (canseemon(shkp))
+                pline("%s snaps %s fingers.", Shknam(shkp), mhis(shkp));
+            verbalize("%s %s is open for business!",
+                        s_suffix(shkname(shkp)), shtypes[rt - SHOPBASE].name);
+            if (cansee(cc.x, cc.y))
+                pline("The shop door opens.");
+        }
+        levl[cc.x][cc.y].doormask = D_ISOPEN;
+        newsym(cc.x, cc.y);
+        unblock_point(cc.x, cc.y);
     }
 }
 

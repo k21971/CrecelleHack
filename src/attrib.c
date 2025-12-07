@@ -104,6 +104,8 @@ static const struct innate {
   orc_abil[] = { { 1, &HInfravision, "", "" },
                  { 1, &HPoison_resistance, "", "" },
                  { 0, 0, 0, 0 } },
+  kob_abil[] = { { 1, &HPoison_resistance, "", "" },
+                 { 0, 0, 0, 0 } },
 
   hum_abil[] = { { 0, 0, 0, 0 } };
 
@@ -194,7 +196,7 @@ adjattrib(
     if (msgflg <= 0)
         You_feel("%s%s!", (incr > 1 || incr < -1) ? "very " : "", attrstr);
     if (program_state.in_moveloop && (ndx == A_STR || ndx == A_CON))
-        (void) encumber_msg();
+        encumber_msg();
     return TRUE;
 }
 
@@ -404,7 +406,7 @@ poisoned(
         /* "Poisoned by a poisoned ___" is redundant */
         done(strstri(pkiller, "poison") ? DIED : POISONING);
     }
-    (void) encumber_msg();
+    encumber_msg();
 }
 
 void
@@ -480,7 +482,7 @@ restore_attrib(void)
         }
     }
     if (disp.botl)
-        (void) encumber_msg();
+        encumber_msg();
 }
 
 #define AVAL 50 /* tune value for exercise gains */
@@ -514,7 +516,7 @@ exercise(int i, boolean inc_or_dec)
                     (inc_or_dec) ? "inc" : "dec", AEXE(i));
     }
     if (svm.moves > 0 && (i == A_STR || i == A_CON))
-        (void) encumber_msg();
+        encumber_msg();
 }
 
 staticfn void
@@ -756,7 +758,7 @@ redist_attr(void)
         if (ABASE(i) < ATTRMIN(i))
             ABASE(i) = ATTRMIN(i);
     }
-    /* (void) encumber_msg(); -- caller needs to do this */
+    /* encumber_msg(); -- caller needs to do this */
 }
 
 /* apply minor variation to attributes */
@@ -835,6 +837,9 @@ check_innate_abil(long *ability, long frommask)
             break;
         case PM_ORC:
             abil = orc_abil;
+            break;
+        case PM_KOBOLD:
+            abil = kob_abil;
             break;
         case PM_HUMAN:
             abil = hum_abil;
@@ -1017,6 +1022,9 @@ adjabil(int oldlevel, int newlevel)
         break;
     case PM_ORC:
         rabil = orc_abil;
+        break;
+    case PM_KOBOLD:
+        rabil = kob_abil;
         break;
     case PM_HUMAN:
     case PM_DWARF:

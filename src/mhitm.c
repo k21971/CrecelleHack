@@ -455,8 +455,8 @@ mattackm(
                 res[i] = hitmm(magr, mdef, mattk, mwep, dieroll);
                 if ((mdef->data == &mons[PM_BLACK_PUDDING]
                      || mdef->data == &mons[PM_BROWN_PUDDING])
-                    && (mwep && (objects[mwep->otyp].oc_material == IRON
-                                 || objects[mwep->otyp].oc_material == METAL))
+                    && (mwep && (mwep->material == IRON
+                                 || mwep->material == METAL))
                     && mdef->mhp > 1 && !mdef->mcan) {
                     struct monst *mclone;
 
@@ -655,12 +655,12 @@ hitmm(
     int compat;
     boolean weaponhit = (mattk->aatyp == AT_WEAP
                          || (mattk->aatyp == AT_CLAW && mwep)),
-            silverhit = (weaponhit && mwep
-                         && objects[mwep->otyp].oc_material == SILVER);
+            hatedhit = (weaponhit && mwep
+                         && mon_hates_material(mdef, mwep->material));
 
     pre_mm_attack(magr, mdef);
 
-    if (boost_effects_pre(magr, mdef))
+    if (oprop_effects_pre(magr, mdef))
         return M_ATTK_HIT; /* mdef died */
 
     compat = !magr->mcan ? could_seduce(magr, mdef, mattk) : 0;
@@ -710,7 +710,7 @@ hitmm(
             if (*buf)
                 pline("%s %s.", buf, mon_nam_too(mdef, magr));
 
-            if (mon_hates_silver(mdef) && silverhit) {
+            if (hatedhit) {
                 char *mdef_name = mon_nam_too(mdef, magr);
 
                 /* note: mon_nam_too returns a modifiable buffer; so
@@ -789,10 +789,8 @@ gazemm(struct monst *magr, struct monst *mdef, struct attack *mattk)
                 return M_ATTK_MISS;
             }
             if (canseemon(magr))
-                pline_mon(magr, "%s closes %s eyes.", Monnam(magr), mhis(magr));
-            magr->mblinded = rnd(8);
-            magr->mcansee = 0;
-            // monstone(magr);
+                pline("%s is turned to stone!", Monnam(magr));
+            monstone(magr);
             if (!DEADMONSTER(magr))
                 return M_ATTK_MISS;
             return M_ATTK_AGR_DIED;
@@ -969,6 +967,8 @@ gulpmm(
             remove_monster(dx,dy);
             place_monster(magr, ax, ay);
             place_monster(mdef, dx, dy);
+        } else if (MON_AT(ax, ay)) {
+            place_monster(magr, dx, dy);
         } else {
             place_monster(magr, ax, ay);
         }
@@ -1041,11 +1041,8 @@ mdamagem(
     mhm.specialdmg = 0;
     mhm.dieroll = dieroll;
     mhm.done = FALSE;
-
-#ifdef MON_HARMONICS
-    if (mon_boosted(magr, magr->data->mboost))
-        mhm.damage += d((int) mattk->damn, (int) mattk->damd);
-#endif
+    struct obj* hated_obj;
+    long armask;
 
     if ((touch_petrifies(pd) /* or flesh_petrifies() */
          || (mattk->adtyp == AD_DGST && pd == &mons[PM_MEDUSA]))
@@ -1073,6 +1070,10 @@ mdamagem(
             return M_ATTK_AGR_DIED;
         }
     }
+
+    /* check for special damage sources (e.g. hated material) */
+    armask = attack_contact_slots(magr, mattk->aatyp);
+    mhm.damage += special_dmgval(magr, mdef, armask, &hated_obj);
 
     mhitm_adtyping(magr, mattk, mdef, &mhm);
 
@@ -1110,6 +1111,10 @@ mdamagem(
             return mhm.hitflags; /* mdef lifesaved */
         else if (mhm.hitflags == M_ATTK_AGR_DIED)
             return (M_ATTK_DEF_DIED | M_ATTK_AGR_DIED);
+
+        /* improve pet handling if we see pet kill monsters */
+        if (magr->mtame && canspotmon(magr) && !rn2(3))
+            use_skill(P_PET_HANDLING, 1);
 
         if (mattk->adtyp == AD_DGST) {
             /* various checks similar to dog_eat and meatobj.
@@ -1368,6 +1373,12 @@ passivemm(
     case AD_ENCH: /* KMH -- remove enchantment (disenchanter) */
         if (mhitb && !mdef->mcan && mwep) {
             (void) drain_item(mwep, FALSE);
+            /* No message */
+        }
+        break;
+    case AD_TMUT:
+        if (mhitb && !mdef->mcan && mwep) {
+            (void) transmute_obj(mwep, 0);
             /* No message */
         }
         break;

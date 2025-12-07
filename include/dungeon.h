@@ -58,11 +58,15 @@ typedef struct exclusion_zone {
     struct exclusion_zone *next;
 } exclusion_zone;
 
+#define DGN_BIOMES 12
+
 typedef struct dungeon {   /* basic dungeon identifier */
     char dname[24];        /* name of the dungeon (eg. "Hell") */
     char proto[15];        /* name of prototype file (eg. "tower") */
     char fill_lvl[15];     /* name of "fill" level protype file */
     char themerms[15];     /* lua file name containing themed rooms */
+    char biome_ids[DGN_BIOMES];    /* ids of biomes in the dungeon */
+    char biome_cutoff[DGN_BIOMES]; /* cutoff for each biome */
     char boneid;           /* character to id dungeon in bones files */
     d_flags flags;         /* dungeon flags */
     xint16 entry_lev;       /* entry level */
@@ -71,7 +75,6 @@ typedef struct dungeon {   /* basic dungeon identifier */
     int ledger_start,      /* the starting depth in "real" terms */
         depth_start;       /* the starting depth in "logical" terms */
 } dungeon;
-
 /*
  * A branch structure defines the connection between two dungeons.  They
  * will be ordered by the dungeon number/level number of 'end1'.  Ties
@@ -259,6 +262,17 @@ typedef struct mapseen {
     /* dead heroes; might not have graves or ghosts */
     struct cemetery *final_resting_place; /* same as level.bonesinfo */
 } mapseen;
+
+enum bioime_types {
+    BIOME_ODUNGEON = 0,   /* Standard dungeon */
+    BIOME_WOODLAND = 1,   /* Grassy and woody */
+    BIOME_FUNGAL = 2,     /* Full of fungi */
+    BIOME_TROPICAL = 3,   /* Full of sand and such */
+    BIOME_SNOWY = 4,      /* Snowy */
+    BIOME_MAX = 5
+};
+
+#define IS_BIOME(x) (svl.level.flags.biome == x)
 
 #endif /* !MAKEDEFS_C && !MDLIB_C */
 

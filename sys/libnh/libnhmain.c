@@ -810,7 +810,7 @@ EM_JS(void, js_helpers_init, (), {
     // used by update_inventory
     function displayInventory() {
         // Asyncify.handleAsync(async () => {
-            return _display_inventory(0, 0);
+            return _repopulate_perminvent();
         // });
     }
 
@@ -1025,6 +1025,7 @@ void js_constants_init() {
     SET_CONSTANT("CONDITION", BL_MASK_WOUNDEDL);
     SET_CONSTANT("CONDITION", BL_MASK_HOLDING);
     SET_CONSTANT("CONDITION", BL_MASK_PRONE);
+    SET_CONSTANT("CONDITION", BL_MASK_WET);
 
     // menu
     SET_CONSTANT("MENU_SELECT", PICK_NONE);
@@ -1125,6 +1126,11 @@ void js_constants_init() {
     SET_CONSTANT("ROLE_RACEMASK", MH_DWARF);
     SET_CONSTANT("ROLE_RACEMASK", MH_GNOME);
     SET_CONSTANT("ROLE_RACEMASK", MH_ORC);
+    SET_CONSTANT("ROLE_RACEMASK", MH_WERE);
+    SET_CONSTANT("ROLE_RACEMASK", MH_DEMON);
+    SET_CONSTANT("ROLE_RACEMASK", MH_UNDEAD);
+    SET_CONSTANT("ROLE_RACEMASK", MH_GIANT);
+    SET_CONSTANT("ROLE_RACEMASK", MH_KOBOLD);
 
     SET_CONSTANT("ROLE_GENDMASK", ROLE_MALE);
     SET_CONSTANT("ROLE_GENDMASK", ROLE_FEMALE);
@@ -1164,6 +1170,7 @@ void js_constants_init() {
     SET_CONSTANT("blconditions", bl_unconsc);
     SET_CONSTANT("blconditions", bl_woundedl);
     SET_CONSTANT("blconditions", bl_holding);
+    SET_CONSTANT("blconditions", bl_wet);
     SET_CONSTANT("blconditions", CONDITION_COUNT);
 
     SET_CONSTANT("HL", HL_UNDEF);
@@ -1180,7 +1187,6 @@ void js_constants_init() {
     SET_CONSTANT("MG", MG_INVIS);
     SET_CONSTANT("MG", MG_DETECT);
     SET_CONSTANT("MG", MG_PET);
-    SET_CONSTANT("MG", MG_BOOST);
     SET_CONSTANT("MG", MG_RIDDEN);
     SET_CONSTANT("MG", MG_STATUE);
     SET_CONSTANT("MG", MG_OBJPILE);

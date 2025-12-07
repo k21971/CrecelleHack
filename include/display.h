@@ -501,10 +501,7 @@ enum glyph_offsets {
     GLYPH_PET_OFF = (NUMMONS + GLYPH_MON_FEM_OFF),
     GLYPH_PET_MALE_OFF = (GLYPH_PET_OFF),
     GLYPH_PET_FEM_OFF = (NUMMONS + GLYPH_PET_MALE_OFF),
-    GLYPH_BOOSTED_OFF = (NUMMONS + GLYPH_PET_FEM_OFF),
-    GLYPH_BOOSTED_MALE_OFF = (GLYPH_BOOSTED_OFF),
-    GLYPH_BOOSTED_FEM_OFF = (NUMMONS + GLYPH_BOOSTED_MALE_OFF),
-    GLYPH_INVIS_OFF = (NUMMONS + GLYPH_BOOSTED_FEM_OFF),
+    GLYPH_INVIS_OFF = (NUMMONS + GLYPH_PET_FEM_OFF),
     GLYPH_DETECT_OFF = (1 + GLYPH_INVIS_OFF),
     GLYPH_DETECT_MALE_OFF = (GLYPH_DETECT_OFF),
     GLYPH_DETECT_FEM_OFF = (NUMMONS + GLYPH_DETECT_MALE_OFF),
@@ -567,9 +564,6 @@ enum glyph_offsets {
 #define pet_to_glyph(mon, rng) \
     ((int) what_mon(monsndx((mon)->data), rng)                          \
      + (((mon)->female == 0) ? GLYPH_PET_MALE_OFF : GLYPH_PET_FEM_OFF))
-#define boosted_to_glyph(mon, rng) \
-    ((int) what_mon(monsndx((mon)->data), rng)                          \
-     + (((mon)->female == 0) ? GLYPH_BOOSTED_MALE_OFF : GLYPH_BOOSTED_FEM_OFF))
 
 /* treat unaligned as the default instead of explicitly checking for it;
    altar alignment uses 3 bits with 4 defined values and 4 unused ones */
@@ -656,10 +650,6 @@ enum glyph_offsets {
 #define petnum_to_glyph(mnum,gnd) \
     ((int) (mnum) + (((gnd) == MALE) ? GLYPH_PET_MALE_OFF       \
                                      : GLYPH_PET_FEM_OFF))
-
-#define boosted_monnum_to_glyph(mnum,gnd) \
-    ((int) (mnum) + (((gnd) == MALE) ? GLYPH_BOOSTED_MALE_OFF       \
-                                     : GLYPH_BOOSTED_FEM_OFF))
 
 /* The hero's glyph when seen as a monster.
  */
@@ -785,17 +775,9 @@ enum glyph_offsets {
 #define glyph_is_detected_monster(glyph) \
     (glyph_is_detected_male_monster(glyph)              \
         || glyph_is_detected_female_monster(glyph))
-#define glyph_is_boosted_female(glyph) \
-    ((glyph) >= GLYPH_BOOSTED_FEM_OFF && (glyph) < (GLYPH_BOOSTED_FEM_OFF + NUMMONS))
-#define glyph_is_boosted_male(glyph) \
-    ((glyph) >= GLYPH_BOOSTED_MALE_OFF                      \
-     && (glyph) < (GLYPH_BOOSTED_MALE_OFF + NUMMONS))
-#define glyph_is_boosted_monster(glyph) \
-    (glyph_is_boosted_male(glyph) || glyph_is_boosted_female(glyph))
 #define glyph_is_monster(glyph) \
     (glyph_is_normal_monster(glyph) || glyph_is_pet(glyph)              \
-     || glyph_is_ridden_monster(glyph) || glyph_is_detected_monster(glyph) \
-     || glyph_is_boosted_monster(glyph))
+     || glyph_is_ridden_monster(glyph) || glyph_is_detected_monster(glyph))
 #define glyph_is_invisible(glyph) ((glyph) == GLYPH_INVISIBLE)
 
 /* final NUMMONS is legal array index because of trailing fencepost entry */
@@ -804,10 +786,6 @@ enum glyph_offsets {
          ? ((glyph) - GLYPH_MON_FEM_OFF)                       \
          : glyph_is_normal_male_monster(glyph)                 \
            ? ((glyph) - GLYPH_MON_MALE_OFF)                    \
-           : glyph_is_boosted_female(glyph)                        \
-             ? ((glyph) - GLYPH_BOOSTED_FEM_OFF)                   \
-             : glyph_is_boosted_male(glyph)                        \
-               ? ((glyph) - GLYPH_BOOSTED_MALE_OFF)                \
            : glyph_is_female_pet(glyph)                        \
              ? ((glyph) - GLYPH_PET_FEM_OFF)                   \
              : glyph_is_male_pet(glyph)                        \
@@ -1042,7 +1020,6 @@ enum glyph_offsets {
 #define MG_FEMALE  0x02000  /* represents a female mon or statue of one */
 #define MG_BADXY   0x04000  /* bad coordinates were passed */
 #define MG_SURFACE 0x08000  /* some type of special surface. */
-#define MG_BOOST   0x10000  /* monster or player boosted by terrain */
 
 /* docrt(): re-draw whole screen; docrt_flags(): docrt() with more control */
 enum docrt_flags_bits {

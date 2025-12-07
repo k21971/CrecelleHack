@@ -208,6 +208,8 @@ struct u_conduct {     /* number of times... */
     long elbereth;     /* engraved Elbereth */
     long sokocheat;    /* violated special 'rules' in Sokoban */
     long pets;         /* obtained a pet */
+    long conflicting;  /* generated conflict */
+    long holy_water;   /* blessed an object with holy water */
     /* genocides already listed at end of game */
 };
 
@@ -216,7 +218,12 @@ struct u_roleplay {
     boolean nudist; /* has not worn any armor, ever */
     boolean deaf;   /* permanently deaf */
     boolean pauper; /* no starting inventory */
+    boolean reroll;  /* starting inventory/attr rerolling enabled */
+    boolean perfect_bestiary; /* automatically know all monsters */
+    boolean no_flipped_soko;  /* do not flip sokoban */
+    boolean altstarts;  /* alternate location starts for certain roles and races */
     long numbones;  /* # of bones files loaded  */
+    long numrerolls; /* # of rerolls used */
 };
 
 /*** Unified structure containing role information ***/
@@ -242,8 +249,8 @@ struct Role {
     short questarti; /* index (ART_) of quest artifact (questpgr.c) */
 
     /*** Bitmasks ***/
+    long mhrace;
     short allow;                  /* bit mask of allowed variations */
-#define ROLE_RACEMASK  0x0ff8     /* allowable races */
 #define ROLE_GENDMASK  0xf000     /* allowable genders */
 #define ROLE_MALE      0x1000
 #define ROLE_FEMALE    0x2000
@@ -346,10 +353,17 @@ struct Gender {
     const char *filecode; /* file code */
     short allow;          /* equivalent ROLE_ mask */
 };
+struct Orientation {
+    const char* adj;       /* gay/straight/bi */
+    const char* technical; /* homosexual/heterosexual/bisexual */
+    uchar mapping;         /* equivalent constant, e.g. ORIENT_STRAIGHT */
+};
 #define ROLE_GENDERS 2    /* number of permitted player genders
                              increment to 3 if you allow neuter roles */
+#define ROLE_ORIENTATIONS 3 /* number of defined player orientations */
 
 extern const struct Gender genders[]; /* table of available genders */
+extern const struct Orientation orientations[]; /* table of available genders */
 /* pronouns for the hero */
 #define uhe()      (genders[flags.female ? 1 : 0].he)
 #define uhim()     (genders[flags.female ? 1 : 0].him)
@@ -574,9 +588,9 @@ struct _hitmon_data {
     struct permonst *mdat;
     boolean use_weapon_skill;
     boolean train_weapon_skill;
-    int barehand_silver_rings;
-    boolean silvermsg;
-    boolean silverobj;
+    int barehand_hated_rings;
+    boolean hatedmsg;
+    boolean hatedobj;
     boolean lightobj;
     int material;
     int jousting;
@@ -589,6 +603,7 @@ struct _hitmon_data {
     boolean needpoismsg;
     boolean poiskilled;
     boolean already_killed;
+    boolean offmap;
     boolean destroyed;
     boolean dryit;
     boolean doreturn;
@@ -606,6 +621,7 @@ struct _hitmon_data {
 /* hero at (x,y)? */
 #define u_at(x,y) ((x) == u.ux && (y) == u.uy)
 
+#define USIZE (mons[Upolyd ? u.umonnum : gu.urace.mnum].msize)
 #define URIGHTY (u.uhandedness == RIGHT_HANDED)
 #define ULEFTY (u.uhandedness == LEFT_HANDED)
 #define RING_ON_PRIMARY (ULEFTY ? uleft : uright)

@@ -128,6 +128,7 @@ enum levl_typ_types {
 #define IS_WATERWALL(typ) ((typ) == WATER)
 #define IS_COATABLE(typ) (IS_STWALL(typ) || ((typ) >= IRONBARS && (typ) < ALTAR))
 #define IS_SUBMASKABLE(typ) (typ == ROOM || typ == CORR || typ == STONE)
+#define IS_OVERWRITABLE(typ) (typ != STAIRS && typ != LADDER)
 /* for surface checks when it's unknown whether a drawbridge is involved;
    drawbridge_up is the spot in front of a closed drawbridge and not the
    current surface at that spot; caveat: this evaluates its arguments more
@@ -150,7 +151,7 @@ COAT(BLOOD,     "blood",    "bloody ",              0x008), \
 COAT(FUNGUS,    "fungus",   "fungus-encrusted ",    0x010), \
 COAT(SHARDS,    "shards",   "glass-strewn ",        0x020), \
 COAT(HONEY,     "honey",    "sticky ",              0x040), \
-COAT(FROST,     "frost",    "icy ",                 0x080), \
+COAT(FROST,     "snow",     "snowy ",               0x080), \
 COAT(MUD,       "mud",      "muddy ",               0x100), \
 COAT(ALL,       "all",      "all",                  0xfff)
 
@@ -185,6 +186,7 @@ struct rm {
 
     /* HORRIBLE HACK INCOMING DANGER DANGER */
     Bitfield(pindex, 10);    /* This puts a hard upper limit on monster and potion types of 1024.*/
+#define fruit_otyp pindex
     /* 2 free  bits */
     Bitfield(coat_info, 12);  /* Stores the info about the floor's coating. */
 
@@ -465,6 +467,7 @@ struct cemetery {
 struct levelflags {
     uchar nfountains; /* number of fountains on level */
     uchar nsinks;     /* number of sinks on the level */
+    uchar biome;      /* biome identifier */
     /* Several flags that give hints about what's on the level */
     Bitfield(has_shop, 1);
     Bitfield(has_vault, 1);

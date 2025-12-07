@@ -17,6 +17,11 @@
                                || (ptr) == &mons[PM_VROCK] \
                                || (ptr) == &mons[PM_SKUNK_APE])
 
+#define can_wwalk(mon) (((mon)->mextrinsics & MR2_WATERWALK) != 0)
+#define can_jump(mon)  (((mon)->mextrinsics & MR2_JUMPING) != 0)
+#define can_magbreathe(mon) (((mon)->mextrinsics & MR2_MAGBREATH) != 0)
+#define extra_strength(mon) (((mon)->mextrinsics & MR2_STRENGTH) != 0)
+#define is_jumper(ptr) ((ptr) == &mons[PM_KNIGHT])
 #define is_flyer(ptr) (((ptr)->mflags1 & M1_FLY) != 0L)
 #define is_floater(ptr) ((ptr)->mlet == S_EYE || (ptr)->mlet == S_LIGHT)
 /* clinger: piercers, mimics, wumpus -- generally don't fall down holes */
@@ -85,6 +90,8 @@
 #define telepathic(ptr)                                                \
     ((ptr) == &mons[PM_FLOATING_EYE] || (ptr) == &mons[PM_MIND_FLAYER] \
      || (ptr) == &mons[PM_MASTER_MIND_FLAYER])
+#define has_telepathy(mon) (((mon)->mextrinsics & MR2_TELEPATHY) != 0 \
+                            || telepathic(mon->data))
 #define is_armed(ptr) attacktype(ptr, AT_WEAP)
 #define acidic(ptr) (((ptr)->mflags1 & M1_ACID) != 0L)
 #define poisonous(ptr) (((ptr)->mflags1 & M1_POIS) != 0L)
@@ -93,22 +100,23 @@
 #define metallivorous(ptr) (((ptr)->mflags1 & M1_METALLIVORE) != 0L)
 #define polyok(ptr) (((ptr)->mflags2 & M2_NOPOLY) == 0L)
 #define is_shapeshifter(ptr) (((ptr)->mflags2 & M2_SHAPESHIFTER) != 0L)
-#define is_undead(ptr) (((ptr)->mflags2 & M2_UNDEAD) != 0L)
-#define is_were(ptr) (((ptr)->mflags2 & M2_WERE) != 0L)
-#define is_elf(ptr) (((ptr)->mflags2 & M2_ELF) != 0L)
-#define is_dwarf(ptr) (((ptr)->mflags2 & M2_DWARF) != 0L)
-#define is_gnome(ptr) (((ptr)->mflags2 & M2_GNOME) != 0L)
-#define is_orc(ptr) (((ptr)->mflags2 & M2_ORC) != 0L)
-#define is_human(ptr) (((ptr)->mflags2 & M2_HUMAN) != 0L)
-#define your_race(ptr) (((ptr)->mflags2 & gu.urace.selfmask) != 0L)
+#define is_undead(ptr) (((ptr)->mhflags & MH_UNDEAD) != 0L)
+#define is_were(ptr) (((ptr)->mhflags & MH_WERE) != 0L)
+#define is_elf(ptr) (((ptr)->mhflags & MH_ELF) != 0L)
+#define is_dwarf(ptr) (((ptr)->mhflags & MH_DWARF) != 0L)
+#define is_gnome(ptr) (((ptr)->mhflags & MH_GNOME) != 0L)
+#define is_orc(ptr) (((ptr)->mhflags & MH_ORC) != 0L)
+#define is_kobold(ptr) (((ptr)->mhflags & MH_KOBOLD) != 0L)
+#define is_human(ptr) (((ptr)->mhflags & MH_HUMAN) != 0L)
+#define your_race(ptr) (((ptr)->mhflags & gu.urace.selfmask) != 0L)
 #define is_bat(ptr)                                         \
     ((ptr) == &mons[PM_BAT] || (ptr) == &mons[PM_GIANT_BAT] \
      || (ptr) == &mons[PM_VAMPIRE_BAT])
 #define is_bird(ptr) ((ptr)->mlet == S_BAT && !is_bat(ptr))
-#define is_giant(ptr) (((ptr)->mflags2 & M2_GIANT) != 0L)
+#define is_giant(ptr) (((ptr)->mhflags & MH_GIANT) != 0L)
 #define is_golem(ptr) ((ptr)->mlet == S_GOLEM)
 #define is_domestic(ptr) (((ptr)->mflags2 & M2_DOMESTIC) != 0L)
-#define is_demon(ptr) (((ptr)->mflags2 & M2_DEMON) != 0L)
+#define is_demon(ptr) (((ptr)->mhflags & MH_DEMON) != 0L)
 #define is_mercenary(ptr) (((ptr)->mflags2 & M2_MERC) != 0L)
 #define is_male(ptr) (((ptr)->mflags2 & M2_MALE) != 0L)
 #define is_female(ptr) (((ptr)->mflags2 & M2_FEMALE) != 0L)
@@ -120,8 +128,8 @@
                             || (ptr)== &mons[PM_MASTER_OF_THIEVES]))
 #define always_hostile(ptr) (((ptr)->mflags2 & M2_HOSTILE) != 0L)
 #define always_peaceful(ptr) (((ptr)->mflags2 & M2_PEACEFUL) != 0L)
-#define race_hostile(ptr) (((ptr)->mflags2 & gu.urace.hatemask) != 0L)
-#define race_peaceful(ptr) (((ptr)->mflags2 & gu.urace.lovemask) != 0L)
+#define race_hostile(ptr) (((ptr)->mhflags & gu.urace.hatemask) != 0L)
+#define race_peaceful(ptr) (((ptr)->mhflags & gu.urace.lovemask) != 0L)
 #define extra_nasty(ptr) (((ptr)->mflags2 & M2_NASTY) != 0L)
 #define strongmonst(ptr) (((ptr)->mflags2 & M2_STRONG) != 0L)
 #define can_breathe(ptr) attacktype(ptr, AT_BREA)
@@ -200,9 +208,11 @@
      *  Note too: that was with 1990s hardware and before fumarole smoke
      *  blocking line of sight was added, so might no longer be necessary.] */
 #define likes_lava(ptr) \
-    (ptr == &mons[PM_FIRE_ELEMENTAL] || ptr == &mons[PM_SALAMANDER])
+    (ptr == &mons[PM_FIRE_ELEMENTAL] || ptr == &mons[PM_SALAMANDER] \
+        || ptr == &mons[PM_MAGMA_PARAELEMENTAL])
 #define pm_invisible(ptr) \
-    ((ptr) == &mons[PM_STALKER] || (ptr) == &mons[PM_BLACK_LIGHT])
+    ((ptr) == &mons[PM_STALKER] || (ptr) == &mons[PM_BLACK_LIGHT] \
+        || (ptr) == &mons[PM_PHANTOM_FUNGUS])
 
 /* could probably add more */
 #define likes_fire(ptr)                                                  \
@@ -261,7 +271,8 @@
      || ptr == &mons[PM_PIRANHA])
 
 #define has_blood(ptr) \
-    (!(nonliving(ptr) || unsolid(ptr) || mindless(ptr)))
+    (!(nonliving(ptr) || unsolid(ptr) || mindless(ptr) \
+        || amorphous(ptr)))
 #define has_bones(ptr) \
     (!vegan(ptr) && !unsolid(ptr) && !amorphous(ptr))
 #define has_skull(ptr) \
@@ -295,7 +306,7 @@
      ? (obj)->otyp == BANANA                                             \
      : (is_domestic(ptr) && (obj)->oclass == FOOD_CLASS                  \
         && ((ptr)->mlet != S_UNICORN                                     \
-            || objects[(obj)->otyp].oc_material == VEGGY                 \
+            || obj->material == VEGGY                                    \
             || ((obj)->otyp == CORPSE && (obj)->corpsenm == PM_LICHEN))))
 
 #ifdef PMNAME_MACROS

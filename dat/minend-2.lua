@@ -160,3 +160,11 @@ des.monster("dwarf")
 des.monster("dwarf")
 des.monster("dwarf")
 des.monster("h")
+-- Resizing Kits
+des.object("resizing kit")
+if (percent(50)) then
+    des.object("resizing kit")
+end
+if (percent(50)) then
+    des.object("resizing kit")
+end

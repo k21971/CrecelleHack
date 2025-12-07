@@ -12,6 +12,8 @@ staticfn int use_stethoscope(struct obj *);
 staticfn void use_whistle(struct obj *);
 staticfn void use_magic_whistle(struct obj *);
 staticfn void magic_whistled(struct obj *);
+staticfn int resize_ok(struct obj *);
+staticfn int use_resizing_kit(struct obj *);
 staticfn int use_leash(struct obj *);
 staticfn void use_leash_core(struct obj *, struct monst *, coord *, int);
 staticfn boolean mleashed_next2u(struct monst *);
@@ -26,11 +28,10 @@ staticfn void display_jump_positions(boolean);
 staticfn void use_tinning_kit(struct obj *);
 staticfn int use_figurine(struct obj **);
 staticfn int grease_ok(struct obj *);
-staticfn int duct_tape_ok(struct obj *);
-staticfn int use_duct_tape(struct obj *);
 staticfn int use_grease(struct obj *);
 staticfn void use_trap(struct obj *);
 staticfn int touchstone_ok(struct obj *);
+staticfn int use_sympathy(struct obj *);
 staticfn int use_stone(struct obj *);
 staticfn int set_trap(void); /* occupation callback */
 staticfn void display_polearm_positions(boolean);
@@ -695,6 +696,109 @@ magic_whistled(struct obj *obj)
     return;
 }
 
+staticfn int
+resize_ok(struct obj *obj)
+{
+    if (!obj)
+        return GETOBJ_EXCLUDE;
+    if (obj->globby)
+        return GETOBJ_DOWNPLAY;
+    if (obj->oclass != ARMOR_CLASS && obj->oclass != WEAPON_CLASS
+        && !is_weptool(obj))
+        return GETOBJ_EXCLUDE;
+    return GETOBJ_SUGGEST;
+}
+
+staticfn int
+use_resizing_kit(struct obj *obj)
+{
+    struct obj *otmp;
+    anything any;
+    menu_item *selected;
+    int clr = NO_COLOR;
+    int newsize;
+
+    any = cg.zeroany; 
+    any.a_int = 1; 
+
+    otmp = getobj("resize", resize_ok, GETOBJ_PROMPT);
+    if (!otmp) {
+        return ECMD_CANCEL;
+    }
+    if (otmp->globby) {
+        pline("You'll need to be a pudding farmer to do that.");
+        return ECMD_OK;
+    }
+    if (resize_ok(otmp) != GETOBJ_SUGGEST)
+        return ECMD_OK;
+    if (otmp->oclass == ARMOR_CLASS && otmp->owornmask) {
+		You("are wearing that!");
+		return ECMD_OK;
+	} else if (uwep == otmp || uswapwep == otmp) {
+        You("are wielding that!");
+        return ECMD_OK;
+    }
+
+    /* MENU */
+    winid tmpwin = create_nhwindow(NHW_MENU);
+    start_menu(tmpwin, MENU_BEHAVE_STANDARD);
+    any.a_int++;
+    add_menu(tmpwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE,
+                clr, "Smaller", MENU_ITEMFLAGS_NONE);
+    any.a_int++;
+    add_menu(tmpwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE,
+                clr, "Larger", MENU_ITEMFLAGS_NONE);
+    any.a_int++;
+    add_menu(tmpwin, &nul_glyphinfo, &any, 0, 0, ATR_NONE, clr,
+                "Your Size", MENU_ITEMFLAGS_NONE);
+    end_menu(tmpwin, "Resize the item to be what?");
+    if (select_menu(tmpwin, PICK_ONE, &selected) > 0) {
+        newsize = selected[0].item.a_int - 1;
+    } else {
+        newsize = -1;
+    }
+    free((genericptr_t) selected);
+    destroy_nhwindow(tmpwin);
+    /* RESULT */
+    switch (newsize) {
+    case 1: /* Smaller */
+        newsize = otmp->osize - 1;
+        if (newsize > MZ_HUGE) newsize = MZ_HUGE;
+        if (newsize < MZ_TINY) {
+            pline("That's too small!");
+            return ECMD_OK;
+        }
+        break;
+    case 2: /* Larger  */
+        newsize = otmp->osize + 1;
+        if (newsize > MZ_GIGANTIC) {
+            pline("That's too large!");
+            return ECMD_OK;
+        }
+        if (newsize > MZ_HUGE) newsize = MZ_GIGANTIC;
+        break;
+    case 3: /* Your size */
+        if (otmp->osize == USIZE) {
+            pline("That would be pointless.");
+            return ECMD_OK;
+        }
+        newsize = USIZE;
+        break;
+    default:
+        pline("Never mind.");
+        return ECMD_OK;
+    }
+
+    /* RESIZE */
+    You("resize %s.", thesimpleoname(otmp));
+    set_obj_size(otmp, newsize, TRUE);
+    if (otmp->osize == USIZE) pline("It's a perfect fit!");
+    if (erosion_matters(otmp))
+        otmp->oeroded = otmp->oeroded2 = 0;
+    useup(obj);
+    return ECMD_TIME;
+}
+
 #undef HowMany
 
 boolean
@@ -1011,8 +1115,8 @@ beautiful(void)
     /* don't bother complaining about the sexism; NetHack is not real life */
     res = ((cha >= 25) ? "sublime" /* 25 is the maximum possible */
            : (cha >= 19) ? "splendorous" /* note: not "splendiferous" */
-             : (cha >= 16) ? ((poly_gender() == 1) ? "beautiful" : "handsome")
-               : (cha >= 14) ? ((poly_gender() == 1) ? "winsome" : "amiable")
+             : (cha >= 16) ? ("gorgeous")
+               : (cha >= 14) ? ("winsome")
                  : (cha >= 11) ? "cute"
                    : (cha >= 9) ? "plain"
                      : (cha >= 6) ? "homely"
@@ -1044,6 +1148,12 @@ use_mirror(struct obj *obj)
         else
             pline("%s", nothing_seems_to_happen);
         return ECMD_TIME;
+    }
+    if (obj->greased && !rn2(5)) {
+        if (!Blind)
+            pline_The("%s is too greasy to reflect anything!", mirror);
+        else
+            pline("%s", nothing_seems_to_happen);
     }
     if (!u.dx && !u.dy && !u.dz) {
         if (!useeit) {
@@ -1077,6 +1187,10 @@ use_mirror(struct obj *obj)
                 You(look_str, "undernourished");
             } else if (Upolyd) {
                 You("look like %s.", an(pmname(&mons[u.umonnum], Ugender)));
+            } else if (obj->greased) {
+                You("look very greasy.");
+            } else if (obj->oeroded) {
+                pline("Your reflection is cracked and warped.");
             } else {
                 You("look as %s as ever.", uvisage);
             }
@@ -1141,6 +1255,10 @@ use_mirror(struct obj *obj)
     } else if (monable && mtmp->data == &mons[PM_MEDUSA]) {
         if (mon_reflects(mtmp, "The gaze is reflected away by %s %s!"))
             return ECMD_TIME;
+        if (obj->oeroded) {
+            if (vis) pline("%s does not recognize %s reflection.", Monnam(mtmp), mhis(mtmp));
+            return ECMD_TIME;
+        }
         if (vis)
             pline("%s is turned to stone!", Monnam(mtmp));
         gs.stoned = TRUE;
@@ -1160,23 +1278,33 @@ use_mirror(struct obj *obj)
         mtmp->mconf = 1;
     } else if (monable && (mlet == S_NYMPH
                            || mtmp->data == &mons[PM_AMOROUS_DEMON])) {
-        if (vis) {
-            char buf[BUFSZ]; /* "She" or "He" */
+        if (obj->oeroded) {
+            if (vis) {
+                pline("%s is repulsed by %s warped reflection!",
+                        Monnam(mtmp), mhis(mtmp));
+            } else {
+                pline("%s", nothing_seems_to_happen);
+            }
+            setmangry(mtmp, FALSE);
+        } else {
+            if (vis) {
+                char buf[BUFSZ]; /* "She" or "He" */
 
-            pline("%s in your %s.", /* "<mon> admires self in your mirror " */
-                  monverbself(mtmp, Monnam(mtmp), "admire", (char *) 0),
-                  mirror);
-            pline("%s takes it!", upstart(strcpy(buf, mhe(mtmp))));
-        } else
-            pline("It steals your %s!", mirror);
-        setnotworn(obj); /* in case mirror was wielded */
-        freeinv(obj);
-        (void) mpickobj(mtmp, obj);
-        if (!tele_restrict(mtmp))
-            (void) rloc(mtmp, RLOC_MSG);
+                pline("%s in your %s.", /* "<mon> admires self in your mirror " */
+                    monverbself(mtmp, Monnam(mtmp), "admire", (char *) 0),
+                    mirror);
+                pline("%s takes it!", upstart(strcpy(buf, mhe(mtmp))));
+            } else
+                pline("It steals your %s!", mirror);
+            setnotworn(obj); /* in case mirror was wielded */
+            freeinv(obj);
+            (void) mpickobj(mtmp, obj);
+            if (!tele_restrict(mtmp))
+                (void) rloc(mtmp, RLOC_MSG);
+        }
     } else if (!is_unicorn(mtmp->data) && !humanoid(mtmp->data)
                && !is_demon(mtmp->data)
-               && (!mtmp->minvis || perceives(mtmp->data)) && rn2(5)) {
+               && (!mtmp->minvis || perceives(mtmp->data)) && rn2(obj->oeroded ? 4 : 5)) {
         boolean do_react = TRUE;
 
         if (mtmp->mfrozen) {
@@ -1189,7 +1317,8 @@ use_mirror(struct obj *obj)
         }
         if (do_react) {
             if (vis)
-                pline("%s is frightened by its reflection.", Monnam(mtmp));
+                pline("%s is frightened by %s%s reflection.", Monnam(mtmp), mhis(mtmp),
+                        obj->oeroded ? " warped" : "");
             monflee(mtmp, d(2, 4), FALSE, FALSE);
         }
     } else if (!Blind) {
@@ -1509,7 +1638,7 @@ snuff_lit(struct obj *obj)
 
     if (obj->lamplit) {
         if (obj->otyp == OIL_LAMP || obj->otyp == MAGIC_LAMP
-            || obj->otyp == BRASS_LANTERN || obj->otyp == POT_OIL) {
+            || obj->otyp == LANTERN || obj->otyp == POT_OIL) {
             (void) get_obj_location(obj, &x, &y, 0);
             if (obj->where == OBJ_MINVENT ? cansee(x, y) : !Blind)
                 pline("%s %s out!", Yname2(obj), otense(obj, "go"));
@@ -1532,7 +1661,7 @@ splash_lit(struct obj *obj)
        but will be if submerged or placed into a container or swallowed by
        a monster (for mobile light source handling, not because it ought
        to stop being lit in all those situations...) */
-    if (obj->lamplit && obj->otyp == BRASS_LANTERN) {
+    if (obj->lamplit && obj->otyp == LANTERN) {
         struct monst *mtmp;
         boolean useeit = FALSE, uhearit = FALSE, snuff = TRUE;
 
@@ -1594,7 +1723,7 @@ catch_lit(struct obj *obj)
             /* age_is_relative && age==0 && still-exists means out of fuel */
             || (age_is_relative(obj) && obj->age == 0)
             /* lantern is classified as ignitable() but not by fire */
-            || obj->otyp == BRASS_LANTERN)
+            || obj->otyp == LANTERN)
             return FALSE;
         if (obj->otyp == CANDELABRUM_OF_INVOCATION && obj->cursed)
             return FALSE;
@@ -1639,7 +1768,7 @@ use_lamp(struct obj *obj)
     char buf[BUFSZ];
     const char *lamp = (obj->otyp == OIL_LAMP
                         || obj->otyp == MAGIC_LAMP) ? "lamp"
-                       : (obj->otyp == BRASS_LANTERN) ? "lantern"
+                       : (obj->otyp == LANTERN) ? "lantern"
                          : NULL;
 
     /*
@@ -1665,7 +1794,7 @@ use_lamp(struct obj *obj)
     /* magic lamps with an spe == 0 (wished for) cannot be lit */
     if ((!Is_candle(obj) && obj->age == 0)
         || (obj->otyp == MAGIC_LAMP && obj->spe == 0)) {
-        if (obj->otyp == BRASS_LANTERN) {
+        if (obj->otyp == LANTERN) {
             if (!Blind)
                 Your("lantern is out of power.");
             else
@@ -1782,9 +1911,12 @@ rub_ok(struct obj *obj)
         return GETOBJ_EXCLUDE;
 
     if (obj->otyp == OIL_LAMP || obj->otyp == MAGIC_LAMP
-        || obj->otyp == BRASS_LANTERN || is_graystone(obj)
+        || obj->otyp == LANTERN || is_graystone(obj)
         || obj->otyp == LUMP_OF_ROYAL_JELLY
         || obj->otyp == TOWEL)
+        return GETOBJ_SUGGEST;
+    
+    if (obj->oartifact == ART_SYMPATHY)
         return GETOBJ_SUGGEST;
 
     return GETOBJ_EXCLUDE;
@@ -1813,6 +1945,8 @@ dorub(void)
             return ECMD_OK;
         }
     }
+    if (obj->oartifact == ART_SYMPATHY)
+        return use_sympathy(obj);
     if (obj != uwep) {
         if (wield_tool(obj, "rub")) {
             cmdq_add_ec(CQ_CANNED, dorub);
@@ -1843,7 +1977,7 @@ dorub(void)
             You("%s smoke.", !Blind ? "see a puff of" : "smell");
         } else
             pline1(nothing_happens);
-    } else if (obj->otyp == BRASS_LANTERN) {
+    } else if (obj->otyp == LANTERN) {
         /* message from Adventure */
         pline("Rubbing the electric lamp is not particularly rewarding.");
         pline("Anyway, nothing exciting happens.");
@@ -1961,6 +2095,29 @@ is_valid_jump_pos(coordxy x, coordxy y, int magic, boolean showmsg)
                 There("is an obstacle preventing that jump.");
             return FALSE;
         }
+    }
+    return TRUE;
+}
+
+boolean
+check_mon_jump(struct monst *mtmp, int x, int y)
+{
+    coord mc, tc;
+    mc.x = mtmp->mx, mc.y = mtmp->my;
+    tc.x = x, tc.y = y; /* target */
+
+    int traj,
+        dx = x - u.ux, dy = y - u.uy,
+        ax = abs(dx), ay = abs(dy);
+    /* traj: flatten out the trajectory => some diagonals re-classified */
+    if (ax >= 2 * ay)
+        ay = 0;
+    else if (ay >= 2 * ax)
+        ax = 0;
+    traj = jAny;
+
+    if (!walk_path(&mc, &tc, check_jump, (genericptr_t) & traj)) {
+        return FALSE;
     }
     return TRUE;
 }
@@ -2590,84 +2747,6 @@ use_figurine(struct obj **optr)
     return ECMD_TIME;
 }
 
-/* getobj callback for object to tape */
-staticfn int
-duct_tape_ok(struct obj *obj)
-{
-    if (!obj)
-        return GETOBJ_SUGGEST;
-    if (obj->oclass == COIN_CLASS)
-        return GETOBJ_EXCLUDE;
-    if (inaccessible_equipment(obj, (const char *) 0, FALSE))
-        return GETOBJ_EXCLUDE_INACCESS;
-
-    if (obj->oclass == WAND_CLASS
-        || (erosion_matters(obj) && (obj->oeroded || obj->oeroded2)))
-        return GETOBJ_SUGGEST;
-
-    return GETOBJ_DOWNPLAY;
-}
-
-staticfn int
-use_duct_tape(struct obj *obj)
-{
-    struct obj *otmp, *otmp2;
-    if (Glib) {
-        pline("%s from your %s.", Tobjnam(obj, "tumble"),
-              fingers_or_gloves(FALSE));
-        dropx(obj);
-        return ECMD_TIME;
-    }
-    if (obj->spe > 0) {
-        if ((obj->cursed || Fumbling) && !rn2(2)) {
-            consume_obj_charge(obj, TRUE);
-            pline_The("tape sticks to itself!");
-            return ECMD_TIME;
-        }
-        otmp = getobj("tape", duct_tape_ok, GETOBJ_PROMPT);
-        if (!otmp)
-            return ECMD_CANCEL;
-        if (inaccessible_equipment(otmp, "tape", FALSE))
-            return ECMD_OK;
-        if (otmp == &hands_obj) {
-            pline("There are better ways to make hand wraps.");
-            return ECMD_TIME;
-        } else if (y_n("Tape this item to another?") == 'y') {
-            otmp2 = getobj("combine", duct_tape_ok, GETOBJ_PROMPT);
-            if (otmp == otmp2 || otmp == obj || otmp2 == obj) {
-                pline("That would be yet another interesting topological exercise.");
-            } else if ((otmp->oclass == WAND_CLASS && otmp2->oclass == WAND_CLASS)) {
-                obj_extract_self(otmp2);
-                (void) add_to_container(otmp, otmp2);
-                consume_obj_charge(obj, TRUE);
-                obj->owt = weight(obj);
-                You("tape your objects together.");
-            } else {
-                pline("Those are silly items to combine!");
-            }
-            #if 0
-            if (uwep) {
-                uwep->cursed = 1;
-                uwep->owt += 2;
-                if (welded(uwep)) weldmsg(uwep)
-            }
-            #endif
-        } else {
-            You("wrap %s in tape.", yname(otmp));
-            if (erosion_matters(otmp))
-                otmp->oeroded = otmp->oeroded2 = 0;
-            otmp->owt += 2;
-            consume_obj_charge(obj, TRUE);
-        }
-        if (Hallucination)
-            pline("This level of reasoning is possible for %s. What do you think, everyone?", svp.plname);
-    } else {
-        pline("The roll has no more tape on it.");
-    }
-    update_inventory();
-    return ECMD_TIME;
-}
-
 /* getobj callback for object to apply grease to */
 staticfn int
 grease_ok(struct obj *obj)
@@ -2761,6 +2840,23 @@ touchstone_ok(struct obj *obj)
 }
 
 
+staticfn int
+use_sympathy(struct obj *symp)
+{
+    struct obj *obj;
+    if ((obj = getobj("rub on Sympathy", any_obj_ok, GETOBJ_PROMPT)) == 0)
+        return ECMD_CANCEL;
+    if (obj == symp) {
+        You_cant("rub it on itself.");
+        return ECMD_CANCEL;
+    }
+    pline("%s the material of %s.", Tobjnam(symp, "mimic"), the(xname(obj)));
+    force_material(symp, obj->material);
+    retouch_object(&symp, !uarmg, FALSE);
+    update_inventory();
+    return ECMD_TIME;
+}
+
 /* touchstones - by Ken Arnold */
 staticfn int
 use_stone(struct obj *tstone)
@@ -2775,7 +2871,7 @@ use_stone(struct obj *tstone)
 
     /* in case it was acquired while blinded */
     if (!Blind)
-        tstone->dknown = 1;
+        observe_object(tstone);
     known = (tstone->otyp == TOUCHSTONE && tstone->dknown
               && objects[TOUCHSTONE].oc_name_known);
     Sprintf(stonebuf, "rub on the stone%s", plur(tstone->quan));
@@ -2837,7 +2933,7 @@ use_stone(struct obj *tstone)
             return ECMD_TIME;
         } else {
             /* either a ring or the touchstone was not effective */
-            if (objects[obj->otyp].oc_material == GLASS) {
+            if (obj->material == GLASS) {
                 do_scratch = TRUE;
                 break;
             }
@@ -2846,7 +2942,7 @@ use_stone(struct obj *tstone)
         break; /* gem or ring */
 
     default:
-        switch (objects[obj->otyp].oc_material) {
+        switch (obj->material) {
         case CLOTH:
             pline("%s a little more polished now.", Tobjnam(tstone, "look"));
             return ECMD_TIME;
@@ -3244,7 +3340,7 @@ use_whip(struct obj *obj)
             Strcpy(onambuf, cxname(otmp));
             if (gotit) {
                 mon_hand = mbodypart(mtmp, HAND);
-                if (bimanual(otmp))
+                if (is_bimanual(otmp, mtmp->data))
                     mon_hand = makeplural(mon_hand);
             } else
                 mon_hand = 0; /* lint suppression */
@@ -4016,10 +4112,6 @@ do_break_wand(struct obj *obj)
     } else if (ACURR(A_STR) < (is_fragile ? 5 : 10)) {
         You("don't have the strength to break %s!", yname(obj));
         return ECMD_OK;
-    } else if (obj->cobj && ACURR(A_STR) < 15) {
-        /* Thanks for the idea, lapis */
-        pline("The bundle of wands is too difficult for you to break!");
-        return ECMD_OK;
     }
     if (!paranoid_query(ParanoidBreakwand,
                         safe_qbuf(confirm,
@@ -4075,7 +4167,7 @@ do_break_wand(struct obj *obj)
     case WAN_WISHING:
     case WAN_NOTHING:
     case WAN_LOCKING:
-    case WAN_FECUNDITY:
+    case WAN_GROWTH:
     case WAN_PROBING:
     case WAN_ENLIGHTENMENT:
     case WAN_SECRET_DOOR_DETECTION:
@@ -4099,6 +4191,7 @@ do_break_wand(struct obj *obj)
         /* we want this before the explosion instead of at the very end */
         Soundeffect(se_wall_of_force, 65);
         pline("A wall of force smashes down around you!");
+        create_force_field(u.ux, u.uy, 2, 5L);
         dmg = d(1 + obj->spe, 6); /* normally 2d12 */
         FALLTHROUGH;
         /*FALLTHRU*/
@@ -4317,17 +4410,12 @@ doapply(void)
     if (!obj)
         return ECMD_CANCEL;
 
-    if (!retouch_object(&obj, FALSE))
+    if (!retouch_object(&obj, FALSE, FALSE))
         return ECMD_TIME; /* evading your grasp costs a turn; just be
                              grateful that you don't drop it as well */
 
-    if (obj->oclass == WAND_CLASS) {
-        if (obj->cobj && y_n("Examine the taped wands?") == 'y') {
-            container_contents(obj, TRUE, TRUE, FALSE);
-            return 0;
-        } else 
-            return do_break_wand(obj);
-    }
+    if (obj->oclass == WAND_CLASS)
+        return do_break_wand(obj);
 
     if (obj->oclass == SPBOOK_CLASS)
         return flip_through_book(obj);
@@ -4392,6 +4480,9 @@ doapply(void)
     case TINNING_KIT:
         use_tinning_kit(obj);
         break;
+    case RESIZING_KIT:
+        use_resizing_kit(obj);
+        break;
     case LEASH:
         res = use_leash(obj);
         break;
@@ -4401,7 +4492,7 @@ doapply(void)
     case MAGIC_WHISTLE:
         use_magic_whistle(obj);
         break;
-    case TIN_WHISTLE:
+    case PEA_WHISTLE:
         use_whistle(obj);
         break;
     case EUCALYPTUS_LEAF:
@@ -4441,7 +4532,7 @@ doapply(void)
         break;
     case OIL_LAMP:
     case MAGIC_LAMP:
-    case BRASS_LANTERN:
+    case LANTERN:
         use_lamp(obj);
         break;
     case POT_OIL:
@@ -4449,9 +4540,6 @@ doapply(void)
         break;
     case EXPENSIVE_CAMERA:
         res = use_camera(obj);
-        break;
-    case DUCT_TAPE:
-        res = use_duct_tape(obj);
         break;
     case TOWEL:
         res = use_towel(obj);
@@ -4471,14 +4559,14 @@ doapply(void)
     case UNICORN_HORN:
         use_unicorn_horn(&obj);
         break;
-    case WOODEN_FLUTE:
+    case FLUTE:
     case MAGIC_FLUTE:
     case TOOLED_HORN:
     case FROST_HORN:
     case FIRE_HORN:
     case ACOUSTIC_GUITAR:
     case ELECTRIC_GUITAR:
-    case WOODEN_HARP:
+    case HARP:
     case MAGIC_HARP:
     case BUGLE:
     case LEATHER_DRUM:

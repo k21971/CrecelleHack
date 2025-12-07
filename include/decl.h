@@ -434,8 +434,10 @@ struct instance_globals_g {
     /* region.c */
     boolean gas_cloud_diss_within;
     boolean bonfire_diss_within;
+    boolean force_field_diss_within;
     int gas_cloud_diss_seen;
     int bonfire_diss_seen;
+    /* int force_field_diss_seen (does not exist because force fields are invisible)*/
 
     /* new stuff */
     /* per-level glyph mapping flags */
@@ -480,6 +482,7 @@ struct instance_globals_i {
     /* invent.c */
     char *invbuf;
     unsigned invbufsiz;
+    boolean item_action_in_progress;
     int in_sync_perminvent;
 
     /* mon.c */
@@ -842,6 +845,9 @@ struct instance_globals_r {
 
 struct instance_globals_s {
 
+    /* allmain.c */
+    boolean saving_grace_turn; /* saving grace was triggered this turn */
+
     /* artifact.c */
     int spec_dbon_applies; /* coordinate effects from spec_dbon() with
                               messages in artifact_hit() */
@@ -972,6 +978,9 @@ struct instance_globals_t {
 };
 
 struct instance_globals_u {
+
+    /* allmain.c */
+    int uhp_at_start_of_monster_turn;
 
     /* botl.c */
     boolean update_all;

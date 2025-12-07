@@ -282,7 +282,9 @@ drinkfountain(void)
     }
 
     if (fate < 10) {
-        pline_The("cool draught refreshes you.");
+        pline_The("%s draught refreshes you.",
+                    (svl.level.flags.temperature == -1) ? "icy"
+                        : (svl.level.flags.temperature == 1) ? "warm" : "cool");
         u.uhunger += rnd(10); /* don't choke on water */
         newuhs(FALSE);
         if (mgkftn)
@@ -466,6 +468,7 @@ dipfountain(struct obj *obj)
     } else if (obj->otyp == BOTTLE) {
         You("fill %s with the liquid in the fountain.", yobjnam(obj, (const char *) 0));
         poly_obj(obj, POT_WATER);
+        update_inventory();
     } else if (is_hands || obj == uarmg) {
         er = wash_hands();
     } else {
@@ -670,7 +673,8 @@ drinksink(void)
         otmp->cursed = otmp->blessed = 0;
         pline("Some %s liquid flows from the faucet.",
               Blind ? "odd" : hcolor(OBJ_DESCR(objects[otmp->otyp])));
-        otmp->dknown = !(Blind || Hallucination);
+        if(!(Blind || Hallucination))
+            observe_object(otmp);
         otmp->quan++;       /* Avoid panic upon useup() */
         otmp->fromsink = 1; /* kludge for docall() */
         (void) dopotion(otmp);

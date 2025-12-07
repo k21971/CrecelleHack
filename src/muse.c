@@ -207,7 +207,7 @@ mplayhorn(
                     ? "nearby" : "in the distance");
         unknow_object(otmp); /* hero loses info when unseen obj is used */
     } else if (self) {
-        otmp->dknown = 1;
+        observe_object(otmp);
         objnamp = xname(otmp);
         if (strlen(objnamp) >= QBUFSZ)
             objnamp = simpleonames(otmp);
@@ -216,7 +216,7 @@ mplayhorn(
         pline("%s!", monverbself(mtmp, Monnam(mtmp), "play", objbuf));
         makeknown(otmp->otyp); /* (wands handle this slightly differently) */
     } else {
-        otmp->dknown = 1;
+        observe_object(otmp);
         objnamp = xname(otmp);
         if (strlen(objnamp) >= QBUFSZ)
             objnamp = simpleonames(otmp);
@@ -242,7 +242,7 @@ mreadmsg(struct monst *mtmp, struct obj *otmp)
     if (!vismon && Deaf)
         return; /* no feedback */
 
-    otmp->dknown = 1; /* seeing or hearing scroll read reveals its label */
+    observe_object(otmp); /* seeing/hearing scroll read reveals its label */
     Strcpy(onambuf, singular(otmp, vismon ? doname : ansimpleoname));
 
     if (vismon) {
@@ -290,16 +290,17 @@ mreadmsg(struct monst *mtmp, struct obj *otmp)
 staticfn void
 mquaffmsg(struct monst *mtmp, struct obj *otmp)
 {
+    struct obj *bottle;
     if (canseemon(mtmp)) {
-        otmp->dknown = 1;
+        observe_object(otmp);
         pline_mon(mtmp, "%s drinks %s!", Monnam(mtmp), singular(otmp, doname));
     } else if (!Deaf) {
         Soundeffect(se_mon_chugging_potion, 25);
         You_hear("a chugging sound.");
     }
     /* We shouldn't do this here, but it's neater. */
-    otmp = mksobj(BOTTLE, FALSE, FALSE);
-    (void) mpickobj(mtmp, otmp);
+    bottle = mksobj(BOTTLE, FALSE, FALSE);
+    (void) mpickobj(mtmp, bottle);
 }
 
 /* Defines for various types of stuff.  The order in which monsters prefer
@@ -1204,6 +1205,10 @@ use_defensive(struct monst *mtmp)
             mtmp->mhp += d(6, 4); /* inconsistent number, but 4d4 is too small. */
             if (mtmp->mhp > mtmp->mhpmax)
                 mtmp->mhp = ++mtmp->mhpmax;
+            if (mtmp->data == &mons[PM_CRIMSON_DEATH]) {
+                mtmp->perminvis = mtmp->minvis = FALSE;
+                newsym(mtmp->mx, mtmp->my);
+            }
             if (canseemon(mtmp))
                 pline_mon(mtmp, "%s looks better.", Monnam(mtmp));
         }
@@ -1371,7 +1376,7 @@ rnd_defensive_item(struct monst *mtmp)
                                      * redefine; nonconsecutive value is ok */
 #define MUSE_FLOOR_ALCHEMY 21
 #define MUSE_SCR_MAZE_OFFENSIVE 22
-#define MUSE_WAN_WATER 23
+#define MUSE_WAN_AQUA_BOLT 23
 
 staticfn boolean
 linedup_chk_corpse(coordxy x, coordxy y)
@@ -1563,10 +1568,10 @@ find_offensive(struct monst *mtmp)
             gm.m.offensive = obj;
             gm.m.has_offense = MUSE_WAN_STRIKING;
         }
-        nomore(MUSE_WAN_WATER);
-        if (obj->otyp == WAN_WATER && obj->spe > 0) {
+        nomore(MUSE_WAN_AQUA_BOLT);
+        if (obj->otyp == WAN_AQUA_BOLT && obj->spe > 0) {
             gm.m.offensive = obj;
-            gm.m.has_offense = MUSE_WAN_WATER;
+            gm.m.has_offense = MUSE_WAN_AQUA_BOLT;
         }
         nomore(MUSE_WAN_TELEPORTATION);
         if (obj->otyp == WAN_TELEPORTATION && obj->spe > 0
@@ -1730,7 +1735,7 @@ mbhitm(struct monst *mtmp, struct obj *otmp)
                                         || cansee(mtmp->mx, mtmp->my)))
             makeknown(WAN_STRIKING);
         break;
-    case WAN_WATER:
+    case WAN_AQUA_BOLT:
         reveal_invis = TRUE;
         if (hits_you) {
             if (rnd(20) < 10 + u.uac) {
@@ -1740,6 +1745,7 @@ mbhitm(struct monst *mtmp, struct obj *otmp)
                     tmp = (tmp + 1) / 2;
                 losehp(tmp, "jet of water", KILLED_BY_AN);
                 learnit = TRUE;
+                make_dripping(rnd(10), POT_WATER, NON_PM);
             } else {
                 pline_The("jet of %s misses you.", hliquid("water"));
             }
@@ -1755,7 +1761,7 @@ mbhitm(struct monst *mtmp, struct obj *otmp)
         }
         if (learnit && gz.zap_oseen && (hits_you
                                         || cansee(mtmp->mx, mtmp->my)))
-            makeknown(WAN_WATER);
+            makeknown(WAN_AQUA_BOLT);
         break;
     case WAN_TELEPORTATION:
         if (hits_you) {
@@ -1898,7 +1904,7 @@ mbhit(
             case WAN_OPENING:
             case WAN_LOCKING:
             case WAN_STRIKING:
-            case WAN_WATER:
+            case WAN_AQUA_BOLT:
                 if (doorlock(obj, gb.bhitpos.x, gb.bhitpos.y)) {
                     if (gz.zap_oseen)
                         makeknown(otyp);
@@ -1974,7 +1980,7 @@ use_offensive(struct monst *mtmp)
     case MUSE_WAN_TELEPORTATION:
     case MUSE_WAN_UNDEAD_TURNING:
     case MUSE_WAN_STRIKING:
-    case MUSE_WAN_WATER:
+    case MUSE_WAN_AQUA_BOLT:
         gz.zap_oseen = oseen;
         mzapwand(mtmp, otmp, FALSE);
         gm.m_using = TRUE;
@@ -2117,7 +2123,7 @@ use_offensive(struct monst *mtmp)
          * are not objects.  Also set dknown in mthrowu.c.
          */
         if (cansee(mtmp->mx, mtmp->my)) {
-            otmp->dknown = 1;
+            observe_object(otmp);
             pline_mon(mtmp, "%s hurls %s!",
                       Monnam(mtmp), singular(otmp, doname));
         }
@@ -2161,7 +2167,7 @@ rnd_offensive_item(struct monst *mtmp)
     FALLTHROUGH;
     /* FALLTHRU */
     case 1:
-        return ((difficulty < 8 || rn2(difficulty) < 6)) ? WAN_STRIKING : WAN_WATER;
+        return ((difficulty < 8 || rn2(difficulty) < 6)) ? WAN_STRIKING : WAN_AQUA_BOLT;
     case 2:
         return POT_ACID;
     case 3:
@@ -2726,7 +2732,7 @@ use_misc(struct monst *mtmp)
 
             Strcpy(the_weapon, the(xname(obj)));
             hand = body_part(HAND);
-            if (bimanual(obj))
+            if (u_bimanual(obj))
                 hand = makeplural(hand);
 
             if (vismon)
@@ -2748,8 +2754,8 @@ use_misc(struct monst *mtmp)
             if (!where_to) {
                 pline_The("whip slips free."); /* not `The_whip' */
                 return 1;
-            } else if (where_to == 3 && mon_hates_silver(mtmp)
-                       && objects[obj->otyp].oc_material == SILVER) {
+            } else if (where_to == 3
+                       && mon_hates_material(mtmp, obj->material)) {
                 /* this monster won't want to catch a silver
                    weapon; drop it at hero's feet instead */
                 where_to = 2;
@@ -2897,7 +2903,7 @@ searches_for_item(struct monst *mon, struct obj *obj)
             return (boolean) (mons[monsndx(mon->data)].difficulty < 6);
         if (objects[typ].oc_dir == RAY || typ == WAN_STRIKING
             || typ == WAN_UNDEAD_TURNING
-            || typ == WAN_WATER
+            || typ == WAN_AQUA_BOLT
             || typ == WAN_TELEPORTATION || typ == WAN_CREATE_MONSTER)
             return TRUE;
         break;
@@ -2924,7 +2930,8 @@ searches_for_item(struct monst *mon, struct obj *obj)
     case AMULET_CLASS:
         if (typ == AMULET_OF_LIFE_SAVING)
             return (boolean) !(nonliving(mon->data) || is_vampshifter(mon));
-        if (typ == AMULET_OF_REFLECTION || typ == AMULET_OF_GUARDING || typ == AMULET_OF_CHANGE)
+        if (typ == AMULET_OF_REFLECTION || typ == AMULET_OF_GUARDING || typ == AMULET_OF_CHANGE
+            || typ == AMULET_OF_MAGICAL_BREATHING)
             return TRUE;
         break;
     case TOOL_CLASS:
@@ -2942,6 +2949,10 @@ searches_for_item(struct monst *mon, struct obj *obj)
             return (obj->spe > 0);
         if (is_glasses(obj) && typ != LENSES)
             return TRUE;
+        if (typ == OIL_LAMP || typ == LANTERN)
+            return (obj->age > 9L);
+        if (typ == MAGIC_LAMP)
+            return TRUE;
         break;
     case FOOD_CLASS:
         if (typ == CORPSE)
@@ -2956,6 +2967,8 @@ searches_for_item(struct monst *mon, struct obj *obj)
         if (typ == EGG && ismnum(obj->corpsenm))
             return (boolean) touch_petrifies(&mons[obj->corpsenm]);
         break;
+    case BOTTLE_CLASS:
+        return TRUE;
     default:
         break;
     }
@@ -3375,7 +3388,7 @@ muse_unslime(
         vis |= canseemon(mon); /* burning potion may improve visibility */
         if (vis) {
             if (!Unaware)
-                obj->dknown = 1; /* hero is watching mon drink obj */
+                observe_object(obj); /* hero is watching mon drink obj */
             pline("%s quaffs a burning %s",
                   saw_lit ? upstart(strcpy(Pronoun, mhe(mon))) : Monnam(mon),
                   simpleonames(obj));

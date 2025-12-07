@@ -1,10 +1,11 @@
-/* NetHack 3.7	spell.c	$NHDT-Date: 1725227807 2024/09/01 21:56:47 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.173 $ */
+/* NetHack 3.7	spell.c	$NHDT-Date: 1762680996 2025/11/09 01:36:36 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.179 $ */
 /*      Copyright (c) M. Stephenson 1988                          */
 /* NetHack may be freely redistributed.  See license for details. */
 
 #include "hack.h"
 
 /* spellmenu arguments; 0..n-1 used as svs.spl_book[] index when swapping */
+#define SPELLMENU_DUMP (-3)
 #define SPELLMENU_CAST (-2)
 #define SPELLMENU_VIEW (-1)
 #define SPELLMENU_SORT (MAXSPELL) /* special menu entry */
@@ -53,6 +54,7 @@ staticfn void display_spell_target_positions(boolean);
 staticfn boolean spell_aim_step(genericptr_t, coordxy, coordxy);
 staticfn void propagate_chain_lightning(struct chain_lightning_queue *,
             struct chain_lightning_zap);
+staticfn void cast_force_field(void);
 
 /* The roles[] table lists the role-specific values for tuning
  * percent_success().
@@ -234,7 +236,7 @@ deadbook(struct obj *book2)
 
     You("turn the pages of the Book of the Dead...");
     makeknown(SPE_BOOK_OF_THE_DEAD);
-    book2->dknown = 1; /* in case blind now and hasn't been seen yet */
+    observe_object(book2); /* in case blind now and hasn't been seen yet */
     /* KMH -- Need ->known to avoid "_a_ Book of the Dead" */
     book2->known = 1;
     if (invocation_pos(u.ux, u.uy) && !On_stairs(u.ux, u.uy)) {
@@ -736,11 +738,12 @@ rejectcasting(void)
 staticfn boolean
 getspell(int *spell_no)
 {
-    int nspells, idx;
+    int nspells, idx, retry_limit;
     char ilet, lets[BUFSZ], qbuf[QBUFSZ];
     struct _cmd_queue cq, *cmdq;
 
-    if (spellid(0) == NO_SPELL) {
+    nspells = num_spells();
+    if (!nspells) {
         You("don't know any spells right now.");
         return FALSE;
     }
@@ -751,7 +754,6 @@ getspell(int *spell_no)
         cq = *cmdq;
         free(cmdq);
         if (cq.typ == CMDQ_KEY) {
-            nspells = num_spells();
             idx = spell_let_to_idx(cq.key);
             if (idx < 0 || idx >= nspells)
                 return FALSE;
@@ -763,27 +765,33 @@ getspell(int *spell_no)
     }
 
     if (flags.menu_style == MENU_TRADITIONAL) {
-        /* we know there is at least 1 known spell */
-        nspells = num_spells();
-
+        /* if we get here, we know there is at least 1 known spell */
         if (nspells == 1)
             Strcpy(lets, "a");
         else if (nspells < 27)
             Sprintf(lets, "a-%c", 'a' + nspells - 1);
         else if (nspells == 27)
-            Sprintf(lets, "a-zA");
+            Strcpy(lets, "a-zA");
         /* this assumes that there are at most 52 spells... */
         else
             Sprintf(lets, "a-zA-%c", 'A' + nspells - 27);
 
-        for (;;) {
-            Snprintf(qbuf, sizeof(qbuf), "Cast which spell? [%s *?]",
-                     lets);
+        Snprintf(qbuf, sizeof qbuf, "Cast which spell? [%s *?]", lets);
+        for (retry_limit = 0; ; ++retry_limit) {
+            if (retry_limit == 10) {
+                /* limit is mainly to prevent the fuzzer from getting stuck
+                   since hangup should hit the 'quitchars' case; fuzzer
+                   would too, but after an arbitrary number of attempts */
+                pline("That's enough tries.");
+                return FALSE;
+            }
             ilet = yn_function(qbuf, (char *) 0, '\0', TRUE);
             if (ilet == '*' || ilet == '?')
                 break; /* use menu mode */
-            if (strchr(quitchars, ilet))
+            if (strchr(quitchars, ilet)) {
+                pline1(Never_mind);
                 return FALSE;
+            }
 
             idx = spell_let_to_idx(ilet);
             if (idx < 0 || idx >= nspells) {
@@ -908,13 +916,16 @@ skill_based_spellbook_id(void)
             break;
         case P_UNSKILLED:
         default:
-            known_up_to_level = 1;
+            /* paupers need more skill than this to ID books, but most wizards
+               know the basics */
+            known_up_to_level = u.uroleplay.pauper ? 0 : 1;
             break;
         }
 
         if (objects[booktype].oc_level <= known_up_to_level)
-            /* makeknown(booktype) but don't exercise Wisdom */
-            discover_object(booktype, TRUE, FALSE);
+            /* makeknown(booktype) but don't exercise Wisdom or mark as
+               encountered */
+            discover_object(booktype, TRUE, FALSE, FALSE);
     }
 }
 
@@ -1588,6 +1599,9 @@ spelleffects(int spell_otyp, boolean atme, boolean force)
         if (!(jump(max(role_skill, 1)) & ECMD_TIME))
             pline1(nothing_happens);
         break;
+    case SPE_FORCE_FIELD:
+        cast_force_field();
+        break;
     case SPE_CHAIN_LIGHTNING:
         cast_chain_lightning();
         break;
@@ -2057,13 +2071,27 @@ dovspell(void)
 
 DISABLE_WARNING_FORMAT_NONLITERAL
 
+/* lists spells for endgame dumplog purposes */
+void
+show_spells(void)
+{
+    int unused = SPELLMENU_DUMP;
+    if (spellid(0) == NO_SPELL) {
+        pline("You didn't know any spells.");
+        pline("%s", "");
+    } else {
+        pline("Spells:");
+        nhUse(dospellmenu("", SPELLMENU_DUMP, &unused));
+    }
+}
+
 /* shows menu of known spells, with options to sort them.
    return FALSE on cancel, TRUE otherwise.
    spell_no is set to the internal spl_book index, if any selected */
 staticfn boolean
 dospellmenu(
     const char *prompt,
-    int splaction, /* SPELLMENU_CAST, SPELLMENU_VIEW, or
+    int splaction, /* SPELLMENU_CAST, SPELLMENU_VIEW, SPELLMENU_DUMP or
                     * svs.spl_book[] index */
     int *spell_no)
 {
@@ -2085,10 +2113,14 @@ dospellmenu(
      * (1) that the font is monospaced, and
      * (2) that selection letters are pre-pended to the
      * given string and are of the form "a - ".
+     * For SPELLMENU_DUMP, (2) is untrue, so four spaces
+     * need to be subtracted.
      */
     if (!iflags.menu_tab_sep) {
-        Sprintf(buf, "%-20s     Level %-12s Fail Retention",
-                "    Name", "Category");
+        Sprintf(buf, "%s%-20s Level %-12s Fail Retention",
+                splaction == SPELLMENU_DUMP ? "" : "    ",
+                "Name",
+                "Category");
         fmt = "%-20s  %2d   %-12s %3d%% %9s";
         sep = ' ';
     } else {
@@ -2251,7 +2283,8 @@ percent_success(int spell)
      * to cast a spell.  The penalty is not quite so bad for the
      * player's role-specific spell.
      */
-    if (uarms && weight(uarms) > (int) objects[ROUNDSHIELD].oc_weight) {
+    if (uarms && weight(uarms)
+        > (int) (objects[ROUNDSHIELD].oc_weight * weight_adj_by_size(USIZE))) {
         if (spellid(spell) == gu.urole.spelspec) {
             chance /= 2;
         } else {
@@ -2407,6 +2440,15 @@ num_spells(void)
         if (spellid(i) == NO_SPELL)
             break;
     return i;
+}
+
+staticfn
+void cast_force_field(void)
+{
+    if (throwspell()) {
+        create_force_field(u.dx, u.dy, 2, 10L);
+        You("create a force field!");
+    }
 }
 
 /*spell.c*/

@@ -1,4 +1,4 @@
-/* NetHack 3.7	mhitu.c	$NHDT-Date: 1740534854 2025/02/25 17:54:14 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.327 $ */
+/* NetHack 3.7	mhitu.c	$NHDT-Date: 1762750699 2025/11/09 20:58:19 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.334 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2012. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -736,8 +736,8 @@ mattacku(struct monst *mtmp)
     }
 
     /* monster might grapple you to gain an advantage */
-    if (!ranged && !u.ustuck
-        && can_grapple(mtmp->data)&& !critically_low_hp(FALSE)) {
+    if (!ranged && !u.ustuck && !mtmp->mundetected
+        && can_grapple(mtmp->data) && !critically_low_hp(FALSE)) {
         int grapple_chance = 1;
         if (u.utrap && u.utraptype == TT_LAVA) grapple_chance += 20;
         /* if (region_danger()) grapple_chance += 20; */
@@ -1168,6 +1168,8 @@ hitmu(struct monst *mtmp, struct attack *mattk)
     struct permonst *mdat = mtmp->data;
     struct permonst *olduasmon = gy.youmonst.data;
     int res;
+    long armask = attack_contact_slots(mtmp, mattk->aatyp);
+    struct obj *hated_obj;
     struct mhitm_data mhm;
     mhm.hitflags = M_ATTK_MISS;
     mhm.permdmg = 0;
@@ -1205,8 +1207,8 @@ hitmu(struct monst *mtmp, struct attack *mattk)
         }
     }
 
-    if (MON_WEP(mtmp) && MON_WEP(mtmp)->booster) {
-        boost_effects_pre(mtmp, &gy.youmonst);
+    if (MON_WEP(mtmp) && MON_WEP(mtmp)->oprop) {
+        oprop_effects_pre(mtmp, &gy.youmonst);
     }
 
     /*  First determine the base damage done */
@@ -1237,7 +1239,16 @@ hitmu(struct monst *mtmp, struct attack *mattk)
             mhm.damage = 1;
     }
 
-    if (mhm.damage) {
+    /* handle body/equipment made out of harmful materials for touch attacks */
+    /* should come after AC damage reduction */
+    mhm.damage += special_dmgval(mtmp, &gy.youmonst, armask, &hated_obj);
+    if (hated_obj) {
+        searmsg(mtmp, &gy.youmonst, hated_obj, FALSE);
+        exercise(A_CON, FALSE);
+    }
+
+    if (mhm.damage > 0) {
+        /* [Half_physical_damage isn't applied to mhm.permdmg] */
         if (Half_physical_damage
             /* Mitre of Holiness, even if not currently blessed */
             || (Role_if(PM_CLERIC) && uarmh && is_quest_artifact(uarmh)
@@ -1763,11 +1774,9 @@ gazemu(struct monst *mtmp, struct attack *mattk)
                 break;
             }
             if (useeit)
-                pline("%s closes %s eyes.", Monnam(mtmp), mhis(mtmp));
-            mtmp->mblinded = rnd(7);
-            mtmp->mcansee = 0;
-            // gs.stoned = TRUE;
-            // killed(mtmp);
+                pline("%s is turned to stone!", Monnam(mtmp));
+            gs.stoned = TRUE;
+            killed(mtmp);
 
             if (!DEADMONSTER(mtmp))
                 break;
@@ -2007,6 +2016,15 @@ could_seduce(
         || (adtyp != AD_SEDU && adtyp != AD_SSEX && adtyp != AD_SITM))
         return 0;
 
+    if (mdef == &gy.youmonst || magr == &gy.youmonst) {
+        switch (flags.orientation) {
+        case ORIENT_GAY:
+            return genagr == gendef;
+        case ORIENT_BISEXUAL:
+            return 1;
+        }
+        /* ORIENT_STRAIGHT falls through to return statement below */
+    }
     return (genagr == 1 - gendef) ? 1 : (pagr->mlet == S_NYMPH) ? 2 : 0;
 }
 
@@ -2178,7 +2196,7 @@ doseduce(struct monst *mon)
                 /* have her call your gloves by their correct
                    name, possibly revealing them to you */
                 if (yourgloves)
-                    yourgloves->dknown = 1;
+                    observe_object(yourgloves);
                 verbalize("Well, then you owe me %s%s!",
                           yourgloves ? yname(yourgloves)
                                      : "twelve pairs of gloves",
@@ -2314,8 +2332,12 @@ doseduce(struct monst *mon)
         if (cost > umoney)
             cost = umoney;
         if (!cost) {
-            SetVoice(mon, 0, 80, 0);
-            verbalize("It's on the house!");
+            if (!Deaf) {
+                SetVoice(mon, 0, 80, 0);
+                verbalize("It's on the house!");
+            } else {
+                pline("No charge.");
+            }
         } else {
             pline_mon(mon, "%s takes %ld %s for services rendered!",
                       noit_Monnam(mon), cost, currency(cost));
@@ -2323,7 +2345,7 @@ doseduce(struct monst *mon)
             disp.botl = TRUE;
         }
     }
-    if (!rn2(25))
+    if (!rn2(25) || (flags.orientation == ORIENT_BISEXUAL && !rn2(25)))
         mon->mcan = 1; /* monster is worn out */
     if (!tele_restrict(mon))
         (void) rloc(mon, RLOC_MSG);
@@ -2344,6 +2366,14 @@ mayberem(struct monst *mon,
        (loss of levitation that leads to landing on a transport trap) */
     if (u.utotype || !m_next2u(mon))
         return;
+        /* monster won't steal objects made of a material it hates */
+    if (obj && mon_hates_material(mon, obj->material)) {
+        if (!Deaf)
+            verbalize("Ow!  %s hurts to touch!", Ysimple_name2(obj));
+        else if (canseemon(mon))
+            pline("%s appears to recoil in disgust.", Monnam(mon));
+        return;
+    }
 
     /* being deaf overrides confirmation prompt for high charisma */
     if (Deaf) {
@@ -2535,6 +2565,11 @@ passiveum(
             /* No message */
         }
         return M_ATTK_HIT;
+    case AD_TMUT:
+        if (mon_currwep) {
+            (void) transmute_obj(mon_currwep, 0);
+        }
+        return M_ATTK_HIT;
     default:
         break;
     }
@@ -2667,6 +2702,36 @@ cloneu(void)
 void
 learn_mattack(int index, int attack_index) {
     svm.mvitals[index].know_attacks |= (1 << attack_index);
+}
+
+/* Given an attacking monster and the attack type it's currently attacking with,
+ * return a bitmask of W_ARM* values representing the gear slots that might be
+ * coming in contact with the defender.
+ * Intended to return worn items. Will not return W_WEP.
+ * Does not check to see whether slots are ineligible due to being covered by
+ * some other piece of gear. Usually special_dmgval() will handle that.
+ */
+long
+attack_contact_slots(struct monst *magr, int aatyp)
+{
+    struct obj* mwep = (magr == &gy.youmonst ? uwep : magr->mw);
+    if (aatyp == AT_CLAW || aatyp == AT_TUCH || (aatyp == AT_WEAP && !mwep)
+        || (aatyp == AT_HUGS && hug_throttles(magr->data))) {
+        /* attack with hands; gloves and rings might touch */
+        return W_ARMG | W_RINGL | W_RINGR;
+    }
+    if (aatyp == AT_HUGS && !hug_throttles(magr->data)) {
+        /* bear hug which is not a strangling attack; gloves and rings might
+         * touch, but also all torso slots */
+        return W_ARMG | W_RINGL | W_RINGR | W_ARMC | W_ARM | W_ARMU;
+    }
+    if (aatyp == AT_KICK) {
+        return W_ARMF;
+    }
+    if (aatyp == AT_BUTT) {
+        return W_ARMH;
+    }
+    return 0;
 }
 
 /*mhitu.c*/

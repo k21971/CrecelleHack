@@ -136,10 +136,11 @@ thitu(
             potionhit(&gy.youmonst, obj, POTHIT_OTHER_THROW);
             *objp = obj = 0; /* potionhit() uses up the potion */
         } else {
-            if (obj && objects[obj->otyp].oc_material == SILVER
-                && Hate_silver) {
-                /* extra damage already applied by dmgval() */
-                pline_The("silver sears your flesh!");
+            if (obj && Hate_material(obj->material)) {
+                /* extra damage already applied by dmgval();
+                 * dmgval is not called in this function but we assume that the
+                 * caller used it when constructing the dmg parameter */
+                searmsg((struct monst *) 0, &gy.youmonst, obj, TRUE);
                 exercise(A_CON, FALSE);
             }
             if (is_acid) {
@@ -169,9 +170,8 @@ drop_throw(
     if (obj->otyp == CREAM_PIE || obj->oclass == VENOM_CLASS
         || (ohit && (obj->otyp == EGG || obj->otyp == BOTTLE))) {
         broken = TRUE;
-    } else if (breaks(obj, x, y)) {
-        /* Need this so that we can handle broken bottles */
-        return TRUE;
+    } else if (obj->otyp == BOTTLE) {
+        broken =TRUE;
     } else {
         broken = (ohit && should_mulch_missile(obj));
     }
@@ -337,7 +337,7 @@ ohitmon(
     ismimic = M_AP_TYPE(mtmp) && M_AP_TYPE(mtmp) != M_AP_MONSTER;
     vis = cansee(gb.bhitpos.x, gb.bhitpos.y);
     if (vis)
-        otmp->dknown = 1;
+        observe_object(otmp);
 
     tmp = 5 + find_mac(mtmp) + omon_adj(mtmp, otmp, FALSE);
     /* High level monsters will be more likely to hit */
@@ -369,7 +369,6 @@ ohitmon(
         potionhit(mtmp, otmp, POTHIT_OTHER_THROW);
         return 1;
     } else {
-        int material = objects[otmp->otyp].oc_material;
         boolean harmless = (stone_missile(otmp) && passes_rocks(mtmp->data));
 
         damage = dmgval(otmp, mtmp);
@@ -417,20 +416,10 @@ ohitmon(
                 }
             }
         }
-        if (material == SILVER && mon_hates_silver(mtmp)) {
-            boolean flesh = (!noncorporeal(mtmp->data)
-                             && !amorphous(mtmp->data));
-
-            /* note: extra silver damage is handled by dmgval() */
-            if (vis) {
-                char *m_name = mon_nam(mtmp);
-
-                if (flesh) /* s_suffix returns a modifiable buffer */
-                    m_name = strcat(s_suffix(m_name), " flesh");
-                pline_The("silver sears %s!", m_name);
-            } else if (verbose && !gm.mtarget) {
-                pline("%s is seared!", flesh ? "Its flesh" : "It");
-            }
+        if (!DEADMONSTER(mtmp)
+            && mon_hates_material(mtmp, otmp->material)) {
+            /* Extra damage is already handled in dmgval(). */
+            searmsg((struct monst *) 0, mtmp, otmp, FALSE);
         }
         if (otmp->otyp == ACID_VENOM && cansee(mtmp->mx, mtmp->my)) {
             if (resists_acid(mtmp)) {
@@ -659,7 +648,7 @@ m_throw(
         singleobj->ox = gb.bhitpos.x += dx;
         singleobj->oy = gb.bhitpos.y += dy;
         if (cansee(gb.bhitpos.x, gb.bhitpos.y))
-            singleobj->dknown = 1;
+            observe_object(singleobj);
 
         mtmp = m_at(gb.bhitpos.x, gb.bhitpos.y);
         if (mtmp && shade_miss(mon, mtmp, singleobj, TRUE, TRUE)) {
@@ -919,7 +908,7 @@ return_from_mtoss(
     }
     if (otmp) {
         if (hits_thrower) {
-            if (otmp->oartifact || otmp->booster)
+            if (otmp->oartifact || otmp->oprop)
                 (void) artifact_hit((struct monst *) 0, magr, otmp, &dmg, 0);
             magr->mhp -= dmg;
             if (DEADMONSTER(magr))
@@ -1108,7 +1097,7 @@ breamm(struct monst *mtmp, struct attack *mattk, struct monst *mtarg)
                           Monnam(mtmp), breathwep_name(typ));
                 gb.buzzer = mtmp;
                 dobuzz(BZ_M_BREATH(BZ_OFS_AD(typ)), (int) mattk->damn,
-                       mtmp->mx, mtmp->my, sgn(gt.tbx), sgn(gt.tby), utarget);
+                       mtmp->mx, mtmp->my, sgn(gt.tbx), sgn(gt.tby), utarget, utarget);
                 gb.buzzer = 0;
                 nomul(0);
                 /* breath runs out sometimes. Also, give monster some
@@ -1431,7 +1420,7 @@ hit_bars(
         }
     } else {
         if (!Deaf) {
-            static enum sound_effect_entries se[] SOUNDLIBONLY = {
+            static enum sound_effect_entries se[] = {
                 se_zero_invalid,
                 se_bars_whang, se_bars_whap, se_bars_flapp,
                 se_bars_clink, se_bars_clonk
@@ -1444,13 +1433,14 @@ hit_bars(
                          : harmless_missile(otmp) ? 2
                          : is_flimsy(otmp) ? 3
                          : (otmp->oclass == COIN_CLASS
-                            || objects[obj_type].oc_material == GOLD
-                            || objects[obj_type].oc_material == SILVER)
+                            || otmp->material == GOLD
+                            || otmp->material == SILVER)
                            ? 4
                            : SIZE(barsounds) - 1;
 
             Soundeffect(se[bsindx], 100);
             pline("%s!", barsounds[bsindx]);
+            nhUse(se[bsindx]);
         }
         if (!(harmless_missile(otmp) || is_flimsy(otmp)))
             noise = 4 * 4;
@@ -1512,7 +1502,7 @@ hits_bars(
             hits = (obj_type != SKELETON_KEY && obj_type != LOCK_PICK
                     && obj_type != CREDIT_CARD && obj_type != TALLOW_CANDLE
                     && obj_type != WAX_CANDLE && !is_glasses(otmp)
-                    && obj_type != TIN_WHISTLE && obj_type != MAGIC_WHISTLE);
+                    && obj_type != PEA_WHISTLE && obj_type != MAGIC_WHISTLE);
             break;
         case ROCK_CLASS: /* includes boulder */
             if (obj_type != STATUE || mons[otmp->corpsenm].msize > MZ_TINY)

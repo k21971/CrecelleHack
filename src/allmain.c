@@ -19,6 +19,7 @@ staticfn void do_positionbar(void);
 #endif
 staticfn void regen_pw(int);
 staticfn void regen_hp(int);
+staticfn void to_the_mines(void);
 staticfn void interrupt_multi(const char *);
 staticfn void debug_fields(const char *);
 #ifndef NODUMPENUMS
@@ -94,7 +95,7 @@ moveloop_preamble(boolean resuming)
         fix_shop_damage();
     }
 
-    (void) encumber_msg(); /* in case they auto-picked up something */
+    encumber_msg(); /* in case they auto-picked up something */
     if (gd.defer_see_monsters) {
         gd.defer_see_monsters = FALSE;
         see_monsters();
@@ -176,6 +177,8 @@ void
 moveloop_core(void)
 {
     boolean monscanmove = FALSE;
+    int numdogs;
+    struct monst *weakdog;
 
 #ifdef SAFERHANGUP
     if (program_state.done_hup)
@@ -185,6 +188,8 @@ moveloop_core(void)
 #ifdef POSITIONBAR
     do_positionbar();
 #endif
+    if (iflags.pending_customizations)
+        maybe_shuffle_customizations();
 
     dobjsfree();
 
@@ -202,15 +207,22 @@ moveloop_core(void)
         u.umovement -= NORMAL_SPEED;
 
         do { /* hero can't move this turn loop */
-            mvl_wtcap = encumber_msg();
+            encumber_msg();
+            weakdog = NULL;
+            numdogs = 0;
 
             svc.context.mon_moving = TRUE;
+            gu.uhp_at_start_of_monster_turn = u.uhp;
             do {
                 monscanmove = movemon();
                 if (u.umovement >= NORMAL_SPEED)
                     break; /* it's now your turn */
             } while (monscanmove);
             svc.context.mon_moving = FALSE;
+
+            /* this needs to be after the monster movement loop in
+               case monster actions affected burden, e.g. rehumanize */
+            mvl_wtcap = near_capacity();
 
             if (!monscanmove && u.umovement < NORMAL_SPEED) {
                 /* both hero and monsters are out of steam this round */
@@ -223,8 +235,37 @@ moveloop_core(void)
                 /* reallocate movement rations to monsters; don't need
                    to skip dead monsters here because they will have
                    been purged at end of their previous round of moving */
-                for (mtmp = fmon; mtmp; mtmp = mtmp->nmon)
+                for (mtmp = fmon; mtmp; mtmp = mtmp->nmon) {
                     mtmp->movement += mcalcmove(mtmp, TRUE);
+                    /* we also take care of pets untaming due to insufficient charisma
+                       here. It's more efficient than dnethack and EvilHack, even if
+                       the code is in a weird spot. Overall, however, the code is largely
+                       the same, but there is no accounting for ties and pets untame
+                       one at a time rather than all at once. */
+                    if (mtmp->mtame) {
+                        ++numdogs;
+                        if (mtmp == u.usteed)
+                            continue;
+                        if (!weakdog)
+                            weakdog = mtmp;
+                        else if (weakdog->m_lev > mtmp->m_lev)
+                            weakdog = mtmp;
+                    }
+                }
+
+                /* Untame excess tame monsters. We have an extra check here so that
+                   we do a little bit less integer division. */
+                if (weakdog && numdogs > 1 && numdogs > ACURR(A_CHA) / 3) {
+                    if (canseemon(weakdog))
+                        pline_mon(weakdog, "%s goes wild!", Monnam(weakdog));
+                    else
+                        You_feel("concerned about %s.", y_monnam(weakdog));
+                    weakdog->mtame = 0;
+                    if (rn2(EDOG(weakdog)->abuse + 1))
+                        weakdog->mpeaceful = 0;
+                    if (weakdog->mleashed)
+                        m_unleash(weakdog, TRUE);
+                }
 
                 /* occasionally add another monster; since this takes
                    place after movement has been allotted, the new
@@ -276,6 +317,8 @@ moveloop_core(void)
 
                 if (u.ublesscnt)
                     u.ublesscnt--;
+                if (Conflict)
+                    u.uconduct.conflicting++;
 
 #ifdef EXTRAINFO_FN
                 if ((prev_dgl_extrainfo == 0) || (prev_dgl_extrainfo < (svm.moves + 250))) {
@@ -283,6 +326,7 @@ moveloop_core(void)
                     mk_dgl_extrainfo();
                 }
 #endif
+                gs.saving_grace_turn = FALSE;
 
                 /* One possible result of prayer is healing.  Whether or
                  * not you get healed depends on your current hit points.
@@ -409,7 +453,7 @@ moveloop_core(void)
            inventory may have changed in, e.g., nh_timeout(); we do
            need two checks here so that the player gets feedback
            immediately if their own action encumbered them */
-        (void) encumber_msg();
+        encumber_msg();
 
 #ifdef STATUS_HILITES
         if (iflags.hilite_delta)
@@ -435,6 +479,8 @@ moveloop_core(void)
         /* when/if hero escapes from lava, he can't just stay there */
         else if (!u.umoved)
             (void) pooleffects(FALSE);
+
+        gs.saving_grace_turn = FALSE;
 
         /* vision while buried or underwater is updated here */
         if (Underwater)
@@ -792,9 +838,10 @@ newgame(void)
     init_dungeons();  /* must be before u_init() to avoid rndmonst()
                        * creating odd monsters for any tins and eggs
                        * in hero's initial inventory */
+    init_biomes();    /* should come after init_dungeons() but before mklev() */
     init_artifacts(); /* before u_init() in case $WIZKIT specifies
                        * any artifacts */
-    u_init();
+    u_init_misc();
 
     l_nhcore_init();  /* create a Lua state that lasts until end of game */
     reset_glyphmap(gm_newgame);
@@ -809,19 +856,35 @@ newgame(void)
 
     mklev();
     u_on_upstairs();
-    if (wizard)
-        obj_delivery(FALSE); /* finish wizkit */
     vision_reset();          /* set up internals for level (after mklev) */
     check_special_room(FALSE);
+
+    to_the_mines();
 
     if (MON_AT(u.ux, u.uy))
         mnexto(m_at(u.ux, u.uy), RLOC_NOMSG);
     (void) makedog();
+
+    u_init_inventory_attrs();
     docrt();
+    flush_screen(1);
+    bot();
+    while (u.uroleplay.reroll && reroll_menu()) {
+        u_init_inventory_attrs();
+        bot();
+    }
+    u_init_skills_discoveries();
+
+    if (wizard) {
+        read_wizkit();
+        obj_delivery(FALSE); /* finish wizkit */
+    }
 
     if (flags.legacy) {
-        flush_screen(1);
-        com_pager("crecelle_legacy");
+        if (Race_if(PM_GNOME) && u.uroleplay.altstarts)
+            com_pager("legacy");
+        else
+            com_pager("crecelle_legacy");
     }
     
     adj_midbosses();
@@ -841,6 +904,32 @@ newgame(void)
     else
         notice_all_mons(TRUE);
     return;
+}
+
+staticfn void
+to_the_mines(void)
+{
+    d_level newlevel;
+
+    if (Race_if(PM_GNOME) && u.uroleplay.altstarts) {
+        /* pulled from bones.c */
+        for (int x = 1; x < COLNO; x++)
+            for (int y = 0; y < ROWNO; y++) {
+                levl[x][y].seenv = 0;
+                levl[x][y].waslit = 0;
+                levl[x][y].glyph = GLYPH_UNEXPLORED;
+                svl.lastseentyp[x][y] = 0;
+            }
+        rm_mapseen(ledger_no(&u.uz));
+        newlevel.dnum = mines_dnum;
+        newlevel.dlevel = 1;
+        /* move gnomes into gnomish mines */
+        schedule_goto(&newlevel, UTOTYPE_NONE,
+                        wizard ? "Entering the mines." : "", (char *) 0);
+        deferred_goto();
+        u_on_upstairs();
+        vision_reset();
+    }
 }
 
 /* show "welcome [back] to CrecelleHack" message at program startup */
@@ -887,6 +976,9 @@ welcome(boolean new_game) /* false => restoring an old game */
           Hello((struct monst *) 0), svp.plname, buf);
 
     if (new_game) {
+        /* gnomes get cheered on */
+        if (Race_if(PM_GNOME))
+            You_hear("your gnomish colleagues cheering for you!");
         /* guarantee that 'major' event category is never empty */
         livelog_printf(LL_ACHIEVE, "%s the%s entered the dungeon",
                        svp.plname, buf);

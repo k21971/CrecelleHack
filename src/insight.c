@@ -578,6 +578,11 @@ background_enlightenment(int unused_mode UNUSED, int final)
             URIGHTY ? "right" : "left");
     you_are(buf, "");
 
+    /* sexual orientation */
+    buf[0] = '\0';
+    Sprintf(buf, "%s", orientations[flags.orientation].technical);
+    you_are(buf, "");
+
     /* As of 3.6.2: dungeon level, so that ^X really has all status info as
        claimed by the comment below; this reveals more information than
        the basic status display, but that's one of the purposes of ^X;
@@ -766,26 +771,6 @@ basics_enlightenment(int mode UNUSED, int final)
         Sprintf(eos(buf), ", the %s possible",
                 (u.uac < 0) ? "best" : "worst");
     enl_msg("Your armor class ", "is ", "was ", buf, "");
-
-    /* Are ya boostin', son? */
-    if (u_boosted(gy.youmonst.data->mboost))
-        you_are("harmonizing with your environment", "");
-    if (uwep && uwep->known && u_boosted(uwep->booster))
-        enl_msg("Your weapon ", "is ", "was ", "harmonizing with the environment", "");
-    if (uarm && uarm->known && u_boosted(uarm->booster))
-        enl_msg("Your armor ", "is ", "was ", "harmonizing with the environment", "");
-    if (uarmc && uarmc->known && u_boosted(uarmc->booster))
-        enl_msg("Your cloak ", "is ", "was ", "harmonizing with the environment", "");
-    if (uarmh && uarmh->known && u_boosted(uarmh->booster))
-        enl_msg("Your helmet ", "is ", "was ", "harmonizing with the environment", "");
-    if (uarmf && uarmf->known && u_boosted(uarmf->booster))
-        enl_msg("Your boots ", "are ", "were ", "harmonizing with the environment", "");
-    if (uarmu && uarmu->known && u_boosted(uarmu->booster))
-        enl_msg("Your undergarments ", "are ", "were ", "harmonizing with the environment", "");
-    if (uarmg && uarmg->known && u_boosted(uarmg->booster))
-        enl_msg("Your gloves ", "are ", "were ", "harmonizing with the environment", "");
-    if (uarms && uarms->known && u_boosted(uarms->booster))
-        enl_msg("Your shield ", "is ", "was ", "harmonizing with the environment", "");
 
     /* gold; similar to doprgold (#showgold) but without shop billing info;
        includes container contents, unlike status line but like doprgold */
@@ -1199,7 +1184,7 @@ status_enlightenment(int mode, int final)
             if (dripping_timeout)
                 Sprintf(eos(buf), " (%ld)", dripping_timeout);
         }
-        enl_msg(You_, "drip ", "dripped ", "with ", buf);
+        enl_msg(You_, "are soaked ", "were soaked ", "with ", buf);
     }
     if (Sleepy) {
         if (magic || cause_known(SLEEPY)) {
@@ -1628,20 +1613,20 @@ attributes_enlightenment(
         you_are("warned", from_what(WARNING));
     if (Warn_of_mon && svc.context.warntype.obj) {
         Sprintf(buf, "aware of the presence of %s",
-                (svc.context.warntype.obj & M2_ORC) ? "orcs"
-                : (svc.context.warntype.obj & M2_ELF) ? "elves"
-                  : (svc.context.warntype.obj & M2_DEMON) ? "demons"
+                (svc.context.warntype.obj & MH_ORC) ? "orcs"
+                : (svc.context.warntype.obj & MH_ELF) ? "elves"
+                  : (svc.context.warntype.obj & MH_DEMON) ? "demons"
                     : something);
         you_are(buf, from_what(WARN_OF_MON));
     }
     if (Warn_of_mon && svc.context.warntype.polyd) {
         Sprintf(buf, "aware of the presence of %s",
-                ((svc.context.warntype.polyd & (M2_HUMAN | M2_ELF))
-                 == (M2_HUMAN | M2_ELF)) ? "humans and elves"
-                    : (svc.context.warntype.polyd & M2_HUMAN) ? "humans"
-                      : (svc.context.warntype.polyd & M2_ELF) ? "elves"
-                        : (svc.context.warntype.polyd & M2_ORC) ? "orcs"
-                          : (svc.context.warntype.polyd & M2_DEMON) ? "demons"
+                ((svc.context.warntype.polyd & (MH_HUMAN | MH_ELF))
+                 == (MH_HUMAN | MH_ELF)) ? "humans and elves"
+                    : (svc.context.warntype.polyd & MH_HUMAN) ? "humans"
+                      : (svc.context.warntype.polyd & MH_ELF) ? "elves"
+                        : (svc.context.warntype.polyd & MH_ORC) ? "orcs"
+                          : (svc.context.warntype.polyd & MH_DEMON) ? "demons"
                             : "certain monsters");
         you_are(buf, "");
     }
@@ -1929,8 +1914,12 @@ attributes_enlightenment(
     }
     if (Unchanging && Upolyd) /* !Upolyd handled above */
         you_can("not change from your current form", from_what(UNCHANGING));
-    if (Hate_silver)
-        you_are("harmed by silver", "");
+    for (ltmp = 1; ltmp < NUM_MATERIAL_TYPES; ++ltmp) {
+        if (Hate_material(ltmp)) {
+            Sprintf(buf, "harmed by %s", materialnm[ltmp]);
+            you_are(buf, "");
+        }
+    }
     /* movement and non-armor-based protection */
     if (Fast)
         you_are(Very_fast ? "very fast" : "fast", from_what(FAST));
@@ -2174,6 +2163,16 @@ show_conduct(int final)
     if (u.uroleplay.pauper)
         enl_msg(You_, gi.invent ? "started" : "are", "started out",
                 " without possessions", "");
+    if (u.uroleplay.perfect_bestiary)
+        enl_msg(You_, "", "", "began your quest with a pre-filled bestiary", "");
+    if (u.uroleplay.altstarts && Race_if(PM_GNOME))
+        enl_msg(You_, "", "", "started in the gnomish mines", "");
+    if (u.uroleplay.reroll) {
+        Sprintf(buf, "rerolled your character %ld time%s",
+                u.uroleplay.numrerolls, plur(u.uroleplay.numrerolls));
+        you_have_X(buf);
+    }
+
     /* nudist is far more than a subset of possessionless, and a much
        more impressive accomplishment, but showing "started out without
        possessions" before "faithfully nudist" looks more logical */
@@ -2222,9 +2221,9 @@ show_conduct(int final)
 
     ngenocided = num_genocides();
     if (ngenocided == 0) {
-        you_have_never("genocided any monsters");
+        you_have_never("erased any monsters");
     } else {
-        Sprintf(buf, "genocided %d type%s of monster%s", ngenocided,
+        Sprintf(buf, "erased %d type%s of monster%s", ngenocided,
                 plur(ngenocided), plur(ngenocided));
         you_have_X(buf);
     }
@@ -2234,6 +2233,18 @@ show_conduct(int final)
     } else if (wizard) {
         Sprintf(buf, "polymorphed %ld item%s", u.uconduct.polypiles,
                 plur(u.uconduct.polypiles));
+        you_have_X(buf);
+    }
+
+    if (!u.uconduct.conflicting) {
+        you_have_never("generated conflict");
+    }
+
+    if (!u.uconduct.holy_water) {
+        you_have_never("blessed an item with holy water");
+    } else if (wizard) {
+        Sprintf(buf, "blessed items with holy water %ld time%s",
+                u.uconduct.holy_water, plur(u.uconduct.holy_water));
         you_have_X(buf);
     }
 
@@ -2302,6 +2313,10 @@ show_conduct(int final)
             break;
         }
         enl_msg(You_, presentverb, pastverb, buf, "");
+        if (u.uroleplay.no_flipped_soko)
+        enl_msg(You_, "", "", "refused to solve flipped Sokoban", "");
+    else
+        enl_msg(You_, "", "", "were willing to try flipped Sokoban", "");
     }
 
     show_achievements(final);
@@ -3122,7 +3137,7 @@ list_genocided(char defquery, boolean ask)
     if (ngone > 0) {
         Sprintf(buf, "Do you want a list of %sspecies%s%s?",
                 (nextinct && !ngenocided) ? "extinct " : "",
-                (ngenocided) ? " genocided" : "",
+                (ngenocided) ? " erased" : "",
                 (nextinct && ngenocided) ? " and extinct" : "");
         c = ask ? yn_function(buf, (ngone > 1) ? "ynaq" : "ynq\033a",
                               defquery, TRUE)
@@ -3158,7 +3173,7 @@ list_genocided(char defquery, boolean ask)
 
             klwin = create_nhwindow(NHW_MENU);
             Sprintf(buf, "%s%s species:",
-                    (ngenocided) ? "Genocided" : "Extinct",
+                    (ngenocided) ? "Erased" : "Extinct",
                     (nextinct && ngenocided) ? " or extinct" : "");
             putstr(klwin, ATR_SUBHEAD, buf);
             if (!dumping)
@@ -3193,7 +3208,7 @@ list_genocided(char defquery, boolean ask)
             if (!dumping)
                 putstr(klwin, 0, "");
             if (ngenocided > 0) {
-                Sprintf(buf, "%d species genocided.", ngenocided);
+                Sprintf(buf, "%d species erased.", ngenocided);
                 putstr(klwin, ATR_PREFORM, buf);
             }
             if (nextinct > 0) {
@@ -3209,10 +3224,10 @@ list_genocided(char defquery, boolean ask)
     } else if (!program_state.gameover) {
         /* #genocided rather than final disclosure, so pline() is ok and
            extinction has been ignored */
-        pline("No creatures have been genocided%s.", genoing ? " yet" : "");
+        pline("No creatures have been erased%s.", genoing ? " yet" : "");
 #if defined (DUMPLOG) || defined (DUMPHTML)
     } else if (dumping) { /* 'gameover' is True if we make it here */
-        putstr(0, 0, "No species were genocided or became extinct.");
+        putstr(0, 0, "No species were erased or became extinct.");
 #endif
     }
 }

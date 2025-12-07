@@ -1,4 +1,4 @@
-/* NetHack 3.7	cmd.c	$NHDT-Date: 1736401574 2025/01/08 21:46:14 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.744 $ */
+/* NetHack 3.7	cmd.c	$NHDT-Date: 1762680996 2025/11/09 01:36:36 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.755 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2013. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -55,6 +55,7 @@ extern int dosuspend(void);          /**/
 extern int doforce(void);            /**/
 extern int doopen(void);             /**/
 extern int doclose(void);            /**/
+extern int doorder(void);          /**/
 extern int dosh(void);               /**/
 extern int dodiscovered(void);       /**/
 extern int doclassdisco(void);       /**/
@@ -1677,6 +1678,8 @@ struct ext_func_tab extcmdlist[] = {
               do_gamelog, IFBURIED | AUTOCOMPLETE | GENERALCMD, NULL },
     { 'c',    "close", "close a door",
               doclose, 0, NULL },
+    { M('P'), "order", "give orders to a pet",
+              doorder, IFBURIED | AUTOCOMPLETE, NULL },
     { M('C'), "conduct", "list voluntary challenges you have maintained",
               doconduct, IFBURIED | AUTOCOMPLETE | GENERALCMD, NULL },
     { '\0',   "debugfuzzer", "start the fuzz tester",
@@ -1708,13 +1711,13 @@ struct ext_func_tab extcmdlist[] = {
               dofire, 0, NULL },
     { M('f'), "force", "force a lock",
               doforce, AUTOCOMPLETE, NULL },
-    { M('g'), "genocided",
-              "list monsters that have been genocided or become extinct",
+    { M('g'), "erased",
+              "list monsters that have been erased or become extinct",
               dogenocided,
               IFBURIED | AUTOCOMPLETE | GENERALCMD | CMD_M_PREFIX, NULL },
     { ';',    "glance", "show what type of thing a map symbol corresponds to",
               doquickwhatis, IFBURIED | GENERALCMD, NULL },
-    { '\0',   "grapple", "grapple a nearby monster",
+    { M('G'),   "grapple", "grapple a nearby monster",
               dograpple,  AUTOCOMPLETE, NULL },
     { '?',    "help", "give a help message",
               dohelp, IFBURIED | GENERALCMD, NULL },
@@ -1849,7 +1852,7 @@ struct ext_func_tab extcmdlist[] = {
                         | CMD_NOT_AVAILABLE
 #endif /* SHELL */
                         ), NULL },
-    { '\0',   "shout", "shout something",
+    { M('S'),   "shout", "shout something",
               doshout, AUTOCOMPLETE, NULL },
     /* $ is like ),=,&c but is not included with *, so not called "seegold" */
     { GOLD_SYM, "showgold", "show gold, possibly shop credit or debt",
@@ -1895,7 +1898,7 @@ struct ext_func_tab extcmdlist[] = {
               dotip, AUTOCOMPLETE | CMD_M_PREFIX, NULL },
     { '_',    "travel", "travel to a specific location on the map",
               dotravel, CMD_M_PREFIX, NULL },
-    { '\0',   "trip", "trip a nearby monster",
+    { M('>'),   "trip", "trip a nearby monster",
               dotrip,  AUTOCOMPLETE, NULL },
     { M('t'), "turn", "turn undead away",
               doturn, IFBURIED | AUTOCOMPLETE, NULL },
@@ -1928,6 +1931,8 @@ struct ext_func_tab extcmdlist[] = {
               dowield, 0, NULL },
     { M('w'), "wipe", "wipe off your face",
               dowipe, AUTOCOMPLETE, NULL },
+    { '\0',   "wizbiome", "regenerate the biomes of the current dungeon",
+              wiz_biome, IFBURIED | AUTOCOMPLETE | WIZMODECMD, NULL },
     { '\0',   "wizborn", "show stats of monsters created",
               doborn, IFBURIED | WIZMODECMD, NULL },
 #ifdef DEBUG
@@ -2046,8 +2051,9 @@ struct ext_func_tab extcmdlist[] = {
     /* internal commands: only used by game core, not available for user */
     { '\0', "clicklook", NULL, doclicklook, INTERNALCMD | MOUSECMD, NULL },
     { '\0', "mouseaction", NULL, domouseaction, INTERNALCMD | MOUSECMD, NULL },
-    { '\0', "altdip", NULL, dip_into, INTERNALCMD, NULL },
     { '\0', "altadjust", NULL, adjust_split, INTERNALCMD, NULL },
+    { '\0', "altdip", NULL, dip_into, INTERNALCMD, NULL },
+    { '\0', "alttakeoff", NULL, ia_dotakeoff, INTERNALCMD, NULL },
     { '\0', "altunwield", NULL, remarm_swapwep, INTERNALCMD, NULL },
     { '\0', (char *) 0, (char *) 0, donull, 0, (char *) 0 } /* sentinel */
 };
@@ -3022,7 +3028,6 @@ key2txt(uchar c, char *txt) /* sufficiently long buffer */
         Strcpy(txt, visctrl((char) c));
     return txt;
 }
-
 
 void
 parseautocomplete(char *autocomplete, boolean condition)
@@ -5285,7 +5290,7 @@ yn_function(
         query = qbuf;
     }
 
-    if ((cmdq = cmdq_pop()) != 0) {
+    if (addcmdq && (cmdq = cmdq_pop()) != 0) {
         cq = *cmdq;
         free(cmdq);
     } else {
@@ -5348,7 +5353,7 @@ yn_function(
        it is most likely caused by saving a keystroke that was just used
        to answer a context-sensitive prompt, then using the do-again
        command with context that has changed */
-    if (resp && res && !strchr(resp, res)) {
+    if (resp && *resp && res && !strchr(resp, res)) {
         /* this probably needs refinement since caller is expecting something
            within 'resp' and ESC won't be (it could be present, but as a flag
            for unshown possibilities rather than as acceptable input) */
@@ -5430,9 +5435,11 @@ paranoid_ynq(
             /* for empty input, return value c will already be 'n' */
         } while (ParanoidConfirm && strcmpi(ans, "no") && --trylimit);
     } else if (accept_q) {
-        c = ynq(prompt); /* 'y', 'n', or 'q' */
+        /* 'y', 'n', or 'q' */
+        c = yn_function(prompt, ynqchars, 'n', FALSE);
     } else {
-        c = y_n(prompt); /* 'y' or 'n' */
+        /* 'y' or 'n' */
+        c = yn_function(prompt, ynchars, 'n', FALSE);
     }
     if (c != 'y' && (c != 'q' || !accept_q))
         c = 'n';
@@ -5526,14 +5533,15 @@ doshout(void)
     /* Shouting makes noise. */
     if (gy.youmonst.data->msound == MS_SILENT) {
         You("cannot speak, so you just shout \"%s\" mentally.", buf);
-    }
-    else {
+    } else if (Race_if(PM_KOBOLD)) {
+        You("bark something that sounds like \"%s\".", buf);
+    } else {
         You("raise your voice and shout: \"%s\"", buf);
         wake_nearby(FALSE);
     }
     /* The main reason for this command: putting this string into the livelog
      * and chronicle. */
-    livelog_printf(LL_SHOUT, "shouted \"%s\"", buf);
+    livelog_printf(LL_SHOUT, "%s \"%s\"", Race_if(PM_KOBOLD) ? "barked" : "shouted", buf);
     return ECMD_TIME;
 }
 

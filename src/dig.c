@@ -150,12 +150,12 @@ pick_can_reach(struct obj *pick, coordxy x, coordxy y)
     if (u.utrap && u.utraptype == TT_PIT) {
         if (target_in_pit)
             return conjoined_pits(t, t_at(u.ux, u.uy), FALSE);
-        return bimanual(pick);
+        return u_bimanual(pick);
     }
 
     /* when hero isn't in a pit, a mattock or flying hero w/ pick can reach
        whether or not the statue is in a pit */
-    if (bimanual(pick) || Flying)
+    if (u_bimanual(pick) || Flying)
         return TRUE;
     /* one-handed pick-axe can reach if statue isn't in a pit */
     if (!target_in_pit)
@@ -403,6 +403,11 @@ dig(void)
                 else if (uarmf)
                     dmg = (dmg + 1) / 2;
                 You("hit yourself in the %s.", body_part(FOOT));
+                if (Hate_material(uwep->material)) {
+                    /* extra damage already applied by dmgval() */
+                    searmsg(&gy.youmonst, &gy.youmonst, uwep, FALSE);
+                    exercise(A_CON, FALSE);
+                }
                 Sprintf(kbuf, "chopping off %s own %s", uhis(),
                         body_part(FOOT));
                 losehp(Maybe_Half_Phys(dmg), kbuf, KILLED_BY);
@@ -482,11 +487,11 @@ dig(void)
                 digtxt = "You cut down the tree.";
                 lev->typ = ROOM, lev->flags = 0;
                 if (!rn2(5))
-                    (void) rnd_treefruit_at(dpx, dpy);
+                    (void) rnd_treefruit_at(dpx, dpy, dpx, dpy);
                 if (Race_if(PM_ELF) || Role_if(PM_RANGER))
                     adjalign(-1);
             } else {
-                digtxt = "You succeed in cutting away some rock.";
+                digtxt = "You succeed in cutting a path.";
                 lev->typ = CORR, lev->flags = 0;
             }
         } else if (IS_WALL(lev->typ)) {
@@ -563,7 +568,13 @@ dig(void)
             return 0; /* statue or boulder got taken */
 
         if (!gd.did_dig_msg) {
-            You("hit the %s with all your might.", d_target[dig_target]);
+            if (dig_target == DIGTYP_ROCK && IS_SUBMASKABLE(levl[dpx][dpy].typ)) {
+                if (levl[dpx][dpy].submask == SM_DIRT)
+                    You("swing at the dirt with all your might.");
+                else if (levl[dpx][dpy].submask == SM_SAND)
+                    You("hack at the sand with all your might.");
+            } else
+                You("hit the %s with all your might.", d_target[dig_target]);
             wake_nearby(FALSE);
             gd.did_dig_msg = TRUE;
         }
@@ -1488,7 +1499,7 @@ mdig_tunnel(struct monst *mtmp)
     } else if (IS_TREE(here->typ)) {
         here->typ = ROOM, here->flags = 0;
         if (pile && pile < 5)
-            (void) rnd_treefruit_at(mtmp->mx, mtmp->my);
+            (void) rnd_treefruit_at(mtmp->mx, mtmp->my, mtmp->mx, mtmp->my);
     } else {
         here->typ = CORR, here->flags = 0;
         if (pile && pile < 5)

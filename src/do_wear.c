@@ -29,7 +29,7 @@ staticfn int Helmet_on(void);
 staticfn int Gloves_on(void);
 staticfn int Shield_on(void);
 staticfn int Shirt_on(void);
-staticfn void mon_product_handling(struct obj *, boolean, boolean);
+staticfn void oprop_armor_handling(struct obj *, boolean);
 staticfn void dragon_armor_handling(struct obj *, boolean, boolean);
 staticfn void Amulet_on(struct obj *) NONNULLARG1;
 staticfn void learnring(struct obj *, boolean);
@@ -191,7 +191,7 @@ Boots_on(void)
 
     switch (uarmf->otyp) {
     case LOW_BOOTS:
-    case IRON_SHOES:
+    case DWARVISH_BOOTS:
     case HIGH_BOOTS:
     case JUMPING_BOOTS:
     case KICKING_BOOTS:
@@ -310,7 +310,7 @@ Boots_off(void)
         }
         break;
     case LOW_BOOTS:
-    case IRON_SHOES:
+    case DWARVISH_BOOTS:
     case HIGH_BOOTS:
     case JUMPING_BOOTS:
     case KICKING_BOOTS:
@@ -333,7 +333,7 @@ Cloak_on(void)
     case DWARVISH_CLOAK:
     case CLOAK_OF_MAGIC_RESISTANCE:
     case ROBE:
-    case LEATHER_CLOAK:
+    case CLOAK:
         break;
     case CLOAK_OF_PROTECTION:
         makeknown(uarmc->otyp);
@@ -396,7 +396,7 @@ Cloak_off(void)
     case CLOAK_OF_MAGIC_RESISTANCE:
     case OILSKIN_CLOAK:
     case ROBE:
-    case LEATHER_CLOAK:
+    case CLOAK:
         break;
     case ELVEN_CLOAK:
         toggle_stealth(otmp, oldprop, FALSE);
@@ -438,17 +438,18 @@ Helmet_on(void)
         if (Role_if(PM_ARCHEOLOGIST))
             change_luck(1);
         break;
+    case GNOMISH_POINTY_HAT:
+        if (Race_if(PM_GNOME))
+            change_luck(1);
     case HELMET:
     case YENDORIAN_BASCINET:
     case WINTER_HAT:
-    case ELVEN_LEATHER_HELM:
-    case DWARVISH_IRON_HELM:
+    case ELVEN_HELM:
+    case DWARVISH_HELM:
     case ORCISH_HELM:
     case HELM_OF_TELEPATHY:
     case SKULL:
-        break;
     case SKULL_HELM:
-        mon_product_handling(uarmh, TRUE, TRUE);
         break;
     case HELM_OF_CAUTION:
         see_monsters();
@@ -529,16 +530,18 @@ Helmet_off(void)
         if (Role_if(PM_ARCHEOLOGIST))
             change_luck(-1);
         break;
+    case GNOMISH_POINTY_HAT:
+        if (Race_if(PM_GNOME))
+            change_luck(-1);
+        break;
     case HELMET:
     case YENDORIAN_BASCINET:
     case WINTER_HAT:
-    case ELVEN_LEATHER_HELM:
-    case DWARVISH_IRON_HELM:
+    case ELVEN_HELM:
+    case DWARVISH_HELM:
     case ORCISH_HELM:
     case SKULL:
-        break;
     case SKULL_HELM:
-        mon_product_handling(uarmh, FALSE, TRUE);
         break;
     case DUNCE_CAP:
         disp.botl = TRUE;
@@ -579,7 +582,8 @@ hard_helmet(struct obj *obj)
 {
     if (!obj || !is_helmet(obj))
         return FALSE;
-    return (is_metallic(obj) || is_crackable(obj)) ? TRUE : FALSE;
+    return (is_metallic(obj) || is_crackable(obj)
+            || is_wood(obj) || is_bone(obj) || is_stone(obj)) ? TRUE : FALSE;
 }
 
 staticfn int
@@ -589,7 +593,7 @@ Gloves_on(void)
         u.uprops[objects[uarmg->otyp].oc_oprop].extrinsic & ~WORN_GLOVES;
 
     switch (uarmg->otyp) {
-    case LEATHER_GLOVES:
+    case GLOVES:
         break;
     case GAUNTLETS_OF_FUMBLING:
         if (!oldprop && !(HFumbling & ~TIMEOUT))
@@ -663,7 +667,7 @@ Gloves_off(void)
     svc.context.takeoff.mask &= ~W_ARMG;
 
     switch (uarmg->otyp) {
-    case LEATHER_GLOVES:
+    case GLOVES:
         break;
     case GAUNTLETS_OF_FUMBLING:
         if (!oldprop && !(HFumbling & ~TIMEOUT))
@@ -682,7 +686,7 @@ Gloves_off(void)
     }
     setworn((struct obj *) 0, W_ARMG);
     svc.context.takeoff.cancelled_don = FALSE;
-    (void) encumber_msg(); /* immediate feedback for GoP */
+    encumber_msg(); /* immediate feedback for GoP */
 
     /* usually can't remove gloves when they're slippery but it can
        be done by having them fall off (polymorph), stolen, or
@@ -704,6 +708,10 @@ Gloves_off(void)
        be being touched simultaneously.] */
     if (u.twoweap && uswapwep && uswapwep->otyp == CORPSE)
         wielding_corpse(uswapwep, gloves, on_purpose);
+
+    /* you may now be touching some material you hate */
+    if (uwep)
+        retouch_object(&uwep, will_touch_skin(W_WEP), FALSE);
 
     if (condtests[bl_bareh].enabled)
         disp.botl = TRUE;
@@ -801,30 +809,52 @@ Shirt_off(void)
     return 0;
 }
 
-/* handle abilities granted by monster bones and meat */
-staticfn void
-mon_product_handling(
-    struct obj *otmp,
-    boolean puton,
-    boolean on_purpose)
+/* handle oprop-granted abilities for hero wearing harmonic armor */
+staticfn void 
+oprop_armor_handling(struct obj *otmp, boolean puton)
 {
-    struct permonst *mdat = &mons[otmp->corpsenm];
-    short mr;
-    if (!otmp)
+    if (!otmp || !otmp->oprop)
         return;
-    for (int i = FIRE_RES; i <= STONE_RES; i++) {
-        mr = res_to_mr(i);
-        if (pm_resistance(mdat, mr)) {
+    switch(otmp->oprop) {
+        case OPROP_BOREAL:
             if (puton) {
-                u.uprops[i].extrinsic |= W_ARMH;
+                ECold_resistance |= W_ARM;
             } else {
-                u.uprops[i].extrinsic &= ~W_ARMH;
-                if (i == STONE_RES) {
-                    wielding_corpse(uwep, otmp, on_purpose);
-                    wielding_corpse(uswapwep, otmp, on_purpose);
-                }
+                ECold_resistance &= ~W_ARM;
             }
-        }
+            break;
+        case OPROP_THERMAL:
+            if (puton) {
+                EFire_resistance |= W_ARM;
+            } else {
+                EFire_resistance &= ~W_ARM;
+            }
+            break;
+        case OPROP_CRACKLING:
+            if (puton) {
+                EShock_resistance |= W_ARM;
+            } else {
+                EShock_resistance &= ~W_ARM;
+            }
+            break;
+        case OPROP_SUBTLE:
+            if (puton) {
+                EStealth |= W_ARM;
+            } else {
+                EStealth &= ~W_ARM;
+            }
+            break;
+        case OPROP_HEXED:
+            if (Blind)
+                pline("%s for a moment.", Tobjnam(otmp, "vibrate"));
+            else
+                pline("%s %s for a moment.", Tobjnam(otmp, "glow"),
+                      hcolor(NH_BLACK));
+            curse(otmp);
+            update_inventory();
+            break;
+        default:
+            break;
     }
 }
 
@@ -927,6 +957,7 @@ Armor_on(void)
         uarm->known = 1; /* suit's +/- evident because of status line AC */
         update_inventory();
     }
+    oprop_armor_handling(uarm, TRUE);
     dragon_armor_handling(uarm, TRUE, TRUE);
     /* gold DSM requires extra handling since it emits light when worn;
        do that after the special armor handling */
@@ -959,6 +990,7 @@ Armor_off(void)
         if (!Blind)
             pline("%s shining.", Tobjnam(otmp, "stop"));
     }
+    oprop_armor_handling(otmp, FALSE);
     dragon_armor_handling(otmp, FALSE, TRUE);
 
     return 0;
@@ -989,6 +1021,7 @@ Armor_gone(void)
         if (!Blind)
             pline("%s shining.", Tobjnam(otmp, "stop"));
     }
+    oprop_armor_handling(otmp, FALSE);
     dragon_armor_handling(otmp, FALSE, FALSE);
 
     return 0;
@@ -1236,12 +1269,12 @@ learnring(struct obj *ring, boolean observed)
            mark this ring as having been seen (no need for makeknown);
            otherwise if we have seen this ring, discover its type */
         if (objects[ringtype].oc_name_known)
-            ring->dknown = 1;
+            observe_object(ring);
         else if (ring->dknown)
             makeknown(ringtype);
 #if 0 /* see learnwand() */
         else
-            ring->eknown = 1;
+            observe_object(ring);
 #endif
     }
 
@@ -1823,7 +1856,7 @@ armor_or_accessory_off(struct obj *obj)
                     Strcat(what, " and ");
                 Strcat(what, suit_simple_name(uarm));
             }
-            Snprintf(why, sizeof(why), " without taking off your %s first",
+            Snprintf(why, sizeof why, " without taking off your %s first",
                      what);
         } else {
             Strcpy(why, "; it's embedded");
@@ -1881,12 +1914,27 @@ dotakeoff(void)
             pline("Not wearing any armor or accessories.");
         return ECMD_OK;
     }
-    if (Narmorpieces != 1 || ParanoidRemove || cmdq_peek(CQ_CANNED))
+    if (Narmorpieces != 1 || ParanoidRemove || gi.item_action_in_progress)
         otmp = getobj("take off", takeoff_ok, GETOBJ_NOFLAGS);
     if (!otmp)
         return ECMD_CANCEL;
 
     return armor_or_accessory_off(otmp);
+}
+
+/* 'i' or 'I[' followed by <invlet> and then 'T';
+   plain dotakeoff() would not give any feedback when picking suit
+   covered by cloak or shirt covered by suit and/or cloak due to the
+   default behavior of equip_ok() (skipping inaccessible items) */
+int
+ia_dotakeoff(void)
+{
+    int res;
+
+    gi.item_action_in_progress = TRUE;
+    res = dotakeoff();
+    gi.item_action_in_progress = FALSE;
+    return res;
 }
 
 /* the #remove command - take off ring or other accessory */
@@ -2072,7 +2120,7 @@ canwearobj(struct obj *otmp, long *mask, boolean noisy)
         /* same exception for cloaks as used in m_dowear() */
         && (which != c_cloak
             || ((otmp->otyp != MUMMY_WRAPPING)
-                ? gy.youmonst.data->msize != MZ_SMALL
+                ? USIZE != MZ_SMALL
                 : !WrappingAllowed(gy.youmonst.data)))
         && (racial_exception(&gy.youmonst, otmp) < 1)) {
         if (noisy)
@@ -2084,7 +2132,7 @@ canwearobj(struct obj *otmp, long *mask, boolean noisy)
         return 0;
     }
 
-    if (welded(uwep) && bimanual(uwep) && (is_suit(otmp) || is_shirt(otmp))) {
+    if (welded(uwep) && u_bimanual(uwep) && (is_suit(otmp) || is_shirt(otmp))) {
         if (noisy)
             You("cannot do that while holding your %s.",
                 is_sword(uwep) ? c_sword : c_weapon);
@@ -2110,7 +2158,7 @@ canwearobj(struct obj *otmp, long *mask, boolean noisy)
             if (noisy)
                 already_wearing(an(c_shield));
             err++;
-        } else if (uwep && bimanual(uwep)) {
+        } else if (uwep && u_bimanual(uwep)) {
             if (noisy)
                 You("cannot wear a shield while wielding a two-handed %s.",
                     is_sword(uwep) ? c_sword : (uwep->otyp == BATTLE_AXE)
@@ -2229,6 +2277,22 @@ canwearobj(struct obj *otmp, long *mask, boolean noisy)
     return !err;
 }
 
+/* Return TRUE iff wearing/wielding a potential new piece of equipment with
+ * the given mask will touch the hero's skin. */
+boolean
+will_touch_skin(long mask)
+{
+    if ((mask == W_ARMC || mask == W_AMUL) && (uarm || uarmu))
+        return FALSE;
+    else if (mask == W_ARM && uarmu)
+        return FALSE;
+    else if ((mask & (W_WEP | W_SWAPWEP | W_ARMS)) && uarmg)
+        return FALSE;
+    else if (mask == W_QUIVER)
+        return FALSE;
+    return TRUE;
+}
+
 staticfn int
 accessory_or_armor_on(struct obj *obj)
 {
@@ -2259,9 +2323,8 @@ accessory_or_armor_on(struct obj *obj)
             makeknown(obj->otyp);
             disp.botl = TRUE; /* for AC after zeroing u.ublessed */
             return ECMD_TIME;
-        } else if (obj->otyp == SKULL 
-                    && mons[obj->corpsenm].msize < gy.youmonst.data->msize) {
-            pline("The skull is too small to wear on your %s.", body_part(HEAD));
+        } else if (wrong_size_armor(obj, gy.youmonst.data)) {
+            pline("The %s is the wrong size for you.", xname(obj));
             return ECMD_OK;
         }
     } else {
@@ -2331,11 +2394,11 @@ accessory_or_armor_on(struct obj *obj)
                 res = !uwep->bknown; /* check this before calling welded() */
                 if (((mask == RIGHT_RING && URIGHTY)
                      || (mask == LEFT_RING  && ULEFTY)
-                     || bimanual(uwep)) && welded(uwep)) {
+                     || u_bimanual(uwep)) && welded(uwep)) {
                     const char *hand = body_part(HAND);
 
                     /* welded will set bknown */
-                    if (bimanual(uwep))
+                    if (u_bimanual(uwep))
                         hand = makeplural(hand);
                     You("cannot free your weapon %s to put on the ring.",
                         hand);
@@ -2348,6 +2411,7 @@ accessory_or_armor_on(struct obj *obj)
                 already_wearing("an amulet");
                 return ECMD_OK;
             }
+            mask = W_AMUL;
         } else if (eyewear) {
             if (!has_head(gy.youmonst.data)) {
                 You("have no head to wear %s on.", ansimpleoname(obj));
@@ -2380,7 +2444,7 @@ accessory_or_armor_on(struct obj *obj)
         }
     }
 
-    if (!retouch_object(&obj, FALSE))
+    if (!retouch_object(&obj, will_touch_skin(mask), FALSE))
         return ECMD_TIME; /* costs a turn even though it didn't get worn */
 
     if (armor) {
@@ -2504,35 +2568,31 @@ void
 find_ac(void)
 {
     int uac = mons[u.umonnum].ac; /* base armor class for current form */
+    int shield_bonus;
 
     /* armor class from worn gear */
     if (uarm) {
         uac -= ARM_BONUS(uarm);
-        uac -= (!Prone && u_boosted(uarm->booster) ? 3 : 0);
     }
     if (uarmc) {
         uac -= ARM_BONUS(uarmc);
-        uac -= (!Prone && u_boosted(uarmc->booster) ? 3 : 0);
     }
     if (uarmh) {
         uac -= ARM_BONUS(uarmh);
-        uac -= (!Prone && u_boosted(uarmh->booster) ? 3 : 0);
     }
     if (uarmf) {
         uac -= ARM_BONUS(uarmf);
-        uac -= (!Prone && u_boosted(uarmf->booster) ? 3 : 0);
     }
     if (uarms) {
-        uac -= ARM_BONUS(uarms);
-        uac -= (!Prone && u_boosted(uarms->booster) ? 3 : 0);
+        shield_bonus = ARM_BONUS(uarms);
+        shield_bonus += (min(MZ_HUGE + 1, uarms->osize) - USIZE);
+        uac -= shield_bonus;
     }
     if (uarmg) {
         uac -= ARM_BONUS(uarmg);
-        uac -= (!Prone && u_boosted(uarmg->booster) ? 3 : 0);
     }
     if (uarmu) {
         uac -= ARM_BONUS(uarmu);
-        uac -= (!Prone && u_boosted(uarmu->booster) ? 3 : 0);
     }
     if (uleft && uleft->otyp == RIN_PROTECTION)
         uac -= uleft->spe;
@@ -2588,13 +2648,13 @@ glibr(void)
 
     leftfall = (uleft && !uleft->cursed
                 && (!uwep || !(welded(uwep) && ULEFTY)
-                    || !bimanual(uwep)));
+                    || !u_bimanual(uwep)));
     rightfall = (uright && !uright->cursed
                 && (!uwep || !(welded(uwep) && URIGHTY)
-                    || !bimanual(uwep)));
+                    || !u_bimanual(uwep)));
 /*
     leftfall = (uleft && !uleft->cursed
-                && (!uwep || !welded(uwep) || !bimanual(uwep)));
+                && (!uwep || !welded(uwep) || !u_bimanual(uwep)));
     rightfall = (uright && !uright->cursed && (!welded(uwep)));
 */
 
@@ -2661,7 +2721,7 @@ glibr(void)
         }
         hand = body_part(HAND);
         which = "";
-        if (bimanual(otmp)) {
+        if (u_bimanual(otmp)) {
             hand = makeplural(hand);
         } else if (wastwoweap) {
             /* preceding msg was about non-dominant hand */
@@ -2721,7 +2781,7 @@ stuck_ring(struct obj *ring, int otyp)
         if (nolimbs(gy.youmonst.data) && uamul
             && uamul->otyp == AMULET_OF_UNCHANGING && uamul->cursed)
             return uamul;
-        if (welded(uwep) && ((ring == RING_ON_PRIMARY) || bimanual(uwep)))
+        if (welded(uwep) && ((ring == RING_ON_PRIMARY) || u_bimanual(uwep)))
             return uwep;
         if (uarmg && uarmg->cursed)
             return uarmg;
@@ -2766,7 +2826,7 @@ select_off(struct obj *otmp)
         }
         glibdummy = cg.zeroobj;
         why = 0; /* the item which prevents ring removal */
-        if (welded(uwep) && ((otmp == RING_ON_PRIMARY) || bimanual(uwep))) {
+        if (welded(uwep) && ((otmp == RING_ON_PRIMARY) || u_bimanual(uwep))) {
             Sprintf(buf, "free a weapon %s", body_part(HAND));
             why = uwep;
         } else if (uarmg && (uarmg->cursed || Glib)) {
@@ -2817,7 +2877,7 @@ select_off(struct obj *otmp)
         } else if (otmp == uarmu && uarm && uarm->cursed) {
             Sprintf(buf, "remove your %s", c_suit);
             why = uarm;
-        } else if (welded(uwep) && bimanual(uwep)) {
+        } else if (welded(uwep) && u_bimanual(uwep)) {
             Sprintf(buf, "release your %s",
                     is_sword(uwep) ? c_sword : (uwep->otyp == BATTLE_AXE)
                                                    ? c_axe
@@ -3330,14 +3390,14 @@ adj_abon(struct obj *otmp, schar delta)
 }
 
 /* decide whether a worn item is covered up by some other worn item,
-   used for dipping into liquid and applying grease;
+   used for dipping into liquid and applying grease and takeoff_ok();
    some criteria are different than select_off()'s */
 boolean
-inaccessible_equipment(struct obj *obj,
-                       const char *verb, /* "dip" or "grease", or null to
-                                             avoid messages */
-                       boolean only_if_known_cursed) /* ignore covering unless
-                                                        known to be cursed */
+inaccessible_equipment(
+    struct obj *obj,
+    const char *verb, /* "dip" or "grease", or null to avoid messages */
+    boolean only_if_known_cursed) /* ignore covering unless it is known to
+                                   * be cursed */
 {
     static NEARDATA const char need_to_take_off_outer_armor[] =
         "need to take off %s to %s %s.";
@@ -3389,6 +3449,8 @@ inaccessible_equipment(struct obj *obj,
     }
     /* item is not inaccessible */
     return FALSE;
+
+#undef BLOCKSACCESS
 }
 
 /* not a getobj callback - unifies code among the other 4 getobj callbacks */
@@ -3428,9 +3490,11 @@ equip_ok(struct obj *obj, boolean removing, boolean accessory)
      * can't be worn because the slot is filled with something else. */
 
     /* removing inaccessible equipment */
-    if (removing && inaccessible_equipment(obj, (const char *) 0,
-                                           (obj->oclass == RING_CLASS)))
-        return GETOBJ_EXCLUDE_INACCESS;
+    if (removing && !gi.item_action_in_progress) {
+        if (inaccessible_equipment(obj, (const char *) 0,
+                                   (obj->oclass == RING_CLASS)))
+            return GETOBJ_EXCLUDE_INACCESS;
+    }
 
     /* all good to go */
     return GETOBJ_SUGGEST;
@@ -3489,6 +3553,24 @@ count_worn_armor(void)
     if (uarmu) ret++;
 
     return ret;
+}
+
+/* Return 1 if too big, -1 if too small. */
+int
+wrong_size_armor(struct obj *obj, struct permonst *ptr)
+{
+    int size = (ptr == gy.youmonst.data) ? USIZE : ptr->msize;
+    if (!obj || obj->otyp == MUMMY_WRAPPING || is_shield(obj)
+        || obj->otyp == SKULL_HELM || obj->otyp == SKULL)
+        return FALSE;
+    if (Is_dragon_scales(obj))
+        return FALSE;
+    if (is_cloak(obj) && abs(size_mult(obj->osize) - size_mult(size) > 1)) {
+        return (obj->osize > size) ? 1 : -1;
+    } else if (!is_cloak(obj) && obj->osize != size) {
+        return (obj->osize > size) ? 1 : -1;
+    }
+    return FALSE;
 }
 
 /*do_wear.c*/

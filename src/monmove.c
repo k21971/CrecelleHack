@@ -266,22 +266,33 @@ boolean
 onscary(coordxy x, coordxy y, struct monst *mtmp)
 {
     struct engr *ep;
+    /* <0,0> is used by musical scaring;
+     * it doesn't care about scrolls or engravings or dungeon branch */
+    boolean auditory_scare = (x == 0 && y == 0),
+            magical_scare = !auditory_scare;
 
-    /* creatures who are directly resistant to magical scaring:
-     * humans aren't monsters
-     * uniques have ascended their base monster instincts
-     * Rodney, lawful minions, Angels, the Riders, shopkeepers
-     * inside their own shop, priests inside their own temple */
+    /* creatures who are directly resistant to any type of scaring:
+     * Rodney, lawful minions, Angels, the Riders */
     if (mtmp->iswiz || is_lminion(mtmp) || mtmp->data == &mons[PM_ANGEL]
-        || is_rider(mtmp->data)
-        || mtmp->data->mlet == S_HUMAN || unique_corpstat(mtmp->data)
-        || (mtmp->isshk && inhishop(mtmp))
+        || is_rider(mtmp->data))
+        return FALSE;
+
+    /* creatures who are directly resistant to magical scaring
+     * based on the mere presence of something at a location:
+     * humans etc.
+     * uniques have ascended their base monster instincts */
+    if (magical_scare
+        && (mtmp->data->mlet == S_HUMAN || unique_corpstat(mtmp->data)))
+        return FALSE;
+
+    /* creatues who resist scaring under particular circumstances:
+     * shopkeepers inside their own shop
+     * priests inside their own temple */
+    if ((mtmp->isshk && inhishop(mtmp))
         || (mtmp->ispriest && inhistemple(mtmp)))
         return FALSE;
 
-    /* <0,0> is used by musical scaring to check for the above;
-     * it doesn't care about scrolls or engravings or dungeon branch */
-    if (x == 0 && y == 0)
+    if (auditory_scare)
         return TRUE;
 
     /* should this still be true for defiled/molochian altars? */
@@ -311,7 +322,7 @@ onscary(coordxy x, coordxy y, struct monst *mtmp)
                 || (Displaced && mtmp->mux == x && mtmp->muy == y)
                 || (ep->guardobjects && vobj_at(x, y)))
             && !(mtmp->isshk || mtmp->isgd || !mtmp->mcansee
-                 || mtmp->mpeaceful || mtmp->data->mlet == S_HUMAN
+                 || mtmp->mpeaceful
                  || mtmp->data == &mons[PM_MINOTAUR]
                  || Inhell || In_endgame(&u.uz)));
 }
@@ -324,6 +335,13 @@ mon_regen(struct monst *mon, boolean digest_meal)
         || (mon->data == &mons[PM_WATER_ELEMENTAL] 
             && IS_RAINING && !has_no_tod_cycles(&u.uz)))
         healmon(mon, 1, 0);
+    /* special regen */
+    if ((mon->data == &mons[PM_DUST_VORTEX])
+            && IS_SUBMASKABLE(levl[mon->mx][mon->my].typ)
+            && (levl[mon->mx][mon->my].submask == SM_DIRT
+                || levl[mon->mx][mon->my].submask == SM_SAND))
+        healmon(mon, 5, 0);
+    /* actual regen stuff */
     if (mon->mspec_used)
         mon->mspec_used--;
     if (digest_meal) {
@@ -671,7 +689,8 @@ m_everyturn_effect(struct monst *mtmp)
     coordxy x = is_u ? u.ux : mtmp->mx,
             y = is_u ? u.uy : mtmp->my;
 
-    if (mtmp->data == &mons[PM_FOG_CLOUD]) {
+    if (mtmp->data == &mons[PM_FOG_CLOUD]
+        || mtmp->data == &mons[PM_SMOKE_PARAELEMENTAL]) {
         /* don't leave a vapor cloud if some other gas cloud is already
            present, or when flowing under closed doors so that visibility
            changes aren't mixed with messages about doing such */
@@ -695,14 +714,46 @@ m_everyturn_effect(struct monst *mtmp)
                 uarm->otyp == YELLOW_DRAGON_SCALE_MAIL))) {
         floor_alchemy(x, y, POT_ACID, NON_PM);
     }
+    /* oprop boots do odd things */
+    if (is_u && uarmf && uarmf->oprop) {
+        switch(uarmf->oprop) {
+            case OPROP_BOREAL:
+                add_coating(x, y, COAT_FROST, 0);
+                break;
+            case OPROP_THERMAL:
+                if (has_coating(x, y, COAT_GRASS)) {
+                    remove_coating(x,y, COAT_GRASS);
+                    add_coating(x, y, COAT_ASHES, 0);
+                }
+                break;
+            case OPROP_SANGUINE:
+                floor_alchemy(x, y, POT_BLOOD, PM_HUMAN);
+                break;
+            default:
+                break;
+        }
+    }
     /* Drip liquids */
     if (is_u && Dripping && !rn2(3)) {
-        if (flags.verbose) You("drip some liquid.");
-        if (u.udriptype > 0) floor_alchemy(x, y, u.udriptype, NON_PM);
+        if (flags.drip_messages) {
+            char dripbuf[BUFSZ];
+            potion_coating_text(dripbuf, (u.udriptype <= 0) ? POT_BLOOD : u.udriptype);
+            You("drip %s onto the %s.", dripbuf, surface(u.ux, u.uy));
+        }
+        if (u.udriptype > 0)
+            floor_alchemy(x, y, u.udriptype, NON_PM);
         else add_coating(x, y, COAT_BLOOD, -1 * u.udriptype);
+    } else if (is_u && uwep && is_art(uwep, ART_WRATH_OF_SANKIS) && !rn2(3)) {
+        add_coating(x, y, COAT_BLOOD, PM_DWARF);
+    } else if (!is_u && MON_WEP(mtmp)
+                && is_art(MON_WEP(mtmp), ART_WRATH_OF_SANKIS)  && !rn2(3)) {
+        add_coating(x, y, COAT_BLOOD, PM_DWARF);
     } else if (!is_u && mtmp->mdripping) {
         if (mtmp->mdriptype > 0) floor_alchemy(x, y, mtmp->mdriptype, NON_PM);
         else add_coating(x, y, COAT_BLOOD, -1 * mtmp->mdriptype);
+    } else if (mtmp->data == &mons[PM_ACID_BLOB] 
+            || mtmp->data == &mons[PM_GELATINOUS_CUBE]) {
+        floor_alchemy(x, y, POT_ACID, NON_PM);
     }
 }
 
@@ -716,6 +767,7 @@ void
 m_postmove_effect(struct monst *mtmp)
 {
     boolean is_u = (mtmp == &gy.youmonst) ? TRUE : FALSE;
+    boolean vortex_growth = FALSE;
     coordxy x = is_u ? u.ux0 : mtmp->mx,
             y = is_u ? u.uy0 : mtmp->my;
 
@@ -733,9 +785,6 @@ m_postmove_effect(struct monst *mtmp)
             create_gas_cloud(x, y, 1, 0, 0);
         else
             create_bonfire(x, y, 1, rnd(4));
-    } else if (mtmp->data == &mons[PM_ACID_BLOB] 
-            || mtmp->data == &mons[PM_GELATINOUS_CUBE]) {
-        floor_alchemy(x, y, POT_ACID, NON_PM);
     } else if (mtmp->data == &mons[PM_WATER_ELEMENTAL] || 
                 mtmp->data == &mons[PM_SQUONK]) {
         /* enough water is produced that we just add a coating instead of alchemizing */
@@ -752,6 +801,35 @@ m_postmove_effect(struct monst *mtmp)
         /* tornados suck up everything */
         remove_coating(x, y, COAT_ALL);
         wipe_engr_at(x, y, 8, FALSE);
+    } 
+    /* vortex growth */
+    if (!is_u) {
+        if (mtmp->data == &mons[PM_ICE_VORTEX]
+            && has_coating(x, y, COAT_FROST)) {
+            vortex_growth = TRUE;
+            remove_coating(x, y, COAT_FROST);
+        } else if (mtmp->data == &mons[PM_FIRE_VORTEX]
+                    && has_coating(x, y, COAT_ASHES)) {
+            vortex_growth = TRUE;
+            remove_coating(x, y, COAT_ASHES);
+        } else if (mtmp->data == &mons[PM_STEAM_VORTEX]
+                    && has_coating(x, y, COAT_POTION)
+                    && levl[x][y].pindex == POT_WATER) {
+            vortex_growth = TRUE;
+            remove_coating(x, y, COAT_POTION);
+        }
+        /* Now we actually grow. */
+        if (vortex_growth) {
+            if (canseemon(mtmp)) {
+                pline("%s absorbs nearby material!", Monnam(mtmp));
+            }
+            if (rn2(7))
+                healmon(mtmp, 10, 0);
+            else {
+                (void) grow_up(mtmp, (struct monst *) 0);
+                if (!canseemon(mtmp)) You_hear("churning air.");
+            }
+        }
     }
 }
 
@@ -857,8 +935,10 @@ dochug(struct monst *mtmp)
     /* Monsters that want to acquire things may teleport, so do it before
        inrange is set. This costs a turn only if mstate is set.  */
     if (is_covetous(mdat)) {
-        (void) tactics(mtmp);
+        int tactics_result = tactics(mtmp);
         /* tactics -> mnexto -> deal_with_overcrowding */
+        if (tactics_result >= 2)
+            return tactics_result;
         if (mtmp->mstate)
             return 0;
         set_apparxy(mtmp);
@@ -958,8 +1038,8 @@ dochug(struct monst *mtmp)
        to move. Movement itself is handled by the m_move() function. */
     if (!nearby || mtmp->mflee || scared || mtmp->mconf || mtmp->mstun
         || (mtmp->minvis && !rn2(3))
-        || (mdat->mlet == S_LEPRECHAUN && !findgold(gi.invent)
-            && (findgold(mtmp->minvent) || rn2(2)))
+        || (mdat->mlet == S_LEPRECHAUN && !findgold(gi.invent, FALSE)
+            && (findgold(mtmp->minvent, FALSE) || rn2(2)))
         || (is_wanderer(mdat) && !rn2(4)) || (Conflict && !mtmp->iswiz)
         || (!mtmp->mcansee && !rn2(4)) || mtmp->mpeaceful) {
 
@@ -1081,7 +1161,7 @@ mon_would_take_item(struct monst *mtmp, struct obj *otmp)
         return FALSE;
     if (mtmp->mtame && otmp->cursed)
         return FALSE; /* note: will get overridden if mtmp will eat otmp */
-    if (is_unicorn(mtmp->data) && objects[otmp->otyp].oc_material != GEMSTONE)
+    if (is_unicorn(mtmp->data) && otmp->material != GEMSTONE)
         return FALSE;
     if (!mindless(mtmp->data) && !is_animal(mtmp->data) && pctload < 75
         && searches_for_item(mtmp, otmp))
@@ -1089,7 +1169,7 @@ mon_would_take_item(struct monst *mtmp, struct obj *otmp)
     if (likes_gold(mtmp->data) && otmp->otyp == GOLD_PIECE && pctload < 95)
         return TRUE;
     if (likes_gems(mtmp->data) && otmp->oclass == GEM_CLASS
-        && objects[otmp->otyp].oc_material != MINERAL && pctload < 85)
+        && otmp->material != MINERAL && pctload < 85)
         return TRUE;
     if (likes_objs(mtmp->data) && strchr(practical, otmp->oclass)
         && pctload < 75)
@@ -1220,9 +1300,9 @@ leppie_avoidance(struct monst *mtmp)
     struct obj *lepgold, *ygold;
 
     if (mtmp->data == &mons[PM_LEPRECHAUN]
-        && ((lepgold = findgold(mtmp->minvent))
+        && ((lepgold = findgold(mtmp->minvent, TRUE))
             && (lepgold->quan
-                > ((ygold = findgold(gi.invent)) ? ygold->quan : 0L))))
+                > ((ygold = findgold(gi.invent, TRUE)) ? ygold->quan : 0L))))
         return TRUE;
 
     return FALSE;
@@ -1241,7 +1321,7 @@ leppie_stash(struct monst *mtmp)
         && levl[mtmp->mx][mtmp->my].typ == ROOM
         && !t_at(mtmp->mx, mtmp->my)
         && rn2(4)
-        && (gold = findgold(mtmp->minvent)) != 0) {
+        && (gold = findgold(mtmp->minvent, TRUE)) != 0) {
         mdrop_obj(mtmp, gold, FALSE);
         gold = g_at(mtmp->mx, mtmp->my);
         if (gold)
@@ -1920,6 +2000,32 @@ m_move(struct monst *mtmp, int after)
     }
 #endif
 
+    /* jump toward the player if that lies in our nature */
+    if (can_jump(mtmp) || is_jumper(ptr)) {
+        int dist = dist2(mtmp->mx, mtmp->my, u.ux, u.uy);
+        if (!mtmp->mpeaceful && !rn2(3) && dist <= 20 && dist > 8) {
+            int x = u.ux - mtmp->mx;
+            int y = u.uy - mtmp->my;
+            if (x < 0)
+                x = 1;
+            else if (x > 0)
+                x = -1;
+            if (y < 0)
+                y = 1;
+            else if (y > 0)
+                y = -1;
+            if (rloc_pos_ok(u.ux + x, u.uy + y, mtmp)
+                && check_mon_jump(mtmp, u.ux + x, u.uy + y)) {
+                rloc_to(mtmp, u.ux + x, u.uy + y);
+                if (canseemon(mtmp))
+                    pline("%s leaps at you!", Monnam(mtmp));
+                mmoved = 1;
+                return postmov(mtmp, ptr, omx, omy, mmoved,
+                       seenflgs, can_tunnel, can_unlock, can_open);
+            }
+        }
+    }
+
     /* teleport if that lies in our nature */
     if (ptr == &mons[PM_TENGU] && !rn2(5) && !mtmp->mcan
         && !tele_restrict(mtmp)) {
@@ -1946,7 +2052,9 @@ m_move(struct monst *mtmp, int after)
                               && (levl[ggx][ggy].lit || !levl[omx][omy].lit)
                               && (dist2(omx, omy, ggx, ggy) <= 36));
         #endif
-        boolean should_see = (distmin(omx, omy, ggx, ggy) <= 1);
+        boolean should_see = (distmin(omx, omy, ggx, ggy) <= 1)
+                                || (has_telepathy(mtmp)
+                                    && mdistu(mtmp) <= u.unblind_telepat_range);
         if (mtmp->mcansee) {
             if (couldsee(omx, omy)) {
                 if (infravision(mtmp->data)
@@ -2438,7 +2546,7 @@ stuff_prevents_passage(struct monst *mtmp)
         if (obj->oclass != GEM_CLASS && !(typ >= ARROW && typ <= BOOMERANG)
             && !(typ >= DAGGER && typ <= CRYSKNIFE) && typ != SLING
             && !is_cloak(obj) && typ != FEDORA && !is_gloves(obj)
-            && typ != LEATHER_JACKET && typ != CREDIT_CARD && !is_shirt(obj)
+            && typ != JACKET && typ != CREDIT_CARD && !is_shirt(obj)
             && !(typ == CORPSE && verysmall(&mons[obj->corpsenm]))
             && typ != FORTUNE_COOKIE && typ != CANDY_BAR && typ != PANCAKE
             && typ != LEMBAS_WAFER && typ != LUMP_OF_ROYAL_JELLY
@@ -2447,7 +2555,7 @@ stuff_prevents_passage(struct monst *mtmp)
             && typ != BAG_OF_HOLDING && typ != BAG_OF_TRICKS
             && !Is_candle(obj) && typ != OILSKIN_SACK && typ != LEASH
             && typ != STETHOSCOPE && typ != BLINDFOLD && typ != TOWEL
-            && typ != TIN_WHISTLE && typ != MAGIC_WHISTLE
+            && typ != PEA_WHISTLE && typ != MAGIC_WHISTLE
             && typ != MAGIC_MARKER && typ != TIN_OPENER && typ != SKELETON_KEY
             && typ != LOCK_PICK)
             return TRUE;

@@ -7,19 +7,41 @@
 ###########################################
 
 #################################
-###### CrecelleHack Options #####
+# CrecelleHack Gameplay Options #
 #################################
-# The CrecelleHack tutorial is different than vanilla's, and is
-# specific to this variant.
-OPTIONS=tutorial
-# Comment out this line to set a custom taunt, usablee with #taunt.
-#OPTIONS=taunt:do a little dance
+# Custom Taunt
+OPTIONS=taunt:do a little dance.
+# Implicit Item Sizes
+OPTIONS=implicit_medium
+# Implicit Materials
+OPTIONS=implicit material
+# Display item weights
+OPTIONS=invweight
+# Display surface colors
+OPTIONS=color_surfaces
+# Display coating colors
+OPTIONS=color_coatings
+# Use bold to indicate coatings
+OPTIONS=bold_coatings
+# Automatically size wishes to player
+OPTIONS=player_sized_wishes
 
-#################################
-######## NetHack Options ########
-#################################
-# Everything below here is 3.7 config stuff. Feel free to delete it
-# and replace it with your own.
+##########################
+####### Challenges #######
+##########################
+# Options pertaining to conducts and special runs. Uncomment to enable.
+# Start with a blindfold equipped.
+#OPTIONS=blind
+# Start without clothing.
+#OPTIONS=nudist
+# Start with nothing nothing at all.
+#OPTIONS=pauper
+
+########################
+####### Controls #######
+########################
+# Method of controlling the character.
+OPTIONS=number_pad:0
 
 ########################
 ####### Gameplay #######
@@ -39,15 +61,14 @@ OPTIONS=mention_decor
 OPTIONS=mention_walls
 # Sort loot always.
 OPTIONS=sortloot:full
+# Autounlock ask optimization.
+OPTIONS=autounlock:apply-key+kick
 
 ############################
 ####### Autocomplete #######
 ############################
-# Extended commands to autocomplete.
-# Autocomplete the travel command, since it is used often.
-AUTOCOMPLETE=travel
-# Autocomplete the twoweapon command, since it is used often.
-AUTOCOMPLETE=twoweapon
+# Useful for regular play
+AUTOCOMPLETE=travel,twoweapon,options,optionsfull,known,knownclass
 
 ###############################
 ######## Connectivity #########
@@ -71,22 +92,10 @@ OPTIONS=scores:10t 2a o
 ######## Display ########
 #########################
 # Display options.
-# Custom symbol replacements.
+# Custom symbol replacements (monsters)
 SYMBOLS=S_boulder:0
 SYMBOLS=S_golem:7
 SYMBOLS=S_ghost:8
-# The symset to use when displaying characters.
-OPTIONS=symset:Enhanced1
-OPTIONS=glyph:S_ice/U+02D1
-OPTIONS=glyph:S_corr/U+2591
-OPTIONS=glyph:S_litcorr/U+2592
-OPTIONS=glyph:S_throne/U+0409
-OPTIONS=glyph:S_bars/U+2980
-OPTIONS=glyph:S_magic_portal/U+238A
-OPTIONS=glyph:S_poisoncloud/U+00A7
-OPTIONS=glyph:S_potioncloud/U+00A7
-OPTIONS=glyph:S_cloud/U+00A7
-OPTIONS=glyph:S_stone/U+0023
 OPTIONS=roguesymset:Plain
 # Highlight tame monsters.
 OPTIONS=hilite_pet
@@ -126,7 +135,7 @@ OPTIONS=showvers
 # Define which prompts appear at the end of the game.
 OPTIONS=disclose:+i +a +v +g +c +o
 # Show object symbols in the menu if possible.
-OPTIONS=menu_objsyms
+OPTIONS=menu_objsyms:3
 # Split the status line into three separate lines.
 OPTIONS=statuslines:3
 # Do not assume items are uncursed by default.
@@ -157,17 +166,6 @@ OPTIONS=mouse_support
 # Window border style. 4 excludes the inventory window.
 OPTIONS=windowborders:4
 
-##########################
-####### Challenges #######
-##########################
-# Options pertaining to conducts and special runs. Uncomment to enable.
-# Start with a blindfold equipped.
-#OPTIONS=blind
-# Start without clothing.
-#OPTIONS=nudist
-# Start with nothing nothing at all.
-#OPTIONS=pauper
-
 ####################################
 ######## Developer Settings ########
 ####################################
@@ -176,10 +174,10 @@ OPTIONS=windowborders:4
 OPTIONS=playmode:debug
 # Enable sanity checks.
 OPTIONS=sanity_check
-# Bind the command to regenerate a map to a key.
-BIND=^m:wizmakemap 
+# # Bind the command to regenerate a map to a key.
+BIND=^u:wizmakemap 
 # Define the path to the wizkit file.
-#WIZKIT=.wizkit
+# WIZKIT=.wizkit
 
 ###########################
 ######## Autopickup #######
@@ -204,16 +202,21 @@ AUTOPICKUP_EXCEPTION="<Amulet of Yendor named real"
 AUTOPICKUP_EXCEPTION=">scroll .* scare monster"
 
 # Avoid wands called empty and nothing
+AUTOPICKUP_EXCEPTION=">[0-9]*:0"
 AUTOPICKUP_EXCEPTION="> named empty"
 AUTOPICKUP_EXCEPTION="> nothing"
 
+# Grab formally identified artifacts
+AUTOPICKUP_EXCEPTION="<^the "
+
 # Avoid things that are dangerous or useless
 AUTOPICKUP_EXCEPTION="> called bad"
-AUTOPICKUP_EXCEPTION="> called worthless"
 AUTOPICKUP_EXCEPTION="> cancellation"
 AUTOPICKUP_EXCEPTION=">loadstone"
 AUTOPICKUP_EXCEPTION=">rock"
 AUTOPICKUP_EXCEPTION=">gray stone"
+AUTOPICKUP_EXCEPTION=">^[a0-9]+ stone"
+AUTOPICKUP_EXCEPTION=">worthless"
 
 # Grab luckstones and touchstones
 AUTOPICKUP_EXCEPTION="<luckstone"
@@ -239,8 +242,12 @@ OPTIONS=color, menucolors
 MENUCOLOR=" blessed "=cyan
 MENUCOLOR=" uncursed "=green
 MENUCOLOR=" cursed "=orange
-MENUCOLOR="holy water"=brightcyan
-MENUCOLOR="unholy water"=orange
+MENUCOLOR=" holy "=brightcyan
+MENUCOLOR=" unholy "=orange
+
+##### Level Annotations #####
+MENUCOLOR="Level .*\:"=green
+MENUCOLOR="You are here"=blue
 
 ###### Colored Items ########
 MENUCOLOR=" white (gem|dragon|glass)"=white
@@ -255,7 +262,6 @@ MENUCOLOR=" yellow (gem|dragon|glass)"=yellow
 MENUCOLOR=" violet (gem|dragon|glass)"=magenta
 MENUCOLOR="dilithium crystal"=white
 MENUCOLOR="rubies"=red
-MENUCOLOR="emeralds"=green
 MENUCOLOR="jacinth stone"=red
 MENUCOLOR="turquoise stone"=blue
 MENUCOLOR="citrine stone"=yellow
@@ -270,27 +276,27 @@ MENUCOLOR="fluorite stone"=blue
 MENUCOLOR="jade stone"=green
 MENUCOLOR="obsidian stone"=black
 MENUCOLOR="agate stone"=orange
-MENUCOLOR="ruby$"=red
-MENUCOLOR="emerald$"=green
-MENUCOLOR="diamond$"=white
-MENUCOLOR="sapphire$"=blue
-MENUCOLOR="garnet$"=red
-MENUCOLOR="opal$"=white
+MENUCOLOR="ruby($| \()"=red
+MENUCOLOR="emerald($| \(|s)"=green
+MENUCOLOR="diamond($| \(|s)"=white
+MENUCOLOR="sapphire($| \(|s)"=blue
+MENUCOLOR="garnet($| \(|s)"=red
+MENUCOLOR="opal($| \(|s)"=white
 MENUCOLOR="black opal"=black
 
 ######## Equipment ##########
-MENUCOLOR=" \((being|wielded|weapon)"=gray&underline
-MENUCOLOR=" blessed .* \((being|wielded|weapon)"=brightcyan&underline
-MENUCOLOR=" uncursed .* \((being|wielded|weapon)"=brightgreen&underline
-MENUCOLOR=" cursed .* \((being|wielded|weapon)"=red&underline
+MENUCOLOR=" \((being|wielded|weapon|at the ready)"=gray&underline
+MENUCOLOR=" blessed (.*) \((being|wielded|weapon|at the ready)"=brightcyan&underline
+MENUCOLOR=" uncursed (.*) \((being|wielded|weapon|at the ready)"=brightgreen&underline
+MENUCOLOR=" cursed (.*) \((being|wielded|weapon|at the ready)"=red&underline
 MENUCOLOR="\(lit\)"=yellow&underline
 
 ####### Quest Items ########
-MENUCOLOR="bell of opening"=brightblue&bold
+MENUCOLOR="Bell of Opening"=brightblue&bold
 MENUCOLOR="silver bell"=brightblue&bold
 MENUCOLOR="Book of the Dead"=brightblue&bold
 MENUCOLOR="papyrus spellbook"=brightblue&bold
-MENUCOLOR="candelabrum"=brightblue&bold
+MENUCOLOR="(C|c)andelabrum"=brightblue&bold
 
 ######### Wishing ###########
 MENUCOLOR="wishing"=brightblue&bold
@@ -309,11 +315,11 @@ MENUCOLOR="c(hi|o)ckatrice corpse.*"=brightmagenta&underline
 MENUCOLOR="(gone)"=magenta
 
 ########## Skills ###########
-MENUCOLOR="(Basic\ |Skilled|Expert|Master|Grand Master)"=white
-MENUCOLOR="Basic\ "=yellow
-MENUCOLOR="Skilled"=green
-MENUCOLOR="Expert"=brightgreen
-MENUCOLOR="(Master|Grand Master)"=cyan
+MENUCOLOR="\[Basic\]"=yellow
+MENUCOLOR="\[Skilled\]"=green
+MENUCOLOR="\[Expert\]"=brightgreen
+MENUCOLOR="\[Master\]"=cyan
+MENUCOLOR="\[Grand Master\]"=brightcyan
 
 ########### Money ###########
 MENUCOLOR="gold piece"=yellow
@@ -391,6 +397,9 @@ OPTIONS=hilite_status:characteristics/<=6/red
 ##########################
 ######## Messages ########
 ##########################
+# Save a longer history than default.
+OPTIONS=msghistory:40
+
 # Options relating to the display of messages.
 # Many of these are pulled from the NetHack wiki.
 # Annoying messages. These are hidden entirely.
@@ -445,9 +454,12 @@ MSGTYPE=stop "You see here a c(hi|o)ckatrice corpse."
 MSGTYPE=stop "You are beginning to feel weak."
 MSGTYPE=stop "So thou thought thou couldst .*"
 MSGTYPE=stop "Double Trouble..."
-MSGTYPE=stop "(Demogorgon|Dispater|Yeenoghu|Geryon) appears *"
+MSGTYPE=stop "(Demogorgon|Dispater|Yeenoghu|Geryon) appears"
 
 # Stop the player if they receive a notification about having low hit points.
 MSGTYPE=stop "You hear the wailing of the Banshee..."
 MSGTYPE=stop "You hear the howling of the CwnAnnwn..."
 MSGTYPE=stop "(Wizard|Elf|Valkyrie) is about to die."
+
+# Don't miss skill enhancement messages.
+MSGTYPE=stop "You feel more confident in your .*"

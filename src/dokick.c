@@ -37,6 +37,7 @@ kickdmg(struct monst *mon, boolean clumsy)
     int dmg = (ACURRSTR + ACURR(A_DEX) + ACURR(A_CON)) / 15;
     int specialdmg, kick_skill = P_NONE;
     boolean trapkilled = FALSE;
+    struct obj *hated_obj = NULL;
 
     if (uarmf && uarmf->otyp == KICKING_BOOTS)
         dmg += 5;
@@ -53,7 +54,7 @@ kickdmg(struct monst *mon, boolean clumsy)
     if (mon->data == &mons[PM_SHADE])
         dmg = 0;
 
-    specialdmg = special_dmgval(&gy.youmonst, mon, W_ARMF, (long *) 0);
+    specialdmg = special_dmgval(&gy.youmonst, mon, W_ARMF, &hated_obj);
 
     if (mon->data == &mons[PM_SHADE] && !specialdmg) {
         pline_The("%s.", kick_passes_thru);
@@ -88,8 +89,8 @@ kickdmg(struct monst *mon, boolean clumsy)
         exercise(A_DEX, TRUE);
     }
     dmg += specialdmg; /* for blessed (or hypothetically, silver) boots */
-    if (uarmf)
-        dmg += uarmf->spe;
+    if (specialdmg && hated_obj)
+        searmsg(&gy.youmonst, mon, hated_obj, TRUE);
     dmg += u.udaminc; /* add ring(s) of increase damage */
     if (dmg > 0)
         mon->mhp -= dmg;
@@ -182,6 +183,7 @@ kick_monster(struct monst *mon, coordxy x, coordxy y)
      */
     if (Upolyd && attacktype(gy.youmonst.data, AT_KICK)) {
         struct attack *uattk;
+        struct obj *hated_obj;
         int sum, kickdieroll, armorpenalty, specialdmg,
             attknum = 0,
             tmp = find_roll_to_hit(mon, AT_KICK, (struct obj *) 0, &attknum,
@@ -201,7 +203,7 @@ kick_monster(struct monst *mon, coordxy x, coordxy y)
 
             kickdieroll = rnd(20);
             specialdmg = special_dmgval(&gy.youmonst, mon, W_ARMF,
-                                        (long *) 0);
+                                        &hated_obj);
             if (mon->data == &mons[PM_SHADE] && !specialdmg) {
                 /* doesn't matter whether it would have hit or missed,
                    and shades have no passive counterattack */
@@ -210,6 +212,8 @@ kick_monster(struct monst *mon, coordxy x, coordxy y)
             } else if (tmp > kickdieroll) {
                 You("kick %s.", mon_nam(mon));
                 sum = damageum(mon, uattk, specialdmg);
+                if (hated_obj)
+                    searmsg(&gy.youmonst, mon, hated_obj, FALSE);
                 (void) passive(mon, uarmf, (sum != M_ATTK_MISS),
                                !(sum & M_ATTK_DEF_DIED), AT_KICK, FALSE);
                 if ((sum & M_ATTK_DEF_DIED))
@@ -250,7 +254,7 @@ kick_monster(struct monst *mon, coordxy x, coordxy y)
     if (Fumbling)
         clumsy = TRUE;
 
-    else if (uarm && objects[uarm->otyp].oc_bulky && ACURR(A_DEX) < rnd(25))
+    else if (uarm && (objects[uarm->otyp].oc_bulky || uarm->osize != USIZE) && ACURR(A_DEX) < rnd(25))
         clumsy = TRUE;
  doit:
     if (has_coating(u.ux, u.uy, COAT_ASHES) && haseyes(mon->data) 
@@ -442,10 +446,10 @@ container_impact_dmg(
         const char *result = (char *) 0;
 
         otmp2 = otmp->nobj;
-        if (objects[otmp->otyp].oc_material == GLASS
+        if (otmp->material == GLASS
             && otmp->oclass != GEM_CLASS && !obj_resists(otmp, 33, 100)) {
             result = "shatter";
-        } else if (objects[otmp->otyp].oc_material == BLUEICE) {
+        } else if (objects[otmp->otyp].oc_material == ICECRYSTAL) {
             result = "tinkling";
         } else if (otmp->otyp == EGG && !rn2(3)) {
             result = "cracking";
@@ -563,6 +567,12 @@ really_kick_object(coordxy x, coordxy y)
                     killer_xname(gk.kickedobj));
             instapetrify(svk.killer.name);
         }
+    }
+
+    if (!uarmf && Hate_material(gk.kickedobj->material)) {
+        searmsg(NULL, &gy.youmonst, gk.kickedobj, FALSE);
+        losehp(rnd(sear_damage(gk.kickedobj->material)),
+               "kicking an adverse material", KILLED_BY);
     }
 
     isgold = (gk.kickedobj->oclass == COIN_CLASS);
@@ -875,7 +885,12 @@ kick_dumb(coordxy x, coordxy y)
 {
     exercise(A_DEX, FALSE);
     if (martial() || ACURR(A_DEX) >= 16 || rn2(3)) {
-        You("kick at empty space.");
+        if (has_coating(x, y, COAT_ASHES))
+            You("kick up some ashes.");
+        else if (has_coating(x, y, COAT_FROST))
+            You("kick at the snow.");
+        else
+            You("kick at empty space.");
         if (Blind)
             feel_location(x, y);
     } else {
@@ -1154,13 +1169,15 @@ kick_nondoor(coordxy x, coordxy y, int avrg_attrib)
             return ECMD_TIME;
         }
         if (rn2(15) && !(gm.maploc->looted & TREE_LOOTED)
-            && (treefruit = rnd_treefruit_at(x, y))) {
+            && (treefruit = rnd_treefruit_at(x, y, x, y))) {
             long nfruit = 8L - rnl(7), nfall;
             short frtype = treefruit->otyp;
 
             treefruit->quan = nfruit;
             treefruit->owt = weight(treefruit);
-            if (is_plural(treefruit))
+            if (Hallucination && treefruit->otyp == PEAR)
+                pline("Shall I give you dis pear?");
+            else if (is_plural(treefruit))
                 pline("Some %s fall from the tree!", xname(treefruit));
             else
                 pline("%s falls from the tree!", An(xname(treefruit)));
@@ -1236,10 +1253,14 @@ kick_nondoor(coordxy x, coordxy y, int avrg_attrib)
                    && !(svm.mvitals[PM_AMOROUS_DEMON].mvflags & G_GONE)) {
             /* can't resist... */
             pline("%s returns!", (Blind ? Something : "The dish washer"));
-            if (makemon(&mons[PM_AMOROUS_DEMON], x, y,
-                        MM_NOMSG | ((gend == 1 || (gend == 2 && rn2(2)))
-                                    ? MM_MALE : MM_FEMALE)))
-                newsym(x, y);
+            if (((gend == 2 || flags.orientation == ORIENT_BISEXUAL) && rn2(2))
+                || (gend == 1 && flags.orientation == ORIENT_STRAIGHT)
+                || (gend == 0 && flags.orientation == ORIENT_GAY)) {
+                makemon(&mons[PM_AMOROUS_DEMON], x, y, MM_MALE);
+            } else {
+                makemon(&mons[PM_AMOROUS_DEMON], x, y, MM_FEMALE);
+            }
+            newsym(x, y);
             gm.maploc->looted |= S_LDWASHER;
             exercise(A_DEX, TRUE);
             return ECMD_TIME;
@@ -1423,8 +1444,9 @@ void
 make_mon_prone(struct monst *mdef) {
     newsym(mdef->mx, mdef->my);
     mdef->mprone = 1;
-    pline_mon(mdef, "%s is knocked to the %s!",
-            Monnam(mdef), surface(mdef->mx, mdef->my));
+    if (canseemon(mdef))
+        pline_mon(mdef, "%s is knocked to the %s!",
+                Monnam(mdef), surface(mdef->mx, mdef->my));
     mselftouch(mdef, "Falling, ", TRUE);
     if (!DEADMONSTER(mdef)) {
         if (t_at(mdef->mx, mdef->my))
@@ -1899,8 +1921,7 @@ ship_object(struct obj *otmp, coordxy x, coordxy y, boolean shop_floor_obj)
     if (breaktest(otmp)) {
         const char *result;
 
-        if (objects[otmp->otyp].oc_material == GLASS
-            || otmp->otyp == EXPENSIVE_CAMERA) {
+        if (otmp->material == GLASS || otmp->otyp == EXPENSIVE_CAMERA) {
             if (otmp->otyp == MIRROR)
                 change_luck(-2);
             result = "crash";
@@ -2047,8 +2068,8 @@ deliver_obj_to_mon(struct monst *mtmp, int cnt, unsigned long deliverflags)
     else
         maxobj = 1;
 
-#define DELIVER_PM (M2_UNDEAD | M2_WERE | M2_HUMAN | M2_ELF | M2_DWARF \
-                    | M2_GNOME | M2_ORC | M2_DEMON | M2_GIANT)
+#define DELIVER_PM (MH_UNDEAD | MH_WERE | MH_HUMAN | MH_ELF | MH_DWARF \
+                    | MH_GNOME | MH_ORC | MH_DEMON | MH_GIANT)
 
     cnt = 0;
     for (otmp = gm.migrating_objs; otmp; otmp = otmp2) {
@@ -2058,14 +2079,14 @@ deliver_obj_to_mon(struct monst *mtmp, int cnt, unsigned long deliverflags)
             continue;
 
         if (otmp->migr_species != NON_PM
-            && ((mtmp->data->mflags2 & DELIVER_PM)
+            && ((mtmp->data->mhflags & DELIVER_PM)
                 == (unsigned) otmp->migr_species)) {
             obj_extract_self(otmp);
             otmp->owornmask = 0L;
             otmp->ox = otmp->oy = 0;
 
             /* special treatment for orcs and their kind */
-            if ((otmp->corpsenm & M2_ORC) != 0 && has_oname(otmp)) {
+            if ((otmp->corpsenm & MH_ORC) != 0 && has_oname(otmp)) {
                 if (!has_mgivenname(mtmp)) {
                     if (at_crime_scene || !rn2(2))
                         mtmp = christen_orc(mtmp,

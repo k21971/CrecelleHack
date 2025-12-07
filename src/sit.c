@@ -371,7 +371,8 @@ lay_an_egg(void)
     uegg->owt = weight(uegg);
     /* this sets hatch timers if appropriate */
     set_corpsenm(uegg, egg_type_from_parent(u.umonnum, FALSE));
-    uegg->known = uegg->dknown = 1;
+    uegg->known = 1;
+    observe_object(uegg);
     You("%s an egg.", eggs_in_water(gy.youmonst.data) ? "spawn" : "lay");
     dropy(uegg);
     stackobj(uegg);
@@ -449,7 +450,7 @@ dosit(void)
                 }
                 useupf(obj, obj->quan);
             } else if (!(Is_box(obj)
-                         || objects[obj->otyp].oc_material == CLOTH))
+                         || obj->material == CLOTH))
                 pline("It's not very comfortable...");
         }
     } else if (trap != 0 || (u.utrap && (u.utraptype >= TT_LAVA))) {
@@ -555,10 +556,13 @@ dosit(void)
         pline("Having fun sitting on the %s?", surface(u.ux, u.uy));
     }
     /* Extra sitting effects */
-    if (has_coating(u.ux, u.uy, COAT_BLOOD)) {
+    if (has_coating(u.ux, u.uy, COAT_SHARDS)) {
+        pline("Ouch! You sat on something sharp!");
+        losehp(rnd(3), "sitting on glass", KILLED_BY);
+        make_dripping(rnd(5), POT_BLOOD, gy.youmonst.mnum);
+    } else if (has_coating(u.ux, u.uy, COAT_BLOOD)) {
         blood_data = &mons[levl[u.ux][u.uy].pindex];
-        You("sit in %s blood. How %s.", 
-            mons[levl[u.ux][u.uy].pindex].pmnames[NEUTRAL],
+        You("sit in blood. How %s.",
             is_vampire(gy.youmonst.data) ? "lovely" : "horrifying");
         if (!is_vampire(gy.youmonst.data))
             exercise(A_CHA, FALSE);
@@ -566,7 +570,8 @@ dosit(void)
             Sprintf(buf, "bathing in %s blood", pmname(blood_data, MALE));
             instapetrify(buf);
         }
-        
+        make_dripping(rnd(5), POT_BLOOD, gy.youmonst.mnum);
+        remove_coating(u.ux, u.uy, COAT_BLOOD);
     } else if (has_coating(u.ux, u.uy, COAT_POTION)) {
         char liqbuf[BUFSZ];
         if (levl[u.ux][u.uy].pindex == POT_WATER)
@@ -579,7 +584,8 @@ dosit(void)
         fakeobj.cursed = TRUE;
         fakeobj.otyp = levl[u.ux][u.uy].pindex;
         potionbreathe(&fakeobj);
-        if (rn2(3)) remove_coating(u.ux, u.uy, COAT_POTION);
+        make_dripping(rnd(5), fakeobj.otyp, NON_PM);
+        remove_coating(u.ux, u.uy, COAT_POTION);
     }
     return ECMD_TIME;
 }
@@ -601,6 +607,13 @@ rndcurse_inner(boolean prefer_containers)
 
     if (u_wield_art(ART_MAGICBANE) && rn2(20)) {
         You(mal_aura, "the magic-absorbing blade");
+        return;
+    }
+    if (uwep && uwep->oprop == OPROP_HEXED && !uwep->cursed) {
+        You(mal_aura, "the hexed weapon");
+        uwep->pknown = TRUE;
+        curse(uwep);
+        update_inventory();
         return;
     }
 

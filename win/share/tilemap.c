@@ -123,7 +123,7 @@ struct tiles_used {
     char tilenam[MAX_TILENAM];
     char references[1024];
 };
-struct tiles_used *tilelist[2500] = { 0 };
+struct tiles_used *tilelist[3500] = { 0 };
 
 /* Some special tiles used for init of some things */
 int TILE_stone = 0,       /* will get set to correct tile later */
@@ -168,7 +168,6 @@ struct conditionals_t {
     { MON_GLYPH, PM_SHAMAN_KARNOV, "Earendil" },
     { MON_GLYPH, PM_SHAMAN_KARNOV, "Elwing" },
     /* commented out in monst.c at present */
-    { MON_GLYPH, PM_CHROMATIC_DRAGON, "Goblin King" },
     { MON_GLYPH, PM_NEANDERTHAL, "High-elf" },
     /* objects commented out in objects.c at present */
     { OBJ_GLYPH, SILVER_DRAGON_SCALE_MAIL, "shimmering dragon scale mail" },
@@ -337,7 +336,6 @@ tilename(int set, const int file_entry, int gend UNUSED)
             }
             tilenum++;
         }
-        /* TODO: POTIONCLOUD */
 
         /* Altars */
         cmap = S_altar;
@@ -440,6 +438,15 @@ tilename(int set, const int file_entry, int gend UNUSED)
                     if (tilenum == file_entry)
                         return conditionals[condnum].name;
                 }
+            }
+            tilenum++;
+        }
+        /* TODO: POTIONCLOUD */
+        cmap = S_potioncloud;
+        for (k = POT_GAIN_ABILITY; k < POT_WATER; k++) {
+            if (tilenum == file_entry) {
+                Sprintf(buf, "%s potion cloud", OBJ_DESCR(objects[k]));
+                return buf;
             }
             tilenum++;
         }
@@ -588,9 +595,6 @@ init_tilemap(void)
     Fprintf(tilemap_file, "GLYPH_PET_OFF = %d\n", GLYPH_PET_OFF);
     Fprintf(tilemap_file, "GLYPH_PET_MALE_OFF = %d\n", GLYPH_PET_MALE_OFF);
     Fprintf(tilemap_file, "GLYPH_PET_FEM_OFF = %d\n", GLYPH_PET_FEM_OFF);
-    Fprintf(tilemap_file, "GLYPH_BOOSTED_OFF = %d\n", GLYPH_BOOSTED_OFF);
-    Fprintf(tilemap_file, "GLYPH_BOOSTED_MALE_OFF = %d\n", GLYPH_BOOSTED_MALE_OFF);
-    Fprintf(tilemap_file, "GLYPH_BOOSTED_FEM_OFF = %d\n", GLYPH_BOOSTED_FEM_OFF);
     Fprintf(tilemap_file, "GLYPH_INVIS_OFF = %d\n", GLYPH_INVIS_OFF);
     Fprintf(tilemap_file, "GLYPH_DETECT_OFF = %d\n", GLYPH_DETECT_OFF);
     Fprintf(tilemap_file, "GLYPH_DETECT_MALE_OFF = %d\n",
@@ -672,7 +676,8 @@ init_tilemap(void)
                 + (4 + 1)                                  /* 5 altar tiles */
                 + (S_arrow_trap + MAXTCHARS - S_grave)     /* cmap B */
                 + (NUM_ZAP << 2)                           /* zaps */
-                + ((S_goodpos - S_digbeam) + 1);           /* cmap C */
+                + ((S_goodpos - S_digbeam) + 1)            /* cmap C */
+                + (POT_WATER - POT_GAIN_ABILITY);          /* some number of potion clouds */
 
     /* add number compiled out */
     for (i = 0; conditionals[i].sequence != TERMINATOR; i++) {
@@ -701,7 +706,6 @@ init_tilemap(void)
 
         tilemap[GLYPH_MON_MALE_OFF + i].tilenum = tilenum;
         tilemap[GLYPH_PET_MALE_OFF + i].tilenum = tilenum;
-        tilemap[GLYPH_BOOSTED_MALE_OFF + i].tilenum = tilenum;
         tilemap[GLYPH_DETECT_MALE_OFF + i].tilenum = tilenum;
         tilemap[GLYPH_RIDDEN_MALE_OFF + i].tilenum = tilenum;
         tilemap[GLYPH_BODY_OFF + i].tilenum = corpsetile;
@@ -712,8 +716,6 @@ init_tilemap(void)
                  sizeof tilemap[0].name,"male %s", buf);
         Snprintf(tilemap[GLYPH_PET_MALE_OFF + i].name,
                  sizeof tilemap[0].name, "%s male %s", "pet", buf);
-        Snprintf(tilemap[GLYPH_BOOSTED_MALE_OFF + i].name,
-                 sizeof tilemap[0].name, "%s male %s", "boosted", buf);
         Snprintf(tilemap[GLYPH_DETECT_MALE_OFF + i].name,
                  sizeof tilemap[0].name, "%s male %s", "detected", buf);
         Snprintf(tilemap[GLYPH_RIDDEN_MALE_OFF + i].name,
@@ -726,8 +728,6 @@ init_tilemap(void)
                     file_entry, tilemap[GLYPH_MON_MALE_OFF + i].name, "");
         add_tileref(tilenum, GLYPH_PET_MALE_OFF + i, monsters_file,
                     file_entry, tilemap[GLYPH_PET_MALE_OFF + i].name, "");
-        add_tileref(tilenum, GLYPH_BOOSTED_MALE_OFF + i, monsters_file,
-                    file_entry, tilemap[GLYPH_BOOSTED_MALE_OFF + i].name, "");
         add_tileref(tilenum, GLYPH_DETECT_MALE_OFF + i, monsters_file,
                     file_entry, tilemap[GLYPH_DETECT_MALE_OFF + i].name,"");
         add_tileref(tilenum, GLYPH_RIDDEN_MALE_OFF + i, monsters_file,
@@ -741,7 +741,6 @@ init_tilemap(void)
         file_entry++;
         tilemap[GLYPH_MON_FEM_OFF + i].tilenum = tilenum;
         tilemap[GLYPH_PET_FEM_OFF + i].tilenum = tilenum;
-        tilemap[GLYPH_BOOSTED_FEM_OFF + i].tilenum = tilenum;
         tilemap[GLYPH_DETECT_FEM_OFF + i].tilenum = tilenum;
         tilemap[GLYPH_RIDDEN_FEM_OFF + i].tilenum = tilenum;
 #if defined(OBTAIN_TILEMAP)
@@ -750,9 +749,6 @@ init_tilemap(void)
                  sizeof tilemap[0].name, "female %s", buf);
         Snprintf(tilemap[GLYPH_PET_FEM_OFF + i].name,
                  sizeof tilemap[0].name, "%s female %s", "pet",
-                 buf);
-        Snprintf(tilemap[GLYPH_BOOSTED_OFF + i].name,
-                 sizeof tilemap[0].name, "%s female %s", "boosted",
                  buf);
         Snprintf(tilemap[GLYPH_DETECT_FEM_OFF + i].name,
                  sizeof tilemap[0].name, "%s female %s",
@@ -769,8 +765,6 @@ init_tilemap(void)
                     file_entry, tilemap[GLYPH_MON_FEM_OFF + i].name, "");
         add_tileref(tilenum, GLYPH_PET_FEM_OFF + i, monsters_file,
                     file_entry, tilemap[GLYPH_PET_FEM_OFF + i].name, "");
-        add_tileref(tilenum, GLYPH_BOOSTED_FEM_OFF + i, monsters_file,
-                    file_entry, tilemap[GLYPH_BOOSTED_FEM_OFF + i].name, "");
         add_tileref(tilenum, GLYPH_DETECT_FEM_OFF + i, monsters_file,
                     file_entry, tilemap[GLYPH_DETECT_FEM_OFF + i].name, "");
         add_tileref(tilenum, GLYPH_RIDDEN_FEM_OFF + i, monsters_file,
@@ -1076,6 +1070,39 @@ init_tilemap(void)
         tilenum++;
         file_entry++;
     }
+
+    /* Potion Clouds */
+    cmap = S_potioncloud;
+    j = 0;
+    for (k = POT_GAIN_ABILITY; k < POT_WATER; k++) {
+        offset = GLYPH_POTIONCLOUD_OFF + j;
+        precheck((offset), "potioncloud");
+        tilemap[offset].tilenum = tilenum;
+#if defined(OBTAIN_TILEMAP)
+        Snprintf(tilemap[offset].name,
+                 sizeof tilemap[0].name,
+                "%s cloud %s (cmap=%d)",
+                OBJ_DESCR(objects[k]), tilename(OTH_GLYPH, file_entry, 0), cmap);
+        add_tileref(tilenum, offset, other_file, file_entry,
+                    tilemap[offset].name, "");
+#endif
+        for (condnum = 0; conditionals[condnum].sequence != -1; condnum++) {
+            if (conditionals[condnum].sequence == OTH_GLYPH
+                && conditionals[condnum].predecessor == cmap) {
+#if defined(OBTAIN_TILEMAP)
+                Fprintf(tilemap_file, "skipping %s cloud %s (%d)\n",
+                        OBJ_DESCR(objects[k]),
+                        tilename(OTH_GLYPH, file_entry, 0), cmap);
+#endif
+                tilenum++;
+                file_entry++;
+            }
+        }
+        j++;
+        tilenum++;
+        file_entry++;
+    }
+
     /* swallow */
     const char *swallow_text[] = {
         "swallow top left",      "swallow top center",
@@ -1249,11 +1276,11 @@ init_tilemap(void)
         Snprintf(tilemap[GLYPH_STATUE_MALE_OFF + i].name,
                 sizeof tilemap[0].name,
                 "statue of male %s (mnum=%d)",
-                tilename(MON_GLYPH, file_entry, 0), file_entry);
+                tilename(MON_GLYPH, file_entry, 0), i);
         Snprintf(tilemap[GLYPH_STATUE_MALE_PILETOP_OFF + i].name,
                 sizeof tilemap[0].name,
                 "piletop statue of male %s (mnum=%d)",
-                tilename(MON_GLYPH, file_entry, 0), file_entry);
+                tilename(MON_GLYPH, file_entry, 0), i);
         add_tileref(tilenum, GLYPH_STATUE_MALE_OFF + i, generated, file_entry,
                     tilemap[GLYPH_STATUE_MALE_OFF + i].name,
                     "");
@@ -1272,10 +1299,10 @@ init_tilemap(void)
         Snprintf(tilemap[GLYPH_STATUE_FEM_OFF + i].name,
                 sizeof tilemap[0].name,
                 "statue of female %s (mnum=%d)",
-                tilename(MON_GLYPH, file_entry, 0), file_entry);
+                tilename(MON_GLYPH, file_entry, 0), i);
         Sprintf(tilemap[GLYPH_STATUE_FEM_PILETOP_OFF + i].name,
                 "piletop statue of female %s (mnum=%d)",
-                tilename(MON_GLYPH, file_entry, 0), file_entry);
+                tilename(MON_GLYPH, file_entry, 0), i);
         add_tileref(tilenum, GLYPH_STATUE_FEM_OFF + i, generated, file_entry,
                     tilemap[GLYPH_STATUE_FEM_OFF + i].name, "");
         add_tileref(tilenum, GLYPH_STATUE_FEM_PILETOP_OFF + i, generated,

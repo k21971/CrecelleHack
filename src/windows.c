@@ -1024,6 +1024,8 @@ genl_status_update(
                 Strcpy(nb = eos(nb), " TermIll");
             if (cond & BL_MASK_PRONE)
                 Strcpy(nb = eos(nb), " Prone");
+            if (cond & BL_MASK_WET)
+                Strcpy(nb = eos(nb), " Wet");
             if (cond & BL_MASK_BLIND)
                 Strcpy(nb = eos(nb), " Blind");
             if (cond & BL_MASK_DEAF)
@@ -1535,8 +1537,6 @@ mg_hl_attr(unsigned special)
     if ((special & MG_OBJPILE) && iflags.hilite_pile)
         hl |= HL_INVERSE;
     if ((special & MG_BW_LAVA) && iflags.use_inverse)
-        hl |= HL_INVERSE;
-    if ((special & MG_BOOST) && iflags.use_inverse)
         hl |= HL_INVERSE;
     return hl;
 }

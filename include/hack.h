@@ -774,7 +774,7 @@ struct role_filter {
     boolean roles[NUM_ROLES + 1];
     short mask;
 };
-#define NUM_RACES (5)
+#define NUM_RACES (6)
 
 struct selectionvar {
     int wid, hei;
@@ -1121,7 +1121,7 @@ typedef struct nh_file NHFILE;
       /* quest artifact object index */         \
       STRANGE_OBJECT,                           \
       /* Bitmasks */                            \
-      0,                                        \
+      0, 0,                                     \
       /* Attributes */                          \
       {0}, {0}, {0}, {0}, 0, 0,                 \
       /* spell statistics */                    \
@@ -1144,8 +1144,8 @@ typedef struct nh_file NHFILE;
 
 #define MATCH_WARN_OF_MON(mon) \
     (Warn_of_mon                                                        \
-     && ((svc.context.warntype.obj & (mon)->data->mflags2) != 0           \
-         || (svc.context.warntype.polyd & (mon)->data->mflags2) != 0      \
+     && ((svc.context.warntype.obj & (mon)->data->mhflags) != 0           \
+         || (svc.context.warntype.polyd & (mon)->data->mhflags) != 0      \
          || (svc.context.warntype.species                                 \
              && (svc.context.warntype.species == (mon)->data))))
 
@@ -1234,6 +1234,10 @@ typedef uint32_t mmflags_nht;     /* makemon MM_ flags */
 #define M_BONFIRE_BAD   0
 #define M_BONFIRE_MINOR 1
 #define M_BONFIRE_OK    2
+
+/* m_force_field_ok() return values */
+#define M_FORCE_FIELD_BAD 0
+#define M_FORCE_FIELD_OK 1
 
 /* flags for deliver_obj_to_mon */
 #define DF_NONE     0x00
@@ -1385,7 +1389,7 @@ typedef uint32_t mmflags_nht;     /* makemon MM_ flags */
 #define XKILL_NOMSG     1
 #define XKILL_NOCORPSE  2
 #define XKILL_NOCONDUCT 4
-#define XKILL_SKELETONIZE 5
+#define XKILL_SKELETONIZE 8
 
 /* pline_flags; mask values for custompline()'s first argument */
 /* #define PLINE_ORDINARY 0 */
@@ -1540,11 +1544,12 @@ typedef uint32_t mmflags_nht;     /* makemon MM_ flags */
 #define LIMIT_TO_RANGE_INT(lo, hi, var) \
     ((int) ((var) < (lo) ? (lo) : (var) > (hi) ? (hi) : (var)))
 
-#define ARM_BONUS(obj) \
-    (objects[(obj)->otyp].a_ac + (obj)->spe                             \
-     - min((int) greatest_erosion(obj), objects[(obj)->otyp].a_ac))
+#define ARM_BONUS(obj)                      \
+    (objects[(obj)->otyp].a_ac + (obj)->spe + material_bonus(obj) \
+     - min((int) greatest_erosion(obj), \
+           objects[(obj)->otyp].a_ac + material_bonus(obj)))
 
-#define makeknown(x) discover_object((x), TRUE, TRUE)
+#define makeknown(x) discover_object((x), TRUE, TRUE, TRUE)
 #define distu(xx, yy) dist2((coordxy) (xx), (coordxy) (yy), u.ux, u.uy)
 #define mdistu(mon) distu((mon)->mx, (mon)->my)
 #define onlineu(xx, yy) online2((coordxy)(xx), (coordxy)(yy), u.ux, u.uy)

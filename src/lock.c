@@ -159,7 +159,7 @@ picklock(void)
     if (gx.xlock.picktyp == CREDIT_CARD) break_chance = 3;
     else if (gx.xlock.picktyp == LOCK_PICK) break_chance = 5; 
     if (gx.xlock.pick && !gx.xlock.magic_key && !rn2(break_chance)) {
-        pline("%s %s breaks!", gx.xlock.pick->quan > 1L ? "One of you" : "Your", 
+        pline("%s %s breaks!", gx.xlock.pick->quan > 1L ? "One of your" : "Your",
                                 xname(gx.xlock.pick));
         useup(gx.xlock.pick);
     }
@@ -1129,7 +1129,7 @@ doorlock(struct obj *otmp, coordxy x, coordxy y)
         case SPE_KNOCK:
         case WAN_STRIKING:
         case SPE_FORCE_BOLT:
-        case WAN_WATER:
+        case WAN_AQUA_BOLT:
             door->typ = DOOR;
             door->doormask = D_CLOSED | (door->doormask & D_TRAPPED);
             newsym(x, y);
@@ -1214,7 +1214,7 @@ doorlock(struct obj *otmp, coordxy x, coordxy y)
         break;
     case WAN_STRIKING:
     case SPE_FORCE_BOLT:
-    case WAN_WATER:
+    case WAN_AQUA_BOLT:
         if (door->doormask & (D_LOCKED | D_CLOSED)) {
             /* sawit: closed door location is more visible than open */
             boolean sawit, seeit;
@@ -1308,7 +1308,7 @@ chest_shatter_msg(struct obj *otmp)
     HBlinded = 1L,  BBlinded = 0L;
     thing = singular(otmp, xname);
     HBlinded = save_HBlinded,  BBlinded = save_BBlinded;
-    switch (objects[otmp->otyp].oc_material) {
+    switch (otmp->material) {
     case PAPER:
         disposition = "is torn to shreds";
         break;
