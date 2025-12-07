@@ -2371,7 +2371,7 @@ do_supplemental_item_info(struct obj *otmp)
     int dbonus;
     /* Display monster info */
     datawin = create_nhwindow(NHW_MENU);
-    Sprintf(buf, Doname2(otmp));
+    Sprintf(buf, "%s", Doname2(otmp));
     putstr(datawin, iflags.menu_headings.attr, buf);
     if (not_fully_identified(otmp)) {
         putstr(datawin, 0, "There is more you could learn about it.");
