@@ -245,6 +245,19 @@ ready_weapon(struct obj *wep)
                       arti_light_description(wep));
         }
 
+        if (wep->oartifact == ART_SYMPATHY) {
+            if (uarmg) {
+                pline("%s the material of your %s!",
+                        Tobjnam(wep, "mimic"), gloves_simple_name(uarmg));
+                force_material(wep, uarmg->material);
+            } else if (monmaterial(gy.youmonst.mnum)) {
+                pline("%s your body!", Tobjnam(wep, "mimic"));
+                force_material(wep, monmaterial(gy.youmonst.mnum));
+            } else {
+                pline("%s in time with your pulse.", Tobjnam(wep, "throb"));
+            }
+        }
+
         if (Race_if(PM_ELF) && !wep->oartifact
             && wep->material == IRON) {
             /* Elves are averse to wielding cold iron */

@@ -1735,6 +1735,9 @@ get_atkdam_type(int adtyp)
 int
 monmaterial(int mndx)
 {
+    if (mndx >= PM_BABY_GRAY_DRAGON
+            && mndx <= PM_YELLOW_DRAGON)
+        return DRAGON_HIDE;
     switch (mndx) {
     case PM_GARGOYLE:
     case PM_WINGED_GARGOYLE:

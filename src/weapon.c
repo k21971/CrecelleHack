@@ -1150,6 +1150,16 @@ mon_wield_item(struct monst *mon)
                 pline("Light begins shining %s.",
                       (mdistu(mon) <= 5 * 5) ? "nearby" : "in the distance");
         }
+        if (obj->oartifact == ART_SYMPATHY) {
+            struct obj *mgloves = which_armor(mon, W_ARMG);
+            if (canseemon(mon))
+                pline("%s itself!", Tobjnam(obj, "transmute"));
+            if (mgloves) {
+                force_material(obj, mgloves->material);
+            } else if (monmaterial(mon->mnum)) {
+                force_material(obj, mon->mnum);
+            }
+        }
         obj->owornmask = W_WEP;
         return 1;
     }

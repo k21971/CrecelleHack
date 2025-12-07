@@ -39,6 +39,15 @@
   - Similar to fire and frost brand, but corresponds to acid.
   - Can be invoked for temporary stoning resistance.
   - Originally from SpliceHack.
+- Skullcrusher
+  - Does 1d10 extra damage to any monster with a skull.
+  - Destroys the helmet of any monster it strikes.
+  - Originally from Slash'Em.
+- Sympathy
+  - Neutral intelligent quarterstaff (fuzzes)
+  - +1d3 to-hit, +1d4 damage.
+  - Whenever it is wielded or rubbed on an object, will change
+    materials to match what it last touched.
 - You may dual-wield fire and frost brand together.
 - Unintelligent non-crossaligned artifacts do not resist being
   held second to another artifact. Based on YANI archive #845.

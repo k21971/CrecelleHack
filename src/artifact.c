@@ -1153,10 +1153,6 @@ spec_applies(const struct artifact *weap, struct monst *mtmp)
             return !(yours ? Drain_resistance : resists_drli(mtmp));
         case AD_STON:
             return !(yours ? Stone_resistance : resists_ston(mtmp));
-        case AD_LEGS:
-            return (yours ? (!Prone && (Flying || Levitation))
-                            : (!mtmp->mprone
-                                && (is_flyer(mtmp->data) || is_floater(mtmp->data))));
         default:
             impossible("Weird weapon special attack.");
         }
@@ -1674,21 +1670,6 @@ artifact_hit(
         return Mb_hit(magr, mdef, otmp, dmgptr, dieroll, vis, hittee);
     }
 
-    if (attacks(AD_LEGS, otmp)) {
-        if (realizes_damage)
-            pline_The("beautiful mace hits%s %s%c",
-                        !gs.spec_dbon_applies ? "" : "! A falling star strikes",
-                        hittee, !gs.spec_dbon_applies ? '.' : '!');
-        if (gs.spec_dbon_applies) {
-            if (youdefend) {
-                make_prone();
-            } else {
-                make_mon_prone(mdef);
-            }
-        }
-        return realizes_damage;
-    }
-
     if (!gs.spec_dbon_applies) {
         /* since damage bonus didn't apply, nothing more to do;
            no further attacks have side-effects on inventory */
@@ -1872,8 +1853,44 @@ artifact_hit(
             return TRUE;
         }
     }
+    if (is_art(otmp, ART_SKULLCRUSHER)) {
+        struct obj *helm;
+        boolean applies = youdefend ? has_skull(gy.youmonst.data) : has_skull(mdef->data);
+        if (realizes_damage)
+            pline_The("enormous club %s %s%c",
+                      !applies ? "hits" : "brains", hittee,
+                      !applies ? '.' : '!');
+        if (applies) {
+            if (youdefend && uarmh) {
+                pline("Your %s explodes!", helm_simple_name(uarmh));
+                useup(uarmh);
+            } else if (!youdefend && (helm = which_armor(mdef, W_ARMH))) {
+                m_useup(mdef, helm);
+            }
+            *dmgptr += d(1, 10);
+        }
+        return realizes_damage;
+    }
+    if (is_art(otmp, ART_LUCIFER)) {
+        boolean applies = (youdefend ? (!Prone && (Flying || Levitation))
+                            : (!mdef->mprone
+                                && (is_flyer(mdef->data) || is_floater(mdef->data))));
+        if (realizes_damage)
+            pline_The("beautiful mace hits%s %s%c",
+                        !applies ? "" : "! A falling star strikes",
+                        hittee, !applies ? '.' : '!');
+        if (applies) {
+            if (youdefend) {
+                make_prone();
+            } else {
+                make_mon_prone(mdef);
+            }
+            *dmgptr += rnd(20);
+        }
+        return realizes_damage;
+    }
     /* Sunsword deals double damage at midday */
-    if (otmp->oartifact == ART_SUNSWORD && midday()) {
+    if (is_art(otmp, ART_SUNSWORD) && midday()) {
         pline("The blazing blade blasts %s!", hittee);
         *dmgptr *= 2;
     }

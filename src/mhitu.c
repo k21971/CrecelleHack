@@ -142,7 +142,7 @@ mswings(
         pline_mon(mtmp, "%s %s %s%s %s.", Monnam(mtmp),
                   mswings_verb(otemp, bash),
                   (otemp->quan > 1L) ? "one of " : "",
-                  mhis(mtmp), simpleonames(otemp));
+                  mhis(mtmp), xname(otemp));
     }
 }
 

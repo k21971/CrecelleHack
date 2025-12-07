@@ -31,6 +31,7 @@ staticfn int grease_ok(struct obj *);
 staticfn int use_grease(struct obj *);
 staticfn void use_trap(struct obj *);
 staticfn int touchstone_ok(struct obj *);
+staticfn int use_sympathy(struct obj *);
 staticfn int use_stone(struct obj *);
 staticfn int set_trap(void); /* occupation callback */
 staticfn void display_polearm_positions(boolean);
@@ -1914,6 +1915,9 @@ rub_ok(struct obj *obj)
         || obj->otyp == LUMP_OF_ROYAL_JELLY
         || obj->otyp == TOWEL)
         return GETOBJ_SUGGEST;
+    
+    if (obj->oartifact == ART_SYMPATHY)
+        return GETOBJ_SUGGEST;
 
     return GETOBJ_EXCLUDE;
 }
@@ -1941,6 +1945,8 @@ dorub(void)
             return ECMD_OK;
         }
     }
+    if (obj->oartifact == ART_SYMPATHY)
+        return use_sympathy(obj);
     if (obj != uwep) {
         if (wield_tool(obj, "rub")) {
             cmdq_add_ec(CQ_CANNED, dorub);
@@ -2833,6 +2839,23 @@ touchstone_ok(struct obj *obj)
     return GETOBJ_DOWNPLAY;
 }
 
+
+staticfn int
+use_sympathy(struct obj *symp)
+{
+    struct obj *obj;
+    if ((obj = getobj("rub on Sympathy", any_obj_ok, GETOBJ_PROMPT)) == 0)
+        return ECMD_CANCEL;
+    if (obj == symp) {
+        You_cant("rub it on itself.");
+        return ECMD_CANCEL;
+    }
+    pline("%s the material of %s.", Tobjnam(symp, "mimic"), the(xname(obj)));
+    force_material(symp, obj->material);
+    retouch_object(&symp, !uarmg, FALSE);
+    update_inventory();
+    return ECMD_TIME;
+}
 
 /* touchstones - by Ken Arnold */
 staticfn int
