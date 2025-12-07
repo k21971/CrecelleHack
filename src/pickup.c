@@ -2551,9 +2551,9 @@ exchange_objects_with_mon(struct monst *mtmp, boolean taking)
                 if (shkp && strchr(in_rooms(u.ux, u.uy, SHOPBASE),
                           ESHK(shkp)->shoproom)) {
                     int cha = ACURR(A_CHA);
-                    if (cha <= 10)
+                    if (cha <= 13 || !costly_spot(mtmp->mx, mtmp->my))
                         make_angry_shk(shkp, 0, 0);
-                    else if (cha <= 13 && canseemon(shkp))
+                    else if (cha <= 15 && canseemon(shkp))
                         pline_mon(shkp, "%s looks suspicious.", Monnam(shkp));
                 }
                 subfrombill(otmp, shop_keeper(*u.ushops));
