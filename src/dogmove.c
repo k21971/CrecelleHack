@@ -1150,9 +1150,9 @@ dog_move(
         nx = poss[i].x;
         ny = poss[i].y;
         if (MON_AT(nx, ny) && !((info[i] & ALLOW_M) || info[i] & ALLOW_MDISP)
-            && !(edog->petstrat & PETSTRAT_COME))
+            && !(edog && (edog->petstrat & PETSTRAT_COME)))
             continue;
-        if (!MON_AT(nx, ny) && (edog->petstrat & PETSTRAT_STATIONARY))
+        if (!MON_AT(nx, ny) && edog && (edog->petstrat & PETSTRAT_STATIONARY))
             continue;
         if (cursed_object_at(nx, ny))
             continue;
