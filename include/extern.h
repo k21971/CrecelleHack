@@ -798,6 +798,8 @@ extern boolean inaccessible_equipment(struct obj *, const char *, boolean);
 extern int any_worn_armor_ok(struct obj *);
 extern int count_worn_armor(void);
 extern int wrong_size_armor(struct obj *, struct permonst *);
+extern boolean on_loved_terrain(void);
+extern boolean on_hated_terrain(void);
 
 /* ### dog.c ### */
 
@@ -2709,6 +2711,7 @@ extern struct obj *find_quest_artifact(unsigned);
 extern int stinky_nemesis(struct monst *);
 extern void com_pager(const char *);
 extern void qt_pager(const char *);
+extern void qt_to_win(const char *, winid win);
 extern struct permonst *qt_montype(void);
 extern void deliver_splev_message(void);
 

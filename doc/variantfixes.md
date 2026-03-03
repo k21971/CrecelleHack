@@ -1,15 +1,24 @@
 # 1.4.2
 ## Monsters
 - Frostwurms are far more dangerous but only appear in snowy areas.
-
 ## New Monsters
 - Orange Fungus
 - Moldering Husk
   - Only appear in fungal biomes.
-
 ## Dungeon
 - Ported Temple of Moloch (originally from SLASH'EM)
 - Biomes now extend into branches.
+## Races
+- Different races have different favored and unfavored terrains. The
+  bonus or penalty from these terrains depends on the player's alignment.
+## Alignments
+- Terrain Differences
+  - Lawful: AC Bonus/Pentalty
+  - Neutral: Energy Regen Bonus / Penalty
+  - Chaotic: Speed Bonus/Penalty
+## Options
+- char_blurbs option displays explanations about character choices in the
+  character selection dialog(curses only).
 
 # 1.4.1
 ## Combat

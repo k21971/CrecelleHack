@@ -1144,7 +1144,7 @@ typedef struct nh_file NHFILE;
       /* Indices: base race, mummy, zombie */   \
       NON_PM, NON_PM, NON_PM,                   \
       /* Bitmasks */                            \
-      0, 0, 0, 0,                               \
+      0, 0, 0, 0, 0, 0,                         \
       /* Characteristic limits */               \
       {0}, {0},                                 \
       /* Level change HP and Pw adjustments */  \

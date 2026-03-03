@@ -640,6 +640,7 @@ const struct Race races[NUM_RACES + 1] = {
         MH_HUMAN,
         0,
         MH_GNOME | MH_ORC | MH_KOBOLD,
+        0, 0,
         /*    Str     Int Wis Dex Con Cha */
         { 3, 3, 3, 3, 3, 3 },
         { STR18(100), 18, 18, 18, 18, 18 },
@@ -661,6 +662,7 @@ const struct Race races[NUM_RACES + 1] = {
         MH_ELF,
         MH_ELF,
         MH_ORC | MH_KOBOLD,
+        COAT_GRASS, COAT_ASHES,
         /*  Str    Int Wis Dex Con Cha */
         { 3, 3, 3, 3, 3, 3 },
         { 18, 20, 20, 18, 16, 18 },
@@ -682,6 +684,7 @@ const struct Race races[NUM_RACES + 1] = {
         MH_DWARF,
         MH_DWARF | MH_GNOME,
         MH_ORC | MH_KOBOLD,
+        0, COAT_GRASS,
         /*    Str     Int Wis Dex Con Cha */
         { 3, 3, 3, 3, 3, 3 },
         { STR18(100), 16, 16, 20, 20, 16 },
@@ -703,6 +706,7 @@ const struct Race races[NUM_RACES + 1] = {
         MH_GNOME,
         MH_DWARF | MH_GNOME,
         MH_HUMAN | MH_KOBOLD,
+        COAT_POTION, COAT_FUNGUS,
         /*  Str    Int Wis Dex Con Cha */
         { 3, 3, 3, 3, 3, 3 },
         { STR18(50), 19, 18, 18, 18, 18 },
@@ -724,6 +728,7 @@ const struct Race races[NUM_RACES + 1] = {
         MH_ORC,
         0,
         MH_HUMAN | MH_ELF | MH_DWARF | MH_KOBOLD,
+        COAT_BLOOD, COAT_MUD,
         /*  Str    Int Wis Dex Con Cha */
         { 3, 3, 3, 3, 3, 3 },
         { STR18(50), 16, 16, 18, 18, 16 },
@@ -744,6 +749,7 @@ const struct Race races[NUM_RACES + 1] = {
         MH_KOBOLD,
         MH_KOBOLD,
         MH_HUMAN | MH_ELF | MH_DWARF | MH_ORC | MH_GNOME | MH_GIANT,
+        COAT_MUD, COAT_FROST,
         { 3, 3, 3, 3, 3, 3 },
         { 14, 20, 16, 18, 14, 20 },
         /* Init   Lower  Higher */
@@ -2938,6 +2944,35 @@ plsel_startmenu(int ttyrows, int aspect)
     add_menu_str(win, qbuf);
     if (maybe_skip_seps(ttyrows, aspect) != 2)
         add_menu_str(win, "");
+    if (flags.char_blurbs && WINDOWPORT(curses)) {
+        /* character verbs to ease in variant newcomers. */
+        if (ROLE >= 0) {
+            qt_to_win(roles[ROLE].name.m, win);
+            if (maybe_skip_seps(ttyrows, aspect) != 2) {
+                add_menu_str(win, "");
+                add_menu_str(win, "");
+            }
+        }
+        if (RACE >= 0) {
+            qt_to_win(races[RACE].noun, win);
+            if (maybe_skip_seps(ttyrows, aspect) != 2) {
+                add_menu_str(win, "");
+                add_menu_str(win, "");
+            }
+        }
+        if (GEND >= 0) {
+            add_menu_str(win, "Gender is immaterial. The dungeon shall consume you the same.");
+            if (maybe_skip_seps(ttyrows, aspect) != 2)
+                add_menu_str(win, "");
+        }
+        if (ALGN >= 0) {
+            qt_to_win(aligns[ALGN].adj, win);
+            if (maybe_skip_seps(ttyrows, aspect) != 2) {
+                add_menu_str(win, "");
+                add_menu_str(win, "");
+            }
+        }
+    }
     return win;
 }
 

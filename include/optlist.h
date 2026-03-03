@@ -224,6 +224,9 @@ static int optfn_##a(int, int, boolean, char *, char *);
     NHOPTC(catname, Advanced, PL_PSIZ, opt_in, set_gameview,
                 No, Yes, No, No, NoAlias,
                 "name of your starting pet if it is a kitten")
+   NHOPTB(char_blurbs, Variant, 0, opt_out, set_in_game,
+           On, Yes, No, No, NoAlias, &flags.char_blurbs, Term_False,
+           "display character creation info blurbs")
 #ifdef INSURANCE
     NHOPTB(checkpoint, Advanced, 0, opt_out, set_in_sysconf,
            On, Yes, No, No, NoAlias, &flags.ins_chkpt, Term_False,

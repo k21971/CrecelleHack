@@ -712,6 +712,21 @@ background_enlightenment(int unused_mode UNUSED, int final)
         }
         you_have(buf, "");
     }
+
+    /* terrain boosts */
+    if (Race_if(PM_DWARF)) {
+        Snprintf(buf, sizeof(buf), "a preference for bare earth (AC Bonus)");
+        you_have(buf, "");
+    }
+    for (int i = 0; i < NUM_COATINGS; i++) {
+        if (all_coatings[i].val & gu.urace.lovecoat) {
+            Snprintf(buf, sizeof(buf), "a preference for %sterrain (AC Bonus)", all_coatings[i].adj);
+            you_have(buf, "");
+        } else if (all_coatings[i].val & gu.urace.hatecoat) {
+            Snprintf(buf, sizeof(buf), "a distaste for %sterrain (AC Penalty)", all_coatings[i].adj);
+            you_have(buf, "");
+        }
+    }
 #ifdef SCORE_ON_BOTL
     if (flags.showscore) {
         /* describes what's shown on status line, which is an approximation;
