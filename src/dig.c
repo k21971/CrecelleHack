@@ -396,7 +396,7 @@ dig(void)
         } else if (ttmp && ttmp->ttyp == BEAR_TRAP && u.utrap) {
             if (rnl(7) > (Fumbling ? 1 : 4)) {
                 char kbuf[BUFSZ];
-                int dmg = dmgval(uwep, &gy.youmonst) + dbon();
+                int dmg = dmgval(uwep, &gy.youmonst, &gy.youmonst) + dbon();
 
                 if (dmg < 1)
                     dmg = 1;
@@ -414,7 +414,7 @@ dig(void)
             } else {
                 You("destroy the bear trap with %s.",
                     yobjnam(uwep, (const char *) 0));
-                deltrap(ttmp);
+                deltrap_with_ammo(ttmp, DELTRAP_DESTROY_AMMO);
                 reset_utrap(TRUE); /* release from trap, maybe Lev or Fly */
             }
             /* we haven't made any progress toward a pit yet */
@@ -427,7 +427,10 @@ dig(void)
                 You("destroy %s with %s.",
                     ttmp->tseen ? the(ttmpname) : an(ttmpname),
                     yobjnam(uwep, (const char *) 0));
-            deltrap(ttmp);
+            if (ttmp->ammo)
+                deltrap_with_ammo(ttmp, DELTRAP_DESTROY_AMMO);
+            else
+                deltrap(ttmp);
             /* we haven't made any progress toward a pit yet */
             svc.context.digging.effort = 0;
             return 0;
@@ -1018,10 +1021,11 @@ dighole(boolean pit_only, boolean by_magic, coord *cc)
             /* magical digging disarms settable traps */
             if (by_magic && ttmp
                 && (ttmp->ttyp == LANDMINE || ttmp->ttyp == BEAR_TRAP)) {
-                int otyp = (ttmp->ttyp == LANDMINE) ? LAND_MINE : BEARTRAP;
 
                 /* convert trap into buried object (deletes trap) */
-                cnv_trap_obj(otyp, 1, ttmp, TRUE);
+                deltrap_with_ammo(ttmp,
+                                  (ttmp->ttyp == LANDMINE
+                                   ? DELTRAP_BURY_AMMO : DELTRAP_PLACE_AMMO));
             }
 
             /* finally we get to make a hole */
@@ -1273,7 +1277,7 @@ use_pick_axe2(struct obj *obj)
                        && (trap_with_u = t_at(u.ux, u.uy))
                        && is_pit(trap->ttyp)
                        && !conjoined_pits(trap, trap_with_u, FALSE)) {
-                int idx = xytod(u.dx, u.dy);
+                int idx = xytodir(u.dx, u.dy);
 
                 if (idx != DIR_ERR) {
                     int adjidx = DIR_180(idx);
@@ -1634,7 +1638,7 @@ zap_dig(void)
     if (u.utrap && u.utraptype == TT_PIT
         && (trap_with_u = t_at(u.ux, u.uy))) {
         pitdig = TRUE;
-        diridx = xytod(u.dx, u.dy);
+        diridx = xytodir(u.dx, u.dy);
     }
     digdepth = rn1(18, 8);
     tmp_at(DISP_BEAM, cmap_to_glyph(S_digbeam));

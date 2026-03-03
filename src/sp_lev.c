@@ -117,9 +117,8 @@ staticfn int find_montype(lua_State *, const char *, int *);
 staticfn int get_table_montype(lua_State *, int *);
 staticfn lua_Integer get_table_int_or_random(lua_State *, const char *, int);
 staticfn int get_table_buc(lua_State *);
-staticfn int get_table_objclass(lua_State *);
-staticfn int find_objtype(lua_State *, const char *);
-staticfn int get_table_objtype(lua_State *);
+staticfn int find_objtype(lua_State *, const char *, char);
+staticfn const char *get_mkroom_name(int) NONNULL;
 staticfn int get_table_roomtype_opt(lua_State *, const char *, int);
 staticfn int get_table_traptype_opt(lua_State *, const char *, int);
 staticfn int get_traptype_byname(const char *);
@@ -347,7 +346,7 @@ map_cleanup(void)
                 /* traps on liquid? */
                 if (((ttmp = t_at(x, y)) != 0)
                     && !undestroyable_trap(ttmp->ttyp))
-                    deltrap(ttmp);
+                    deltrap_with_ammo(ttmp, DELTRAP_DESTROY_AMMO);
 
                 /* engravings? */
                 if ((etmp = engr_at(x, y)) != 0)
@@ -2146,6 +2145,9 @@ create_monster(monster *m, struct mkroom *croom)
             mtmp->mstun = 1;
         if (m->confused)
             mtmp->mconf = 1;
+        if (m->advanced) {
+            advance_monster(mtmp);
+        }
         if (m->invis) {
             mtmp->minvis = mtmp->perminvis = 1;
         }
@@ -3263,6 +3265,7 @@ lspo_monster(lua_State *L)
     tmpmons.paralyzed = 0;
     tmpmons.stunned = 0;
     tmpmons.confused = 0;
+    tmpmons.advanced = 0;
     tmpmons.seentraps = 0;
     tmpmons.has_invent = DEFAULT_INVENT;
     tmpmons.waiting = 0;
@@ -3331,6 +3334,7 @@ lspo_monster(lua_State *L)
         tmpmons.paralyzed = get_table_int_opt(L, "paralyzed", 0);
         tmpmons.stunned = get_table_boolean_opt(L, "stunned", FALSE);
         tmpmons.confused = get_table_boolean_opt(L, "confused", FALSE);
+        tmpmons.advanced = get_table_boolean_opt(L, "advanced", FALSE);
         tmpmons.waiting = get_table_boolean_opt(L, "waiting", FALSE);
         tmpmons.seentraps = 0; /* TODO: list of trap names to bitfield */
         keep_default_invent =
@@ -3475,7 +3479,7 @@ get_table_buc(lua_State *L)
     return curse_state;
 }
 
-staticfn int
+int
 get_table_objclass(lua_State *L)
 {
     char *s = get_table_str_opt(L, "class", NULL);
@@ -3487,13 +3491,14 @@ get_table_objclass(lua_State *L)
     return ret;
 }
 
+/* find object otyp by text s (optionally considering oclass) */
 staticfn int
-find_objtype(lua_State *L, const char *s)
+find_objtype(lua_State *L, const char *s, char oclass)
 {
     if (s && *s) {
         int i;
         const char *objname;
-        char class = 0;
+        char class = def_char_to_objclass(oclass);
 
         /* In objects.h, some item classes are defined without prefixes
            (such as "scroll of ") in their names, making some names (such
@@ -3511,6 +3516,9 @@ find_objtype(lua_State *L, const char *s)
             { "wand of ", WAND_CLASS },
             { NULL, 0 }
         };
+
+        if (class == MAXOCLASSES)
+            class = 0;
 
         if (strstri(s, " of ")) {
             for (i = 0; class_prefixes[i].prefix; i++) {
@@ -3556,11 +3564,12 @@ find_objtype(lua_State *L, const char *s)
     return STRANGE_OBJECT;
 }
 
-staticfn int
+int
 get_table_objtype(lua_State *L)
 {
     char *s = get_table_str_opt(L, "id", NULL);
-    int ret = find_objtype(L, s);
+    char oclass = get_table_objclass(L);
+    int ret = find_objtype(L, s, oclass);
 
     Free(s);
     return ret;
@@ -3624,7 +3633,7 @@ lspo_object(lua_State *L)
             tmpobj.id = STRANGE_OBJECT;
         } else {
             tmpobj.class = -1;
-            tmpobj.id = find_objtype(L, paramstr);
+            tmpobj.id = find_objtype(L, paramstr, -1);
         }
     } else if (argc == 2 && lua_type(L, 1) == LUA_TSTRING
                && lua_type(L, 2) == LUA_TTABLE) {
@@ -3637,7 +3646,7 @@ lspo_object(lua_State *L)
             tmpobj.id = STRANGE_OBJECT;
         } else {
             tmpobj.class = -1;
-            tmpobj.id = find_objtype(L, paramstr);
+            tmpobj.id = find_objtype(L, paramstr, -1);
         }
     } else if (argc == 3 && lua_type(L, 2) == LUA_TNUMBER
                && lua_type(L, 3) == LUA_TNUMBER) {
@@ -3651,7 +3660,7 @@ lspo_object(lua_State *L)
             tmpobj.id = STRANGE_OBJECT;
         } else {
             tmpobj.class = -1;
-            tmpobj.id = find_objtype(L, paramstr);
+            tmpobj.id = find_objtype(L, paramstr, -1);
         }
     } else {
         lcheck_param_table(L);
@@ -4220,7 +4229,7 @@ l_create_stairway(lua_State *L, boolean using_ladder)
     get_location_coord(&x, &y, DRY, gc.coder->croom, scoord);
     set_ok_location_func(NULL);
     if ((badtrap = t_at(x, y)) != 0)
-        deltrap(badtrap);
+        deltrap_with_ammo(badtrap, DELTRAP_DESTROY_AMMO);
     SpLev_Map[x][y] = 1;
 
     if (using_ladder) {
@@ -5112,7 +5121,7 @@ lspo_replace_terrain(lua_State *L)
     if (mon_str)
         montype = find_montype(L, mon_str, &gender);
     if (obj_str)
-        objtype = find_objtype(L, obj_str);
+        objtype = find_objtype(L, obj_str, -1);
     if (coat_str) {
         for (int i = 0; i < NUM_COATINGS; i++) {
             if (!strcmp(all_coatings[i].name, coat_str)) {
@@ -6054,8 +6063,13 @@ lspo_reset_level(lua_State *L)
     boolean wtower = In_W_tower(u.ux, u.uy, &u.uz);
 
     iflags.lua_testing = TRUE;
-    if (L)
+    if (L) {
+        if (gc.coder) {
+            Free(gc.coder);
+            gc.coder = NULL;
+        }
         create_des_coder();
+    }
     makemap_prepost(TRUE, wtower);
     gi.in_mklev = TRUE;
     oinit(); /* assign level dependent obj probabilities */

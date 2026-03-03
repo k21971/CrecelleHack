@@ -79,14 +79,15 @@ staticfn void finish_splitting(struct obj *);
 
 static const char
     are_no_longer_twoweap[] = "are no longer using two weapons at once",
-    can_no_longer_twoweap[] = "can no longer wield two weapons at once";
+    can_no_longer_twoweap[] = "can no longer wield two weapons at once",
+    can_no_longer_dualweap[] = "can no longer dual-wield your weapon";
 
 /*** Functions that place a given item in a slot ***/
 /* Proper usage includes:
  * 1.  Initializing the slot during character generation or a
  *     restore.
  * 2.  Setting the slot due to a player's actions.
- * 3.  If one of the objects in the slot are split off, these
+ * 3.  If one of the objects in the slot is split off, these
  *     functions can be used to put the remainder back in the slot.
  * 4.  Putting an item that was thrown and returned back into the slot.
  * 5.  Emptying the slot, by passing a null object.  NEVER pass
@@ -172,7 +173,7 @@ ready_weapon(struct obj *wep)
         if (uwep) {
             You("are %s.", empty_handed());
             setuwep((struct obj *) 0);
-            res = ECMD_TIME;
+            res = P_SKILL(P_BARE_HANDED_COMBAT) >= P_BASIC ? ECMD_OK : ECMD_TIME;
         } else
             You("are already %s.", empty_handed());
     } else if (wep->otyp == CORPSE && cant_wield_corpse(wep)) {
@@ -258,8 +259,7 @@ ready_weapon(struct obj *wep)
             }
         }
 
-        if (Race_if(PM_ELF) && !wep->oartifact
-            && wep->material == IRON) {
+        if (Race_if(PM_ELF) && !wep->oartifact && is_iron(wep)) {
             /* Elves are averse to wielding cold iron */
             You("have an uneasy feeling about wielding cold iron.");
             change_luck(-1);
@@ -283,6 +283,18 @@ ready_weapon(struct obj *wep)
         }
         if (size_matters(wep) && wep->osize != USIZE)
             pline("%s awkward to wield due to your size.", Yobjnam2(wep, "are"));
+
+        /* Basic with a weapon lets you wield it instantly. */
+        if (P_SKILL(weapon_type(wep)) >= P_BASIC)
+            res = ECMD_OK;
+        /* Being skilled with a weapon identifies it upon wielding. */
+        if ((wep->oclass == WEAPON_CLASS || is_weptool(wep))
+            && (P_SKILL(weapon_type(wep)) >= P_SKILLED)
+            && not_fully_identified(wep)) {
+            You("use your superior skills to identify your weapon.");
+            (void) identify(wep);
+            update_inventory();
+        }
     }
     if ((had_wep != (uwep != 0)) && condtests[bl_bareh].enabled)
         disp.botl = TRUE;
@@ -469,6 +481,7 @@ dowield(void)
     if (flags.pushweapon && oldwep && uwep != oldwep)
         setuswapwep(oldwep);
     untwoweapon();
+    undualweapon();
 
     return result;
 }
@@ -513,6 +526,8 @@ doswapweapon(void)
 
     if (u.twoweap && !can_twoweapon())
         untwoweapon();
+    if (u.dualweap)
+        undualweapon();
 
     return result;
 }
@@ -624,6 +639,7 @@ doquiver_core(const char *verb) /* "ready" or "fire" */
         /* quivering main weapon, so no longer wielding it */
         setuwep((struct obj *) 0);
         untwoweapon();
+        undualweapon();
         was_uwep = TRUE;
     } else if (newquiver == uswapwep) {
         if (uswapwep->quan > 1L && inv_cnt(FALSE) < invlet_basic
@@ -769,6 +785,8 @@ wield_tool(struct obj *obj,
     /* applying weapon or tool that gets wielded ends two-weapon combat */
     if (u.twoweap)
         untwoweapon();
+    if (u.dualweap)
+        undualweapon();
     if (obj->oclass != WEAPON_CLASS)
         gu.unweapon = TRUE;
     return TRUE;
@@ -781,6 +799,8 @@ can_twoweapon(void)
 
     if (!could_twoweap(gy.youmonst.data) && Upolyd) {
         You_cant("use two weapons in your current form.");
+    } else if (uwep && is_dualweapon(uwep)) {
+        return TRUE;
     } else if (!uwep || !uswapwep) {
         const char *hand_s = body_part(HAND);
 
@@ -846,6 +866,14 @@ void
 set_twoweap(boolean on_off)
 {
     u.twoweap = on_off;
+    u.dualweap = FALSE;
+}
+
+void
+set_dualweap(boolean on_off)
+{
+    u.dualweap = on_off;
+    u.twoweap = FALSE;
 }
 
 /* the #twoweapon command */
@@ -853,13 +881,13 @@ int
 dotwoweapon(void)
 {
     /* Handle dual weapons */
-    if (uwep && is_dualweapon(uwep) && could_twoweap(gy.youmonst.data)) {
+    if (uwep && is_dualweapon(uwep)) {
         if (u.dualweap) {
             You("focus on a single end of your weapon.");
-            u.dualweap = 0;
+            set_dualweap(FALSE);
         } else {
             You("begin using both ends of your weapon.");
-            u.dualweap = 1;
+            set_dualweap(TRUE);
         }
         return ECMD_OK;
     }
@@ -928,6 +956,17 @@ untwoweapon(void)
     if (u.twoweap) {
         You("%s.", can_no_longer_twoweap);
         set_twoweap(FALSE); /* u.twoweap = FALSE */
+        update_inventory();
+    }
+    return;
+}
+
+void
+undualweapon(void)
+{
+    if (u.dualweap) {
+        You("%s.", can_no_longer_dualweap);
+        set_dualweap(FALSE);
         update_inventory();
     }
     return;
@@ -1052,7 +1091,7 @@ chwepon(struct obj *otmp, int amount)
 
     /*
      * Enchantment, which normally improves a weapon, has an
-     * addition adverse reaction on Magicbane whose effects are
+     * additional adverse reaction on Magicbane whose effects are
      * spe dependent.  Give an obscure clue here.
      */
     if (u_wield_art(ART_MAGICBANE) && uwep->spe >= 0) {

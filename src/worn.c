@@ -1,4 +1,4 @@
-/* NetHack 3.7	worn.c	$NHDT-Date: 1736530208 2025/01/10 09:30:08 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.116 $ */
+/* NetHack 3.7	worn.c	$NHDT-Date: 1770949988 2026/02/12 18:33:08 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.119 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2013. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -89,6 +89,8 @@ setworn(struct obj *obj, long mask)
                 if (oobj) {
                     if (u.twoweap && (oobj->owornmask & (W_WEP | W_SWAPWEP)))
                         set_twoweap(FALSE); /* u.twoweap = FALSE */
+                    if (u.dualweap && (oobj->owornmask & (W_WEP)))
+                        set_dualweap(FALSE);
                     oobj->owornmask &= ~wp->w_mask;
                     if (wp->w_mask & ~(W_SWAPWEP | W_QUIVER)) {
                         /* leave as "x = x <op> y", here and below, for broken
@@ -153,6 +155,8 @@ setnotworn(struct obj *obj)
         return;
     if (u.twoweap && (obj == uwep || obj == uswapwep))
         set_twoweap(FALSE); /* u.twoweap = FALSE */
+    if (u.dualweap && obj == uwep)
+        set_dualweap(FALSE);
     for (wp = worn; wp->w_mask; wp++)
         if (obj == *(wp->w_obj)) {
             /* in case wearing or removal is in progress or removal
@@ -430,7 +434,7 @@ check_wornmask_slots(void)
     if (u.twoweap) {
         const char *why = NULL;
 
-        if (!uwep || !uswapwep) {
+        if (!uwep || (!uswapwep && !is_dualweapon(uwep))) {
             Sprintf(whybuf, "without %s%s%s",
                     !uwep ? "uwep" : "",
                     (!uwep && !uswapwep) ? " and without " : "",
@@ -442,14 +446,14 @@ check_wornmask_slots(void)
             why = "uwep is not a weapon";
         else if (is_launcher(uwep) || is_ammo(uwep) || is_missile(uwep))
             why = "uwep is not a melee weapon";
-        else if (u_bimanual(uwep))
+        else if (u_bimanual(uwep) && !is_dualweapon(uwep))
             why = "uwep is two-handed";
-        else if (uswapwep->oclass != WEAPON_CLASS && !is_weptool(uswapwep))
+        else if (uswapwep && uswapwep->oclass != WEAPON_CLASS && !is_weptool(uswapwep))
             why = "uswapwep is not a weapon";
-        else if (is_launcher(uswapwep) || is_ammo(uswapwep)
-                 || is_missile(uswapwep))
+        else if (uswapwep && (is_launcher(uswapwep) || is_ammo(uswapwep)
+                 || is_missile(uswapwep)))
             why = "uswapwep is not a melee weapon";
-        else if (u_bimanual(uswapwep))
+        else if (uswapwep && u_bimanual(uswapwep))
             why = "uswapwep is two-handed";
         else if (Upolyd && !could_twoweap(gy.youmonst.data))
             why = "without two weapon attacks";
@@ -457,17 +461,33 @@ check_wornmask_slots(void)
         if (why)
             impossible("Two-weapon insanity: %s.", why);
     }
+    if (u.dualweap) {
+        const char *why = NULL;
+        if (!uwep) {
+            why = "dualweapon without weapon";
+        } else if (!is_dualweapon(uwep)) {
+            why = "uwep is non-dual weapon";
+        } else if (!u_bimanual(uwep)) {
+            why = "uwep is not a two-handed weapon";
+        } else if (uwep->oclass != WEAPON_CLASS) {
+            why = "uwep is not a melee weapon";
+        }
+        if (why)
+            impossible("Dual-weapon insanity: %s.", why);
+    }
 #endif /* EXTRA_SANITY_CHECKS */
     return;
 #undef IGNORE_SLOTS
 } /* check_wornmask_slots() */
 
 void
-mon_set_minvis(struct monst *mon)
+mon_set_minvis(
+    struct monst *mon,
+    boolean cursed_potion)
 {
-    mon->perminvis = 1;
+    mon->perminvis = !cursed_potion ? 1 : 0;
     if (!mon->invis_blkd) {
-        mon->minvis = 1;
+        mon->minvis = mon->perminvis;
         newsym(mon->mx, mon->my); /* make it disappear */
         if (mon->wormno)
             see_wsegs(mon); /* and any tail too */
@@ -487,7 +507,7 @@ mon_adjust_speed(
     switch (adjust) {
     case 2:
         mon->permspeed = MFAST;
-        give_msg = FALSE; /* special case monster creation */
+        give_msg = FALSE; /* special-case monster creation */
         break;
     case 1:
         if (mon->permspeed == MSLOW)
@@ -1016,7 +1036,7 @@ m_dowear_type(
         }
     }
     update_mon_extrinsics(mon, best, TRUE, creation);
-    /* if couldn't see it but now can, or vice versa, */
+    /* if couldn't see it but now can, or vice versa */
     if (!creation && (sawmon ^ canseemon(mon))) {
         if (mon->minvis && !See_invisible) {
             pline("Suddenly you cannot see %s.", nambuf);

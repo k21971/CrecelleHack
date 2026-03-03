@@ -1,4 +1,4 @@
-/* NetHack 3.7	allmain.c	$NHDT-Date: 1744860497 2025/04/16 19:28:17 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.276 $ */
+/* NetHack 3.7	allmain.c	$NHDT-Date: 1771213100 2026/02/15 19:38:20 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.286 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2012. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -72,6 +72,10 @@ moveloop_preamble(boolean resuming)
     if (flags.friday13) {
         pline("Watch out!  Bad things can happen on Friday the 13th.");
         change_luck(-1);
+    }
+    flags.halloween = halloween();
+    if (flags.halloween) {
+        pline(Hallucination ? "This is Halloween! This is Halloween!" : "Happy Halloween!");
     }
 
     if (!resuming) { /* new game */
@@ -500,6 +504,8 @@ moveloop_core(void)
     /* the Amulet of Yendor gives a wish when initially picked up */
     if (u.uhave.amulet && !u.uevent.amulet_wish) {
         u.uevent.amulet_wish = 1;
+        display_nhwindow(WIN_MESSAGE, TRUE);
+        urgent_pline("The Amulet is bestowing a wish upon you!");
         makewish();
     }
 
@@ -924,8 +930,7 @@ to_the_mines(void)
         newlevel.dnum = mines_dnum;
         newlevel.dlevel = 1;
         /* move gnomes into gnomish mines */
-        schedule_goto(&newlevel, UTOTYPE_NONE,
-                        wizard ? "Entering the mines." : "", (char *) 0);
+        schedule_goto(&newlevel, UTOTYPE_NONE, (char *) 0, (char *) 0);
         deferred_goto();
         u_on_upstairs();
         vision_reset();
@@ -976,9 +981,6 @@ welcome(boolean new_game) /* false => restoring an old game */
           Hello((struct monst *) 0), svp.plname, buf);
 
     if (new_game) {
-        /* gnomes get cheered on */
-        if (Race_if(PM_GNOME))
-            You_hear("your gnomish colleagues cheering for you!");
         /* guarantee that 'major' event category is never empty */
         livelog_printf(LL_ACHIEVE, "%s the%s entered the dungeon",
                        svp.plname, buf);
@@ -1068,6 +1070,7 @@ static const struct early_opt earlyopts[] = {
     { ARG_DUMPGLYPHIDS, "dumpglyphids", 12, FALSE },
     { ARG_DUMPMONGEN, "dumpmongen", 10, FALSE },
     { ARG_DUMPWEIGHTS, "dumpweights", 11, FALSE },
+    { ARG_DUMPWEAPONS, "dumpweapons", 11, FALSE },
 #ifdef WIN32
     { ARG_WINDOWS, "windows", 4, TRUE },
 #endif
@@ -1174,6 +1177,9 @@ argcheck(int argc, char *argv[], enum earlyarg e_arg)
             return 2;
         case ARG_DUMPWEIGHTS:
             dump_weights();
+            return 2;
+        case ARG_DUMPWEAPONS:
+            dump_weapons();
             return 2;
 #ifdef CRASHREPORT
         case ARG_BIDSHOW:

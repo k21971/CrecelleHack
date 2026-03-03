@@ -103,6 +103,11 @@ resetobjs(struct obj *ochain, boolean restore)
             if (!valid_obj_material(otmp, otmp->material)) {
                 set_material(otmp, objects[otmp->otyp].oc_material);
             }
+            /* wooden objects have a chance of becoming bleakwood */
+            if (otmp->material == WOOD
+                && valid_obj_material(otmp, BLEAKWOOD) && !rn2(10)) {
+                set_material(otmp, BLEAKWOOD);
+            }
         } else { /* saving */
             /* do not zero out o_ids for ghost levels anymore */
 
@@ -277,6 +282,7 @@ drop_upon_death(
        welded if it becomes cursed; ensure that that won't happen here
        by ending dual-wield */
     u.twoweap = FALSE; /* bypass set_twoweap() */
+    u.dualweap = FALSE;
 
     /* all inventory is dropped (for the normal case), even non-droppable
        things like worn armor and accessories, welded weapon, or cursed

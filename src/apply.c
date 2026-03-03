@@ -1,4 +1,4 @@
-/* NetHack 3.7	apply.c	$NHDT-Date: 1753856387 2025/07/29 22:19:47 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.472 $ */
+/* NetHack 3.7	apply.c	$NHDT-Date: 1769342601 2026/01/25 04:03:21 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.475 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2012. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -31,7 +31,9 @@ staticfn int grease_ok(struct obj *);
 staticfn int use_grease(struct obj *);
 staticfn void use_trap(struct obj *);
 staticfn int touchstone_ok(struct obj *);
+staticfn int rub_wand(struct obj *);
 staticfn int use_sympathy(struct obj *);
+staticfn int carve_pumpkin(struct obj *);
 staticfn int use_stone(struct obj *);
 staticfn int set_trap(void); /* occupation callback */
 staticfn void display_polearm_positions(boolean);
@@ -514,7 +516,7 @@ use_magic_whistle(struct obj *obj)
         You("produce a %shigh-%s.", Underwater ? "very " : "",
             Deaf ? "frequency vibration" : "pitched humming noise");
         wake_nearby(TRUE);
-        if (!rn2(2))
+        if (!rn2(2) && !noteleport_level(&gy.youmonst))
             tele_to_rnd_pet();
     } else {
         /* it's magic!  it works underwater too (at a higher pitch) */
@@ -1920,10 +1922,11 @@ rub_ok(struct obj *obj)
     if (!obj)
         return GETOBJ_EXCLUDE;
 
-    if (obj->otyp == OIL_LAMP || obj->otyp == MAGIC_LAMP
+    if (obj->oclass == WAND_CLASS
+        || obj->otyp == OIL_LAMP || obj->otyp == MAGIC_LAMP
         || obj->otyp == LANTERN || is_graystone(obj)
         || obj->otyp == LUMP_OF_ROYAL_JELLY
-        || obj->otyp == TOWEL)
+        || obj->otyp == TOWEL || obj->otyp == PUMPKIN)
         return GETOBJ_SUGGEST;
     
     if (obj->oartifact == ART_SYMPATHY)
@@ -1950,13 +1953,18 @@ dorub(void)
             return use_stone(obj);
         } else if (obj->otyp == LUMP_OF_ROYAL_JELLY) {
             return use_royal_jelly(&obj);
+        } else if (obj->otyp == PUMPKIN) {
+            return carve_pumpkin(obj);
         } else {
             pline("Sorry, I don't know how to use that.");
             return ECMD_OK;
         }
-    }
-    if (obj->oartifact == ART_SYMPATHY)
+    } else if (obj->oclass == WAND_CLASS) {
+        return rub_wand(obj);
+    } else if (obj->oartifact == ART_SYMPATHY) {
         return use_sympathy(obj);
+    }
+
     if (obj != uwep) {
         if (wield_tool(obj, "rub")) {
             cmdq_add_ec(CQ_CANNED, dorub);
@@ -2764,6 +2772,8 @@ grease_ok(struct obj *obj)
     if (!obj)
         return GETOBJ_SUGGEST;
 
+    /* note: if changing the list of ungreasable objects, also change
+       special_throne_effect in sit.c */
     if (obj->oclass == COIN_CLASS)
         return GETOBJ_EXCLUDE;
 
@@ -2865,6 +2875,77 @@ use_sympathy(struct obj *symp)
     retouch_object(&symp, !uarmg, FALSE);
     update_inventory();
     return ECMD_TIME;
+}
+
+/* TODO: IF we ever add a carve command call this from there instead of rub */
+staticfn int
+carve_pumpkin(struct obj *pumpkin)
+{
+    struct obj *obj;
+    if ((obj = getobj("carve the pumpkin with", any_obj_ok, GETOBJ_PROMPT)) == 0)
+        return ECMD_CANCEL;
+    if (!(objects[obj->otyp].oc_dir & PIERCE)) {
+        pline("That's not a proper carving implement.");
+        return ECMD_CANCEL;
+    }
+    if (pumpkin->quan > 1L) {
+        pumpkin = splitobj(pumpkin, 1L);
+    }
+    You("carve %s with your %s.", the(xname(pumpkin)), xname(obj));
+    if (pumpkin->quan > 1L)
+        pumpkin = splitobj(pumpkin, 1);
+    pumpkin = poly_obj(pumpkin, JACK_O_LANTERN);
+    costly_alteration(pumpkin, COST_SPLAT);
+    obj_extract_self(pumpkin); /* free from inv */
+    pumpkin = hold_another_object(pumpkin, "You bumpkin! You fumbled the pumpkin!",
+                                (const char *) 0, (const char *) 0);
+    update_inventory();
+    return ECMD_TIME;
+}
+
+staticfn int
+rub_wand(struct obj *wand)
+{
+    char wandbuf[QBUFSZ];
+    struct obj *obj;
+    int n;
+    int lim = (objects[wand->otyp].oc_dir != NODIR ? 8 : 15);
+
+    Sprintf(wandbuf, "rub on the wand%s", plur(wand->quan));
+    if ((obj = getobj(wandbuf, any_obj_ok, GETOBJ_PROMPT)) == 0)
+        return ECMD_CANCEL;
+
+    if (obj == wand) {
+        pline("Try as you might, %s is not that flexible.", the(xname(obj)));
+        return ECMD_OK;
+    }
+    if (wand->otyp != obj->otyp) {
+        pline("Nothing happens.");
+        return ECMD_OK;
+    }
+    if (obj->cursed && !rn2(WAND_BACKFIRE_CHANCE)) {
+        backfire(obj);
+        return ECMD_OK;
+    }
+    if (obj->spe <= 0 || obj->otyp == WAN_WISHING || wand->otyp == WAN_WISHING) {
+        pline("Nothing interesting happens.");
+        return ECMD_OK;
+    }
+    wand->spe += max(obj->spe - 1, 1);
+
+    n = (int) wand->recharged;
+    if (((wand->spe > lim) && rn2(2 + n))
+        || (n * n * n > rn2(7 * 7 * 7))) {
+        useupall(obj);
+        wand_explode(wand, rnd(lim));
+        return ECMD_OK;
+    }
+    /* didn't explode, so increment the recharge count */
+    wand->recharged++;
+    pline("You transfer the magic of %s into %s.", the(xname(obj)), the(xname(wand)));
+    useupall(obj);
+    update_inventory();
+    return ECMD_OK;
 }
 
 /* touchstones - by Ken Arnold */
@@ -3110,6 +3191,7 @@ set_trap(void)
     struct obj *otmp = gt.trapinfo.tobj;
     struct trap *ttmp;
     int ttyp;
+    boolean obj_cursed = otmp->cursed;
 
     if (!otmp || !carried(otmp) || !u_at(gt.trapinfo.tx, gt.trapinfo.ty)) {
         /* trap object might have been stolen or hero teleported */
@@ -3125,12 +3207,21 @@ set_trap(void)
     if (ttmp) {
         ttmp->madeby_u = 1;
         feeltrap(ttmp);
+
+        /* Our object becomes the new ammo of the trap */
+        if (otmp->quan > 1) {
+            otmp = splitobj(otmp, 1);
+        }
+        freeinv(otmp);
+        if (ttyp == LANDMINE || ttyp == BEAR_TRAP)
+            set_trap_ammo(ttmp, otmp);
+
         if (*in_rooms(u.ux, u.uy, SHOPBASE)) {
             add_damage(u.ux, u.uy, 0L); /* schedule removal */
         }
         if (!gt.trapinfo.force_bungle)
             You("finish arming %s.", the(trapname(ttyp, FALSE)));
-        if (((otmp->cursed || Fumbling) && (rnl(10) > 5))
+        if (((obj_cursed || Fumbling) && (rnl(10) > 5))
             || gt.trapinfo.force_bungle)
             dotrap(ttmp,
                    (unsigned) (gt.trapinfo.force_bungle ? FORCEBUNGLE : 0));
@@ -3138,7 +3229,6 @@ set_trap(void)
         /* this shouldn't happen */
         Your("trap setting attempt fails.");
     }
-    useup(otmp);
     reset_trapset();
     return 0;
 }
@@ -3926,6 +4016,7 @@ use_grapple(struct obj *obj)
     struct monst *mtmp;
     struct obj *otmp;
 
+    pline("BANG");
     /* Are you allowed to use the hook? */
     if (u.uswallow) {
         pline(not_enough_room);
@@ -4360,7 +4451,8 @@ apply_ok(struct obj *obj)
     /* certain weapons */
     if (obj->oclass == WEAPON_CLASS
         && (is_pick(obj) || is_axe(obj) || is_pole(obj)
-            || obj->otyp == BULLWHIP))
+            || obj->otyp == BULLWHIP
+            || obj->otyp == SHEPHERD_S_CROOK))
         return GETOBJ_SUGGEST;
 
     if (obj->oclass == POTION_CLASS) {
@@ -4462,6 +4554,7 @@ doapply(void)
         res = use_whip(obj);
         break;
     case GRAPPLING_HOOK:
+    case SHEPHERD_S_CROOK:
         res = use_grapple(obj);
         break;
     case LARGE_BOX:

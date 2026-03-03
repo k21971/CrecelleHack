@@ -283,6 +283,11 @@ cause_known(
         if ((int) objects[o->otyp].oc_oprop == propindx
             && objects[o->otyp].oc_name_known && o->dknown)
             return TRUE;
+        if (o->oprop && o->pknown) {
+            if (propindx == HUNGER && o->oprop == OPROP_HUNGRY) {
+                return TRUE;
+            }
+        }
     }
     return FALSE;
 }
@@ -642,7 +647,7 @@ background_enlightenment(int unused_mode UNUSED, int final)
         enl_msg("It ", "is ", "was  ", "daytime", "");
     }
     /* Weather */
-    if (!has_no_tod_cycles(&u.uz) && IS_RAINING) {
+    if (exposed_to_elements(&u.uz) && IS_RAINING) {
         enl_msg("It ", "is ", "was ", "raining", "");
     }
     /* other environmental factors */
@@ -1318,10 +1323,6 @@ weapon_insight(int final)
         you_are("utilizing only one half of your weapon", "");
     }
 
-    /* Weapon attack bonus breakdown. */
-    Sprintf(buf, "+%d to-hit with your main hand (%s)", abon(uwep), (uwep && objects[uwep->otyp].oc_finesse) ? "Dex" : "Str");
-    you_have(buf, "");
-
 
     /*
      * Skill with current weapon.  Might help players who've never
@@ -1543,31 +1544,33 @@ attributes_enlightenment(
         you_are("magic-protected", from_what(ANTIMAGIC));
     if (Fire_resistance)
         you_are("fire resistant", from_what(FIRE_RES));
-    if (Fire_vulnerability)
-        you_are("vulnerable to fire", from_what(FIRE_VUL));
+    if (Fire_immunity)
+        you_are("immune to fire", from_what_item(FIRE_RES));
     item_resistance_message(AD_FIRE, " protected from fire", final);
     if (Cold_resistance)
         you_are("cold resistant", from_what(COLD_RES));
-    if (Cold_vulnerability)
-        you_are("vulnerable to cold", from_what(FIRE_VUL));
+    if (Cold_immunity)
+        you_are("immune to cold", from_what_item(COLD_RES));
     item_resistance_message(AD_COLD, " protected from cold", final);
     if (Sleep_resistance)
         you_are("sleep resistant", from_what(SLEEP_RES));
-    if (Sleep_vulnerability)
-        you_are("vulnerable to sleep", from_what(SLEEP_VUL));
+    if (Sleep_immunity)
+        you_are("immune to sleep", from_what_item(SLEEP_RES));
     if (Disint_resistance)
         you_are("disintegration resistant", from_what(DISINT_RES));
-    if (Disint_vulnerability)
-        you_are("vulnerable to disintegration", from_what(DISINT_VUL));
+    if (Disint_immunity)
+        you_are("immune to disintegration", from_what_item(DISINT_RES));
     item_resistance_message(AD_DISN, " protected from disintegration", final);
     if (Shock_resistance)
         you_are("shock resistant", from_what(SHOCK_RES));
-    if (HShock_vulnerability)
-        you_are("vulnerable to shock", from_what(SHOCK_VUL));
+    if (Shock_immunity)
+        you_are("immune to shock", from_what_item(SHOCK_RES));
     item_resistance_message(AD_ELEC, " protected from electric shocks",
                             final);
     if (Poison_resistance)
         you_are("poison resistant", from_what(POISON_RES));
+    if (Poison_immunity)
+        you_are("immune to poison", from_what_item(POISON_RES));
     if (Acid_resistance) {
         Sprintf(buf, "%.20s%.30s",
                 temp_resist(ACID_RES) ? "temporarily " : "",
@@ -1916,7 +1919,7 @@ attributes_enlightenment(
         you_can("not change from your current form", from_what(UNCHANGING));
     for (ltmp = 1; ltmp < NUM_MATERIAL_TYPES; ++ltmp) {
         if (Hate_material(ltmp)) {
-            Sprintf(buf, "harmed by %s", materialnm[ltmp]);
+            Sprintf(buf, "harmed by %s", MAT_NAME(ltmp));
             you_are(buf, "");
         }
     }
@@ -2245,6 +2248,14 @@ show_conduct(int final)
     } else if (wizard) {
         Sprintf(buf, "blessed items with holy water %ld time%s",
                 u.uconduct.holy_water, plur(u.uconduct.holy_water));
+        you_have_X(buf);
+    }
+
+    if (!u.uconduct.dyed) {
+        you_have_never("dyed an item");
+    } else if (wizard) {
+        Sprintf(buf, "dyed items %ld time%s",
+                u.uconduct.dyed, plur(u.uconduct.dyed));
         you_have_X(buf);
     }
 
@@ -3511,6 +3522,7 @@ ustatusline(void)
 {
     NhRegion *reg;
     char info[BUFSZ];
+    char regbuf[64];
     size_t ln;
 
     info[0] = '\0';
@@ -3586,9 +3598,10 @@ ustatusline(void)
     }
     if (!u.uswallow
         && (reg = visible_region_at(u.ux, u.uy)) != 0
-        && (ln = strlen(info)) < sizeof info)
-        Snprintf(eos(info), sizeof info - ln, ", in a %s",
-                 region_string(reg));
+        && (ln = strlen(info)) < sizeof info) {
+        reg_descr(reg, regbuf);
+        Snprintf(eos(info), sizeof info - ln, ", in %s", regbuf );
+    }
 
     pline("Status of %s (%s):  Level %d  HP %d(%d)  AC %d%s.", svp.plname,
           piousness(FALSE, align_str(u.ualign.type)),

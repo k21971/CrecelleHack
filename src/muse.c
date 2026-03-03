@@ -1,4 +1,4 @@
-/* NetHack 3.7	muse.c	$NHDT-Date: 1737392015 2025/01/20 08:53:35 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.234 $ */
+/* NetHack 3.7	muse.c	$NHDT-Date: 1770949988 2026/02/12 18:33:08 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.241 $ */
 /*      Copyright (C) 1990 by Ken Arromdee                         */
 /* NetHack may be freely redistributed.  See license for details.  */
 
@@ -29,6 +29,7 @@ staticfn boolean linedup_chk_corpse(coordxy, coordxy);
 staticfn void m_use_undead_turning(struct monst *, struct obj *);
 staticfn boolean hero_behind_chokepoint(struct monst *);
 staticfn boolean mon_has_friends(struct monst *);
+staticfn boolean mon_likes_objpile_at(struct monst *mtmp, coordxy x, coordxy y) NONNULLARG1;
 staticfn int mbhitm(struct monst *, struct obj *);
 staticfn boolean fhito_loc(struct obj *obj, coordxy x, coordxy y,
                            int (*fhito)(OBJ_P, OBJ_P));
@@ -594,7 +595,7 @@ find_defensive(struct monst *mtmp, boolean tryescape)
         }
     } else if (has_coating(x, y, COAT_ASHES) && !nolimbs(mtmp->data)
                 && !is_floater(mtmp->data) && haseyes(gy.youmonst.data)
-                && !Blind && m_next2u(mtmp)) {
+                && !Blind && m_next2u(mtmp) && ash_kicker(mtmp->data)) {
         gm.m.has_defense = MUSE_COAT_ASHES;
     } else if (has_coating(x, y, COAT_BLOOD) && is_vampire(mtmp->data)) {
         gm.m.has_defense = MUSE_COAT_BLOOD;
@@ -1007,7 +1008,8 @@ use_defensive(struct monst *mtmp)
             pline_mon(mtmp, "%s has made a hole in the %s.", Monnam(mtmp),
                   surface(mtmp->mx, mtmp->my));
             pline_mon(mtmp, "%s %s through...", Monnam(mtmp),
-                  is_flyer(mtmp->data) ? "dives" : "falls");
+                  is_climber(mtmp->data) ? "swings" :
+                    is_flyer(mtmp->data) ? "dives" : "falls");
         } else if (!Deaf) {
             Soundeffect(se_crash_through_floor, 100);
             You_hear("%s crash through the %s.", something,
@@ -1154,7 +1156,8 @@ use_defensive(struct monst *mtmp)
         if (!stway)
             return 0;
         if (vismon)
-            pline_mon(mtmp, "%s escapes up the ladder!", Monnam(mtmp));
+            pline_mon(mtmp, "%s %s up the ladder!", Monnam(mtmp),
+                      is_climber(mtmp->data) ? "climbs" : "escapes");
         migrate_to_level(mtmp, ledger_no(&(stway->tolev)), MIGR_LADDER_DOWN,
                          (coord *) 0);
         return 2;
@@ -1164,7 +1167,8 @@ use_defensive(struct monst *mtmp)
         if (!stway)
             return 0;
         if (vismon)
-            pline_mon(mtmp, "%s escapes down the ladder!", Monnam(mtmp));
+            pline_mon(mtmp, "%s %s down the ladder!", Monnam(mtmp),
+                        is_climber(mtmp->data) ? "climbs" : "escapes");
         migrate_to_level(mtmp, ledger_no(&(stway->tolev)), MIGR_LADDER_UP,
                          (coord *) 0);
         return 2;
@@ -1377,6 +1381,8 @@ rnd_defensive_item(struct monst *mtmp)
 #define MUSE_FLOOR_ALCHEMY 21
 #define MUSE_SCR_MAZE_OFFENSIVE 22
 #define MUSE_WAN_AQUA_BOLT 23
+#define MUSE_POT_HONEY 24
+#define MUSE_POT_HALLUCINATION 25
 
 staticfn boolean
 linedup_chk_corpse(coordxy x, coordxy y)
@@ -1437,14 +1443,14 @@ hero_behind_chokepoint(struct monst *mtmp)
     coordxy x = mtmp->mux + dx;
     coordxy y = mtmp->muy + dy;
 
-    int dir = xytod(dx, dy);
+    int dir = xytodir(dx, dy);
     int dir_l = DIR_CLAMP(DIR_LEFT2(dir));
     int dir_r = DIR_CLAMP(DIR_RIGHT2(dir));
 
     coord c1, c2;
 
-    dtoxy(&c1, dir_l);
-    dtoxy(&c2, dir_r);
+    dirtocoord(&c1, dir_l);
+    dirtocoord(&c2, dir_r);
     c1.x += x, c2.x += x;
     c1.y += y, c2.y += y;
 
@@ -1474,6 +1480,30 @@ mon_has_friends(struct monst *mtmp)
                 && !mon2->mtame && !mon2->mpeaceful)
                 return TRUE;
         }
+
+    return FALSE;
+}
+
+/* does monster like object pile at x,y? */
+staticfn boolean
+mon_likes_objpile_at(struct monst *mtmp, coordxy x, coordxy y)
+{
+    int i;
+    struct obj *otmp;
+
+    if (!isok(x,y) || !OBJ_AT(x,y))
+        return FALSE;
+
+    /* monster likes any of the top 3 items in the pile? */
+    for (i = 0, otmp = svl.level.objects[x][y]; otmp && i < 3; i++) {
+        if (mon_would_take_item(mtmp, otmp))
+            return TRUE;
+        otmp = otmp->nexthere;
+    }
+
+    /* pile is larger than 3 stacks? */
+    if (i >= 3)
+        return TRUE;
 
     return FALSE;
 }
@@ -1583,6 +1613,7 @@ find_offensive(struct monst *mtmp)
             /* do try to move hero to a more vulnerable spot */
             && (onscary(u.ux, u.uy, mtmp)
                 || (hero_behind_chokepoint(mtmp) && mon_has_friends(mtmp))
+                || mon_likes_objpile_at(mtmp, u.ux, u.uy)
                 || stairway_at(u.ux, u.uy))) {
             gm.m.offensive = obj;
             gm.m.has_offense = MUSE_WAN_TELEPORTATION;
@@ -1599,9 +1630,12 @@ find_offensive(struct monst *mtmp)
         }
         nomore(MUSE_FLOOR_ALCHEMY);
         if (obj->otyp >= POT_GAIN_ABILITY && obj->otyp <= POT_OIL
+            && obj->otyp != POT_HEALING && obj->otyp != POT_EXTRA_HEALING
+            && obj->otyp != POT_FULL_HEALING
             && has_coating(u.ux, u.uy, COAT_POTION)
             && levl[u.ux][u.uy].pindex != POT_WATER
-            && (levl[u.ux][u.uy].pindex == POT_HAZARDOUS_WASTE || !rn2(10))) {
+            && (levl[u.ux][u.uy].pindex == POT_HAZARDOUS_WASTE || !rn2(10)
+                || mon_likes_objpile_at(mtmp, u.ux, u.uy))) {
             gm.m.offensive = obj;
             gm.m.has_offense = MUSE_FLOOR_ALCHEMY;
         }
@@ -1615,6 +1649,11 @@ find_offensive(struct monst *mtmp)
             gm.m.offensive = obj;
             gm.m.has_offense = MUSE_POT_CONFUSION;
         }
+        nomore(MUSE_POT_HALLUCINATION);
+        if (obj->otyp == POT_HALLUCINATION) {
+            gm.m.offensive = obj;
+            gm.m.has_offense = MUSE_POT_HALLUCINATION;
+        }
         nomore(MUSE_POT_SLEEPING);
         if (obj->otyp == POT_SLEEPING
             && !m_seenres(mtmp, M_SEEN_SLEEP)) {
@@ -1626,6 +1665,12 @@ find_offensive(struct monst *mtmp)
             && !m_seenres(mtmp, M_SEEN_ACID)) {
             gm.m.offensive = obj;
             gm.m.has_offense = MUSE_POT_ACID;
+        }
+        nomore(MUSE_POT_HONEY);
+        if (obj->otyp == POT_HONEY && uarmf
+                    && !(Levitation || Flying)) {
+            gm.m.offensive = obj;
+            gm.m.has_offense = MUSE_POT_HONEY;
         }
         /* we can safely put this scroll here since the locations that
          * are in a 1 square radius are a subset of the locations that
@@ -2079,7 +2124,7 @@ use_offensive(struct monst *mtmp)
             (void) destroy_mitem(mtmp, POTION_CLASS, AD_FIRE);
             ignite_items(mtmp->minvent);
             num = (2 * (rn1(3, 3) + 2 * bcsign(otmp)) + 1) / 3;
-            if (Fire_resistance)
+            if (Fire_immunity)
                 You("are not harmed.");
             burn_away_slime();
             if (Half_spell_damage)
@@ -2117,6 +2162,8 @@ use_offensive(struct monst *mtmp)
     case MUSE_POT_SLEEPING:
     case MUSE_POT_ACID:
     case MUSE_POT_HAZARDOUS_WASTE:
+    case MUSE_POT_HONEY:
+    case MUSE_POT_HALLUCINATION:
         /* Note: this setting of dknown doesn't suffice.  A monster
          * which is out of sight might throw and it hits something _in_
          * sight, a problem not existing with wands because wand rays
@@ -2142,6 +2189,11 @@ use_offensive(struct monst *mtmp)
     }
     return 0;
 }
+
+static int offensive_muse_wands[] = {
+    WAN_FIRE, WAN_COLD, WAN_SLEEP, WAN_LIGHTNING,
+    WAN_MAGIC_MISSILE
+};
 
 int
 rnd_offensive_item(struct monst *mtmp)
@@ -2169,27 +2221,25 @@ rnd_offensive_item(struct monst *mtmp)
     case 1:
         return ((difficulty < 8 || rn2(difficulty) < 6)) ? WAN_STRIKING : WAN_AQUA_BOLT;
     case 2:
-        return POT_ACID;
     case 3:
-        return POT_CONFUSION;
+        return POT_ACID;
     case 4:
-        return POT_BLINDNESS;
     case 5:
-        return POT_SLEEPING;
+        return POT_CONFUSION;
     case 6:
-        return POT_PARALYSIS;
+        return POT_BLINDNESS;
     case 7:
-        return WAN_MAGIC_MISSILE;
+        return POT_SLEEPING;
     case 8:
-        return POT_HAZARDOUS_WASTE;
+        return POT_HALLUCINATION;
     case 9:
-        return WAN_SLEEP;
+        return POT_HONEY;
     case 10:
-        return WAN_FIRE;
+        return POT_PARALYSIS;
     case 11:
-        return WAN_COLD;
+        return POT_HAZARDOUS_WASTE;
     case 12:
-        return WAN_LIGHTNING;
+        return ROLL_FROM(offensive_muse_wands);
     }
     /*NOTREACHED*/
     return 0;
@@ -2598,7 +2648,7 @@ use_misc(struct monst *mtmp)
             mquaffmsg(mtmp, otmp);
         /* format monster's name before altering its visibility */
         Strcpy(nambuf, mon_nam(mtmp));
-        mon_set_minvis(mtmp);
+        mon_set_minvis(mtmp, !otmp->cursed ? FALSE : TRUE);
         if (vismon && mtmp->minvis) { /* was seen, now invisible */
             if (canspotmon(mtmp)) {
                 pline("%s body takes on a %s transparency.",
@@ -2611,6 +2661,17 @@ use_misc(struct monst *mtmp)
             }
             if (oseen)
                 makeknown(otmp->otyp);
+        } else if (vismon && !mtmp->minvis) {
+            /* cursed potion; mon tried to make itself invisible but failed */
+            pline("%s briefly seems to be transparent.", Monnam(mtmp));
+            /* we could call map_invisible() before the pline(), then
+               newsym() after; unseen monster glyph would be visible during
+               the pline, but hero would forget any remembered object under
+               the monster */
+        } else if (!vismon && canseemon(mtmp)) {
+            /* cursed potion; this won't happen because a monster will only
+               drink a potion of invisibility when not already invisible */
+            pline("%s suddenly appears!", Monnam(mtmp));
         }
         if (otmp->otyp == POT_INVISIBILITY) {
             if (otmp->cursed)
@@ -2722,7 +2783,7 @@ use_misc(struct monst *mtmp)
             int where_to = rn2(4);
             struct obj *obj = uwep;
             const char *hand;
-            char the_weapon[BUFSZ];
+            char the_weapon[BUFSZ], hand_buf[BUFSZ];
 
             if (!obj || !canletgo(obj, "")
                 || (u.twoweap && canletgo(uswapwep, "") && rn2(2)))
@@ -2734,10 +2795,12 @@ use_misc(struct monst *mtmp)
             hand = body_part(HAND);
             if (u_bimanual(obj))
                 hand = makeplural(hand);
+            (void) strncpy(hand_buf, hand, sizeof hand_buf - 1);
+            hand_buf[sizeof hand_buf - 1] = '\0';
 
             if (vismon)
                 pline_mon(mtmp, "%s flicks a bullwhip towards your %s!",
-                          Monnam(mtmp), hand);
+                          Monnam(mtmp), hand_buf);
             if (obj->otyp == HEAVY_IRON_BALL) {
                 pline("%s fails to wrap around %s.", The_whip, the_weapon);
                 return 1;
@@ -2746,7 +2809,7 @@ use_misc(struct monst *mtmp)
                          the_weapon);
             if (welded(obj)) {
                 pline("%s welded to your %s%c",
-                      !is_plural(obj) ? "It is" : "They are", hand,
+                      !is_plural(obj) ? "It is" : "They are", hand_buf,
                       !obj->bknown ? '!' : '.');
                 /* obj->bknown = 1; */ /* welded() takes care of this */
                 where_to = 0;
@@ -2765,7 +2828,7 @@ use_misc(struct monst *mtmp)
             switch (where_to) {
             case 1: /* onto floor beneath mon */
                 pline_mon(mtmp, "%s yanks %s from your %s!", Monnam(mtmp),
-                          the_weapon, hand);
+                          the_weapon, hand_buf);
                 place_object(obj, mtmp->mx, mtmp->my);
                 break;
             case 2: /* onto floor beneath you */
@@ -2908,20 +2971,13 @@ searches_for_item(struct monst *mon, struct obj *obj)
             return TRUE;
         break;
     case POTION_CLASS:
-        if (typ == POT_HEALING || typ == POT_EXTRA_HEALING
-            || typ == POT_FULL_HEALING || typ == POT_POLYMORPH
-            || typ == POT_GAIN_LEVEL || typ == POT_PARALYSIS
-            || typ == POT_SLEEPING || typ == POT_ACID || typ == POT_CONFUSION
-            || typ == POT_SICKNESS
-            || typ == POT_HAZARDOUS_WASTE)
-            return TRUE;
-        if (typ == POT_BLINDNESS && !attacktype(mon->data, AT_GAZE))
-            return TRUE;
-        if (typ == POT_WATER && obj->blessed)
-            return TRUE;
-        if (typ == POT_BLOOD && is_vampire(mon->data))
-            return TRUE;
-        break;
+        if (typ == POT_BLINDNESS && attacktype(mon->data, AT_GAZE))
+            return FALSE;
+        if (typ == POT_WATER && obj->blessed && is_demon(mon->data))
+            return FALSE;
+        if (typ == POT_BLOOD && !is_vampire(mon->data))
+            return FALSE;
+        return TRUE;
     case SCROLL_CLASS:
         if (typ == SCR_TELEPORTATION || typ == SCR_CREATE_MONSTER
             || typ == SCR_EARTH || typ == SCR_FIRE || typ == SCR_MAZE)

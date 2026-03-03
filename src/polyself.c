@@ -1164,15 +1164,9 @@ break_armor(struct permonst *old)
         if ((otmp = uarmc) != 0
             /* mummy wrapping adapts to small and very big sizes */
             && (otmp->otyp != MUMMY_WRAPPING || !WrappingAllowed(uptr))) {
-            if (otmp->oartifact) {
-                Your("%s falls off!", cloak_simple_name(otmp));
-                (void) Cloak_off();
-                dropp(otmp);
-            } else {
-                Your("%s tears apart!", cloak_simple_name(otmp));
-                (void) Cloak_off();
-                useup(otmp);
-            }
+            pline_The("clasp on your %s breaks open!", cloak_simple_name(otmp));
+            (void) Cloak_off();
+            dropp(otmp);
         }
         if (uarmu) {
             Your("shirt rips to shreds!");
@@ -1705,6 +1699,7 @@ dogaze(void)
                         dmg += destroy_items(mtmp, AD_FIRE, orig_dmg);
                         ignite_items(mtmp->minvent);
                     }
+                    adjust_damage(mtmp, &dmg, AD_FIRE);
                     if (dmg)
                         mtmp->mhp -= dmg;
                     if (DEADMONSTER(mtmp))
@@ -1957,6 +1952,11 @@ mbodypart(struct monst *mon, int part)
         *humanoid_parts[] = { "arm",       "eye",  "face",         "finger",
                               "fingertip", "foot", "hand",         "handed",
                               "head",      "leg",  "light headed", "neck",
+                              "spine",     "toe",  "fur",         "blood",
+                              "lung",      "nose", "stomach" },
+        *kobold_parts[] = { "arm",       "eye",  "face",         "finger",
+                              "fingertip", "foot", "paw",         "pawed",
+                              "head",      "leg",  "light headed", "neck",
                               "spine",     "toe",  "hair",         "blood",
                               "lung",      "nose", "stomach" },
         *jelly_parts[] = { "pseudopod", "dark spot", "front",
@@ -2035,6 +2035,8 @@ mbodypart(struct monst *mon, int part)
         '\0' /* string terminator; assert( S_xxx != 0 ); */
     };
     struct permonst *mptr = mon->data;
+    if (mon == &gy.youmonst && !Upolyd)
+        mptr = &mons[gu.urace.mnum];
 
     if (part <= NO_PART) {
         impossible("mbodypart: bad part %d", part);
@@ -2077,6 +2079,8 @@ mbodypart(struct monst *mon, int part)
         return "tentacle";
     if (mptr == &mons[PM_FLOATING_EYE] && part == EYE)
         return "cornea";
+    if (is_kobold(mptr))
+        return kobold_parts[part];
     if (humanoid(mptr) && (part == ARM || part == FINGER || part == FINGERTIP
                            || part == HAND || part == HANDED))
         return humanoid_parts[part];
@@ -2231,6 +2235,7 @@ polysense(void)
         break;
     case PM_VAMPIRE:
     case PM_VAMPIRE_LEADER:
+    case PM_VAMPIRE_MAGE:
         svc.context.warntype.polyd = MH_HUMAN | MH_ELF;
         HWarn_of_mon |= FROMRACE;
         return;

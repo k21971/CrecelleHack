@@ -741,6 +741,8 @@ saveobj(NHFILE *nhfp, struct obj *otmp)
            become part of oextra itself; 0 means not applicable and
            gets saved/restored whenever any other oextra components do */
         Sfo_unsigned(nhfp, &OMID(otmp), "obj-omid");
+        Sfo_unsigned(nhfp, &ODYE(otmp), "obj-odye");
+        Sfo_unsigned(nhfp, &OSUM(otmp), "obj-osum");
     }
 }
 
@@ -851,6 +853,11 @@ savemon(NHFILE *nhfp, struct monst *mtmp)
         if (buflen > 0) {
             Sfo_edog(nhfp, EDOG(mtmp), "monst-edog");
         }
+        buflen = ESUM(mtmp) ? (int) sizeof (struct esum) : 0;
+        Sfo_int(nhfp, &buflen, "monst-esum_length");
+        if (buflen > 0) {
+            Sfo_esum(nhfp, ESUM(mtmp), "monst-esum");
+        }
         buflen = EBONES(mtmp) ? (int) sizeof (struct ebones) : 0;
         Sfo_int(nhfp, &buflen, "monst-ebones_length");
         if (buflen > 0) {
@@ -913,6 +920,11 @@ savetrapchn(NHFILE *nhfp, struct trap *trap)
             trap->dst.dlevel -= u.uz.dlevel; /* make it relative */
         if (update_file(nhfp)) {
             Sfo_trap(nhfp, trap, "trap");
+            if (trap->ammo)
+            /* if perform_bwrite, this will save the ammo after the
+               trap; if release_data, this will free the ammo before
+               freeing the trap */
+            saveobjchn(nhfp, &trap->ammo);
         }
         if (use_relative)
             trap->dst.dlevel += u.uz.dlevel; /* reset back to absolute */

@@ -1,4 +1,4 @@
-/* NetHack 3.7	botl.c	$NHDT-Date: 1742207239 2025/03/17 02:27:19 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.274 $ */
+/* NetHack 3.7	botl.c	$NHDT-Date: 1769839231 2026/01/30 22:00:31 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.277 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Michael Allison, 2006. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -592,7 +592,7 @@ static struct istat_s initblstats[MAXBLSTATS] = {
        available mostly for screenshots or someone looking over shoulder;
        blstat[][BL_VERS] is actually an int copy of flags.versinfo (0...7) */
     INIT_BLSTAT("version", " %s", ANY_STR, MAXVALWIDTH, BL_VERS),
-    INIT_BLSTAT("time", " %s", ANY_STR, 20, BL_TOD)
+    INIT_BLSTAT("time", "%s", ANY_STR, MAXVALWIDTH, BL_TOD)
 };
 
 #undef INIT_BLSTATP
@@ -821,7 +821,7 @@ bot_via_windowport(void)
                                                : "Lawful");
 
     /* Weather */
-    Strcpy(gb.blstats[idx][BL_TOD].val, tod_string());
+    Sprintf(gb.blstats[idx][BL_TOD].val, " %s", tod_string());
 
     /* Score */
     gb.blstats[idx][BL_SCORE].a.a_long =
@@ -1983,6 +1983,7 @@ static const struct fieldid_t {
     { "hp",       BL_HP },
     { "hp-max",   BL_HPMAX },
     { "dgn",      BL_LEVELDESC },
+    { "tod",      BL_TOD },
     { "xp",       BL_EXP },
     { "exp",      BL_EXP },
     { "flags",    BL_CONDITION },
@@ -4350,7 +4351,9 @@ status_hilite_menu(void)
     countall = status_hilite_linestr_countfield(BL_FLUSH);
     status_hilite_linestr_done();
 
-    if (redo)
+    /* fuzzer is unlikely to pick something useful within nested menus;
+       limit it to one try */
+    if (redo && !iflags.debug_fuzzer)
         goto shlmenu_redo;
 
     /* hilite_delta=='statushilites' does double duty:  it is the

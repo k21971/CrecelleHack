@@ -529,16 +529,21 @@ spread_bonfire(NhRegion *reg) {
                 add_coating(x, y, COAT_ASHES, 0);
                 newreg = create_bonfire(x, y, rnd(IS_RAINING ? 2 : 10), d(2, 4));
             }
-            if (has_coating(x, y, COAT_FUNGUS) && !rn2(4)) {
-                remove_coating(x, y, COAT_FUNGUS);
-                add_coating(x, y, COAT_ASHES, 0);
-                newreg = create_bonfire(x, y, rnd(IS_RAINING ? 2 : 4), d(4, 4));
+            if (has_coating(x, y, COAT_FUNGUS)) {
+                if (levl[x][y].pindex == PM_BROWN_MOLD) {
+                    spread_mold(x, y, &mons[PM_BROWN_MOLD]);
+                } else if (has_coating(x, y, COAT_FUNGUS) && !rn2(4)) {
+                    remove_coating(x, y, COAT_FUNGUS);
+                    add_coating(x, y, COAT_ASHES, 0);
+                    newreg = create_bonfire(x, y, rnd(IS_RAINING ? 2 : 4), d(4, 4));
+                }
             }
             if (has_coating(x, y, COAT_POTION)
                         && levl[x][y].pindex == POT_OIL) {
                 remove_coating(x, y, COAT_POTION);
                 newreg = create_bonfire(x, y, rn1(20, 10), d(4, 4));
             }
+            detonate_waste(x, y);
             if (x == reg->bounding_box.lx && y == reg->bounding_box.ly) {
                 evaporate_potion_puddles(x, y);
             }
@@ -1236,7 +1241,7 @@ poisongas_damage(NhRegion *reg, int dam, struct monst *mtmp) {
             Your("%s sting.", makeplural(body_part(EYE)));
             make_blinded(1L, FALSE);
         }
-        if (!Poison_resistance) {
+        if (!Poison_immunity) {
             pline("%s is burning your %s!", Something,
                   makeplural(body_part(LUNG)));
             You("cough and spit blood!");
@@ -1369,7 +1374,7 @@ make_gas_cloud(
     reg_descr(cloud, description);
 
     if (!gi.in_mklev && !inside_cloud && is_hero_inside_gas_cloud(INSIDE_GAS_CLOUD)) {
-        You("are enveloped in a cloud of %s!",
+        You("are enveloped in %s!",
             /* FIXME: "steam" is wrong if this cloud is just the trail of
                a fog cloud's movement; changing to "vapor" would handle
                that but seems a step backward when it really is steam */
@@ -1380,19 +1385,21 @@ make_gas_cloud(
 
 char *
 reg_descr(NhRegion *reg, char *description) {
-    if (!is_gasregion(reg)) {
-        Sprintf(description, "%s", "bonfire");
+    if (reg->can_enter_f == ENTER_FF) {
+        Sprintf(description, "%s", "a forcefield");
+    } else if (!is_gasregion(reg)) {
+        Sprintf(description, "%s", "a bonfire");
     } else if (REGION_OTYP(reg)) {
          /* Technically many types of vapor could be noticed even if the
            player cannot see them, but that's too complicated to worry about. */
         if (Blind)
-            Sprintf(description, "strange vapor");
+            Sprintf(description, "a cloud of strange vapor");
         else
-            Sprintf(description, "%s vapors", OBJ_DESCR(objects[REGION_OTYP(reg)]));
+            Sprintf(description, "a cloud of %s vapors", OBJ_DESCR(objects[REGION_OTYP(reg)]));
     } else if (REGION_DAMAGE(reg)) {
-        Sprintf(description, "%s", "poison gas");
+        Sprintf(description, "%s", "a cloud of poison gas");
     } else {
-        Sprintf(description, "%s", "vapor");
+        Sprintf(description, "%s", "a cloud of vapor");
     }
     return description;
 }
@@ -1546,9 +1553,9 @@ region_danger(void)
             /* completely harmless if you don't need to breathe */
             if (nonliving(gy.youmonst.data) || Breathless)
                 continue;
-            /* minor inconvenience if you're poison resistant;
+            /* minor inconvenience if you're poison immune;
                not harmful enough to be a prayer-level trouble */
-            if (Poison_resistance)
+            if (Poison_immunity)
                 continue;
             ++n;
         }
@@ -1670,7 +1677,7 @@ inside_bonfire(genericptr_t p1, genericptr_t p2)
 
     if (!mtmp) {
         if (m_bonfire_ok(&gy.youmonst) == M_BONFIRE_OK) {
-            if (Fire_resistance) monstseesu(M_SEEN_FIRE); /* Kludge */
+            if (Fire_immunity) monstseesu(M_SEEN_FIRE); /* Kludge */
             return FALSE;
         }
         pline("You're burning up!");
@@ -1679,7 +1686,7 @@ inside_bonfire(genericptr_t p1, genericptr_t p2)
             monstunseesu(M_SEEN_FIRE);
             rehumanize();
             return FALSE;
-        } else if (Fire_resistance) {
+        } else if (Fire_immunity) {
             monstseesu(M_SEEN_FIRE);
             dam = 1;
         } else {
@@ -1690,6 +1697,7 @@ inside_bonfire(genericptr_t p1, genericptr_t p2)
             ignite_items(gi.invent);
         }
         burn_away_slime();
+        adjust_damage(&gy.youmonst, &dam, AD_FIRE);
         u.uhp -= dam;
         if (u.uhp < 1) {
             Sprintf(svk.killer.name, "was consumed in an inferno");
@@ -1722,7 +1730,8 @@ inside_bonfire(genericptr_t p1, genericptr_t p2)
         /* Damage */
         dam += destroy_items(mtmp, AD_FIRE, dam);
         ignite_items(mtmp->minvent);
-        mtmp->mhp -= rnd(dam);
+        adjust_damage(mtmp, &dam, AD_FIRE);
+        mtmp->mhp -= dam;
         if (DEADMONSTER(mtmp)) {
             if (heros_fault(reg))
                 killed(mtmp);
@@ -1764,25 +1773,17 @@ create_bonfire(coordxy x, coordxy y, int lifetime, int damage)
         You("are enveloped in roaring flames!");
         iflags.last_msg = PLNMSG_ENVELOPED_IN_FLAMES;
     }
+    if (has_coating(x, y, COAT_POTION)
+        && levl[x][y].pindex == POT_HAZARDOUS_WASTE) {
+        remove_coating(x, y, COAT_POTION);
+        explode(x, y, PHYS_EXPL_TYPE, d(1, 10), 0, EXPL_NOXIOUS);
+    }
     return flames;
 }
 
 boolean
 is_bonfire(NhRegion *reg) {
     return (reg->inside_f == INSIDE_BONFIRE);
-}
-
-const char *
-region_string(NhRegion *reg) {
-    if (reg->can_enter_f == ENTER_FF) {
-        return "a forcefield";
-    } else if (reg->inside_f == INSIDE_BONFIRE) {
-        return "a bonfire";
-    } else if (reg_damg(reg)) {
-        return "a cloud of poison gas";
-    } else {
-        return "a cloud of vapor";
-    }
 }
 
 /*region.c*/

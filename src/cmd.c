@@ -933,7 +933,8 @@ domonability(void)
             pline("Unfortunately sound does not carry well through rock.");
         else
             aggravate();
-    } else if ((is_vampire(uptr) && uptr != &mons[PM_CRIMSON_DEATH])
+    } else if ((is_vampire(uptr) && uptr != &mons[PM_CRIMSON_DEATH]
+                && uptr != &mons[PM_BLOOD_IMP])
                 || is_vampshifter(&gy.youmonst)) {
         return dopoly();
     } else if (u.usteed && can_breathe(u.usteed->data)) {
@@ -3633,7 +3634,7 @@ rhack(int key)
 
 /* convert an x,y pair into a direction code */
 int
-xytod(coordxy x, coordxy y)
+xytodir(int x, int y)
 {
     int dd;
 
@@ -3645,7 +3646,7 @@ xytod(coordxy x, coordxy y)
 
 /* convert a direction code into an x,y pair */
 void
-dtoxy(coord *cc, int dd)
+dirtocoord(coord *cc, int dd)
 {
     if (dd > DIR_ERR && dd < N_DIRS_Z) {
         cc->x = xdir[dd];
@@ -3751,7 +3752,7 @@ getdir(const char *s)
     if (cmdq) {
         if (cmdq->typ == CMDQ_DIR) {
             if (!cmdq->dirz) {
-                dirsym = gc.Cmd.dirchars[xytod(cmdq->dirx, cmdq->diry)];
+                dirsym = gc.Cmd.dirchars[xytodir(cmdq->dirx, cmdq->diry)];
             } else {
                 dirsym = gc.Cmd.dirchars[(cmdq->dirz > 0) ? DIR_DOWN
                                                           : DIR_UP];
@@ -4527,7 +4528,7 @@ act_on_act(
         cmdq_add_dir(CQ_CANNED, dx, dy, 0);
         break;
     case MCMD_MOVE_DIR:
-        dir = xytod(dx, dy);
+        dir = xytodir(dx, dy);
         cmdq_add_ec(CQ_CANNED, move_funcs[dir][MV_WALK]);
         break;
     case MCMD_RIDE:
@@ -4549,11 +4550,11 @@ act_on_act(
         }
         break;
     case MCMD_ATTACK_NEXT2U:
-        dir = xytod(dx, dy);
+        dir = xytodir(dx, dy);
         cmdq_add_ec(CQ_CANNED, move_funcs[dir][MV_WALK]);
         break;
     case MCMD_TRIP:
-        dir = xytod(dx, dy);
+        dir = xytodir(dx, dy);
         cmdq_add_ec(CQ_CANNED, dotrip);
         break;
     case MCMD_TALK:
@@ -4663,7 +4664,7 @@ there_cmd_menu(coordxy x, coordxy y, int mod)
     if (!K) {
         /* no menu options, try to move */
         if (next2u(x, y) && test_move(u.ux, u.uy, dx, dy, TEST_MOVE)) {
-            int dir = xytod(dx, dy);
+            int dir = xytodir(dx, dy);
 
             cmdq_add_ec(CQ_CANNED, move_funcs[dir][MV_WALK]);
         } else if (flags.travelcmd) {
@@ -4757,7 +4758,7 @@ domouseaction(void)
 
         /* directional commands */
 
-        dir = xytod(x, y);
+        dir = xytodir(x, y);
         if (!m_at(u.ux + x, u.uy + y)
             && !test_move(u.ux, u.uy, x, y, TEST_MOVE)) {
             if (IS_DOOR(levl[u.ux + x][u.uy + y].typ)) {
@@ -4796,7 +4797,7 @@ domouseaction(void)
             cmdq_add_ec(CQ_CANNED, donull);
             return ECMD_OK;
         }
-        dir = xytod(x, y);
+        dir = xytodir(x, y);
     }
 
     /* move, attack, etc. */

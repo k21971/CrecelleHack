@@ -250,6 +250,7 @@ Boots_on(void)
     default:
         impossible(unknown_type, c_boots, uarmf->otyp);
     }
+    oprop_armor_handling(uarmf, TRUE);
     /* uarmf could be Null here (levitation boots put on over a sink) */
     if (uarmf && !uarmf->known) {
         uarmf->known = 1; /* boots' +/- evident because of status line AC */
@@ -318,6 +319,7 @@ Boots_off(void)
     default:
         impossible(unknown_type, c_boots, otyp);
     }
+    oprop_armor_handling(uarmc, FALSE);
     svc.context.takeoff.cancelled_don = FALSE;
     return 0;
 }
@@ -372,6 +374,7 @@ Cloak_on(void)
     default:
         impossible(unknown_type, c_cloak, uarmc->otyp);
     }
+    oprop_armor_handling(uarmc, TRUE);
     if (uarmc && !uarmc->known) { /* no known instance of !uarmc here */
         uarmc->known = 1; /* cloak's +/- evident because of status line AC */
         update_inventory();
@@ -427,6 +430,7 @@ Cloak_off(void)
     default:
         impossible(unknown_type, c_cloak, otyp);
     }
+    oprop_armor_handling(uarmc, FALSE);
     return 0;
 }
 
@@ -450,6 +454,7 @@ Helmet_on(void)
     case HELM_OF_TELEPATHY:
     case SKULL:
     case SKULL_HELM:
+    case JACK_O_LANTERN:
         break;
     case HELM_OF_CAUTION:
         see_monsters();
@@ -512,6 +517,7 @@ Helmet_on(void)
     default:
         impossible(unknown_type, c_helmet, uarmh->otyp);
     }
+    oprop_armor_handling(uarmh, TRUE);
     /* uarmh could be Null due to uchangealign() */
     if (uarmh && !uarmh->known) {
         uarmh->known = 1; /* helmet's +/- evident because of status line AC */
@@ -542,6 +548,7 @@ Helmet_off(void)
     case ORCISH_HELM:
     case SKULL:
     case SKULL_HELM:
+    case JACK_O_LANTERN:
         break;
     case DUNCE_CAP:
         disp.botl = TRUE;
@@ -571,6 +578,7 @@ Helmet_off(void)
     default:
         impossible(unknown_type, c_helmet, uarmh->otyp);
     }
+    oprop_armor_handling(uarmh, FALSE);
     setworn((struct obj *) 0, W_ARMH);
     svc.context.takeoff.cancelled_don = FALSE;
     return 0;
@@ -609,6 +617,7 @@ Gloves_on(void)
     default:
         impossible(unknown_type, c_gloves, uarmg->otyp);
     }
+    oprop_armor_handling(uarmg, TRUE);
     if (!uarmg->known) {
         uarmg->known = 1; /* gloves' +/- evident because of status line AC */
         update_inventory();
@@ -684,6 +693,7 @@ Gloves_off(void)
     default:
         impossible(unknown_type, c_gloves, uarmg->otyp);
     }
+    oprop_armor_handling(uarmg, FALSE);
     setworn((struct obj *) 0, W_ARMG);
     svc.context.takeoff.cancelled_don = FALSE;
     encumber_msg(); /* immediate feedback for GoP */
@@ -739,6 +749,7 @@ Shield_on(void)
     default:
         impossible(unknown_type, c_shield, uarms->otyp);
     }
+    oprop_armor_handling(uarms, TRUE);
     if (!uarms->known) {
         uarms->known = 1; /* shield's +/- evident because of status line AC */
         update_inventory();
@@ -767,6 +778,7 @@ Shield_off(void)
         impossible(unknown_type, c_shield, uarms->otyp);
     }
 
+    oprop_armor_handling(uarms, FALSE);
     setworn((struct obj *) 0, W_ARMS);
     return 0;
 }
@@ -783,6 +795,7 @@ Shirt_on(void)
     default:
         impossible(unknown_type, c_shirt, uarmu->otyp);
     }
+    oprop_armor_handling(uarmu, TRUE);
     if (!uarmu->known) {
         uarmu->known = 1; /* shirt's +/- evident because of status line AC */
         update_inventory();
@@ -804,6 +817,7 @@ Shirt_off(void)
     default:
         impossible(unknown_type, c_shirt, uarmu->otyp);
     }
+    oprop_armor_handling(uarmu, FALSE);
 
     setworn((struct obj *) 0, W_ARMU);
     return 0;
@@ -815,33 +829,62 @@ oprop_armor_handling(struct obj *otmp, boolean puton)
 {
     if (!otmp || !otmp->oprop)
         return;
+    long mask = armcat_to_wornmask(objects[otmp->otyp].oc_armcat);
     switch(otmp->oprop) {
         case OPROP_BOREAL:
             if (puton) {
-                ECold_resistance |= W_ARM;
+                ECold_resistance |= mask;
             } else {
-                ECold_resistance &= ~W_ARM;
+                ECold_resistance &= ~mask;
             }
             break;
-        case OPROP_THERMAL:
+        case OPROP_BLAZING:
             if (puton) {
-                EFire_resistance |= W_ARM;
+                EFire_resistance |= mask;
             } else {
-                EFire_resistance &= ~W_ARM;
+                EFire_resistance &= ~mask;
             }
             break;
         case OPROP_CRACKLING:
             if (puton) {
-                EShock_resistance |= W_ARM;
+                EShock_resistance |= mask;
             } else {
-                EShock_resistance &= ~W_ARM;
+                EShock_resistance &= ~mask;
             }
             break;
         case OPROP_SUBTLE:
             if (puton) {
-                EStealth |= W_ARM;
+                EStealth |= mask;
             } else {
-                EStealth &= ~W_ARM;
+                EStealth &= ~mask;
+            }
+            break;
+        case OPROP_ACIDIC:
+            if (puton){
+                EAcid_resistance |= mask;
+            } else {
+                EAcid_resistance &= !mask;
+            }
+            break;
+        case OPROP_HUNGRY:
+            if (puton) {
+                EHunger |= mask;
+            } else {
+                EHunger &= !mask;
+            }
+            break;
+        case OPROP_ANTIMAGIC:
+            if (puton) {
+                EAntimagic |= mask;
+            } else {
+                EAntimagic &= !mask;
+            }
+            break;
+        case OPROP_BRINY:
+            if (puton) {
+                ESwimming |= mask;
+            } else {
+                ESwimming &= !mask;
             }
             break;
         case OPROP_HEXED:
@@ -2437,6 +2480,9 @@ accessory_or_armor_on(struct obj *obj)
                 }
                 return ECMD_OK;
             }
+        } else if (obj->otyp == PUMPKIN) {
+            pline("You have to carve it first...");
+            return ECMD_OK;
         } else {
             /* neither armor nor accessory */
             You_cant("wear that!");
@@ -2568,6 +2614,7 @@ void
 find_ac(void)
 {
     int uac = mons[u.umonnum].ac; /* base armor class for current form */
+    int umc = magic_negation(&gy.youmonst);
     int shield_bonus;
 
     /* armor class from worn gear */
@@ -2633,8 +2680,11 @@ find_ac(void)
         else if (u.uac <= 0)
             record_achievement(ACH_AC_00);
 #endif
+    }
 
-    u.umc = magic_negation(&gy.youmonst);
+    if (u.umc != umc) {
+        u.umc = umc;
+        disp.botl = TRUE;
     }
 }
 
@@ -3364,6 +3414,7 @@ destroy_arm(struct obj *atmp)
     /* glove loss means wielded weapon will be touched */
     if (losing_gloves)
         selftouch("You");
+    add_coating(u.ux, u.uy, COAT_ASHES, 0);
 
     stop_occupation();
     return 1;
@@ -3561,7 +3612,8 @@ wrong_size_armor(struct obj *obj, struct permonst *ptr)
 {
     int size = (ptr == gy.youmonst.data) ? USIZE : ptr->msize;
     if (!obj || obj->otyp == MUMMY_WRAPPING || is_shield(obj)
-        || obj->otyp == SKULL_HELM || obj->otyp == SKULL)
+        || obj->otyp == SKULL_HELM || obj->otyp == SKULL
+        || obj->otyp == JACK_O_LANTERN)
         return FALSE;
     if (Is_dragon_scales(obj))
         return FALSE;

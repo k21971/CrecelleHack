@@ -753,7 +753,7 @@ doforce(void)
             else
                 You("start bashing it with %s.", yname(uwep));
             gx.xlock.box = otmp;
-            gx.xlock.chance = objects[uwep->otyp].oc_wldam * 2;
+            gx.xlock.chance = objects[uwep->otyp].oc_wddam * 2;
             gx.xlock.picktyp = picktyp;
             gx.xlock.pick = uwep;
             gx.xlock.magic_key = FALSE;
@@ -1130,6 +1130,7 @@ doorlock(struct obj *otmp, coordxy x, coordxy y)
         case WAN_STRIKING:
         case SPE_FORCE_BOLT:
         case WAN_AQUA_BOLT:
+        case SPE_AQUA_BOLT:
             door->typ = DOOR;
             door->doormask = D_CLOSED | (door->doormask & D_TRAPPED);
             newsym(x, y);
@@ -1215,6 +1216,7 @@ doorlock(struct obj *otmp, coordxy x, coordxy y)
     case WAN_STRIKING:
     case SPE_FORCE_BOLT:
     case WAN_AQUA_BOLT:
+    case SPE_AQUA_BOLT:
         if (door->doormask & (D_LOCKED | D_CLOSED)) {
             /* sawit: closed door location is more visible than open */
             boolean sawit, seeit;

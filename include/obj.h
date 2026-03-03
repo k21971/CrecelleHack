@@ -30,6 +30,8 @@ struct oextra {
     char *omailcmd;       /* response_cmd for mail delivery */
     unsigned omid;        /* for corpse: m_id of corpse's ghost; overloaded
                            * for glob: owt at time added to shop's bill */
+    uchar odye;           /* dye color */
+    boolean osum;          /* summoned */
 };
 
 struct obj {
@@ -81,11 +83,12 @@ struct obj {
 #define OBJ_MIGRATING 5 /* object sent off to another level */
 #define OBJ_BURIED 6    /* object buried */
 #define OBJ_ONBILL 7    /* object on shk bill */
-#define OBJ_LUAFREE 8   /* object has been dealloc'd, but is ref'd by lua */
-#define OBJ_DELETED 9   /* object is marked for deletion by dobjsfree() */
+#define OBJ_INTRAP 8    /* object is trap ammo */
+#define OBJ_LUAFREE 9   /* object has been dealloc'd, but is ref'd by lua */
+#define OBJ_DELETED 10   /* object is marked for deletion by dobjsfree() */
     /* note: OBJ_xxx values are used in obj_state_names[] in mkobj.c
        so adding, removing, or renumbering these needs to change that too */
-#define NOBJ_STATES 10
+#define NOBJ_STATES 11
     xint16 timed; /* # of fuses (timers) attached to this obj */
 
     /* Bitfields currently require 5 bytes minimum */
@@ -172,6 +175,7 @@ struct obj {
     int usecount;           /* overloaded for various things that tally */
 #define spestudied usecount /* # of times a spellbook has been studied */
 #define wishedfor usecount  /* flag for hold_another_object() if from wish */
+#define gemtype usecount    /* index of the type of gemstone for gemstone items */
     unsigned oeaten;        /* nutrition left in food, if partly eaten */
     int oprop;              /* The oprop of the item */
     long age;               /* creation date */
@@ -197,11 +201,15 @@ struct obj {
 #define OMONST(o) ((o)->oextra->omonst)
 #define OMAILCMD(o) ((o)->oextra->omailcmd)
 #define OMID(o) ((o)->oextra->omid) /* non-zero => set, zero => not set */
+#define ODYE(o) ((o)->oextra->odye)
+#define OSUM(o) ((o)->oextra->osum)
 
 #define has_oname(o) ((o)->oextra && ONAME(o))
 #define has_omonst(o) ((o)->oextra && OMONST(o))
 #define has_omailcmd(o) ((o)->oextra && OMAILCMD(o))
 #define has_omid(o) ((o)->oextra && OMID(o))
+#define has_odye(o) ((o)->oextra && ODYE(o))
+#define has_osum(o) ((o)->oextra && OSUM(o))
 
 /* Weapons and weapon-tools */
 /* KMH -- now based on skill categories.  Formerly:
@@ -237,6 +245,8 @@ struct obj {
          || is_art(otmp, ART_SNICKERSNEE)))
 #define is_spear(otmp) \
     (otmp->oclass == WEAPON_CLASS && objects[otmp->otyp].oc_skill == P_SPEAR)
+#define is_flail(otmp) \
+    (otmp->oclass == WEAPON_CLASS && objects[otmp->otyp].oc_skill == P_FLAIL)
 #define is_launcher(otmp)                                                  \
     (otmp->oclass == WEAPON_CLASS && objects[otmp->otyp].oc_skill >= P_BOW \
      && objects[otmp->otyp].oc_skill <= P_CROSSBOW)
@@ -249,8 +259,7 @@ struct obj {
 #define ammo_and_launcher(a, l) (is_ammo(a) && matching_launcher(a, l))
 #define is_missile(otmp)                                          \
     ((otmp->oclass == WEAPON_CLASS || otmp->oclass == TOOL_CLASS) \
-     && objects[otmp->otyp].oc_skill >= -P_BOOMERANG              \
-     && objects[otmp->otyp].oc_skill <= -P_DART)
+     && objects[otmp->otyp].oc_skill == -P_MISSILES)
 #define is_weptool(o) \
     ((o)->oclass == TOOL_CLASS && objects[(o)->otyp].oc_skill != P_NONE)
         /* towel is not a weptool:  spe isn't an enchantment, cursed towel
@@ -264,11 +273,11 @@ struct obj {
      && objects[otmp->otyp].oc_bimanual)
 #define is_multigen(otmp)                           \
     (otmp->oclass == WEAPON_CLASS                   \
-     && objects[otmp->otyp].oc_skill >= -P_SHURIKEN \
+     && objects[otmp->otyp].oc_skill >= -P_MISSILES \
      && objects[otmp->otyp].oc_skill <= -P_BOW)
 #define is_poisonable(otmp)                          \
     ((otmp->oclass == WEAPON_CLASS                   \
-      && ((objects[otmp->otyp].oc_skill >= -P_SHURIKEN \
+      && ((objects[otmp->otyp].oc_skill >= -P_MISSILES \
             && objects[otmp->otyp].oc_skill <= -P_BOW) \
             || (is_blade(otmp))))     \
      || permapoisoned(otmp))
@@ -278,8 +287,9 @@ struct obj {
 /* 'missile' aspect is up to the caller and does not imply is_missile();
    rings might be launched as missiles when being scattered by an explosion */
 #define stone_missile(o) \
-    ((objects[(o)->otyp].oc_material == GEMSTONE             \
-             || (objects[(o)->otyp].oc_material == MINERAL))        \
+    ((objects[(o)->otyp].oc_material == GEMSTONE                \
+             || (objects[(o)->otyp].oc_material == MINERAL      \
+                 || objects[(o)->otyp].oc_material == LODEN))   \
          && (o)->oclass != RING_CLASS)
 /* can be used for trip attempts */
 #define is_tripweapon(otmp) \

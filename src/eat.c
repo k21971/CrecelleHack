@@ -705,6 +705,11 @@ eat_brains(
          * monster mind flayer is eating hero's brain
          */
         /* no such thing as mindless players */
+        if (gy.youmonst.data == &mons[PM_STRAW_GOLEM]) {
+            pline("If you only had a brain...");
+            return M_ATTK_MISS;
+        }
+
         if (ABASE(A_INT) <= ATTRMIN(A_INT)) {
             static NEARDATA const char brainlessness[] = "brainlessness";
 
@@ -1131,6 +1136,7 @@ eye_of_newt_buzz(void)
             You_feel("a mild buzz.");
             disp.botl = TRUE;
         }
+        exercise(A_INT, TRUE);
     }
 }
 
@@ -1567,7 +1573,12 @@ consume_tin(const char *mesg)
     if (r != SPINACH_TIN) {
         mnum = tin->corpsenm;
         if (mnum == NON_PM) {
-            pline("It turns out to be empty.");
+            if (Hallucination)
+                pline("It's full of %s.",
+                      rn2(2) ? "air elemental souffle"
+                             : "dehydrated water");
+            else
+                pline("It turns out to be empty.");
             observe_object(tin);
             tin->known = 1;
             tin = costly_tin(COST_OPEN);
@@ -1944,7 +1955,7 @@ eatcorpse(struct obj *otmp)
         tp++;
         pline("Ecch - that must have been poisonous!");
         svm.mvitals[mnum].know_pcorpse = 1;
-        if (!Poison_resistance) {
+        if (!Poison_immunity) {
             poison_strdmg(rnd(4), rnd(15),
                           !glob ? "poisonous corpse" : "poisonous glob",
                           KILLED_BY_AN);
@@ -2484,6 +2495,13 @@ eatspecial(void)
         pline("Yabba-dabba delicious!");
         exercise(A_CON, TRUE);
     }
+    if (otmp->material == SALT) {
+        pline(Hallucination ? "Ugh! That was pure salt!"
+                            : "You're back in the salt mines.");
+        if (otmp->otyp == SALT_CRYSTAL)
+            makeknown(otmp->otyp);
+        exercise(A_CON,FALSE);
+    }
 
     if (otmp == uwep && otmp->quan == 1L)
         uwepgone();
@@ -2710,7 +2728,7 @@ edibility_prompts(struct obj *otmp)
         /* Rotten */
         Snprintf(buf, sizeof buf, "%s like %s could be rotten!",
                  foodsmell, it_or_they);
-    } else if (cadaver && poisonous(&mons[mnum]) && !Poison_resistance) {
+    } else if (cadaver && poisonous(&mons[mnum]) && !Poison_immunity) {
         /* poisonous */
         Snprintf(buf, sizeof buf, "%s like %s might be poisonous!",
                  foodsmell, it_or_they);
@@ -2824,7 +2842,7 @@ doeat_nonfood(struct obj *otmp)
 
     if (otmp->oclass == WEAPON_CLASS && otmp->opoisoned) {
         pline("Ecch - that must have been poisonous!");
-        if (!Poison_resistance) {
+        if (!Poison_immunity) {
             poison_strdmg(rnd(4), rnd(15), xname(otmp), KILLED_BY_AN);
         } else
             You("seem unaffected by the poison.");
@@ -3642,8 +3660,7 @@ floorfood(
                     u_in_beartrap ? "holding you" : "armed");
             if ((c = yn_function(qbuf, ynqchars, 'n', TRUE)) == 'y') {
                 struct obj *beartrap;
-
-                deltrap(ttmp);
+                deltrap_with_ammo(ttmp, DELTRAP_DESTROY_AMMO);
                 if (u_in_beartrap)
                     reset_utrap(TRUE);
                 beartrap = mksobj(BEARTRAP, TRUE, FALSE);

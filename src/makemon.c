@@ -1,4 +1,4 @@
-/* NetHack 3.7	makemon.c	$NHDT-Date: 1720128166 2024/07/04 21:22:46 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.249 $ */
+/* NetHack 3.7	makemon.c	$NHDT-Date: 1770949988 2026/02/12 18:33:08 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.271 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2012. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -488,7 +488,24 @@ m_initweap(struct monst *mtmp)
         break;
 
     case S_ANGEL:
-        if (humanoid(ptr)) {
+        if (mm == PM_ALEAX) {
+            /* Aleaxes receive a perfect copy of all items in the inventory
+               of the player. */
+            for (struct obj *uobj = gi.invent; uobj; uobj = uobj->nobj) {
+                if (is_ascension_obj(uobj))
+                    continue;
+                otmp = mksobj(uobj->otyp, FALSE, FALSE);
+                otmp->spe = (u.uhave.amulet
+                                || otmp->otyp == SLIME_MOLD) ? uobj->spe : 0;
+                otmp->oeroded = uobj->oeroded;
+                otmp->oeroded2 = uobj->oeroded2;
+                otmp->quan = uobj->quan;
+                force_material(otmp, uobj->material);
+                set_obj_size(otmp, mtmp->data->msize, FALSE);
+                newosum(otmp);
+                mpickobj(mtmp, otmp);
+            }
+        } else if (humanoid(ptr)) {
             /* create minion stuff; can't use mongets */
             int typ;
             const char *nam;
@@ -836,8 +853,9 @@ m_initinv(struct monst *mtmp)
             if (mac < 10 && rn2(3))
                 otmp = mongets(mtmp, HELMET);
             else if (mac < 10 && rn2(2))
-                otmp = mongets(mtmp, (svl.level.flags.temperature == -1)
-                                        ? WINTER_HAT : YENDORIAN_BASCINET);
+                otmp = mongets(mtmp, (svl.level.flags.temperature == -1) ? WINTER_HAT : 
+                                     (flags.halloween) ? JACK_O_LANTERN
+                                     : YENDORIAN_BASCINET);
             add_ac(otmp);
 
             /* round 3: shields */
@@ -963,6 +981,8 @@ m_initinv(struct monst *mtmp)
             if (!rn2(4))
                 otmp->oerodeproof = 1;
             set_obj_size(otmp, mtmp->data->msize, FALSE);
+            if (is_summoned(mtmp))
+                newosum(otmp);
             (void) mpickobj(mtmp, otmp);
         }
         break;
@@ -1411,7 +1431,8 @@ makemon(
             byyou = u_at(x, y),
             allow_minvent = ((mmflags & NO_MINVENT) == 0),
             countbirth = ((mmflags & MM_NOCOUNTBIRTH) == 0),
-            allowtail = ((mmflags & MM_NOTAIL) == 0);
+            allowtail = ((mmflags & MM_NOTAIL) == 0),
+            allowadvance = ((mmflags & MM_EDOG) == 0);
     mmflags_nht gpflags = (((mmflags & MM_IGNOREWATER) ? MM_IGNOREWATER : 0)
                            | GP_CHECKSCARY | GP_AVOID_MONPOS);
 
@@ -1497,6 +1518,8 @@ makemon(
         newemin(mtmp);
     if (mmflags & MM_EDOG)
         newedog(mtmp);
+    if (mmflags & MM_ESUM)
+        newesum(mtmp);
     if (mmflags & MM_ASLEEP)
         mtmp->msleeping = 1;
     mtmp->nmon = fmon;
@@ -1509,6 +1532,10 @@ makemon(
 
     /* set up level and hit points */
     newmonhp(mtmp, mndx);
+
+    /* advance the monster, maybe? */
+    if (allowadvance && advanceable(ptr) && !rn2(35))
+        advance_monster(mtmp);
 
     femaleok = (!is_male(ptr) && !is_neuter(ptr));
     maleok = (!is_female(ptr) && !is_neuter(ptr));
@@ -1547,7 +1574,7 @@ makemon(
     mtmp->mpeaceful = (mmflags & MM_ANGRY) ? FALSE : peace_minded(ptr);
     mtmp->mtraitor = 0;
     if ((mmflags & MM_MINVIS) != 0) /* for ^G */
-        mon_set_minvis(mtmp); /* call after place_monster() */
+        mon_set_minvis(mtmp, FALSE); /* call after place_monster() */
         
     /* monsters spawned during the wrong time will sleep*/
     if ((night() && (ptr->geno & G_DAY))
@@ -1608,6 +1635,10 @@ makemon(
     case S_BAT:
         if (Inhell && is_bat(ptr))
             mon_adjust_speed(mtmp, 2, (struct obj *) 0);
+        break;
+    case S_DEMON:
+        if (Inhell)
+            mon_learns_traps(mtmp, ALL_TRAPS);
         break;
     }
     if ((ct = emits_light(mtmp->data)) > 0)
@@ -2551,6 +2582,13 @@ mongets(struct monst *mtmp, int otyp)
         /* adjust the size of the object */
         set_obj_size(otmp, mtmp->data->msize, FALSE);
 
+        /* set whether it is a summoned object. we don't use is_summoned()
+           because the owner bit has not yet been set. */
+        if (has_esum(mtmp)) {
+            newosum(otmp);
+            pline("KABOOM");
+        }
+
         /* powerful monsters have a good chance of getting
            some kind of boosted weapon related to their
            abilities */
@@ -2970,6 +3008,23 @@ summon_furies(int limit) /* number to create, or 0 to create until extinct */
         makemon(&mons[PM_ERINYS], u.ux, u.uy, MM_ADJACENTOK | MM_NOWAIT);
         i++;
     }
+}
+
+/* advance a monster beyond its usual level, creating a supermonster */
+void
+advance_monster(struct monst *mon)
+{
+    struct permonst *ptr = mon->data;
+    int target = min(level_difficulty(), 49);
+    int factor;
+    if (target <= (3 * ptr->mlevel / 2))
+        return;
+    factor = (target - ptr->mlevel) / 10;
+    mon->m_lev = level_difficulty();
+    mon->mhpmax = mon->mhp = monmaxhp(ptr, mon->m_lev);
+    /* Advanced monsters are usually faster */
+    mon_adjust_speed(mon, factor, (struct obj *) 0);
+    mon->madvanced = 1;
 }
 
 /*makemon.c*/

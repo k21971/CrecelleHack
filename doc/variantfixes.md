@@ -1,3 +1,167 @@
+# 1.4.1
+## Combat
+- Combined several redundant weapon skills to prevent the skill list
+  from becoming too long.
+  - Morningstars are now covered by the mace skill.
+  - Tridents are now covered by the spear skill.
+  - Boomerangs, darts, and shuriken are all covered by the throwing
+    weapons skill.
+- Weapon damage has been rewritten.
+  - Every weapon has two attributes: an accuracy attribute and
+    damage attribute.
+  - Increasing the attribute associated with accuracy will increase
+    your to-hit bonus with that weapon.
+  - Increasing the attribute associated with damage will increase
+    the number of dice rolled when dealing damage with that weapon.
+- Weapon skills have been altered significantly.
+  - Weapon skills no longer provide a bonus to hit.
+  - Basic weapon skill allows you to wield a weapon that uses that
+    skill without spending a turn. Basic skill in bare-handed
+    combat similarly allows you to go bare-handed without spending
+    a turn.
+  - Skilled weapon skill allows you to fully identify any weapon of
+    that type simply by wielding it.
+  - Expert weapon skill adds 1 side to the dice rolled with that weapon.
+## Races
+- Kobold Rewrite
+  - Kobolds can now talk to monsters. Several players complained
+    that being unable to talk to NPCs (particularly priests)
+    was not fun. Kobolds are supposed to present a *fun* challenge,
+    not an unfun one.
+  - Giants have been added to the list of creatures hostile to kobolds.
+  - Kobold wizards begin with aqua bolt instead of force bolt.
+  - Many starting items for kobolds are now made of wood or bone.
+  - Kobolds have a very rapid metabolism. Intrinsic properties time out
+    much more quickly for them. This includes both positive intrinsics
+    as well as negative ones, such as terminal illness. They also
+    forget spells twice as quickly.
+- Human
+  - Human can advance any attribute skill to master instead of expert.
+## Skills
+- There is now a skill that corresponds to each attribute. Enhancing this
+  skill increases this attribute by one point.
+- In order to train these skills you must exercise that attribute. This
+  replaces the previous exercise and abuse system for attributes.
+- As a result, new ways have been added to exercise attributes.
+## Roles
+- Grapplers can now attack monsters they are currently grappling.
+- Grapplers are treated as martial characters, improvin their kicks
+  and unarmed strikes.
+- Grapplers can use their finishing move to instantly kill stunned monsters,
+  but only when they have full hit points.
+## Dungeon
+- Mild rewrite of Vlad's Tower.
+## Objects
+- New Oprops
+  - Acidic
+  - Hungry
+  - Nulling
+  - Briny
+- Many adjustments to existing oprops.
+- Potions weigh half as much.
+- All objects can be destroyed by erosion, as in EvilHack.
+- Tame monsters follow you more closely if you wield a shepherd's crook.
+- Shepherd's crooks can be used for grappling as a grappling hook might be.
+- You can transfer one wand's charges into another by rubbing the wands together.
+  Warning: wands may explode.
+- Monsters tend to spawn with potions instead of wands as offensive items.
+- Invisible_material option to disable material color glyphs.
+- Gemstone items can be made of different types of gems.
+  - This does not modify the cost of the item.
+- New Materials
+  - Nightiron.
+    - Generates very rarely.
+    - -1 damage during the day, +3 at night.
+    - Treated as iron for material hatred purposes.
+  - Salt
+    - Instantly destroyed by water.
+    - +3 damage to slashing weapons.
+    - Sears the flesh of mummies.
+  - Bleakwood
+    - Does not rot.
+    - Very light and provides better AC than wood.
+    - Appears frequently in graveyard levels.
+    - Wooden items in bones files have a chance of becoming bleakwood.
+## Monsters
+- Some monsters are coded as climbers (YANI Archive #1700 by aosdict)
+  and can climb out of pits easily.
+- Some monsters can accidentally hit the ground when they miss, causing
+  collateral damage.
+- The open wounds spell can now cause bleeding.
+- Monsters throw potions of hallucination, which can cause short-term
+  hallucination.
+- Change straw golems to scarecrows.
+  - Scarecrows scare birds.
+  - Players polymorphed into scarecrows cannot have their brains eaten.
+- Many unique monsters have unique spell lists.
+  - Vlad casts spells as a vampire mage and also has access to a unique
+    spell: blood bind.
+  - Demogorgon summons monsters from a unique list, and also has his
+    own list containing some of the nastiest spells in the game.
+  - The Chromatic Dragon and Ixoth summon monsters from a unique list
+    containing dragons and reptiles.
+- As in dnethack, summoned monsters disappear when their summoner is killed,
+  and they do not drop items.
+- Aleaxes appear with an identical inventory to the player. If the player
+  does not have the amulet, all items are +0 and have no charges. If they
+  do have the amulet? Watch out...
+- Monsters may rarely spawn as advanced, with greatly increased levels.
+## Weather System
+- Weather and daytime visibility now only impacts first five floors of
+  dungeon and outdoor levels.
+## Coating System
+- Added different types of fungal coatings.
+## Miscelaneous
+- Revert cost increase of enchantment scrolls.
+- To-hit bonus of Luck changed to match 3.7.
+## Resistance System
+- Intrinsic or Extrinsic resistance = 50% damage.
+- Intrinsic and Extrinsic resistance = Blocked.
+- Being wet causes most sources of fire damage to deal only a single point
+  of damage. The liquid evaporates after protecting you once.
+- Being wet causes most sources of electricity to deal double damage, and
+  prevents you from being immunee to shock. The liquid evaporates after
+  one such instance of doubling damage.
+## New Items
+- Spellbook of Aqua Bolt
+- Salt Crystal
+- Pumpkin
+- Jack-O-Lantern
+- Salt Wand
+- Dye
+  - Dye is a rare type of tonic that can change the color of items.
+  - Items will very rarely generate dyed.
+  - Visual display of dye can be turned off via a config option.
+- Tonic of Honey
+  - Instead of being handled as a distinct coating, honey is now a
+    bespoke potion.
+- Tonic of normality
+  - Cancels all temporary effects currently impacting the drinker.
+## New Monsters
+- Gray Fungus
+  - Originally from SporkHack, but ported from EvilHack.
+- Vampire Mage
+  - Un-deferred.
+  - Have access to a special spell list with many unique spells.
+- Blood Imp
+  - Distinct from appearances in other variants.
+  - Necessitated changing imps and manes to gray.
+## Traps
+- Dipping items in potions on the floor now has additional feedback.
+- Dipping amythest in floor booze turns it into floor fruit juice.
+- Restored hazardous waste to its proper explosiveness.
+- Bonfires can now cause hazardous waste to explode.
+- Gas traps emit gas on delay, and the size of the cloud depends
+  on the level of the dungeon.
+- Demons recognize all traps in Gehennom.
+- Implemented xNetHack's trap ammo patch. Code pulled from EvilHack.
+- New trap: Spark trap.
+  - Creates a bonfire on a several turn delay.
+# Misc
+- Added the Gem Alchemy patch from SLASH'EM. You can also dip gems
+  into potions on the floor to do floor alchemy with them.
+- Monsters are more interested in picking up all types of potions.
+
 # 1.4
 ## Object Materials Patch
 - This version of the object materials patch is pulled from
@@ -117,11 +281,13 @@
 - Breaking a wand of force creates a force field.
 - Zapping a wand of growth at a tree will cause it to become
   fruitful again.
+- Allow the player to use #name in order to name a potion cloud.
 
 ## Options
 - implicit_material: quash default material names.
 - shorten_buc: shortens full buc name to [B][U][C].
 - no_flipped_soko: stop sokoban levels from being flipped.
+- koboldname: Default name of starting pet if it is a kobold.
 
 ## Dungeon Changes
 - Every tree grows a specific kind of fruit.

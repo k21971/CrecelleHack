@@ -168,6 +168,7 @@ struct monst {
     Bitfield(maware, 1);    /* mon is aware of you */
     Bitfield(mbaby, 1);
     Bitfield(mdripping, 1); /* mon is dripping with liquid */
+    Bitfield(madvanced, 1); /* mon is advanced beyond normal means */
 
     unsigned long mstrategy; /* for monsters with mflag3: current strategy */
 #ifdef NHSTDC
@@ -217,7 +218,7 @@ struct monst {
 #define is_starting_pet(mon) ((mon)->m_id == svc.context.startingpet_mid)
 #define is_vampshifter(mon) \
     ((mon)->cham == PM_VAMPIRE || (mon)->cham == PM_VAMPIRE_LEADER \
-     || (mon)->cham == PM_VLAD_THE_IMPALER)
+     || (mon)->cham == PM_VLAD_THE_IMPALER || (mon)->cham == PM_VAMPIRE_MAGE)
 #define vampshifted(mon) (is_vampshifter((mon)) && !is_vampire((mon)->data))
 /* Vlad might be vampshifted so just checking monst->data is insufficient */
 #define is_Vlad(m) ((m)->data == &mons[PM_VLAD_THE_IMPALER]  \
