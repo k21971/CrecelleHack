@@ -798,6 +798,8 @@ extern boolean inaccessible_equipment(struct obj *, const char *, boolean);
 extern int any_worn_armor_ok(struct obj *);
 extern int count_worn_armor(void);
 extern int wrong_size_armor(struct obj *, struct permonst *);
+extern boolean on_loved_terrain(void);
+extern boolean on_hated_terrain(void);
 
 /* ### dog.c ### */
 
@@ -950,7 +952,7 @@ extern void recbranch_mapseen(d_level *, d_level *) NONNULLPTRS;
 extern void overview_stats(winid, const char *, long *, long *) NONNULLPTRS;
 extern void remdun_mapseen(int);
 extern const char *endgamelevelname(char *, int);
-extern void init_biomes(void);
+extern void init_biomes(int);
 
 /* ### eat.c ### */
 
@@ -1321,6 +1323,7 @@ extern char *size_str(int);
 extern char *piousness(boolean, const char *);
 extern void mstatusline(struct monst *) NONNULLARG1;
 extern void ustatusline(void);
+extern const char *snowkoban(void);
 
 /* ### invent.c ### */
 
@@ -1642,6 +1645,7 @@ extern void mktrap(int, unsigned, struct mkroom *, coord *) NO_NNARGS;
 extern void mkstairs(coordxy, coordxy, char, struct mkroom *, boolean);
 extern void mkinvokearea(void);
 extern void mineralize(int, int, int, int, boolean);
+extern void apply_biome_to_level(void);
 
 /* ### mkmap.c ### */
 
@@ -2707,6 +2711,7 @@ extern struct obj *find_quest_artifact(unsigned);
 extern int stinky_nemesis(struct monst *);
 extern void com_pager(const char *);
 extern void qt_pager(const char *);
+extern void qt_to_win(const char *, winid win);
 extern struct permonst *qt_montype(void);
 extern void deliver_splev_message(void);
 

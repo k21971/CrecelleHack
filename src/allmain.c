@@ -166,6 +166,13 @@ u_calc_moveamt(int wtcap)
         break;
     }
 
+    if (u.ualign.type == A_CHAOTIC) {
+        if (on_hated_terrain())
+            moveamt -= (moveamt / 4);
+        else if (on_loved_terrain())
+            moveamt += (moveamt / 4);
+    }
+
     u.umovement += moveamt;
     if (u.umovement < 0)
         u.umovement = 0;
@@ -358,7 +365,8 @@ moveloop_core(void)
                     }
                 }
 
-                regen_pw(mvl_wtcap);
+                if (u.ualign.type == A_NEUTRAL && !on_hated_terrain())
+                    regen_pw(mvl_wtcap);
 
                 if (!u.uinvulnerable) {
                     if (Teleportation && !rn2(85)) {
@@ -662,7 +670,8 @@ regen_pw(int wtcap)
         && ((wtcap < MOD_ENCUMBER
              && (!(svm.moves % ((MAXULEV + 8 - u.ulevel)
                               * (Role_if(PM_WIZARD) ? 3 : 4)
-                              / 6)))) || Energy_regeneration)) {
+                              / 6)))) || Energy_regeneration
+                                      || (on_loved_terrain() && !rn2(3)))) {
         int upper = (int) (ACURR(A_WIS) + ACURR(A_INT)) / 15 + 1;
 
         u.uen += rn1(upper, 1);
@@ -844,7 +853,7 @@ newgame(void)
     init_dungeons();  /* must be before u_init() to avoid rndmonst()
                        * creating odd monsters for any tins and eggs
                        * in hero's initial inventory */
-    init_biomes();    /* should come after init_dungeons() but before mklev() */
+    init_biomes(0);    /* should come after init_dungeons() but before mklev() */
     init_artifacts(); /* before u_init() in case $WIZKIT specifies
                        * any artifacts */
     u_init_misc();

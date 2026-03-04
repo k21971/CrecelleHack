@@ -151,6 +151,8 @@ static const struct Race urace_init_data = {
     0,
     0,
     0,
+    0,
+    0,
     /*    Str     Int Wis Dex Con Cha */
     { 3, 3, 3, 3, 3, 3 },
     { STR18(100), 18, 18, 18, 18, 18 },
@@ -877,7 +879,7 @@ static const struct instance_globals_saved_d init_svd = {
     { { {0},{0},{0},{0},{0},{0}, 0, {0}, 0, 0, 0, 0, 0 } }, /* dungeons */
     { {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
     {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0},
-    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0,
     {0}, {0}, {0}, {0},
     {0}, {0}, {0} },                     /* dungeon_topology */
     /* decl.c */

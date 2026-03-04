@@ -320,6 +320,8 @@ struct Race {
     short selfmask, /* your own race's bit mask */
         lovemask,   /* bit mask of always peaceful */
         hatemask;   /* bit mask of always hostile */
+    short lovecoat, /* bit mask of loved coatings */
+        hatecoat;   /* bit mask of hated coatings */
 
     /*** Attributes ***/
     xint16 attrmin[A_MAX];     /* minimum allowable attribute */

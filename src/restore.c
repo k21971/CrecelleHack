@@ -226,7 +226,7 @@ restobj(NHFILE *nhfp, struct obj *otmp)
         newomid(otmp); /* superfluous; we're already allocated otmp->oextra */
         Sfi_unsigned(nhfp, &omid, "obj-omid");
         OMID(otmp) = omid;
-        Sfi_unsigned(nhfp, &odye, "obj-odye");
+        Sfi_uchar(nhfp, &odye, "obj-odye");
         ODYE(otmp) = odye;
         Sfi_boolean(nhfp, &osum, "obj-osum");
         OSUM(otmp) = osum;

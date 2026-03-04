@@ -741,8 +741,8 @@ saveobj(NHFILE *nhfp, struct obj *otmp)
            become part of oextra itself; 0 means not applicable and
            gets saved/restored whenever any other oextra components do */
         Sfo_unsigned(nhfp, &OMID(otmp), "obj-omid");
-        Sfo_unsigned(nhfp, &ODYE(otmp), "obj-odye");
-        Sfo_unsigned(nhfp, &OSUM(otmp), "obj-osum");
+        Sfo_uchar(nhfp, &ODYE(otmp), "obj-odye");
+        Sfo_boolean(nhfp, &OSUM(otmp), "obj-osum");
     }
 }
 
