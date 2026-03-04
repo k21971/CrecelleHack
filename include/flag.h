@@ -24,6 +24,7 @@ struct flag {
     boolean biff;            /* enable checking for mail */
     boolean bold_coatings;   /* use bold to indicate coatings*/
     boolean bones;           /* allow saving/loading bones */
+    boolean char_blurbs;     /* character creation blurbs */
     boolean color_coatings;  /* use colors to indicate floor coatings*/
     boolean color_surfaces;   /* display dirt and sand with special colors */
     boolean confirm;         /* confirm before hitting tame monsters */

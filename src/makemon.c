@@ -1971,7 +1971,7 @@ biome_shift(struct permonst *ptr)
         break;
     case BIOME_FUNGAL:
         if (ptr->mlet == S_FUNGUS
-            || ptr->mflags4 & M4_BST_FUNGI)
+            || (ptr->mflags4 & M4_BST_FUNGI))
             ret += 3;
         break;
     case BIOME_TROPICAL:
@@ -1980,6 +1980,11 @@ biome_shift(struct permonst *ptr)
         break;
     case BIOME_SNOWY:
         if (ptr->mflags4 & M4_BST_ICE)
+            ret += 2;
+        break;
+    case BIOME_SEWER:
+        if (ptr->mlet == S_RODENT
+            || poisonous(ptr) || acidic(ptr))
             ret += 2;
         break;
     case BIOME_ODUNGEON:
@@ -2294,8 +2299,10 @@ mkclass_aligned(char class, int spc, /* special mons[].geno handling */
                 && mons[MONSi(last)].difficulty > mons[MONSi(last - 1)].difficulty
                 && rn2(2))
                 break;
-            if ((k = (mons[MONSi(last)].geno & G_FREQ)) > 0
-                || (k = (zero_freq_for_entire_class ? 1 : 0)) > 0) {
+            /* We had to pull k out of here in order to ensure that special levels take
+               biome into account when generating by class. */
+            k = (mons[MONSi(last)].geno & G_FREQ) + biome_shift(&mons[MONSi(last)]);
+            if (k > 0 || (k = (zero_freq_for_entire_class ? 1 : 0)) > 0) {
                 /* skew towards lower value monsters at lower exp. levels
                    (this used to be done in the next loop, but that didn't
                    work well when multiple species had the same level and
