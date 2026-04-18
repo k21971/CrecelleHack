@@ -877,6 +877,7 @@ staticfn void
 hmon_hitmon_barehands(struct _hitmon_data *hmd, struct monst *mon)
 {
     long spcdmgflg, hatedhit = 0L; /* worn masks */
+    int spec_dmg = 0;
 
     if (hmd->mdat == &mons[PM_SHADE]) {
         hmd->dmg = 0;
@@ -897,7 +898,8 @@ hmon_hitmon_barehands(struct _hitmon_data *hmd, struct monst *mon)
     spcdmgflg = uarmg ? W_ARMG
               : (((hmd->twohits == 0 || hmd->twohits == 1) ? W_RINGR : 0L)
                  | ((hmd->twohits == 0 || hmd->twohits == 2) ? W_RINGL : 0L));
-    hmd->dmg += special_dmgval(&gy.youmonst, mon, spcdmgflg, (struct obj **) 0);
+    spec_dmg += special_dmgval(&gy.youmonst, mon, spcdmgflg, (struct obj **) 0);
+    hmd->dmg += spec_dmg;
 
     /* copy hatedhit info back into struct _hitmon_data *hmd */
     switch (hmd->twohits) {
@@ -916,8 +918,10 @@ hmon_hitmon_barehands(struct _hitmon_data *hmd, struct monst *mon)
         hmd->barehand_hated_rings = 0;
         break;
     }
-    if (hmd->barehand_hated_rings > 0)
+    if (spec_dmg) {
         hmd->hatedmsg = TRUE;
+        hmd->hatedobj = TRUE;
+    }
 }
 
 staticfn void
@@ -6802,6 +6806,7 @@ oprop_effects_pre(struct monst *magr, struct monst *mdef)
         if (weapon->oprop == OPROP_BOREAL && icy) {
             (void) linedup(x, y, dx, dy, 0); /* set up gt.tbx and gt.tby */
             otmp = mksobj(ICICLE, FALSE, FALSE);
+            otmp->spe = 1;
             m_throw(magr, x, y, sgn(gt.tbx), sgn(gt.tby),
                     distmin(x, y, dx, dy), otmp);
             weapon->pknown = 1;
