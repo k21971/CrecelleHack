@@ -617,13 +617,15 @@ timechange_message(boolean new_game)
         pline("It is midnight.");
     }
     /* object messages? */
-    if (uwep && uwep->material == NIGHTIRON){
+    if (uwep && uwep->material == NIGHTIRON) {
         if (u.uenvirons.tod == TOD_MORNING) {
             pline("%s wickedly.", Tobjnam(uwep, "gleam"));
         } else if (u.uenvirons.tod == TOD_EARLYNIGHT) {
             pline("%s dully.", Tobjnam(uwep, "glint"));
         }
     }
+    /* Update display */
+    disp.botl = TRUE;
 }
 
 void

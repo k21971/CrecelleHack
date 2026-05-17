@@ -1,3 +1,23 @@
+# 1.5.1
+### Misc
+- Many improvements to wands of growth.
+  - Zapping at preexisting grass creates a tree.
+  - Zapping at a fountain causes it to overflow.
+  - Zapping at a sink creates a fountain.
+  - Zapping at oneself can cause you to be released by a monster.
+- Zapping wands of growth and aqua bolt at the floor now works properly.
+- Ochre jellies now properly drip with acid.
+- Properly update carrying capacity display when increasing attributes via
+  skill.
+- Update display on time change.
+- Fix Sokoban entrance livelog message.
+- Prevent travel and run commands from taking the player over dangerous
+  coatings.
+- Pets mildly balk at stepping on mold.
+- Remove randomization from pet handling training when pet kills monsters.
+- Reduce scroll of control weather probability to zero.
+- Partial poison resistance protects against poisonous corpses.
+
 # 1.5.0
 ## Dungeon
 - Rotting corpses rot more slowly in cold levels.
