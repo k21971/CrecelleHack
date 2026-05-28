@@ -252,32 +252,6 @@ wiz_genesis(void)
     return ECMD_OK;
 }
 
-/* #wizweather command - display weather info */
-int
-wiz_weather(void)
-{
-    winid win;
-    char buf[BUFSZ];
-    buf[0] = '\0';
-    win = create_nhwindow(NHW_MENU);
-    putstr(win, 0, "Weather Information:");
-    putstr(win, 0, "");
-    Sprintf(buf, "Turns until precip change: %d", u.uenvirons.precip_cnt);
-    putstr(win, 0, buf);
-    Sprintf(buf, "Turns until wind change: %d", u.uenvirons.wind_cnt);
-    putstr(win, 0, buf);
-    Sprintf(buf, "Next Precip: %d", u.uenvirons.inc_precip.def);
-    putstr(win, 0, buf);
-    Sprintf(buf, "Next Wind: %d", u.uenvirons.inc_wind.def);
-    putstr(win, 0, buf);
-    Sprintf(buf, "Current Weather: %hd", u.uenvirons.curr_weather);
-    putstr(win, 0, buf);
-    display_nhwindow(win, FALSE);
-    destroy_nhwindow(win);
-    if (y_n("Change the weather?") == 'y') weather_choice_menu();
-    return ECMD_OK;
-}
-
 /* #wizwhere command - display dungeon layout */
 int
 wiz_where(void)
@@ -2017,8 +1991,8 @@ wiz_custom(void)
 #endif
         menu_item *pick_list = (menu_item *) 0;
 
-        if (!glyphid_cache_status())
-            fill_glyphid_cache();
+        if (!glyphname_hash_indices_loaded())
+            populate_glyphname_hash_indices();
 
         win = create_nhwindow(NHW_MENU);
         start_menu(win, MENU_BEHAVE_STANDARD);
@@ -2036,7 +2010,7 @@ wiz_custom(void)
                     known_handling[gs.symset[PRIMARYSET].handling]);
         }
         Sprintf(buf, "%s", bufa);
-        wizcustom_glyphids(win);
+        wizcustom_glyphnames(win);
         end_menu(win, bufa);
         n = select_menu(win, PICK_NONE, &pick_list);
         destroy_nhwindow(win);
@@ -2047,8 +2021,8 @@ wiz_custom(void)
 #endif
         if (n >= 1)
             free((genericptr_t) pick_list);
-        if (glyphid_cache_status())
-            free_glyphid_cache();
+        if (glyphname_hash_indices_loaded())
+            empty_glyphname_hash_indices();
         docrt();
     } else
         pline(unavailcmd, ecname_from_fn(wiz_custom));
@@ -2096,6 +2070,43 @@ wizcustom_callback(winid win, int glyphnum, char *id)
         }
     }
     return;
+}
+
+
+/* #wiztime command - advance the current time to the next quarter */
+int
+wiz_time(void)
+{
+    pline("Advanced the calendar by %d turns.", u.uenvirons.tod_cnt);
+    u.uenvirons.tod_cnt = 1;
+    doenvirons();
+    return ECMD_OK;
+}
+
+/* #wizweather command - display weather info */
+int
+wiz_weather(void)
+{
+    winid win;
+    char buf[BUFSZ];
+    buf[0] = '\0';
+    win = create_nhwindow(NHW_MENU);
+    putstr(win, 0, "Weather Information:");
+    putstr(win, 0, "");
+    Sprintf(buf, "Turns until precip change: %d", u.uenvirons.precip_cnt);
+    putstr(win, 0, buf);
+    Sprintf(buf, "Turns until wind change: %d", u.uenvirons.wind_cnt);
+    putstr(win, 0, buf);
+    Sprintf(buf, "Next Precip: %d", u.uenvirons.inc_precip.def);
+    putstr(win, 0, buf);
+    Sprintf(buf, "Next Wind: %d", u.uenvirons.inc_wind.def);
+    putstr(win, 0, buf);
+    Sprintf(buf, "Current Weather: %hd", u.uenvirons.curr_weather);
+    putstr(win, 0, buf);
+    display_nhwindow(win, FALSE);
+    destroy_nhwindow(win);
+    if (y_n("Change the weather?") == 'y') weather_choice_menu();
+    return ECMD_OK;
 }
 
 /*wizcmds.c*/

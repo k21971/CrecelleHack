@@ -1838,10 +1838,15 @@ gazemu(struct monst *mtmp, struct attack *mattk)
                           Monnam(mtmp), mhis(mtmp));
                 break;
             }
-            if (useeit)
-                pline("%s is turned to stone!", Monnam(mtmp));
-            gs.stoned = TRUE;
-            killed(mtmp);
+            if (is_medusa) {
+                if (useeit)
+                    pline("%s avoids %s reflected gaze.", Monnam(mtmp), mhis(mtmp));
+            } else {
+                if (useeit)
+                    pline("%s is turned to stone!", Monnam(mtmp));
+                gs.stoned = TRUE;
+                killed(mtmp);
+            }
 
             if (!DEADMONSTER(mtmp))
                 break;
@@ -1868,10 +1873,15 @@ gazemu(struct monst *mtmp, struct attack *mattk)
                 int conf = d(3, 4);
 
                 mtmp->mspec_used = mtmp->mspec_used + (conf + rn2(6));
-                if (!Confusion)
-                    pline_mon(mtmp, "%s gaze confuses you!",
-                              s_suffix(Monnam(mtmp)));
-                else
+                if (!Confusion) {
+                    if (mtmp->data == &mons[PM_SCROLEM]) {
+                        pline_mon(mtmp, "The scrawlings on %s confuse you!",
+                                    mon_nam(mtmp));
+                    } else {
+                        pline_mon(mtmp, "%s gaze confuses you!",
+                                s_suffix(Monnam(mtmp)));
+                    }
+                } else
                     You("are getting more and more confused.");
                 make_confused(HConfusion + conf, FALSE);
                 stop_occupation();

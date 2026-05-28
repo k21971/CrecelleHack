@@ -155,7 +155,7 @@ loot_classify(Loot *sort_item, struct obj *obj)
     static char def_srt_order[MAXOCLASSES] = {
         COIN_CLASS, AMULET_CLASS, RING_CLASS, WAND_CLASS, POTION_CLASS,
         SCROLL_CLASS, SPBOOK_CLASS, GEM_CLASS, FOOD_CLASS, TOOL_CLASS,
-        WEAPON_CLASS, ARMOR_CLASS, ROCK_CLASS, BOTTLE_CLASS, BALL_CLASS, CHAIN_CLASS, 0,
+        WEAPON_CLASS, ARMOR_CLASS, ROCK_CLASS, BALL_CLASS, CHAIN_CLASS, 0,
     };
     static char armcat[8];
     const char *classorder;
@@ -2560,7 +2560,6 @@ askchain(
     return cnt;
 }
 
-
 /* The menu for rerolling attributes and inventory.
 
    This is similar to the other inventory menus, but simpler to help it fit on
@@ -2577,7 +2576,7 @@ reroll_menu(void)
     struct obj *otmp;
     int tmpglyph;
     glyph_info tmpglyphinfo;
-    char option;
+    char option = 'n';
     char buf[BUFSZ];
 
     win = create_nhwindow(NHW_MENU);
@@ -2589,9 +2588,9 @@ reroll_menu(void)
              ATR_NONE, NO_COLOR, "start the game with this character",
              MENU_ITEMFLAGS_NONE);
     any.a_char = 'y';
+    Strcpy(buf, "reroll another character");
     add_menu(win, &nul_glyphinfo, &any, flags.lootabc ? 0 : 'r', 0,
-             ATR_NONE, NO_COLOR, "reroll another character",
-             MENU_ITEMFLAGS_NONE);
+             ATR_NONE, NO_COLOR, buf, MENU_ITEMFLAGS_NONE);
     any.a_char = 0;
     add_menu(win, &nul_glyphinfo, &any, 0, 0, ATR_NONE, NO_COLOR, "",
              MENU_ITEMFLAGS_NONE);
@@ -2629,9 +2628,7 @@ reroll_menu(void)
     }
     destroy_nhwindow(win);
 
-    if (option == 'y') {
-        ++u.uroleplay.numrerolls;
-        /* rate-limit rerolls to prevent CPU abuse */
+    /* rate-limit rerolls to prevent CPU abuse */
 #if defined(WIN32)
         Sleep(1000);
 #elif defined(MSDOS) && defined(TIMED_DELAY)
@@ -2640,9 +2637,7 @@ reroll_menu(void)
         /* Unix, macOS, VMS, and other POSIX-like systems */
         sleep(1);
 #endif
-        return TRUE;
-    }
-    return FALSE;
+    return option == 'y';
 }
 
 /*
@@ -4899,7 +4894,7 @@ useupf(struct obj *obj, long numused)
 static NEARDATA const char *names[] = {
     0, "Illegal objects", "Weapons", "Armor", "Rings", "Amulets", "Tools",
     "Comestibles", "Tonics", "Scrolls", "Spellbooks", "Wands", "Coins",
-    "Gems/Stones", "Boulders/Statues", "Empty Bottles", "Iron balls", "Chains", "Venoms"
+    "Gems/Stones", "Boulders/Statues", "Iron balls", "Junk", "Venoms"
 };
 static NEARDATA const char oth_symbols[] = { CONTAINED_SYM, '\0' };
 static NEARDATA const char *oth_names[] = { "Bagged/Boxed items" };

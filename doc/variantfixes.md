@@ -1,5 +1,37 @@
 # 1.5.1
-### Misc
+## Objects
+- Scrolls of transmute material now allow the player to select the material
+  for transmutation.
+- Cursed scrolls of transmute material now select from a list of "bad" materials
+  rather than just changing items to plastic.
+- Move snowballs and bottles into the chain class, renamed the junk class of items.
+- Slipping on a banana peel actually makes one hurtle.
+
+## Monsters
+- Rebalance some monsters that were too strong.
+- Fix Medusa being killed by some forms of reflection.
+- New Monsters:
+  - Giant Silverfish
+    - Eats paper and cloth objects.
+
+## Races
+- Elven wizards recieve aqua bolt instead of kobold wizards.
+
+## Roles
+- The rogue quest is now to steal the quest artifact from another role, determined
+  randomly at the beginning of the game.
+  - Instead of the Wizard of Yendor, the player will be met at the Plane of Earth
+    by the quest leader whose artifact they stole.
+  - The planes are populated with player monsters of the role which was stolen from.
+
+## Level Generation
+- Improve coatings in special levels.
+
+## Misc
+- Added a wizmode command for advancing the time of day.
+
+# 1.5.0-fix
+## Misc
 - Many improvements to wands of growth.
   - Zapping at preexisting grass creates a tree.
   - Zapping at a fountain causes it to overflow.

@@ -100,11 +100,15 @@ is_edible(struct obj *obj)
         return TRUE;
 
     /* We don't want anyone digesting a skeleton, including gelatinous cubes. */
-    if (obj->otyp == SKELETON || obj->otyp == BANANA_PEEL)
+    if (obj->otyp == SKELETON)
         return FALSE;
 
     if (metallivorous(gy.youmonst.data) && is_metallic(obj)
         && (gy.youmonst.data != &mons[PM_RUST_MONSTER] || is_rustprone(obj)))
+        return TRUE;
+
+    if (paper_eater(gy.youmonst.data)
+        && (obj->material == PAPER || obj->material == CLOTH))
         return TRUE;
 
     /* Ghouls only eat non-veggy corpses or eggs (see dogfood()) */
@@ -2791,7 +2795,7 @@ doeat_nonfood(struct obj *otmp)
     if (otmp->oclass == COIN_CLASS)
         basenutrit = ((otmp->quan > 200000L) ? 2000
                       : (int) (otmp->quan / 100L));
-    else if (otmp->oclass == BALL_CLASS || otmp->oclass == CHAIN_CLASS || otmp->oclass == BOTTLE_CLASS)
+    else if (otmp->oclass == BALL_CLASS || otmp->oclass == CHAIN_CLASS)
         basenutrit = weight(otmp);
     /* oc_nutrition is usually weight anyway */
     else
@@ -3231,7 +3235,8 @@ gethungry(void)
     if ((!Unaware || !rn2(10)) /* slow metabolic rate while asleep */
         && (carnivorous(gy.youmonst.data)
             || herbivorous(gy.youmonst.data)
-            || metallivorous(gy.youmonst.data))
+            || metallivorous(gy.youmonst.data)
+            || paper_eater(gy.youmonst.data))
         && !(Slow_digestion || Race_if(PM_GNOME)))
         u.uhunger--; /* ordinary food consumption */
 

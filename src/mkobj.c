@@ -1093,6 +1093,9 @@ mksobj_init(struct obj **obj, boolean artif)
             otmp->quan = 1L + (long) (rn2(2) ? rn2(7) : 0);
             blessorcurse(otmp, 5);
             break;
+        case LOCK_PICK:
+            otmp->quan = rn1(5, 5);
+            break;
         case LANTERN:
         case OIL_LAMP:
             otmp->spe = 1;
@@ -1181,7 +1184,6 @@ mksobj_init(struct obj **obj, boolean artif)
         break;
     case VENOM_CLASS:
     case CHAIN_CLASS:
-    case BOTTLE_CLASS:
     case BALL_CLASS:
         break;
     case POTION_CLASS: /* note: potions get some additional init below */
@@ -1226,7 +1228,7 @@ mksobj_init(struct obj **obj, boolean artif)
 #endif
         }
         /* Armor has a slightly lower chance than weapons of being harmonic */
-        if (!rn2(80)) {
+        if (!rn2(65)) {
             add_oprop_to_object(otmp, 0);
         }
         break;
@@ -4591,7 +4593,10 @@ transmute_obj(struct obj *otmp, int newmat)
         pline("%s!", Yobjnam2(otmp, "vibrate"));
     force_material(otmp, newmat);
     if (in_invent) {
-        pline("It is now %s.", an(xname(otmp)));
+        if (otmp->quan > 1)
+            pline("They are now %s.", xname(otmp));
+        else
+            pline("It is now %s.", an(xname(otmp)));
         retouch_object(&otmp, FALSE, FALSE);
         disp.botl = TRUE;
         update_inventory();

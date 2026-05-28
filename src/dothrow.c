@@ -2629,10 +2629,8 @@ breaktest(struct obj *obj)
 
     if (obj_resists(obj, nonbreakchance, 99))
         return FALSE;
-    if ((obj->material == GLASS
-        || obj->material == ICECRYSTAL) && !obj->oartifact)
-        return TRUE;
-    if (obj->oclass == GEM_CLASS && obj->material != MINERAL)
+    if ((obj->material == GLASS || obj->material == ICECRYSTAL)
+         && !obj->oartifact && obj->oclass != GEM_CLASS)
         return TRUE;
     switch (obj->oclass == POTION_CLASS ? POT_WATER : obj->otyp) {
     case EXPENSIVE_CAMERA:
@@ -2664,7 +2662,6 @@ breakmsg(struct obj *obj, boolean in_view)
 
     to_pieces = "";
     switch (obj->oclass == POTION_CLASS ? POT_WATER :
-            obj->otyp == SNOWBALL ? obj->otyp :
             obj->oclass == GEM_CLASS ? WORTHLESS_VIOLET_GLASS : obj->otyp) {
     default: /* glass or crystal wand */
         if (obj->material != GLASS && obj->material != ICECRYSTAL)

@@ -1232,16 +1232,16 @@ int set_map_customcolor(glyph_map *gm, uint32 nhcolor) NONNULLARG1;
 extern int unicode_val(const char *);
 extern int glyphrep(const char *) NONNULLARG1;
 extern int match_glyph(char *) NONNULLARG1;
-extern void dump_all_glyphids(FILE *fp) NONNULLARG1;
-extern void wizcustom_glyphids(winid win);
-extern void fill_glyphid_cache(void);
-extern void free_glyphid_cache(void);
-extern boolean glyphid_cache_status(void);
+extern void dump_all_glyphnames(FILE *fp) NONNULLARG1;
+extern void wizcustom_glyphnames(winid win);
+extern void populate_glyphname_hash_indices(void);
+extern void empty_glyphname_hash_indices(void);
+extern boolean glyphname_hash_indices_loaded(void);
 extern void apply_customizations(enum graphics_sets which_set,
                                  enum do_customizations docustomize);
 extern void purge_custom_entries(enum graphics_sets which_set);
 extern void purge_all_custom_entries(void);
-extern void dump_glyphids(void);
+extern void dump_glyphnames(void);
 extern void clear_all_glyphmap_colors(void);
 extern void reset_customcolors(void);
 extern int glyph_to_cmap(int);
@@ -1862,7 +1862,6 @@ extern int movemon(void);
 extern void meatbox(struct monst *, struct obj *) NONNULLPTRS;
 extern void m_consume_obj(struct monst *, struct obj *) NONNULLPTRS;
 extern int meatmetal(struct monst *) NONNULLARG1;
-extern int meatgrass(struct monst *) NONNULLARG1;
 extern int meatobj(struct monst *) NONNULLARG1;
 extern int meatcorpse(struct monst *) NONNULLARG1;
 extern void mon_give_prop(struct monst *, int) NONNULLARG1;
@@ -1954,6 +1953,8 @@ extern void shieldeff_mon(struct monst *) NONNULLARG1;
 extern void flash_mon(struct monst *) NONNULLARG1;
 extern void newesum(struct monst *) NONNULLARG1;
 extern void free_esum(struct monst *) NONNULLARG1;
+extern int meatgrass(struct monst *) NONNULLARG1;
+extern int meatpaper(struct monst *) NONNULLARG1;
 
 /* ### mondata.c ### */
 
@@ -2406,7 +2407,7 @@ extern char *safe_qbuf(char *, const char *, const char *, struct obj *,
                        const char *) NONNULL NONNULLARG14;
 extern int shiny_obj(char);
 extern int lookup_oprop_by_name(char *, int *);
-extern int lookup_material_by_name(char *, int *);
+extern int lookup_material_by_name(char *, int *, boolean);
 
 /* ### options.c ### */
 
@@ -3363,7 +3364,7 @@ extern void level_tele(void);
 extern void domagicportal(struct trap *) NONNULLARG1;
 extern void tele_trap(struct trap *) NONNULLARG1;
 extern void level_tele_trap(struct trap *, unsigned) NONNULLARG1;
-extern boolean rloc_pos_ok(coordxy, coordxy, struct monst *);
+extern boolean rloc_pos_ok(coordxy, coordxy, struct monst *); 
 extern void rloc_to(struct monst *, coordxy, coordxy) NONNULLARG1;
 extern void rloc_to_flag(struct monst *, coordxy, coordxy,
                          unsigned) NONNULLARG1;
@@ -4068,7 +4069,6 @@ extern int wiz_show_vision(void);
 extern int wiz_show_wmodes(void);
 extern int wiz_smell(void);
 extern int wiz_telekinesis(void);
-extern int wiz_weather(void);
 extern int wiz_where(void);
 extern int wiz_wish(void);
 extern void makemap_remove_mons(void);
@@ -4082,6 +4082,8 @@ extern int wiz_objprobs(void);
 extern int wiz_show_nhuuid(void);
 #endif
 extern void sanity_check(void);
+extern int wiz_time(void);
+extern int wiz_weather(void);
 
 /* ### worm.c ### */
 
