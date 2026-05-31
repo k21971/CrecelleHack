@@ -438,6 +438,7 @@ make_hallucinated(
             see_monsters();
             see_objects();
             see_traps();
+            docrt();
         }
 
         /* for perm_inv and anything similar
@@ -810,6 +811,7 @@ peffect_normality(struct obj *otmp) {
     }
     newsym(u.ux, u.uy);
     You_feel("normal.");
+    docrt();
     if (Upolyd)
         rehumanize();
     gp.potion_unkn++;
@@ -1997,6 +1999,7 @@ moldeffects(coordxy x, coordxy y, struct monst *mon)
     if (isyou) {
         passive(&fakemon, flier ? NULL : uarmf,
             TRUE, TRUE, AT_KICK, FALSE);
+        end_running(TRUE);
     } else {
         passivemm(mon, &fakemon, TRUE, FALSE,
                     flier ? NULL : which_armor(mon, W_ARMF));
