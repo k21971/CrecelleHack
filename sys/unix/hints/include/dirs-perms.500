@@ -10,9 +10,10 @@ SOURCEINSTALL=1
 # -----------------------------------------
 ifeq "$(WHICH_OS)" "Linux"
 
-HACKDIR ?=$(PREFIX)/playground
-INSTDIR ?=$(HACKDIR)
-VARDIR ?=$(HACKDIR)
+PREFIX ?=/opt/nethack/chroot
+HACKDIR ?=/crecellehack-1.5.1
+INSTDIR ?=$(PREFIX)$(HACKDIR)
+VARDIR ?=$(INSTDIR)/var
 
 GAMEPERM ?= 0755
 VARFILEPERM ?= 0600
@@ -62,7 +63,7 @@ ifeq "$(WHICH_OS)" "Linux"
 # -----------------------------------------
 
 PREFIX ?=/usr
-HACKDIR ?=$(PREFIX)/games/lib/500-hdf_$(GAME)dir
+HACKDIR ?=$(PREFIX)/games/lib/crecellehackdir
 SHELLDIR ?= $(PREFIX)/games
 INSTDIR ?=$(HACKDIR)
 VARDIR ?=$(HACKDIR)/var

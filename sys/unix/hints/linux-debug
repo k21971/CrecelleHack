@@ -36,8 +36,18 @@ HINTSINCLFILES := $(addsuffix .$(HINTSVERSION), $(HINTSINCLNAMES))
 endif
 endif
 
-#-INCLUDE linuxdistro.500
+# linux.500 hints file provides a single-user build for Linux (such
+# as Ubuntu focal).
 
+# note: '#-INCLUDE' is not just a comment
+#        multiw-1.500 contains sections 1 to 2
+#-INCLUDE multiw-1.500
+
+# note: '#-INCLUDE' is not just a comment
+#        it pulls in the contents of dirs-perms.500
+#-INCLUDE dirs-perms.500
+
+#-INCLUDE linuxdistro.500
 
 ifndef LIBXPM
 LIBXPM= -L/opt/X11/lib -lXpm
@@ -632,4 +642,3 @@ endif  # WANT_LIBNH
 #
 #-INCLUDE cross-post.500
 #
-
