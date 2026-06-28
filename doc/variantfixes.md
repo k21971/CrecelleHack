@@ -49,6 +49,7 @@
 - Cancellation destroys force fields.
 - Attacking a force field with a crysknife destroys it.
 - Breaking a wand of locking creates a force field.
+- Port FIQHack xp curve from xNetHack.
 
 # 1.5.1
 ## Objects
