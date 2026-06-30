@@ -132,14 +132,14 @@ m_initgrp(
 
     cnttmp = cnt;
     debugpline4("init group call <%d,%d>, n=%d, cnt=%d.", x, y, n, cnt);
-    cntdiv = ((u.ulevel < 3) ? 4 : (u.ulevel < 5) ? 2 : 1);
+    cntdiv = ((depth(&u.uz) < 3) ? 4 : (depth(&u.uz) < 5) ? 2 : 1);
 #endif
     /* Tuning: cut down on swarming at low character levels [mrs] */
-    cnt /= (u.ulevel < 3) ? 4 : (u.ulevel < 5) ? 2 : 1;
+    cnt /= (depth(&u.uz) < 3) ? 4 : (depth(&u.uz) < 5) ? 2 : 1;
 #if defined(__GNUC__) && (defined(HPUX) || defined(DGUX))
     if (cnt != (cnttmp / cntdiv)) {
         pline("cnt=%d using %d, cnttmp=%d, cntdiv=%d", cnt,
-              (u.ulevel < 3) ? 4 : (u.ulevel < 5) ? 2 : 1, cnttmp, cntdiv);
+              (depth(&u.uz) < 3) ? 4 : (depth(&u.uz) < 5) ? 2 : 1, cnttmp, cntdiv);
     }
 #endif
     if (!cnt)
@@ -2331,7 +2331,7 @@ mkclass_aligned(char class, int spc, /* special mons[].geno handling */
                    being picked nearly twice as often as succubus);
                    we need the '+1' in case the entire set is too high
                    level (really low svl.level hero) */
-                nums[MONSi(last)] = k + 1 - (adj_lev(&mons[MONSi(last)]) > (u.ulevel * 2));
+                nums[MONSi(last)] = k + 1 - (adj_lev(&mons[MONSi(last)]) > (depth(&u.uz) * 2));
                 num += nums[MONSi(last)];
             }
         }
@@ -2410,7 +2410,7 @@ adj_lev(struct permonst *ptr)
     else
         tmp += (tmp2 / 5); /* else increment 1 per five diff */
 
-    tmp2 = (u.ulevel - ptr->mlevel); /* adjust vs. the player */
+    tmp2 = (depth(&u.uz) - ptr->mlevel); /* adjust vs. the player */
     if (tmp2 > 0)
         tmp += (tmp2 / 4); /* level as well */
 

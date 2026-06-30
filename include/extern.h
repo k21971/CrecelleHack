@@ -2922,11 +2922,12 @@ extern int rnd_on_display_rng(int);
 extern int rnl(int);
 extern int rnd(int);
 extern int d(int, int);
-extern int rne(int);
+extern int old_rne(int);
 extern int rnz(int);
 extern void init_random(int(*fn)(int));
 extern void reseed_random(int(*fn)(int));
 extern void shuffle_int_array(int *, int) NONNULLARG1;
+extern int rne(int);
 
 /* ### role.c ### */
 
