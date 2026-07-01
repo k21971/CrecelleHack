@@ -12,6 +12,7 @@
 
 ## Options
 - biome_overview
+- removed char_blurbs option
 
 ## New Objects
 - Gas Mask
