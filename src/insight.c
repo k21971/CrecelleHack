@@ -785,25 +785,6 @@ background_enlightenment(int unused_mode UNUSED, int final)
         }
         you_have(buf, "");
     }
-
-    /* terrain boosts */
-    Sprintf(buf, "%s changes depending on terrain:", u.ualign.type == A_CHAOTIC ? "speed"
-                                                : u.ualign.type == A_LAWFUL ? "AC"
-                                                    : "energy regeneration");
-    you_have(buf, "");
-    if (Race_if(PM_DWARF)) {
-        Snprintf(buf, sizeof(buf), "a preference for bare earth");
-        you_have(buf, "");
-    }
-    for (int i = 0; i < NUM_COATINGS; i++) {
-        if (all_coatings[i].val & gu.urace.lovecoat) {
-            Snprintf(buf, sizeof(buf), "a preference for %sterrain", all_coatings[i].adj);
-            you_have(buf, "");
-        } else if (all_coatings[i].val & gu.urace.hatecoat) {
-            Snprintf(buf, sizeof(buf), "a distaste for %sterrain", all_coatings[i].adj);
-            you_have(buf, "");
-        }
-    }
 #ifdef SCORE_ON_BOTL
     if (flags.showscore) {
         /* describes what's shown on status line, which is an approximation;

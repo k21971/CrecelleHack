@@ -160,13 +160,6 @@ u_calc_moveamt(int wtcap)
         break;
     }
 
-    if (u.ualign.type == A_CHAOTIC) {
-        if (on_hated_terrain())
-            moveamt -= (moveamt / 4);
-        else if (on_loved_terrain())
-            moveamt += (moveamt / 4);
-    }
-
     u.umovement += moveamt;
     if (u.umovement < 0)
         u.umovement = 0;
@@ -363,8 +356,7 @@ moveloop_core(void)
                     }
                 }
 
-                if (!(u.ualign.type == A_NEUTRAL && on_hated_terrain()))
-                    regen_pw(mvl_wtcap);
+                regen_pw(mvl_wtcap);
 
                 if (!u.uinvulnerable) {
                     if (Teleportation && !rn2(85)) {
@@ -672,9 +664,7 @@ regen_pw(int wtcap)
         && ((wtcap < MOD_ENCUMBER
              && (!(svm.moves % ((MAXULEV + 8 - u.ulevel)
                               * (Role_if(PM_WIZARD) ? 3 : 4)
-                              / 6)))) || Energy_regeneration
-                                      || (u.ualign.type == A_NEUTRAL
-                                            && on_loved_terrain() && !rn2(3)))) {
+                              / 6)))) || Energy_regeneration)) {
         int upper = (int) (ACURR(A_WIS) + ACURR(A_INT)) / 15 + 1;
 
         if (EMagical_breathing)

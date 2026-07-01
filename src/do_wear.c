@@ -2664,17 +2664,8 @@ find_ac(void)
     if (!Prone)
         uac -= AMOD(A_DEX);
 
-    /* Prone reduction */
     if (Prone)
         uac += 3;
-
-    /* Coating improvement or reduction */
-    if (u.ualign.type == A_LAWFUL) {
-        if (on_hated_terrain())
-            uac += 3;
-        else if (on_loved_terrain())
-            uac -= 3;
-    }
 
     /* armor class from other sources */
     if (HProtection & INTRINSIC)
@@ -3703,25 +3694,6 @@ wrong_size_armor(struct obj *obj, struct permonst *ptr)
     } else if (!is_cloak(obj) && obj->osize != size) {
         return (obj->osize > size) ? 1 : -1;
     }
-    return FALSE;
-}
-
-boolean
-on_loved_terrain(void) {
-    if (Race_if (PM_DWARF) && !levl[u.ux][u.uy].coat_info) {
-        return TRUE;
-    } else if (gu.urace.lovecoat
-                && has_coating(u.ux, u.uy, gu.urace.lovecoat)) {
-        return TRUE;
-    }
-    return FALSE;
-}
-
-boolean
-on_hated_terrain(void) {
-    if (gu.urace.hatecoat
-                && has_coating(u.ux, u.uy, gu.urace.hatecoat))
-        return TRUE;
     return FALSE;
 }
 
