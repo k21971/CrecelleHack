@@ -496,6 +496,7 @@ m_initweap(struct monst *mtmp)
         if (mm == PM_ALEAX) {
             /* Aleaxes receive a perfect copy of all items in the inventory
                of the player. */
+            give_u_to_m_resistances(mtmp);
             for (struct obj *uobj = gi.invent; uobj; uobj = uobj->nobj) {
                 if (is_ascension_obj(uobj))
                     continue;

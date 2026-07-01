@@ -55,6 +55,7 @@
 - Port FIQHack xp curve from xNetHack.
 - Tourists begin the game with iron or gold credit cards.
 - The material of an unlocking tool determines how fragile it is.
+- Ensure Aleaxes spawn with same resistances as player.
 
 # 1.5.1
 ## Objects
