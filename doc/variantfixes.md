@@ -13,6 +13,8 @@
 ## Options
 - biome_overview
 - removed char_blurbs option
+- renamed dnh_enlightenment to attributes_menu (dnh_enlightenment maintained
+  as an alias)
 
 ## New Objects
 - Gas Mask

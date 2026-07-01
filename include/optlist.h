@@ -309,8 +309,8 @@ static int optfn_##a(int, int, boolean, char *, char *);
                 opt_in, set_in_game,
                 Yes, Yes, No, Yes, NoAlias,
                 "the kinds of information to disclose at end of game")
-    NHOPTB(dnh_enlightenment, Variant, 0, opt_in, set_in_game,
-           Off, Yes, No, No, NoAlias, &flags.dnh_enlightenment, Term_False,
+    NHOPTB(attributes_menu, Variant, 0, opt_in, set_in_game,
+           Off, Yes, No, No, "dnh_enlightenment", &flags.attributes_menu, Term_False,
            "display a menu for enlightenment")
     NHOPTC(dogname, Advanced, PL_PSIZ, opt_in, set_gameview,
                 No, Yes, No, No, NoAlias,

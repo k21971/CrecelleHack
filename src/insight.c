@@ -2154,7 +2154,7 @@ doattributes(void)
     if (wizard || discover)
         mode |= MAGICENLIGHTENMENT;
 
-    if (flags.dnh_enlightenment)
+    if (flags.attributes_menu)
         enlightenment_dnh(mode);
     else
         enlightenment(mode, ENL_GAMEINPROGRESS);
