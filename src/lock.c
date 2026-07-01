@@ -68,6 +68,7 @@ staticfn int
 picklock(void)
 {
     int break_chance = 50;
+    int pick_mat, orig_mat;
     if (gx.xlock.box) {
         if (gx.xlock.box->where != OBJ_FLOOR
             || gx.xlock.box->ox != u.ux || gx.xlock.box->oy != u.uy) {
@@ -156,8 +157,17 @@ picklock(void)
             (void) chest_trap(gx.xlock.box, FINGER, FALSE);
     }
     /* Chance to use up picks */
-    if (gx.xlock.picktyp == CREDIT_CARD) break_chance = 3;
-    else if (gx.xlock.picktyp == LOCK_PICK) break_chance = 5; 
+    if (gx.xlock.picktyp == CREDIT_CARD)
+        break_chance = 3;
+    else if (gx.xlock.picktyp == LOCK_PICK)
+        break_chance = 5; 
+
+    pick_mat = gx.xlock.pick->material;
+    orig_mat = objects[gx.xlock.picktyp].oc_material;
+    if (pick_mat != orig_mat)
+        break_chance += (materials[pick_mat].ac - materials[orig_mat].ac);
+    break_chance = max(break_chance, 2);
+
     if (gx.xlock.pick && !gx.xlock.magic_key && !rn2(break_chance)) {
         pline("%s %s breaks!", gx.xlock.pick->quan > 1L ? "One of your" : "Your",
                                 xname(gx.xlock.pick));

@@ -53,6 +53,8 @@
 - Attacking a force field with a crysknife destroys it.
 - Breaking a wand of locking creates a force field.
 - Port FIQHack xp curve from xNetHack.
+- Tourists begin the game with iron or gold credit cards.
+- The material of an unlocking tool determines how fragile it is.
 
 # 1.5.1
 ## Objects

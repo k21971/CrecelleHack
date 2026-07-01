@@ -1498,6 +1498,10 @@ fixup_starting_material(struct obj *obj)
         else if (valid_obj_material(obj, WOOD))
             set_material(obj, WOOD);
     }
+
+    /* Tourists start with gold or silver cards (YANI by riker) */
+    if (obj->otyp == CREDIT_CARD)
+        force_material(obj, rn2(10) ? SILVER : GOLD);
 }
 /* initialise starting inventory and attributes
 
