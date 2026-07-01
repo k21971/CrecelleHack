@@ -2357,16 +2357,31 @@ percent_success(int spell)
 staticfn int
 energy_cost(int spell)
 {
-    int energy = (spellev(spell) * 5); /* 5 <= energy <= 35 */
+    int base_energy = (spellev(spell) * 5); /* 5 <= energy <= 35 */
+    int energy = base_energy;
     int old_success_rate = percent_success(spell);
+
     if (old_success_rate == 0) {
         /* With a 0% success chance, the spell should take infinite power to
          * cast, and is thus still uncastable. However, this should work well
          * enough to prevent it from being cast. */
         return -1;
     } else {
-        return (energy * 100) / old_success_rate;
+        energy = (energy * 100) / old_success_rate;
     }
+
+    /* If currently wielding the spellbook containing the spell that we're
+     * trying to cast, reduce the Pw cost of casting by half rounded up.
+     * But don't reduce further than the innate base amount of power the spell
+     * normally takes to cast. */
+    if (uwep && uwep->otyp == spellid(spell)) {
+        int half_energy = (energy + 1) / 2;
+        if (half_energy < base_energy)
+            half_energy = base_energy;
+        energy = half_energy;
+    }
+
+    return energy;
 }
 
 staticfn char *
