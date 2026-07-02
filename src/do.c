@@ -1970,12 +1970,16 @@ goto_level(
                 if (new && !on_level(&u.uz, &astral_level))
                     create_mplayers(rn1(3, 3), TRUE);
                 /* force confrontation with quest leader you robbed */
-                makemon(&mons[roles[flags.rogvictim].ldrnum], u.ux, u.uy, MM_NOWAIT);
+                mtmp = makemon(&mons[roles[flags.rogvictim].ldrnum], u.ux, u.uy, MM_NOWAIT);
                 verbalize("We've finally found you, %s!", svp.plname);
-                if (roles[flags.rogvictim].ldrnum == PM_MASTER_OF_THIEVES)
+                if (roles[flags.rogvictim].ldrnum == PM_MASTER_OF_THIEVES) {
+                    mtmp->mpeaceful = 0;
+                    /* not your fault */
+                    set_malign(mtmp);
                     verbalize("I'm expelling you from the guild... in a casket!");
-                else
+                } else {
                     verbalize("Now give back what you stole from us!");
+                }
             } else {
                 resurrect(); /* force confrontation with Wizard */
             }
