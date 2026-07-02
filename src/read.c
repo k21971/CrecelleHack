@@ -2106,6 +2106,9 @@ seffect_maze(struct obj **sobjp)
     *sobjp = 0;
     gk.known = TRUE;
 
+    if (!objects[sobj->otyp].oc_name_known)
+        (void) learnscrolltyp(SCR_MAZE);
+
     if (Is_magicmaze(&u.uz)) {
         pline("Your %s spins!", body_part(HEAD));
         make_confused(HConfusion + rnd(30), FALSE);
