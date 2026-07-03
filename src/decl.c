@@ -135,7 +135,7 @@ static const struct Role urole_init_data = {
      4,
     A_INT,
      0,
-    -3
+    -3,15
 };
 
 static const struct Race urace_init_data = {
@@ -156,7 +156,8 @@ static const struct Race urace_init_data = {
     { STR18(100), 18, 18, 18, 18, 18 },
     /* Init   Lower  Higher */
     { 2, 0, 0, 2, 1, 0 }, /* Hit points */
-    { 1, 0, 2, 0, 2, 0 }  /* Energy */
+    { 1, 0, 2, 0, 2, 0 }, /* Energy */
+    0 /* Geo */
 };
 
 struct display_hints disp = { 0 };

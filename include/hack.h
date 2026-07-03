@@ -1137,7 +1137,7 @@ typedef struct nh_file NHFILE;
       /* Attributes */                          \
       {0}, {0}, {0}, {0}, 0, 0,                 \
       /* spell statistics */                    \
-      0, 0, 0, 0, 0, 0, 0 }
+      0, 0, 0, 0, 0, 0, 0, 0 }
 
 /* The UNDEFINED_RACE macro is used to initialize Race variables */
 #define UNDEFINED_RACE \
@@ -1151,7 +1151,8 @@ typedef struct nh_file NHFILE;
       /* Characteristic limits */               \
       {0}, {0},                                 \
       /* Level change HP and Pw adjustments */  \
-      {0}, {0}                                  \
+      {0}, {0},                                 \
+      0.0                                       \
     }
 
 #define MATCH_WARN_OF_MON(mon) \

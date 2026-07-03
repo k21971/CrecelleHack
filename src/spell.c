@@ -56,6 +56,9 @@ staticfn boolean spell_aim_step(genericptr_t, coordxy, coordxy);
 staticfn void propagate_chain_lightning(struct chain_lightning_queue *,
             struct chain_lightning_zap);
 staticfn void cast_force_field(void);
+staticfn int boost_type(int);
+static const char *boost_text(int);
+staticfn boolean geomantic_boost(int);
 
 /* The roles[] table lists the role-specific values for tuning
  * percent_success().
@@ -2122,7 +2125,7 @@ dospellmenu(
 {
     winid tmpwin;
     int i, n, how, splnum;
-    char buf[BUFSZ], retentionbuf[24], sep, pw_buf[5];
+    char buf[BUFSZ], retentionbuf[24], sep, pw_buf[5], boost_buf[12];
     const char *fmt;
     menu_item *selected;
     anything any;
@@ -2142,15 +2145,15 @@ dospellmenu(
      * need to be subtracted.
      */
     if (!iflags.menu_tab_sep) {
-        Sprintf(buf, "%s%-20s Level %-12s Pw Retention",
+        Sprintf(buf, "%s%-20s Level %-14s Pw  Boost Retention",
                 splaction == SPELLMENU_DUMP ? "" : "    ",
                 "Name",
                 "Category");
-        fmt = "%-20s  %2d   %-12s %4s %9s";
+        fmt = "%-20s  %2d   %-12s %4s %6s %9s";
         sep = ' ';
     } else {
-        Sprintf(buf, "Name\tLevel\tCategory\\Pw\tRetention");
-        fmt = "%s\t%-d\t%s\t%s\t%s";
+        Sprintf(buf, "Name\tLevel\tCategory\\Pw\tBoost\tRetention");
+        fmt = "%s\t%-d\t%s\t%-d\t%s\t%s";
         sep = '\t';
     }
     if (wizard)
@@ -2170,9 +2173,10 @@ dospellmenu(
             /* maximum possible should be 3500 */
             Sprintf(pw_buf, "%d", energy_cost(splnum));
         }
+        Sprintf(boost_buf, boost_text(spellid(splnum)));
         Sprintf(buf, fmt, spellname(splnum), spellev(splnum),
                 spelltypemnemonic(spell_skilltype(spellid(splnum))),
-                pw_buf,
+                pw_buf, boost_buf,
                 spellretention(splnum, retentionbuf));
         if (wizard)
             Sprintf(eos(buf), "%c%6d", sep, spellknow(i));
@@ -2337,6 +2341,10 @@ percent_success(int spell)
      */
     chance = chance * (20 - splcaster) / 15 - splcaster;
 
+    /* Provide a boost depending on what the player is standing on. */
+    if (geomantic_boost(spellid(spell)))
+        chance += gu.urole.geobon;
+
     /* Clamp to percentile */
     if (chance > 100)
         chance = 100;
@@ -2381,7 +2389,12 @@ energy_cost(int spell)
         energy = half_energy;
     }
 
-    return energy;
+    /* In addition to boosting success rate, geomancy can drop spells below
+       their usual casting rate */
+    if (geomantic_boost(spellid(spell)))
+        energy = (int) (energy * gu.urace.geomult);
+
+    return max(1, energy);
 }
 
 staticfn char *
@@ -2524,6 +2537,51 @@ void cast_force_field(void)
         create_force_field(u.dx, u.dy, 2, 10L);
         You("create a force field!");
     }
+}
+
+static int boost_areas[] = {
+    COAT_FROST, COAT_ASHES, COAT_GRASS,
+    COAT_BLOOD, COAT_FUNGUS, COAT_POTION
+};
+
+staticfn
+int boost_type(int spell_id) {
+    if (spell_skilltype(spell_id) == P_CLERIC_SPELL) {
+        if (u.ualign.type == A_LAWFUL)
+            return COAT_POTION;
+        else if (u.ualign.type == A_NEUTRAL)
+            return COAT_GRASS;
+        else
+            return COAT_BLOOD;
+    } else if (spell_id == SPE_FIREBALL)
+        return COAT_ASHES;
+    else if (spell_id == SPE_CONE_OF_COLD)
+        return COAT_FROST;
+    else if (spell_id == SPE_AQUA_BOLT)
+        return COAT_POTION;
+    else
+        return boost_areas[objects[spell_id].oc_descr_idx % SIZE(boost_areas)];
+}
+
+staticfn
+const char *boost_text(int spell_id) {
+    int type = boost_type(spell_id);
+    if (type == COAT_POTION)
+        return "water";
+    for (int i = 0; i < NUM_COATINGS; i++) {
+        if (all_coatings[i].val == type)
+            return all_coatings[i].name;
+    }
+    return "???";
+}
+
+staticfn
+boolean geomantic_boost(int spell_id) {
+    int boost_index = boost_type(spell_id);
+    if (boost_index == COAT_POTION)
+        return (has_coating(u.ux, u.uy, COAT_POTION)
+                && levl[u.ux][u.uy].pindex == POT_WATER);
+    return (has_coating(u.ux, u.uy, boost_index));
 }
 
 /*spell.c*/

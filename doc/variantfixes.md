@@ -10,6 +10,16 @@
       back and heals allies.
 - Some monsters are now supporters, and hang back to heal their allies.
 
+## Spellcasting
+- As in xnethack, spell success calculations are replaced by energy cost
+  calculations.
+- The energy required to cast a spell also varies based on the terrain the
+  player is standing on and the school of the spell.
+- The cost of a spell is modified by the terrain that the player is standing
+  on. A spell's "preferred terrain" is displayed in the spellcasting menu. The
+  amount by which it varies is determined by a combination of the player's role
+  and race.
+
 ## Options
 - biome_overview
 - removed char_blurbs option
