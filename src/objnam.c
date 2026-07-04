@@ -5717,7 +5717,7 @@ readobjnam(char *bp, struct obj *no_wish)
     if (d.oprop && (d.otmp->oclass == WEAPON_CLASS
                     || d.otmp->oclass == ARMOR_CLASS)) {
         if (wizard
-            || (!objects[d.otmp->otyp].oc_magic || d.otmp->oartifact)) {
+            || !(objects[d.otmp->otyp].oc_magic || d.otmp->oartifact)) {
             if (objects[d.otmp->otyp].oc_magic)
                 pline("Note: wishes for magical items with object properites are not normally valid.");
             if (d.oprop < 0)

@@ -79,6 +79,7 @@
   - Not fun, overly complex.
 - Remove ability score skill enhancing.
   - Made the game far too punishing.
+- Fix being able to wish oprops on artifacts.
 
 # 1.5.1
 ## Objects
