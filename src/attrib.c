@@ -504,7 +504,6 @@ restore_attrib(void)
 void
 exercise(int i, boolean inc_or_dec)
 {
-    int alter;
     debugpline0("Exercise:");
 
     /* no physical exercise while polymorphed; the body's temporary */
@@ -521,8 +520,7 @@ exercise(int i, boolean inc_or_dec)
          *
          *      Note: *YES* ACURR is the right one to use.
          */
-        alter = (inc_or_dec) ? (rn2(19) > ACURR(i)) : -rn2(2);
-        AEXE(i) += use_skill(i + P_FIRST_ATTR, alter);
+        AEXE(i) += (inc_or_dec) ? (rn2(19) > ACURR(i)) : -rn2(2);
         debugpline3("%s, %s AEXE = %d",
                     (i == A_STR) ? "Str" : (i == A_WIS) ? "Wis" : (i == A_DEX)
                                                                       ? "Dex"
@@ -672,7 +670,7 @@ exerchk(void)
                 goto nextattrib;
 
             debugpline1("exerchk: changing %d.", i);
-            if (use_skill(i + P_FIRST_ATTR, mod_val * 20)) {
+            if (adjattrib(i, mod_val, -1)) {
                 debugpline1("exerchk: changed %d.", i);
                 /* if you actually changed an attrib - zero accumulation */
                 AEXE(i) = ax = 0;

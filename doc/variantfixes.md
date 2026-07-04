@@ -71,6 +71,8 @@
 - Ensure Aleaxes spawn with same resistances as player.
 - Remove terrain boosts feature.
   - Not fun, overly complex.
+- Remove ability score skill enhancing.
+  - Made the game far too punishing.
 
 # 1.5.1
 ## Objects
