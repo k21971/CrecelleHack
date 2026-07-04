@@ -741,32 +741,33 @@ m_initweap(struct monst *mtmp)
         switch (rnd(14 - (2 * bias))) {
         case 1:
             if (strongmonst(ptr))
-                (void) mongets(mtmp, BATTLE_AXE);
+                (void) mongets(mtmp, rn2(20) ? BATTLE_AXE : DUAL_AXE);
             else
                 m_initthrow(mtmp, DART, 12);
             break;
         case 2:
             if (strongmonst(ptr))
-                (void) mongets(mtmp, rn2(4) ? TWO_HANDED_SWORD : BROADSWORD);
+                (void) mongets(mtmp, rn2(4) ? TWO_HANDED_SWORD
+                                        : rn2(4) ? BROADSWORD : FLAMBERGE);
             else {
                 (void) mongets(mtmp, CROSSBOW);
                 m_initthrow(mtmp, CROSSBOW_BOLT, 12);
             }
             break;
         case 3:
-            (void) mongets(mtmp, BOW);
+            (void) mongets(mtmp, rnd_class(BOW, YUMI));
             m_initthrow(mtmp, ARROW, 12);
             break;
         case 4:
             if (strongmonst(ptr))
-                (void) mongets(mtmp, LONG_SWORD);
+                (void) mongets(mtmp, rnd_class(AXE, BULLWHIP));
             else
                 m_initthrow(mtmp, (svl.level.flags.temperature == -1)
                                     ? ICICLE : DAGGER, 3);
             break;
         case 5:
             if (strongmonst(ptr))
-                (void) mongets(mtmp, PARTISAN + rn1(BEC_DE_CORBIN - PARTISAN + 1, PARTISAN));
+                (void) mongets(mtmp, rnd_class(PARTISAN, BEC_DE_CORBIN));
             else
                 (void) mongets(mtmp, AKLYS);
             break;

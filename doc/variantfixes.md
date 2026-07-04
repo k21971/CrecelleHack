@@ -80,6 +80,7 @@
 - Remove ability score skill enhancing.
   - Made the game far too punishing.
 - Fix being able to wish oprops on artifacts.
+- Increased variance of default monster weapon selection.
 
 # 1.5.1
 ## Objects
