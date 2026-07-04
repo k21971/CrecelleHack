@@ -1237,6 +1237,7 @@ harmless_missile(struct obj *obj)
         return TRUE;
     case RUBBER_HOSE:
     case BAG_OF_TRICKS:
+    case BAG_OF_WINDS:
         return (obj->spe < 1);
     case SACK:
     case OILSKIN_SACK:

@@ -1808,4 +1808,17 @@ cancel_force_field(coordxy x, coordxy y) {
     return TRUE;
 }
 
+int
+suck_up_gas(coordxy x, coordxy y) {
+    int ret;
+    NhRegion *reg = visible_region_at(x, y);
+    if (!reg || !is_gasregion(reg))
+        panic("Sucking up nonexistent gas?");
+    ret = REGION_OTYP(reg);
+    if (!ret)
+        ret = REGION_DAMAGE(reg) ? SCR_STINKING_CLOUD : SCR_LIGHT;
+    remove_region(reg);
+    return ret;
+}
+
 /*region.c*/

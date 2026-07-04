@@ -1426,7 +1426,8 @@ doname_base(
            isn't set when emptiness gets discovered because then
            charging magic would yield known number of new charges);
            horn of plenty isn't a container but is close enough */
-        && ((obj->otyp == BAG_OF_TRICKS || obj->otyp == HORN_OF_PLENTY)
+        && ((obj->otyp == BAG_OF_TRICKS || obj->otyp == HORN_OF_PLENTY
+            || obj->otyp == BAG_OF_WINDS)
              ? (obj->spe == 0 && !known)
              /* not a bag of tricks or horn of plenty: it's empty if
                 it is a container that has no contents */
@@ -5624,7 +5625,8 @@ readobjnam(char *bp, struct obj *no_wish)
     }
     /* empty for containers rather than for tins */
     if (d.contents == TIN_EMPTY) {
-        if (d.otmp->otyp == BAG_OF_TRICKS || d.otmp->otyp == HORN_OF_PLENTY) {
+        if (d.otmp->otyp == BAG_OF_TRICKS || d.otmp->otyp == HORN_OF_PLENTY
+            || d.otmp->otyp == BAG_OF_WINDS) {
             if (d.otmp->spe > 0)
                 d.otmp->spe = 0;
         } else if (Has_contents(d.otmp)) {

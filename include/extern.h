@@ -139,6 +139,7 @@ extern int use_pole(struct obj *, boolean) NONNULLPTRS;
 extern void maybe_dunk_boulders(coordxy, coordxy);
 extern void fig_transform(union any *, long) NONNULLARG1;
 extern int unfixable_trouble_count(boolean);
+extern boolean bagowinds(struct obj *, boolean);
 
 /* ### artifact.c ### */
 extern void fix_bones_artifact_otyp(struct obj *) NONNULLARG1;
@@ -2845,6 +2846,7 @@ extern boolean is_gasregion(NhRegion *);
 extern boolean is_bonfire(NhRegion *);
 extern boolean is_force_field(NhRegion *);
 extern boolean cancel_force_field(coordxy, coordxy);
+extern int suck_up_gas(coordxy, coordxy);
 
 /* ### report.c ### */
 

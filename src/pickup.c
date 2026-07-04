@@ -2187,6 +2187,24 @@ do_loot_cont(
         ga.abort_looting = TRUE;
         return ECMD_TIME;
     }
+
+    if (cobj->otyp == BAG_OF_WINDS) {
+        struct obj *ring = URIGHTY ? uright : uleft;
+        You("carefully open %s...", the(xname(cobj)));
+        if (Hallucination)
+            pline("It's a whoopie cushion?!");
+        else
+            pline("It blasts your %s with hurricane-force winds!", body_part(HAND));
+        if (ring && !uarmg) {
+            pline("%s blown off!", Yobjnam2(ring, "get"));
+            remove_worn_item(ring, FALSE);
+            dropx(ring);
+        }
+        makeknown(BAG_OF_WINDS);
+        ga.abort_looting = TRUE;
+        scatter(u.ux, u.uy, 1, MAY_DESTROY | MAY_HIT, (struct obj *) 0);
+        return ECMD_TIME;
+    }
     return use_container(cobjp, FALSE, (boolean) (cindex < ccount));
 }
 
@@ -2753,7 +2771,8 @@ staticfn boolean
 mbag_explodes(struct obj *obj, int depthin)
 {
     /* these won't cause an explosion when they're empty */
-    if ((obj->otyp == WAN_CANCELLATION || obj->otyp == BAG_OF_TRICKS)
+    if ((obj->otyp == WAN_CANCELLATION || obj->otyp == BAG_OF_TRICKS
+        || obj->otyp == BAG_OF_WINDS)
         && obj->spe <= 0)
         return FALSE;
 
@@ -4231,7 +4250,8 @@ tipcontainer_gettarget(
             /* skip non-containers; bag of tricks passes Is_container() test,
                only include it if it isn't known to be a bag of tricks */
             if (!Is_container(otmp)
-                || (otmp->otyp == BAG_OF_TRICKS && otmp->dknown
+                || ((otmp->otyp == BAG_OF_TRICKS || otmp->otyp == BAG_OF_WINDS)
+                    && otmp->dknown
                     && objects[otmp->otyp].oc_name_known))
                 continue;
             if (!n_conts++)
@@ -4298,6 +4318,11 @@ tipcontainer_checks(
         return TIPCHECK_CANNOT;
     }
 
+    if (targetbox && targetbox->otyp == BAG_OF_WINDS) {
+        bagowinds(targetbox, FALSE);
+        return TIPCHECK_CANNOT;
+    }
+
     /* caveat: this assumes that cknown, lknown, olocked, and otrapped
        fields haven't been overloaded to mean something special for the
        non-standard "container" horn of plenty */
@@ -4322,9 +4347,11 @@ tipcontainer_checks(
         }
         return TIPCHECK_TRAPPED;
 
-    } else if (box->otyp == BAG_OF_TRICKS || box->otyp == HORN_OF_PLENTY) {
+    } else if (box->otyp == BAG_OF_TRICKS || box->otyp == HORN_OF_PLENTY
+                || box->otyp == BAG_OF_WINDS) {
         int res = TIPCHECK_OK;
         boolean bag = (box->otyp == BAG_OF_TRICKS);
+        boolean windy = (box->otyp == BAG_OF_WINDS);
         int old_spe = box->spe, seen, totseen;
         boolean maybeshopgoods = (!carried(box)
                                   && costly_spot(box->ox, box->oy));
@@ -4344,7 +4371,8 @@ tipcontainer_checks(
            (if the latter occurs, force the former...) */
         seen = totseen = 0;
         do {
-            if (!(bag ? bagotricks(box, TRUE, &seen)
+            if (!(windy ? bagowinds(box, TRUE)
+                    : bag ? bagotricks(box, TRUE, &seen)
                       : hornoplenty(box, TRUE, targetbox)))
                 break;
             totseen += seen;
@@ -4362,7 +4390,6 @@ tipcontainer_checks(
         if (maybeshopgoods && !box->no_charge)
             subfrombill(box, shop_keeper(*in_rooms(ox, oy, SHOPBASE)));
         return TIPCHECK_CANNOT; /* actually means 'already done' */
-
     } else if (SchroedingersBox(box)) {
         char yourbuf[BUFSZ];
         boolean empty_it = FALSE;

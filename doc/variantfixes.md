@@ -36,6 +36,12 @@
   - Halves explosive damage.
   - Randomized appearance is "sticky ring," which has a 2/3 chance of sticking to
     player's finger when trying to take it off.
+- Bag of Winds
+  - Applying a bag of winds sucks up nearby gases.
+  - Tipping a bag of winds releases a cloud of the last consumed gas, size dependent
+    upon how many gases have been consumed.
+  - The bag grows less reliable the more gases are sucked up and the more often it
+    has been tipped.
 
 ## Dungeon Generation
 - Give Vlad a nicer throne room.

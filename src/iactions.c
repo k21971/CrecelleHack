@@ -323,6 +323,9 @@ itemactions(struct obj *otmp)
     else if (otmp->otyp == BAG_OF_TRICKS && objects[otmp->otyp].oc_name_known)
         /* bag of tricks skips this unless discovered */
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Reach into this bag");
+    else if (otmp->otyp == BAG_OF_WINDS && objects[otmp->otyp].oc_name_known)
+        /* bag of tricks skips this unless discovered */
+        ia_addmenu(win, IA_APPLY_OBJ, 'a', "Release the contents of this bag");
     else if (Is_container(otmp))
         /* bag of tricks gets here only if not yet discovered */
         ia_addmenu(win, IA_APPLY_OBJ, 'a', "Open this container");

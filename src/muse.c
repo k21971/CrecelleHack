@@ -2470,7 +2470,9 @@ find_misc(struct monst *mtmp)
             gm.m.has_misc = MUSE_POT_POLYMORPH;
         }
         nomore(MUSE_BAG);
-        if (Is_container(obj) && obj->otyp != BAG_OF_TRICKS && !rn2(5)
+        if (Is_container(obj) && obj->otyp != BAG_OF_TRICKS
+            && obj->otyp != BAG_OF_WINDS
+            && !rn2(5)
             && !SchroedingersBox(obj)
             && !gm.m.has_misc && Has_contents(obj)
             && !obj->olocked && !obj->otrapped) {

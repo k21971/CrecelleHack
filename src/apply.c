@@ -4583,6 +4583,9 @@ doapply(void)
     case OILSKIN_SACK:
         res = use_container(&obj, TRUE, FALSE);
         break;
+    case BAG_OF_WINDS:
+        bagowinds(obj, FALSE);
+        break;
     case BAG_OF_TRICKS:
         (void) bagotricks(obj, FALSE, (int *) 0);
         break;
@@ -4865,6 +4868,57 @@ flip_coin(struct obj *obj)
         pline("It comes up %s.", rn2(2) ? "heads" : "tails");
     }
     return ECMD_TIME;
+}
+
+/* suck up nearby gases, or perhaps release all winds in the bag.
+   the more times gas is released, the less reliable the bag becomes. */
+boolean
+bagowinds(
+    struct obj *bag,
+    boolean tipping)
+{
+    NhRegion *reg;
+
+    if (!bag || bag->otyp != BAG_OF_WINDS) {
+        impossible("bad bag o' winds");
+    } else if (!bag->cursed && !tipping
+                && (bag->spe < (10 - bag->recharged) || !rn2(max(2, bag->spe)))) {
+        reg = visible_region_at(u.ux, u.uy);
+        if (reg && is_gasregion(reg)) {
+            pline("%s sucks up nearby gas!", The(xname(bag)));
+            bag->corpsenm = suck_up_gas(u.ux, u.uy);
+            bag->spe++;
+        } else {
+            pline("Howling winds rush into %s!", the(xname(bag)));
+        }
+        makeknown(BAG_OF_WINDS);
+        update_inventory();
+    } else if (bag->spe > 0) {
+        pline("Gas spews from %s!", the(xname(bag)));
+        if (objects[bag->corpsenm].oc_class == POTION_CLASS) {
+            struct obj pseudo = cg.zeroobj;
+            pseudo.otyp = bag->corpsenm;
+            pseudo.blessed = bag->blessed;
+            pseudo.cursed = bag->cursed;
+            create_gas_cloud(u.ux, u.uy, bag->spe * 2, &pseudo, bag->spe * 4);
+        } else if (bag->corpsenm == SCR_STINKING_CLOUD) {
+            create_gas_cloud(u.ux, u.uy, bag->spe * 2, NULL, 8);
+        } else {
+            create_gas_cloud(u.ux, u.uy, bag->spe * 2, NULL, 0);
+        }
+        bag->spe = 0;
+        bag->recharged++;
+        makeknown(BAG_OF_WINDS);
+        update_inventory();
+    } else {
+        pline1(nothing_happens);
+        if (bag->dknown && objects[bag->otyp].oc_name_known) {
+            bag->cknown = 1;
+            update_inventory();
+        }
+        return FALSE;
+    }
+    return TRUE;
 }
 
 /*apply.c*/
