@@ -1965,6 +1965,7 @@ poly_obj(struct obj *obj, int id)
     case WEAPON_CLASS:
         /* preserve size of gear, in case of polymorph trap */
         otmp->osize = obj->osize;
+        break;
     }
 
     /* update the weight */
