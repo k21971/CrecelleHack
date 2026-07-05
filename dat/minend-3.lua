@@ -65,6 +65,7 @@ des.object("amethyst")
 des.object("*")
 des.object("amethyst")
 des.object({ id="luckstone", coord=place[2], buc="not-cursed", achievement=1 })
+des.object({ id = "potion of gain ability", coord = place[2], buc = "blessed" });
 des.object("flint",place[1])
 des.object("?")
 des.object("?")

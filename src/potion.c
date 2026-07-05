@@ -1135,7 +1135,7 @@ peffect_gain_ability(struct obj *otmp)
                             A_STR is first in attrib_types) */
         int highest = A_STR;
         int nhighest = 0;
-        for (int i = 0; i < A_MAX; ++i) {
+        for (i = 0; i < A_MAX; ++i) {
             if (ABASE(i) < ABASE(lowest)) {
                 lowest = i;
                 nlowest = 1;

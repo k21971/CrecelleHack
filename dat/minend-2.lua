@@ -118,6 +118,7 @@ des.object("*", 70, 05)
 des.object("amethyst", 70, 05)
 des.object({ id="luckstone", x=70, y=05,
 	     buc="not-cursed", achievement=1 });
+des.object({ id = "potion of gain ability", coord = {70,05}, buc = "blessed" });
 -- Scattered gems...
 des.object("*")
 des.object("*")

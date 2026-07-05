@@ -111,3 +111,4 @@ else
 end
 des.engraving({ coord = pt, type = "burn", text = "Elbereth" });
 des.object({ id = "scroll of scare monster", coord = pt, buc = "cursed" });
+des.object({ id = "potion of gain ability", coord = pt, buc = "blessed" });

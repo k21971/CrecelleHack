@@ -69,6 +69,7 @@ des.door("locked",06,06)
 
 -- The altar of Moloch.
 des.altar({ x=03,y=10,align="noalign", type="shrine" })
+des.object({ id = "potion of gain ability", coord = {03,10}, buc = "blessed" });
 
 -- Non diggable walls - everywhere!
 des.non_diggable(selection.area(00,00,75,19))

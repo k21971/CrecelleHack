@@ -75,6 +75,7 @@ des.object("loadstone",place[4])
 des.object("ruby",place[5])
 des.object("worthless piece of red glass",place[5])
 des.object({ id="luckstone", coord=place[5], buc="not-cursed", achievement=1 })
+des.object({ id = "potion of gain ability", coord = place[5], buc = "blessed" });
 -- Random objects
 des.object("*")
 des.object("*")
