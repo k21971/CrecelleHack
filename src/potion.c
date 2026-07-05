@@ -1117,21 +1117,121 @@ peffect_confusion(struct obj *otmp)
 staticfn void
 peffect_gain_ability(struct obj *otmp)
 {
+    int i, ii;
     if (otmp->cursed) {
-        pline("Ulch!  That tonic tasted foul!");
-        gp.potion_unkn++;
+        pline("Ulch!  That potion tasted foul!");
+        if (Fixed_abil) {
+            gp.potion_unkn++; /* not potion_nothing because you got message */
+            return;
+        }
+        /* gain a point in an ability by stealing it from another ability;
+         * point will always be given to the lowest score and taken from
+         * somewhere else, so it can be used somewhat reliably to increase the
+         * worst scores */
+        int lowest = A_STR; /* attrib_types with lowest known score */
+        int nlowest = 0; /* number of attribs with the same lowest known score;
+                            pick randomly if tie; start at 0 because we haven't
+                            actually evaluated A_STR yet (note assumption that
+                            A_STR is first in attrib_types) */
+        int highest = A_STR;
+        int nhighest = 0;
+        for (int i = 0; i < A_MAX; ++i) {
+            if (ABASE(i) < ABASE(lowest)) {
+                lowest = i;
+                nlowest = 1;
+            }
+            else if (ABASE(i) == ABASE(lowest)) {
+                nlowest++;
+                if (!rn2(nlowest + 1))
+                    lowest = i;
+            }
+            if (ABASE(i) > ABASE(highest)) {
+                highest = i;
+                nhighest = 1;
+            }
+            else if (ABASE(i) == ABASE(highest)) {
+                nhighest++;
+                if (!rn2(nhighest + 1))
+                    highest = i;
+            }
+        }
+        if (ABASE(lowest) == ABASE(highest)) {
+            /* possible for this if the hero has the same in every attribute */
+            gp.potion_unkn++;
+            return;
+        }
+        adjattrib(highest, -1, 0);
+        adjattrib(lowest, 1, 0);
     } else if (Fixed_abil) {
         gp.potion_nothing++;
-    } else {      /* If blessed, increase all; if not, try up to */
-        int itmp; /* 6 times to find one which can be increased. */
-        int ii, i = -1;   /* increment to 0 */
-        for (ii = A_MAX; ii > 0; ii--) {
-            i = (otmp->blessed ? i + 1 : rn2(A_MAX));
-            /* only give "your X is already as high as it can get"
-               message on last attempt (except blessed potions) */
-            itmp = (otmp->blessed || ii == 1) ? 0 : -1;
-            if (adjattrib(i, 1, itmp) && !otmp->blessed)
-                break;
+    } else {
+        char response = '*'; /* random by default */
+        uchar attr_selected;
+        /* Ability scores are defined in a different order than they're
+            * displayed on the status line. The menu presents them in display
+            * order, so we need to map them to their real order in the case of
+            * a blessed potion that presented a menu. */
+        int attribs[A_MAX] = {A_STR, A_DEX, A_CON, A_INT, A_WIS, A_CHA};
+        if (otmp->blessed) {
+            /* Allow the player to choose what to increase, and give a bit
+                * more increase than an uncursed potion. */
+            menu_item *choice = (menu_item *) 0;
+            winid win = create_nhwindow(NHW_MENU);
+            anything any;
+            char attrname[BUFSZ];
+            static const char* attrnames[A_MAX] = {
+                "Strength", "Dexterity", "Constitution", "Intelligence",
+                "Wisdom", "Charisma"
+            };
+            start_menu(win, MENU_BEHAVE_STANDARD);
+            for (ii = 0; ii < A_MAX; ii++) {
+                if (ABASE(attribs[ii]) < ATTRMAX(attribs[ii])) {
+                    Strcpy(attrname, attrnames[ii]);
+                    any.a_char = 'a' + ii;
+                }
+                else {
+                    Sprintf(attrname, "    %s (MAX)", attrnames[ii]);
+                    any.a_char = 0;
+                }
+                add_menu(win, &nul_glyphinfo, &any, any.a_char, '\0',
+                            ATR_NONE, NO_COLOR, attrname, MENU_ITEMFLAGS_NONE);
+            }
+            any.a_char = '*';
+            add_menu(win, &nul_glyphinfo, &any, 0, '*', ATR_NONE,
+                        NO_COLOR,
+                        "pick one randomly", MENU_ITEMFLAGS_NONE);
+            end_menu(win, "What attribute do you want to increase?");
+            if (select_menu(win, PICK_ONE, &choice) <= 0) {
+                /* cancelled; pick one randomly */
+                response = '*';
+            }
+            else {
+                response = choice->item.a_char;
+                free((genericptr_t) choice);
+            }
+            destroy_nhwindow(win);
+        }
+
+        if (response == '*') {
+            /* Shuffle the attributes. (Fisher-Yates) */
+            for (ii = A_MAX-1; ii >= 1; ii--) {
+                int tmp = attribs[ii];
+                i = rn2(ii + 1);
+                attribs[ii] = attribs[i];
+                attribs[i] = tmp;
+            }
+            for (ii = 0; ii < A_MAX; ii++) {
+                /* only give "your X is already as high as it can get"
+                    message on last attempt */
+                if (adjattrib(attribs[ii], otmp->blessed ? rnd(2) : 1,
+                                (ii == A_MAX - 1) ? 0 : -1)) {
+                    break;
+                }
+            }
+        } else {
+            /* non-* response should always mean blessed potion */
+            attr_selected = attribs[response - 'a'];
+            adjattrib(attr_selected, rnd(2), 0);
         }
     }
 }

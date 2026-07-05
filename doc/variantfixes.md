@@ -81,6 +81,8 @@
   - Made the game far too punishing.
 - Fix being able to wish oprops on artifacts.
 - Increased variance of default monster weapon selection.
+- Changed potion of gain ability to function as it does in xnethack, copying the code and
+  updating it for 5.0 compatability.
 
 # 1.5.1
 ## Objects
