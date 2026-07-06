@@ -767,14 +767,13 @@ static const struct condmap condition_aliases[] = {
     { "minor_troubles", BL_MASK_BLIND | BL_MASK_CONF | BL_MASK_DEAF
                         | BL_MASK_HALLU | BL_MASK_PARLYZ | BL_MASK_SUBMERGED
                         | BL_MASK_STUN | BL_MASK_PRONE | BL_MASK_WET },
-    { "movement",       BL_MASK_LEV | BL_MASK_FLY | BL_MASK_RIDE },
+    { "movement",       BL_MASK_LEV | BL_MASK_FLY | BL_MASK_RIDE | BL_MASK_HOLDING },
     { "opt_in",         BL_MASK_BAREH | BL_MASK_BUSY | BL_MASK_GLOWHANDS
                         | BL_MASK_HELD | BL_MASK_ICY | BL_MASK_PARLYZ
                         | BL_MASK_SLEEPING | BL_MASK_SLIPPERY
                         | BL_MASK_SUBMERGED | BL_MASK_TETHERED
                         | BL_MASK_TRAPPED
-                        | BL_MASK_UNCONSC | BL_MASK_WOUNDEDL
-                        | BL_MASK_HOLDING },
+                        | BL_MASK_UNCONSC | BL_MASK_WOUNDEDL },
 };
 
 #endif /* STATUS_HILITES */
@@ -832,7 +831,7 @@ struct condtests_t condtests[CONDITION_COUNT] = {
     { bl_glowhands, "glowhands",   opt_in,  FALSE, FALSE, FALSE },
     { bl_grab,      "grab",        opt_out, TRUE,  FALSE, FALSE },
     { bl_hallu,     "hallucinat",  opt_out, TRUE,  FALSE, FALSE },
-    { bl_held,      "held",        opt_out,  FALSE, FALSE, FALSE },
+    { bl_held,      "held",        opt_out,  TRUE, FALSE, FALSE },
     { bl_icy,       "ice",         opt_in,  FALSE, FALSE, FALSE },
     { bl_inlava,    "lava",        opt_out, TRUE,  FALSE, FALSE },
     { bl_lev,       "levitate",    opt_out, TRUE,  FALSE, FALSE },
@@ -850,7 +849,7 @@ struct condtests_t condtests[CONDITION_COUNT] = {
     { bl_trapped,   "trap",        opt_in,  FALSE, FALSE, FALSE },
     { bl_unconsc,   "unconscious", opt_in,  FALSE, FALSE, FALSE },
     { bl_woundedl,  "woundedlegs", opt_in,  FALSE, FALSE, FALSE },
-    { bl_holding,   "holding",     opt_in,  FALSE, FALSE, FALSE },
+    { bl_holding,   "holding",     opt_out, TRUE, FALSE, FALSE },
     { bl_prone,     "prone",       opt_out, TRUE,  FALSE, FALSE },
     { bl_wet,       "wet",         opt_out, TRUE,  FALSE, FALSE },
 };
@@ -1180,7 +1179,9 @@ bot_via_windowport(void)
         = condtests[bl_engulfed].test
 #endif
         = condtests[bl_holding].test = FALSE;
-    if (u.ustuck) {
+    if (u.usticker) {
+        test_if_enabled(bl_holding) = TRUE;
+    } else if (u.ustuck) {
         /* it is possible for a hero in sticks() form to be swallowed,
            so swallowed needs to be checked first; it is not possible for
            a hero in sticks() form to be held--sticky hero does the holding

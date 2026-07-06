@@ -4289,7 +4289,7 @@ static const enum statusfields
       blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD },
     { BL_LEVELDESC, BL_GOLD, BL_HP, BL_HPMAX, BL_ENE, BL_ENEMAX,
       BL_AC, BL_XP, BL_EXP, BL_HD, BL_TIME, BL_HUNGER, BL_CAP,
-      BL_CONDITION, BL_WEAPON, BL_ARMOR, BL_TERRAIN, BL_VERS, BL_FLUSH },
+      BL_WEAPON, BL_ARMOR, BL_TERRAIN, BL_CONDITION, BL_VERS, BL_FLUSH },
     /* third row of array isn't used for twolineorder */
     { BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD,
       blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD }
@@ -4301,7 +4301,7 @@ static const enum statusfields
     { BL_ALIGN, BL_GOLD, BL_HP, BL_HPMAX, BL_ENE, BL_ENEMAX,
       BL_AC, BL_MC, BL_XP, BL_EXP, BL_HD, BL_HUNGER, BL_CAP,
       BL_FLUSH, blPAD, blPAD, blPAD, blPAD, blPAD },
-    { BL_LEVELDESC, BL_TOD, BL_TIME, BL_CONDITION, BL_WEAPON, BL_ARMOR, BL_TERRAIN,
+    { BL_LEVELDESC, BL_TOD, BL_TIME, BL_WEAPON, BL_ARMOR, BL_TERRAIN, BL_CONDITION,
       BL_VERS, BL_FLUSH, blPAD,
       blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD, blPAD }
 };
