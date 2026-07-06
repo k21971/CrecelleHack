@@ -48,6 +48,7 @@
 - Unlink monster difficulty from player level and link it instead to dungeon depth.
 - Items with higher enchantment values are more likely to generate as
   the player descends deeper into the dungeon.
+- Limit death drops to specific powerful monsters.
 
 ## Misc
 - YAFM for closed shops.

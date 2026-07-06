@@ -127,7 +127,7 @@ enum ms_sounds {
 #define M2_COLLAT       0x00000002L /* smashes items on floor when missing */
 #define M2_IGNOREPETS   0x00000004L /* ignores pets in favor of attacking player */
 #define M2_SUPPORTER    0x00000008L /* attempts to support allies */
-// #define M2_ELF          0x00000010L /* is an elf */
+#define M2_DEATHDROP    0x00000010L /* has death drops */
 // #define M2_DWARF        0x00000020L /* is a dwarf */
 // #define M2_GNOME        0x00000040L /* is a gnome */
 // #define M2_ORC          0x00000080L /* is an orc */
