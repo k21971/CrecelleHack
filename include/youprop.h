@@ -131,14 +131,15 @@
 #define EDeaf u.uprops[DEAF].extrinsic
 #define Deaf (HDeaf || EDeaf || u.uroleplay.deaf)
 
-#define HFumbling u.uprops[FUMBLING].intrinsic
-#define EFumbling u.uprops[FUMBLING].extrinsic
-#define Fumbling (HFumbling || EFumbling)
-
 /* Dripping */
 #define HDripping u.uprops[DRIPPING].intrinsic
 #define EDripping u.uprops[DRIPPING].extrinsic
 #define Dripping (HDripping || EDripping)
+
+#define HFumbling u.uprops[FUMBLING].intrinsic
+#define EFumbling u.uprops[FUMBLING].extrinsic
+#define Fumbling (HFumbling || EFumbling \
+                    || (Dripping && u.udriptype == POT_OIL))
 
 /* HWounded_legs indicates whether wounded leg(s) condition exists and
    holds the timeout for recovery; EWounded_legs uses the worn-ring bits

@@ -86,6 +86,7 @@
   updating it for 5.0 compatability.
   - Potions of gain ability do not appear randomly, but as rewards for optional branches
     and in the valley.
+- You are considered to be fumbling when you drip oil.
 
 # 1.5.1
 ## Objects

@@ -2193,7 +2193,7 @@ dograpple(void)
     struct obj *cloak;
     boolean touched = FALSE;
     char kbuf[BUFSZ];
-    if (u.usticker) {
+    if (u.usticker && u.ustuck) {
         pline_mon(u.ustuck, "You stop grappling %s.", mon_nam(u.ustuck));
         set_ustuck((struct monst *) 0);
         return ECMD_CANCEL;
