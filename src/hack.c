@@ -2778,7 +2778,10 @@ grappling_finisher(coordxy x, coordxy y, struct monst *mtmp)
             pline("Your move fails!");
         }
         break_grapple = FALSE;
-    } else if (goodpos(x, y, mtmp, 0)) {
+    /* suplexes involve the grappler dragging the victim with them,
+       so the path should check the player's square. */
+    } else if (goodpos(x, y, mtmp, 0) && !m_will_hit_forcefield(mtmp, u.ux, u.uy)
+        && !m_will_hit_forcefield(mtmp, x, y)) {
         pline_mon(mtmp, "You suplex %s!", mon_nam(mtmp));
         rloc_to(mtmp, x, y);
         bare_hit = TRUE;
