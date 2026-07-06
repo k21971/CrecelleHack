@@ -2770,7 +2770,11 @@ grappling_finisher(coordxy x, coordxy y, struct monst *mtmp)
         }
         bare_hit = TRUE;
     } else if (future_dist == 5) {
-        if (enexto(&cc, x, y, mtmp->data)) {
+        /* leg pull should reasonably be next to either where the monster was or where the
+           player is targetting the leg pull. */
+        if (enexto(&cc, x, y, mtmp->data)
+            && (dist2(x, y, cc.x, cc.y) <= 2 || dist2(mtmp->mx, mtmp->my, cc.x, cc.y) <= 2)
+            && !m_will_hit_forcefield(mtmp, x, y)) {
             rloc_to(mtmp, cc.x, cc.y);
             pline_mon(mtmp, "You %s drag %s!",  mbodypart(mtmp, LEG), mon_nam(mtmp));
             bare_hit = TRUE;
