@@ -4433,12 +4433,17 @@ enum menucmd {
     MCMD_REST,
     MCMD_LOOK_HERE,
     MCMD_LOOK_AT,
+    MCMD_PRAY,
+    MCMD_ENGRAVE,
+    MCMD_ATTRIBUTES,
+    MCMD_PREVIOUS_MESSAGES,
     MCMD_ATTACK_NEXT2U,
     MCMD_TRIP,
     MCMD_UNTRAP_HERE,
     MCMD_OFFER,
     MCMD_INVENTORY,
     MCMD_CAST_SPELL,
+    MCMD_JUMP,
 
     MCMD_THROW_OBJ,
     MCMD_TRAVEL,
@@ -4535,6 +4540,10 @@ there_cmd_menu_self(winid win, coordxy x, coordxy y, int *act UNUSED)
     mcmd_addmenu(win, MCMD_SEARCH, "Search around you"), ++K;
     mcmd_addmenu(win, MCMD_TAUNT, "Taunt nearby creatures"), ++K;
     mcmd_addmenu(win, MCMD_LOOK_HERE, "Look at what is here"), ++K;
+    mcmd_addmenu(win, MCMD_PRAY, "Pray here"), ++K;
+    mcmd_addmenu(win, MCMD_ENGRAVE, "Engrave here"), ++K;
+    mcmd_addmenu(win, MCMD_ATTRIBUTES, "View attributes"), ++K;
+    mcmd_addmenu(win, MCMD_PREVIOUS_MESSAGES, "Access memories"), ++K;
 
     if (num_spells() > 0)
         mcmd_addmenu(win, MCMD_CAST_SPELL, "Cast a spell"), ++K;
@@ -4543,6 +4552,9 @@ there_cmd_menu_self(winid win, coordxy x, coordxy y, int *act UNUSED)
         if (ttmp->ttyp != VIBRATING_SQUARE)
             mcmd_addmenu(win, MCMD_UNTRAP_HERE,
                          "Attempt to disarm trap"), ++K;
+    }
+    if (Jumping) {
+        mcmd_addmenu(win, MCMD_JUMP, "Jump"), ++K;
     }
     return K;
 }
@@ -4842,7 +4854,7 @@ act_on_act(
         cmdq_add_key(CQ_CANNED, 'y'); /* "There is foo here; eat it?" */
         break;
     case MCMD_DROP:
-        cmdq_add_ec(CQ_CANNED, dodrop);
+        cmdq_add_ec(CQ_CANNED, doddrop);
         break;
     case MCMD_INVENTORY:
         cmdq_add_ec(CQ_CANNED, ddoinv);
@@ -4858,6 +4870,18 @@ act_on_act(
         gc.clicklook_cc.y = u.uy + dy;
         cmdq_add_ec(CQ_CANNED, doclicklook);
         break;
+    case MCMD_PRAY:
+        cmdq_add_ec(CQ_CANNED, dopray);
+        break;
+    case MCMD_ENGRAVE:
+        cmdq_add_ec(CQ_CANNED, doengrave);
+        break;
+    case MCMD_ATTRIBUTES:
+        cmdq_add_ec(CQ_CANNED, doattributes);
+        break;
+    case MCMD_PREVIOUS_MESSAGES:
+        cmdq_add_key(CQ_CANNED, C('p'));
+        break;
     case MCMD_UNTRAP_HERE:
         cmdq_add_ec(CQ_CANNED, dountrap);
         cmdq_add_dir(CQ_CANNED, 0, 0, 1);
@@ -4868,6 +4892,9 @@ act_on_act(
         break;
     case MCMD_CAST_SPELL:
         cmdq_add_ec(CQ_CANNED, docast);
+        break;
+    case MCMD_JUMP:
+        cmdq_add_ec(CQ_CANNED, dojump);
         break;
     default:
         break;
