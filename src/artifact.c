@@ -1855,7 +1855,9 @@ artifact_hit(
             }
         }
     }
-    if (spec_ability(otmp, SPFX_DRLI) || otmp->oprop == OPROP_HUNGRY) {
+    /* technically, there is no way to get here with Stormbringer without special damage, but check anyway */
+    if ((spec_ability(otmp, SPFX_DRLI) && gs.spec_dbon_applies) ||
+        (otmp->oprop == OPROP_HUNGRY && gs.spec_oprop_applies)) {
         /* some non-living creatures (golems, vortices) are vulnerable to
            life drain effects so can get "<Arti> draws the <life>" feedback */
         const char *life = nonliving(mdef->data) ? "animating force" : "life";
@@ -2121,6 +2123,7 @@ staticfn int
 invoke_create_portal(struct obj *obj)
 {
     int i, num_ok_dungeons, last_ok_dungeon = 0;
+    boolean entered_planes = FALSE;
     d_level newlev;
     winid tmpwin = create_nhwindow(NHW_MENU);
     anything any;
@@ -2170,8 +2173,13 @@ invoke_create_portal(struct obj *obj)
         newlev.dlevel = svd.dungeons[i].entry_lev;
     else
         newlev.dlevel = svd.dungeons[i].dunlev_ureached;
-
-    if (u.uhave.amulet || In_endgame(&u.uz) || In_endgame(&newlev)
+    /* check if player is in the endgame */
+    for (i = 0; u.uachieved[i]; ++i)
+        if (u.uachieved[i] == ACH_ENDG) {
+            entered_planes = TRUE;
+            break;
+        }
+    if (u.uhave.amulet || entered_planes
         || newlev.dnum == u.uz.dnum || !next_to_u()) {
         You_feel("very disoriented for a moment.");
     } else {

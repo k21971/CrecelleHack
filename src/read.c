@@ -2106,6 +2106,9 @@ seffect_maze(struct obj **sobjp)
     *sobjp = 0;
     gk.known = TRUE;
 
+    if (!objects[sobj->otyp].oc_name_known)
+        (void) learnscrolltyp(SCR_MAZE);
+
     if (Is_magicmaze(&u.uz)) {
         pline("Your %s spins!", body_part(HEAD));
         make_confused(HConfusion + rnd(30), FALSE);
@@ -3333,7 +3336,7 @@ create_particular_parse(
     d->genderconf = -1;  /* no confusion on which gender to assign */
     d->randmonst = FALSE;
     d->maketame = d->makepeaceful = d->makehostile = FALSE;
-    d->sleeping = d->saddled = d->invisible = d->hidden = FALSE;
+    d->sleeping = d->saddled = d->invisible = d->hidden = d->advanced = FALSE;
 
     /* quantity */
     if (digit(*bufp)) {
@@ -3366,6 +3369,10 @@ create_particular_parse(
     if ((tmpp = strstri(bufp, "hidden ")) != 0) {
         d->hidden = TRUE;
         (void) memset(tmpp, ' ', sizeof "hidden " - 1);
+    }
+    if ((tmpp = strstri(bufp, "advanced ")) != 0) {
+        d->advanced = TRUE;
+        (void) memset(tmpp, ' ', sizeof "advanced " - 1);
     }
     /* check "female" before "male" to avoid false hit mid-word */
     if ((tmpp = strstri(bufp, "female ")) != 0) {
@@ -3530,6 +3537,10 @@ create_particular_creation(
            or vision issues (line-of-sight, invisibility, blindness) */
         if ((d->hidden || d->invisible) && !canspotmon(mtmp))
             flash_mon(mtmp);
+        /* could be advanced anyway */
+        if (d->advanced && !mtmp->madvanced
+            && advanceable(mtmp->data))
+            advance_monster(mtmp);
 
         madeany = TRUE;
         /* in case we got a doppelganger instead of what was asked

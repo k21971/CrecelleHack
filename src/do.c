@@ -1729,12 +1729,13 @@ goto_level(
     if (cant_go_back) {
         /* discard unreachable levels; keep #0 */
         for (l_idx = maxledgerno(); l_idx > 0; --l_idx)
-            if (!leaving_tutorial || ledger_to_dnum(l_idx) == tutorial_dnum
-                || ledger_to_dnum(l_idx) == maze_dnum)
+            if ((!leaving_tutorial || ledger_to_dnum(l_idx) == tutorial_dnum)
+                && ledger_to_dnum(l_idx) != maze_dnum)
                 delete_levelfile(l_idx);
         /* mark #overview data for all dungeon branches as uninteresting */
         for (l_idx = 0; l_idx < svn.n_dgns; ++l_idx)
-            if (!leaving_tutorial || l_idx == tutorial_dnum)
+            if ((!leaving_tutorial || l_idx == tutorial_dnum)
+                && l_idx != maze_dnum)
                 remdun_mapseen(l_idx);
         /* get rid of mons & objs scheduled to migrate to discarded levels */
         discard_migrations();
@@ -1807,7 +1808,7 @@ goto_level(
         if (!ttrap) {
             if ((u.uevent.qexpelled
                 && (Is_qstart(&u.uz0) || Is_qstart(&u.uz)))
-                || (Is_magicmaze(&u.uz0) || Is_magicmaze(&u.uz))) {
+                || (In_magicmaze(&u.uz0) || In_magicmaze(&u.uz))) {
                 /* we're coming back from or going into the quest home level,
                    after already getting expelled once. The portal back
                    doesn't exist anymore - see expulsion(). */
@@ -1963,18 +1964,22 @@ goto_level(
         if (new && on_level(&u.uz, &astral_level)) {
             final_level(); /* guardian angel,&c */
             record_achievement(ACH_ASTR); /* reached Astral level */
-        } else if (newdungeon && u.uhave.amulet) {
+        } else if (newdungeon && u.uhave.amulet && new) {
             if (Role_if(PM_ROGUE)) {
                 /* Rogues have to deal with extra angry mplayers */
                 if (new && !on_level(&u.uz, &astral_level))
                     create_mplayers(rn1(3, 3), TRUE);
                 /* force confrontation with quest leader you robbed */
-                makemon(&mons[roles[flags.rogvictim].ldrnum], u.ux, u.uy, MM_NOWAIT);
+                mtmp = makemon(&mons[roles[flags.rogvictim].ldrnum], u.ux, u.uy, MM_NOWAIT);
                 verbalize("We've finally found you, %s!", svp.plname);
-                if (roles[flags.rogvictim].ldrnum == PM_MASTER_OF_THIEVES)
+                if (roles[flags.rogvictim].ldrnum == PM_MASTER_OF_THIEVES) {
+                    mtmp->mpeaceful = 0;
+                    /* not your fault */
+                    set_malign(mtmp);
                     verbalize("I'm expelling you from the guild... in a casket!");
-                else
+                } else {
                     verbalize("Now give back what you stole from us!");
+                }
             } else {
                 resurrect(); /* force confrontation with Wizard */
             }
