@@ -817,7 +817,11 @@ lookat(coordxy x, coordxy y, char *buf, char *monbuf)
     } else if (glyph_is_monster(glyph)) {
         if ((mtmp = m_at(x, y)) != 0) {
             look_at_monster(buf, monbuf, mtmp, x, y);
-            pm = mtmp->data;
+            /* monster could be disguised */
+            if (M_AP_TYPE(mtmp) == M_AP_MONSTER)
+                pm = &mons[mtmp->mappearance];
+            else
+                pm = mtmp->data;
         } else if (Hallucination) {
             /* 'monster' must actually be a statue */
             Strcpy(buf, rndmonnam((char *) 0));

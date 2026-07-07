@@ -659,6 +659,30 @@ m_in_out_region(struct monst *mon, coordxy x, coordxy y)
 }
 
 /*
+ * check whether a monster CAN enter/leave their position due to a forcefield.
+ * TODO: make a version of this function that does the callback silently. currently,
+ * this function only checks forcefields, which is not future-proof.
+ */
+boolean
+m_will_hit_forcefield(struct monst *mon, coordxy x, coordxy y)
+{
+    int i, f_indx = 0;
+    for (i = 0; i < svn.n_regions; i++) {
+        if (gr.regions[i]->attach_2_m == mon->m_id)
+            continue;
+        if (inside_region(gr.regions[i], x, y)
+            ? (!mon_in_region(gr.regions[i], mon)
+               && (f_indx = gr.regions[i]->can_enter_f) == ENTER_FF)
+            : (mon_in_region(gr.regions[i], mon)
+               && (f_indx = gr.regions[i]->can_leave_f) == ENTER_FF)) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+
+/*
  * Checks player's regions after a teleport for instance.
  */
 void

@@ -2824,6 +2824,7 @@ extern void run_regions(void);
 extern void spread_bonfire(NhRegion *) NONNULLARG1;
 extern boolean in_out_region(coordxy, coordxy);
 extern boolean m_in_out_region(struct monst *, coordxy, coordxy) NONNULLARG1;
+extern boolean m_will_hit_forcefield(struct monst *, coordxy, coordxy) NONNULLARG1;
 extern void update_player_regions(void);
 extern void update_monster_region(struct monst *) NONNULLARG1;
 extern int reg_damg(NhRegion *) NONNULLARG1;
