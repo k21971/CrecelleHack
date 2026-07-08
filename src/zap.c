@@ -1777,7 +1777,8 @@ poly_obj(struct obj *obj, int id)
 
     if (obj->otyp == BOULDER)
         sokoban_guilt();
-    if (obj->otyp == POT_WATER) /* water is inert (balance bottles) */
+    if (obj->otyp == POT_WATER /* water is inert (balance bottles) */
+        || has_osum(obj)) /* could be exploitable */
         return obj;
     if (id == STRANGE_OBJECT) { /* preserve symbol */
         int try_limit = 3;
