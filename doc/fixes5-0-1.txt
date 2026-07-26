@@ -74,6 +74,9 @@ Some optimizations of the glyph lookup - don't produce names for swallow
 	glyph index in populate_glyphname_hash_indices; build a sorted
 	index for loadsyms so that it can be searched with bsearch
 	(pr #1612 by chasonr)
+stethoscope applied to one monster disguised as another (double-trouble Wizard)
+	mis-described undisguised form (unintended side-effect of 5.0 commit
+	064523e162f8e30bdb76186a854b9d8958f3b340)
 
 
 Platform- and/or Interface-Specific Fixes
@@ -203,6 +206,9 @@ MS-DOS: some optimizations for tile handling; change 16-color mode and
 	displayed, with the result cached; Use memcpy when splitting the
 	image into tiles; only load the tileset once (pr #1617 by chasonr)
 MS-DOS: Define a separate palette for VGA text (pr #1620 by chasonr)
+MS-DOS: some conditional cleanup for SUPPRESS_GRAPHICS, TILES_IN_GLYPHMAP,
+	NO_TILES, WANT_WIN_CURSES=1 without WANT_WIN_TTY=1
+	(pr #1632 by chasonr)
 musl: musl libc does not have __sighandler_t so don't use it in the
 	macro definition for SIG_RET_TYPE with musl
 WASM: resolve some build failures in 'make CROSS_TO_WASM=1'
