@@ -10,6 +10,9 @@
       back and heals allies.
 - Some monsters are now supporters, and hang back to heal their allies.
 
+## Roles
+- Complete overhaul of how the grappler role functions.
+
 ## Spellcasting
 - As in xnethack, spell success calculations are replaced by energy cost
   calculations.
