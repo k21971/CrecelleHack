@@ -1878,11 +1878,15 @@ mon_give_prop(struct monst *mtmp, int prop)
     case POISON_RES:
         msg = "%s looks healthy.";
         break;
+    case TELEPAT:
+        msg = "%s twitches slightly.";
+        break;
     default:
         return; /* can't give it */
         break;
     }
-    intrinsic = res_to_mr(prop);
+    /* res_to_mr should include all MR2 resistances as well */
+    intrinsic = prop == TELEPAT ? MR2_TELEPATHY : res_to_mr(prop);
 
     /* Don't give message if it already had this property intrinsically, but
        still do grant the intrinsic if it only had it from mresists.

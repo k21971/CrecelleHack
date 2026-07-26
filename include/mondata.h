@@ -91,6 +91,7 @@
     ((ptr) == &mons[PM_FLOATING_EYE] || (ptr) == &mons[PM_MIND_FLAYER] \
      || (ptr) == &mons[PM_MASTER_MIND_FLAYER])
 #define has_telepathy(mon) (((mon)->mextrinsics & MR2_TELEPATHY) != 0 \
+                            || ((mon)->mintrinsics & MR2_TELEPATHY) != 0 \
                             || telepathic(mon->data))
 #define is_armed(ptr) attacktype(ptr, AT_WEAP)
 #define acidic(ptr) (((ptr)->mflags1 & M1_ACID) != 0L)

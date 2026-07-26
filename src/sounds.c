@@ -2641,7 +2641,7 @@ doorder(void)
      * Note: when mounted, mtmp == u.usteed and shares player position,
      * so distu() will be 0 which passes the check.
      */
-    if (choice == 4 || choice == 5 || choice == 7 || choice == 8) {
+    if (choice == 4 || choice == 5 || choice == 6 || choice == 7) {
         if (distu(mtmp->mx, mtmp->my) > 2) {
             You("need to be next to %s to do that.", mon_nam(mtmp));
             return 0;
