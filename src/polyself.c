@@ -1430,7 +1430,17 @@ dobreathe(void)
     if (!getdir((char *) 0))
         return ECMD_CANCEL;
 
-    mattk = attacktype_fordmg(gy.youmonst.data, AT_BREA, AD_ANY);
+    if (uarmh && uarmh->oprop == OPROP_BLAZING) {
+        mattk = attacktype_fordmg(&mons[PM_RED_DRAGON], AT_BREA, AD_ANY);
+    } else if (uarmh && uarmh->oprop == OPROP_ACIDIC) {
+        mattk = attacktype_fordmg(&mons[PM_YELLOW_DRAGON], AT_BREA, AD_ANY);
+    } else if (uarmh && uarmh->oprop == OPROP_CRACKLING) {
+        mattk = attacktype_fordmg(&mons[PM_BLUE_DRAGON], AT_BREA, AD_ANY);
+    } else if (uarmh && uarmh->oprop == OPROP_BOREAL) {
+        mattk = attacktype_fordmg(&mons[PM_WHITE_DRAGON], AT_BREA, AD_ANY);
+    } else {
+        mattk = attacktype_fordmg(gy.youmonst.data, AT_BREA, AD_ANY);
+    }
     if (!mattk)
         impossible("bad breath attack?"); /* mouthwash needed... */
     else if (!u.dx && !u.dy && !u.dz)

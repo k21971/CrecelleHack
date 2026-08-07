@@ -901,7 +901,12 @@ domonability(void)
         if (c == 'q' || c == '\033')
             return ECMD_OK;
     }
-    if (can_breathe(uptr))
+    if (can_breathe(uptr)
+        || (uarmh && uarmh->oprop && uarmh->pknown
+            && (uarmh->oprop == OPROP_ACIDIC
+                || uarmh->oprop == OPROP_BLAZING
+                || uarmh->oprop == OPROP_CRACKLING
+                || uarmh->oprop == OPROP_BOREAL)))
         return dobreathe();
     else if (attacktype(uptr, AT_SPIT))
         return dospit();

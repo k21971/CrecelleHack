@@ -887,9 +887,15 @@ oprop_armor_handling(struct obj *otmp, boolean puton)
             break;
         case OPROP_BRINY:
             if (puton) {
-                ESwimming |= mask;
+                if (is_helmet(otmp))
+                    EMagical_breathing |= mask;
+                else
+                    ESwimming |= mask;
             } else {
-                ESwimming &= !mask;
+                if (is_helmet(otmp))
+                    ESwimming &= !mask;
+                else
+                    EMagical_breathing &= !mask;
             }
             break;
         case OPROP_HEXED:

@@ -1165,7 +1165,16 @@ kick_nondoor(coordxy x, coordxy y, int avrg_attrib)
         return ECMD_TIME;
     }
     if (gm.maploc->typ == IRONBARS) {
-        kick_ouch(x, y, "");
+        if (uarmf && uarmf->oprop == OPROP_ACIDIC
+            && !rn2(6)) {
+            pline_The("iron bars melt!");
+            uarmf->pknown = 1;
+            gm.maploc->typ = ROOM;
+            newsym(x, y);
+            update_inventory();
+        } else {
+            kick_ouch(x, y, "");
+        }
         return ECMD_TIME;
     }
     if (IS_TREE(gm.maploc->typ)) {

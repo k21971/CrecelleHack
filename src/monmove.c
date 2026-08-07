@@ -630,6 +630,10 @@ mind_blast(struct monst *mtmp)
     if (mtmp->mpeaceful
         && (!Conflict || resist_conflict(mtmp))) {
         pline("It feels quite soothing.");
+    } else if (uarmh && uarmh->oprop == OPROP_ANTIMAGIC) {
+        pline("Your helmet nullifies it.");
+        uarmh->pknown = 1;
+        update_inventory();
     } else if (!u.uinvulnerable) {
         int dmg;
         boolean m_sen = sensemon(mtmp);
@@ -749,6 +753,10 @@ m_everyturn_effect(struct monst *mtmp)
                 break;
             case OPROP_BRINY:
                 floor_spillage(x, y, POT_WATER, 0);
+                uarmf->pknown = 1;
+                break;
+            case OPROP_ANTIMAGIC:
+                remove_coating(x, y, COAT_ALL);
                 uarmf->pknown = 1;
                 break;
             default:

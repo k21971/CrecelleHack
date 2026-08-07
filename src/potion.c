@@ -754,10 +754,15 @@ peffect_hallucination(struct obj *otmp)
 
 staticfn void
 peffect_blood(struct obj *otmp) {
-    if (is_vampire(gy.youmonst.data)) {
+    if (is_vampire(gy.youmonst.data)
+        || (uarmh && uarmh->oprop == OPROP_SANGUINE)) {
         You_feel("better.");
         healup(8 + d(4 + 2 * bcsign(otmp), 4), !otmp->cursed ? 1 : 0,
            !!otmp->blessed, !otmp->cursed);
+        if (uarmh && uarmh->oprop == OPROP_SANGUINE && !uarmh->pknown) {
+            uarmh->pknown = TRUE;
+            update_inventory();
+        }
     } else {
         pline("Yech! This tastes like blood!");
     }

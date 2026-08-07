@@ -29,22 +29,24 @@
 - renamed dnh_enlightenment to attributes_menu (dnh_enlightenment maintained
   as an alias)
 
-## New Objects
-- Gas Mask
+## Objects
+- New Object: Gas Mask
   - Blocks poison gas and potion clouds.
   - Blocks eating when worn.
 - Removed potion of normality
   - Effect was unclear, not useful, and overall not fun.
-- Ring of Protection from Explosions
+- New Object: Ring of Protection from Explosions
   - Halves explosive damage.
   - Randomized appearance is "sticky ring," which has a 2/3 chance of sticking to
     player's finger when trying to take it off.
-- Bag of Winds
+- New Object: Bag of Winds
   - Applying a bag of winds sucks up nearby gases.
   - Tipping a bag of winds releases a cloud of the last consumed gas, size dependent
     upon how many gases have been consumed.
   - The bag grows less reliable the more gases are sucked up and the more often it
     has been tipped.
+- Added many new effects to object properties, dependent on the slot that the item
+  in question is worn in.
 
 ## Dungeon Generation
 - Give Vlad a nicer throne room.
