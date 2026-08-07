@@ -1,5 +1,22 @@
 # 1.6
 
+## Game Balance
+- Drinking a potion or using it for alchemy no longer results in an empty bottle.
+  - Empty bottles can still be obtained through other means.
+- Changed potion of gain ability to function as it does in xnethack, copying the code and
+  updating it for 5.0 compatability.
+  - Potions of gain ability do not appear randomly, but as rewards for optional branches
+    and in the valley.
+- Remove terrain boosts feature.
+- Remove ability score skill changes through #enhance and restore the exercise system.
+- Fix being able to wish oprops on artifacts.
+- Scrolls of transmute material cost more to write.
+- Dragonhide cannot be explicitly specified as a material. Wishing for a dragonhide
+  item results in a normal item of that types, while transmuting dragonhide results
+  in a random material.
+- Increasing the pet handling skill increases the max number of pets you can have
+  (and increase it by 1 generally).
+
 ## Monsters
 - New Monsters:
   - (Head) Butler/Maid/Servant
@@ -60,12 +77,6 @@
 - Prevent shopkeepers from locking players inside their shops at night.
 - Massively reduce resizing kit weight.
 - T-shirts and 50% of robes spawn pre-dyed.
-- Scrolls of transmute material cost more to write.
-- Dragonhide cannot be explicitly specified as a material. Wishing for a dragonhide
-  item results in a normal item of that types, while transmuting dragonhide results
-  in a random material.
-- Increasing the pet handling skill increases the max number of pets you can have
-  (and increase it by 1 generally).
 - Added the mintroduce patch from SpliceHack (code from xNetHack)
 - Salt does more damage to mummies than previously.
 - Venoms leave behind coatings on the floor.
@@ -81,16 +92,7 @@
 - Tourists begin the game with iron or gold credit cards.
 - The material of an unlocking tool determines how fragile it is.
 - Ensure Aleaxes spawn with same resistances as player.
-- Remove terrain boosts feature.
-  - Not fun, overly complex.
-- Remove ability score skill enhancing.
-  - Made the game far too punishing.
-- Fix being able to wish oprops on artifacts.
 - Increased variance of default monster weapon selection.
-- Changed potion of gain ability to function as it does in xnethack, copying the code and
-  updating it for 5.0 compatability.
-  - Potions of gain ability do not appear randomly, but as rewards for optional branches
-    and in the valley.
 - You are considered to be fumbling when you drip oil.
 
 # 1.5.1

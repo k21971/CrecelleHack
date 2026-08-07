@@ -675,7 +675,7 @@ dopotion(struct obj *otmp)
         } else
             trycall(otmp);
     }
-    debottle_potion(otmp);
+    useup(otmp);
     return ECMD_TIME;
 }
 
@@ -3514,7 +3514,7 @@ potion_dip(struct obj *obj, struct obj *potion)
               otense(obj, "mix"), (potion->quan > 1L) ? "one of " : "",
               thesimpleoname(potion));
         /* get rid of 'dippee' before potential perm_invent updates */
-        debottle_potion(potion); /* now gone */
+        useup(potion); /* now gone */
         /* Mixing potions is dangerous...
            KMH, balance patch -- acid is particularly unstable */
         if (dip_potion_explosion(obj, amt + rnd(9)))
