@@ -260,7 +260,8 @@ dmgval_dbonus(struct obj *otmp, struct monst *magr)
            amount of damage*/
         if (objects[otmp->otyp].oc_dir & WHACK)
             tmp += 5;
-    } else if (otmp->material == PLASTIC || otmp->material == PAPER) {
+    } else if (otmp->material == PLASTIC || otmp->material == PAPER
+                || otmp->material == COAL) {
         /* just terrible weapons all around */
         tmp -= 2;
     } else if (otmp->material == METAL) {

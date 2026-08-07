@@ -67,6 +67,7 @@ struct material {
     OMAT(GEMSTONE,      "gemstone", 7,  55,   500, CLR_RED), \
     OMAT(MINERAL,       "stone",    6,  70,   10,  CLR_GRAY), \
     OMAT(SALT,          "salt",     2,  20,   1,   CLR_WHITE), \
+    OMAT(COAL,          "coal",     2,  40,   17,  CLR_BLACK), \
     OMAT(LODEN,         "lodenstone", \
                                     8,  3500, 1, CLR_GRAY)
 #define OMAT(id, nam, ac, dens, cost, clr) id

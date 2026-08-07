@@ -3213,6 +3213,7 @@ set_cost(struct obj *obj, struct monst *shkp)
             /* different shop keepers give different prices */
             if (obj->material == GEMSTONE
                 || obj->material == SALT
+                || obj->material == COAL
                 || is_worthless_glass(obj)) {
                 tmp = (obj->otyp % (6 - shkp->m_id % 3));
                 tmp = (tmp + 3) * obj->quan;

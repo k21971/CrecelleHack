@@ -2515,7 +2515,12 @@ eatspecial(void)
                             : "You're back in the salt mines.");
         if (otmp->otyp == SALT_CRYSTAL)
             makeknown(otmp->otyp);
-        exercise(A_CON,FALSE);
+        exercise(A_CON, FALSE);
+    }
+    if (otmp->material == COAL) {
+        pline("Tastes like burnt marshmallows.");
+        makeknown(HUNK_OF_CHARCOAL);
+        exercise(A_CON, TRUE);
     }
 
     if (otmp == uwep && otmp->quan == 1L)

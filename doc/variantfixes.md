@@ -62,6 +62,8 @@
     upon how many gases have been consumed.
   - The bag grows less reliable the more gases are sucked up and the more often it
     has been tipped.
+- New Object: Hunk of Charcoal
+  - Created occasionally when a fire burns a wooden item into nothing.
 - Added many new effects to object properties, dependent on the slot that the item
   in question is worn in.
 

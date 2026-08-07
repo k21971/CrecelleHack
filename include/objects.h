@@ -1669,6 +1669,8 @@ GEM("agate",            "orange", 12, 1,  200, 15,  6, GEMSTONE, CLR_ORANGE,
                                                         AGATE),
 GEM("salt crystal",      "white",  8, 1,   30, 15,  1,     SALT, CLR_WHITE,
                                                         SALT_CRYSTAL),
+GEM("hunk of charcoal",  "black",  0, 1,   35, 15,  2, COAL, CLR_BLACK,
+                                                        HUNK_OF_CHARCOAL),
 GEM("jade",              "green", 10, 1,  300, 15,  6, GEMSTONE, CLR_GREEN,
                                                         JADE),
 MARKER(LAST_REAL_GEM, JADE)

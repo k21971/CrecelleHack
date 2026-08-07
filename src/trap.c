@@ -321,6 +321,18 @@ erode_obj(
         if (ef_flags & EF_PAY)
             costly_alteration(otmp, cost_type);
 
+        /* burnt wooden objects will sometimes leave behind charcoal */
+        if (type == ERODE_BURN && otmp->material == WOOD && !rn2(4)) {
+            struct obj *remains = mksobj(HUNK_OF_CHARCOAL, TRUE, FALSE);
+            if (uvictim)
+                hold_another_object(remains, "You drop the hot %s.",
+                                    doname(remains), "You drop: ");
+            else if (victim)
+                add_to_minv(victim, remains);
+            else
+                place_object(remains,otmp->ox, otmp->oy);          
+        }
+
         /* similar to lava, extract all items before deleting any containers */
         if (Has_contents(otmp)) {
             struct obj *curr, *ncobj;

@@ -1638,6 +1638,7 @@ create_polymon(struct obj *obj, int okind)
     case GEMSTONE:
     case MINERAL:
     case LODEN:
+    case COAL:
         pm_index = rn2(2) ? PM_STONE_GOLEM : PM_CLAY_GOLEM;
         material = "lithic ";
         break;

@@ -4024,6 +4024,7 @@ mix_gem(struct obj *o1)
         break;
         /* black */
     case BLACK_OPAL:
+    case HUNK_OF_CHARCOAL:
         potion_descr = "black";
         break;
     case JET:

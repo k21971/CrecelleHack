@@ -4577,7 +4577,8 @@ void force_material(struct obj *otmp, int material)
             otmp->gemtype = otmp->otyp;
         } else {
             otmp->gemtype = FIRST_REAL_GEM + rn2(NUM_REAL_GEMS);
-            if (otmp->gemtype == SALT_CRYSTAL || otmp->gemtype == DILITHIUM_CRYSTAL)
+            if (otmp->gemtype == SALT_CRYSTAL || otmp->gemtype == DILITHIUM_CRYSTAL
+                || otmp->gemtype == HUNK_OF_CHARCOAL)
                 otmp->gemtype = OBSIDIAN;
         }
     }

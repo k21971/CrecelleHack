@@ -1881,7 +1881,7 @@ seffect_transmute_material(struct obj **sobjp)
     boolean already_known = (sobj->oclass == SPBOOK_CLASS /* spell */
                              || objects[sobj->otyp].oc_name_known);
     static const int bad_mats[] = {
-        SALT, PLASTIC, LODEN, PAPER, WAX
+        SALT, PLASTIC, LODEN, PAPER, WAX, COAL
     };
     useup(sobj);
     *sobjp = 0;
