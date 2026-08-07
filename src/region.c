@@ -543,15 +543,19 @@ spread_bonfire(NhRegion *reg) {
                 remove_coating(x, y, COAT_POTION);
                 newreg = create_bonfire(x, y, rn1(20, 10), d(4, 4));
             }
-            detonate_waste(x, y);
-            if (x == reg->bounding_box.lx && y == reg->bounding_box.ly) {
-                evaporate_potion_puddles(x, y);
-            }
             /* set faults */
             if (heros_fault(reg) && newreg)
                 set_heros_fault(newreg);
             else if (newreg)
                 clear_heros_fault(newreg);
+            /* HCollateral damage */
+            if (newreg
+                || (x >= reg->bounding_box.lx && x <= reg->bounding_box.hx
+                    && y >= reg->bounding_box.lx && y <= reg->bounding_box.hy)) {
+                fire_damage_chain(svl.level.objects[x][y], TRUE, TRUE, x, y);
+                detonate_waste(x, y);
+                evaporate_potion_puddles(x, y);
+            }
         }
     }
 }

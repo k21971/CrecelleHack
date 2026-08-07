@@ -94,6 +94,7 @@
 - Ensure Aleaxes spawn with same resistances as player.
 - Increased variance of default monster weapon selection.
 - You are considered to be fumbling when you drip oil.
+- Bonfires now light items on fire and properly evaporate liquids.
 
 # 1.5.1
 ## Objects
