@@ -3970,7 +3970,7 @@ dotip(void)
         return ECMD_TIME;
     }
     /* anything not covered yet */
-    if (cobj->oclass == POTION_CLASS && (IS_COATABLE(levl[u.ux][u.uy].typ))) { /* CAN pour potions... :) */
+    if (cobj->oclass == POTION_CLASS) { /* CAN pour potions... :) */
         if (y_n("Douse yourself with the potion?") == 'y') {
             make_dripping(rn1(10, 10), cobj->otyp, cobj->corpsenm);
             You("carefully douse yourself with the %s.", xname(cobj));
@@ -3980,9 +3980,6 @@ dotip(void)
             potion_splatter(u.ux, u.uy, cobj->otyp, cobj->corpsenm);
         else
             floor_spillage(u.ux, u.uy, cobj->otyp, cobj->corpsenm);
-        debottle_potion(cobj);
-    } else if (cobj->oclass == POTION_CLASS) {
-        You("waste the %s.", xname(cobj));
         debottle_potion(cobj);
     } else if (uarmh && cobj == uarmh)
         return tiphat() ? ECMD_TIME : ECMD_OK;
