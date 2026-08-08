@@ -1196,7 +1196,7 @@ use_defensive(struct monst *mtmp)
         pline_mon(mtmp, "%s kicks ashes into your %s!", 
                     Monnam(mtmp), body_part(FACE));
         remove_coating(mtmp->mx, mtmp->my, COAT_ASHES);
-        make_blinded(rn1(5, 5), TRUE);
+        make_blinded(rn1(5, 5), FALSE);
         break;
     }
     case MUSE_COAT_BLOOD: {
