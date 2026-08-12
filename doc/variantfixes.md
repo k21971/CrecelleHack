@@ -97,6 +97,9 @@
 - Increased variance of default monster weapon selection.
 - You are considered to be fumbling when you drip oil.
 - Bonfires now light items on fire and properly evaporate liquids.
+- Sitting makes you prone.
+- Prone monsters and players cannot be hit by beheading or bisecting attacks
+  (already doubled over).
 
 # 1.5.1
 ## Objects

@@ -473,6 +473,7 @@ dosit(void)
                          || obj->material == CLOTH))
                 pline("It's not very comfortable...");
         }
+        make_prone();
     } else if (trap != 0 || (u.utrap && (u.utraptype >= TT_LAVA))) {
         if (u.utrap) {
             exercise(A_WIS, FALSE); /* you're getting stuck longer */
@@ -608,6 +609,7 @@ dosit(void)
         make_dripping(rnd(5), fakeobj.otyp, NON_PM);
         remove_coating(u.ux, u.uy, COAT_POTION);
     }
+    make_prone();
     return ECMD_TIME;
 }
 
