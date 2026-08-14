@@ -1,0 +1,22 @@
+# Grappling
+
+# Move around (While not prone)
+- Prone, stunned, paralyzed = Elbow drop (Finisher, break grab)
+- Prone = Stomp (x2 damage, break grab)
+- Paralyzed = Lariat (confusion chance)
+- Otherwise = Takedown (monster/player prone)
+
+# Move around in front
+- Prone, player prone, paralyzed = Sleeper lock (Finisher, sleep, break grab)
+- Confused = Spin kick (x2 damage, break grab)
+- Otherwise = Elbow smash (stun chance)
+
+# Odd direction away
+- Otherwise = Leg drag (relocate)
+
+# Directly away
+- Otherwise = Suplex (x2 damage)
+
+# Fail state
+- Asleep, paralyzed = Neck snap (Finisher, break grab)
+- Otherwise = Throttle/choke (no effect)
