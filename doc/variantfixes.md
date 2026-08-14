@@ -68,7 +68,8 @@
   in question is worn in.
 
 ## Dungeon Generation
-- Give Vlad a nicer throne room.
+- Give Vlad a nicer throne room and modified the first level of Vlad's tower.
+- Move Vlad's tower to Gnomish Mines, similar to dNetHack.
 - Unlink monster difficulty from player level and link it instead to dungeon depth.
 - Items with higher enchantment values are more likely to generate as
   the player descends deeper into the dungeon.

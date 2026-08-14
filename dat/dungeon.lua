@@ -99,14 +99,6 @@ dungeon = {
       flags = { "mazelike", "hellish" },
       lvlfill = "hellfill",
       alignment = "noalign",
-      branches = {
-         {
-            name = "Vlad's Tower",
-            base = 9,
-            range = 5,
-            direction = "up"
-         }
-      },
       levels = {
          {
             name = "valley",
@@ -196,7 +188,14 @@ dungeon = {
             base = -1,
             nlevels = 3
          },
-      }
+      },
+      branches = {
+         {
+            name = "Vlad's Tower",
+            base = -2,
+            direction = "up"
+         }
+      },
    },
    {
       name = "The Quest",
