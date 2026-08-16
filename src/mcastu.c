@@ -347,6 +347,7 @@ castmu(
         } else {
             monstunseesu(M_SEEN_FIRE);
         }
+        dmg = halve_damage(dmg, AD_FIRE);
         burn_away_slime();
         /* burn up flammable items on the floor, melt ice terrain */
         mon_spell_hits_spot(mtmp, AD_FIRE, u.ux, u.uy);
@@ -361,6 +362,7 @@ castmu(
         } else {
             monstunseesu(M_SEEN_COLD);
         }
+        dmg = halve_damage(dmg,AD_COLD);
         /* freeze water or lava terrain */
         /* FIXME: mon_spell_hits_spot() uses zap_over_floor(); unlike with
          * fire, it does not target susceptible floor items with cold */
@@ -386,10 +388,8 @@ castmu(
         dmg = 0; /* done by the spell casting functions */
         break;
     } /* switch */
-    if (dmg) {
-        adjust_damage(&gy.youmonst, &dmg, mattk->adtyp);
+    if (dmg)
         mdamageu(mtmp, dmg);
-    }
     return ret;
 }
 
@@ -1166,8 +1166,7 @@ mcast_spell(struct monst *mtmp, int dmg, int spellnum)
         dmg = 0;
         break;
     }
-    if (adtyp)
-        adjust_damage(&gy.youmonst, &dmg, adtyp);
+
     if (dmg)
         mdamageu(mtmp, dmg);
 }

@@ -1634,7 +1634,7 @@ extern boolean mon_avoiding_this_attack(struct monst *, int) NONNULLARG1;
 extern boolean ranged_attk_available(struct monst *mtmp) NONNULLARG1;
 extern void learn_mattack(int, int);
 extern long attack_contact_slots(struct monst *, int) NONNULLARG1;
-extern int adjust_damage(struct monst *, int *, int);
+extern int halve_damage(int, int);
 
 /* ### minion.c ### */
 

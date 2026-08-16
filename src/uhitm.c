@@ -2703,6 +2703,7 @@ mhitm_ad_fire(
                 (void) destroy_items(&gy.youmonst, AD_FIRE, orig_dmg);
                 ignite_items(gi.invent);
             }
+            mhm->damage = halve_damage(mhm->damage, AD_FIRE);
             burn_away_slime();
         } else {
             mhm->damage = 0;
@@ -2780,6 +2781,7 @@ mhitm_ad_cold(
             } else {
                 monstunseesu(M_SEEN_COLD);
             }
+            mhm->damage = halve_damage(mhm->damage, AD_COLD);
             if ((int) magr->m_lev > rn2(20))
                 (void) destroy_items(&gy.youmonst, AD_COLD, orig_dmg);
         } else
@@ -2838,6 +2840,7 @@ mhitm_ad_elec(
             } else {
                 monstunseesu(M_SEEN_ELEC);
             }
+            mhm->damage = halve_damage(mhm->damage, AD_ELEC);
             if ((int) magr->m_lev > rn2(20))
                 (void) destroy_items(&gy.youmonst, AD_ELEC, orig_dmg);
         } else
@@ -5101,7 +5104,6 @@ mhitm_adtyping(
     default:
         mhm->damage = 0;
     }
-    adjust_damage(mdef, &(mhm->damage), mattk->adtyp);
 }
 
 int
@@ -5451,7 +5453,6 @@ gulpum(struct monst *mdef, struct attack *mattk)
                 break;
             }
             end_engulf();
-            adjust_damage(mdef, &dam, mattk->adtyp);
             mdef->mhp -= dam;
             if (DEADMONSTER(mdef)) {
                 killed(mdef);
@@ -6355,8 +6356,10 @@ passive(
                     ugolemeffects(AD_COLD, tmp);
                     break;
                 }
+                tmp = halve_damage(tmp, AD_COLD);
                 monstunseesu(M_SEEN_COLD);
                 You("are suddenly very cold!");
+                mdamageu(mon, tmp);
                 /* monster gets stronger with your heat! */
                 healmon(mon, (tmp + rn2(2)) / 2, (tmp + 1) / 2);
                 /* at a certain point, the monster will reproduce! */
@@ -6389,9 +6392,11 @@ passive(
                     ugolemeffects(AD_FIRE, tmp);
                     break;
                 }
+                tmp = halve_damage(tmp, AD_FIRE);
                 monstunseesu(M_SEEN_FIRE);
                 You("are suddenly very hot!");
                 spread_mold(mon->mx, mon->my, mon->data);
+                mdamageu(mon, tmp); /* fire damage */
                 learn_it = TRUE;
                 do_damage = TRUE;
             }
@@ -6405,9 +6410,10 @@ passive(
                 ugolemeffects(AD_ELEC, tmp);
                 break;
             }
+            tmp = halve_damage(tmp, AD_ELEC);
             monstunseesu(M_SEEN_ELEC);
             You("are jolted with electricity!");
-            do_damage = TRUE;
+            mdamageu(mon, tmp);
             break;
         case AD_HONY:
             if (canseemon(mon)) {
@@ -6419,14 +6425,6 @@ passive(
         default:
             break;
         }
-    }
-    /* kludge to avoid damage for non-damaging passives. - K*/
-    if (do_damage
-        && (ptr->mattk[i].adtyp == AD_FIRE
-            || ptr->mattk[i].adtyp == AD_COLD
-            || ptr->mattk[i].adtyp == AD_ELEC)) {
-        adjust_damage(&gy.youmonst, &tmp, ptr->mattk[i].adtyp);
-        mdamageu(mon, tmp);
     }
     if (learn_it) learn_mattack(mon->mnum, i);
     return (malive | mhit);

@@ -2866,7 +2866,6 @@ zapyourself(struct obj *obj, boolean ordinary)
     boolean learn_it = FALSE;
     int damage = 0;
     int orig_dmg = 0; /* for passing to destroy_items() */
-    int adtyp = 0;
 
     switch (obj->otyp) {
     case WAN_STRIKING:
@@ -2899,9 +2898,9 @@ zapyourself(struct obj *obj, boolean ordinary)
     case ELECTRIC_GUITAR:
         learn_it = TRUE;
         orig_dmg = d(12, 6);
-        adtyp = AD_ELEC;
         if (!Shock_immunity) {
             You("shock yourself!");
+            orig_dmg = halve_damage(orig_dmg, AD_ELEC);
             damage = orig_dmg;
             exercise(A_CON, FALSE);
             monstunseesu(M_SEEN_ELEC);
@@ -2923,13 +2922,13 @@ zapyourself(struct obj *obj, boolean ordinary)
     case FIRE_HORN:
         learn_it = TRUE;
         orig_dmg = d(12, 6);
-        adtyp = AD_FIRE;
         if (Fire_immunity) {
             shieldeff(u.ux, u.uy);
             You_feel("rather warm.");
             monstseesu(M_SEEN_FIRE);
             ugolemeffects(AD_FIRE, orig_dmg);
         } else {
+            orig_dmg = halve_damage(orig_dmg, AD_FIRE);
             pline("You've set yourself afire!");
             damage = orig_dmg;
             monstunseesu(M_SEEN_FIRE);
@@ -2945,13 +2944,13 @@ zapyourself(struct obj *obj, boolean ordinary)
     case FROST_HORN:
         learn_it = TRUE;
         orig_dmg = d(12, 6);
-        adtyp = AD_COLD;
         if (Cold_immunity) {
             shieldeff(u.ux, u.uy);
             You_feel("a little chill.");
             monstseesu(M_SEEN_COLD);
             ugolemeffects(AD_COLD, orig_dmg);
         } else {
+            orig_dmg = halve_damage(orig_dmg, AD_COLD);
             You("imitate a popsicle!");
             damage = orig_dmg;
             monstunseesu(M_SEEN_COLD);
@@ -3193,8 +3192,6 @@ zapyourself(struct obj *obj, boolean ordinary)
        that the wand itself has been seen */
     if (learn_it)
         learnwand(obj);
-    /* Adjust damage for resistance purposes. */
-    adjust_damage(&gy.youmonst, &damage, adtyp);
     return damage;
 }
 
@@ -4705,7 +4702,6 @@ zhitm(
         sho_shieldeff = TRUE;
         tmp = 0;
     }
-    adjust_damage(mon, &tmp, damgtype);
     if (sho_shieldeff)
         shieldeff(mon->mx, mon->my);
     if (is_hero_spell(type) && (Role_if(PM_KNIGHT) && u.uhave.questart))
@@ -4750,6 +4746,7 @@ zhitu(
             monstseesu(M_SEEN_FIRE);
             ugolemeffects(AD_FIRE, orig_dam);
         } else {
+            halve_damage(orig_dam, AD_FIRE);
             dam = orig_dam;
             monstunseesu(M_SEEN_FIRE);
         }
@@ -4769,6 +4766,7 @@ zhitu(
             monstseesu(M_SEEN_COLD);
             ugolemeffects(AD_COLD, orig_dam);
         } else {
+            halve_damage(orig_dam, AD_COLD);
             dam = orig_dam;
             monstunseesu(M_SEEN_COLD);
         }
@@ -4839,6 +4837,7 @@ zhitu(
             monstseesu(M_SEEN_ELEC);
             ugolemeffects(AD_ELEC, orig_dam);
         } else {
+            halve_damage(orig_dam, AD_ELEC);
             dam = orig_dam;
             exercise(A_CON, FALSE);
             monstunseesu(M_SEEN_ELEC);
@@ -4910,8 +4909,6 @@ zhitu(
            including hero's own ricochets; breath attacks do full damage */
         if (dam && Half_spell_damage && abstyp < 20)
             dam = (dam + 1) / 2;
-        /* Bit of a kludge but lets us do a fast zt to ad conversion. */
-        adjust_damage(&gy.youmonst, &dam, abstyp + 1);
         losehp(dam, kbuf, KILLED_BY_AN);
     }
     return;
