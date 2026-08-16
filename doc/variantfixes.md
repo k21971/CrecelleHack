@@ -102,6 +102,7 @@
 - Prone monsters and players cannot be hit by beheading or bisecting attacks
   (already doubled over).
 - Change "acidic" oprop to "mordant"
+- Salt burns ghosts instead of mummies.
 
 # 1.5.1
 ## Objects

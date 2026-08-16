@@ -566,7 +566,7 @@ hates_material(struct permonst *ptr, int material)
                           || is_demon(ptr) || ptr == &mons[PM_SHADE]
                           || (ptr->mlet == S_IMP));
     } else if (material == SALT) {
-        return (ptr->mlet == S_MUMMY || ptr == &mons[PM_GIANT_SLUG]);
+        return (ptr->mlet == S_GHOST || ptr == &mons[PM_GIANT_SLUG]);
     } else if (material == IRON || material == NIGHTIRON) {
         /* elves hate cold iron */
         return is_elf(ptr);
