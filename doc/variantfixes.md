@@ -101,6 +101,7 @@
 - Sitting makes you prone.
 - Prone monsters and players cannot be hit by beheading or bisecting attacks
   (already doubled over).
+- Change "acidic" oprop to "mordant"
 
 # 1.5.1
 ## Objects

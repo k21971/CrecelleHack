@@ -44,12 +44,12 @@
 - Crackling armor provides shock resistance when worn.
 - Crackling helmets allow breathing electricity.
 
-## Acidic
-- Acidic weapons deal 1d8 extra acid damage.
-- Acidic armor provides acid resistance when worn.
-- Acidic boots leave behind a trail of acid when walking. They also have
+## Mordant
+- Mordant weapons deal 1d8 extra acid damage.
+- Mordant armor provides acid resistance when worn.
+- Mordant boots leave behind a trail of acid when walking. They also have
   a small chance of melting kicked iron bars.
-- Acidic helmets allow breathing acid.
+- Mordant helmets allow breathing acid.
 
 ## Hungry
 - Hungry weapons drain life.

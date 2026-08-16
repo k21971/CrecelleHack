@@ -97,7 +97,7 @@ OPROP(BLAZING,   "blazing",     150,    3), \
 OPROP(CRACKLING, "crackling",   150,    4), \
 OPROP(SUBTLE,    "subtle",      100,    5), \
 OPROP(HEXED,     "hexed",       100,    6), \
-OPROP(ACIDIC,    "acidic",      100,    7), \
+OPROP(ACIDIC,    "mordant",     100,    7), \
 OPROP(HUNGRY,    "hungry",      100,    8), \
 OPROP(ANTIMAGIC, "nulling",      50,    9), \
 OPROP(BRINY,     "briny",       100,    10)
