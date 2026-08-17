@@ -339,7 +339,7 @@ castmu(
     switch (mattk->adtyp) {
     case AD_FIRE:
         pline("You're enveloped in flames.");
-        if (Fire_immunity) {
+        if (Fire_resistance) {
             shieldeff(u.ux, u.uy);
             pline("But you resist the effects.");
             monstseesu(M_SEEN_FIRE);
@@ -347,14 +347,13 @@ castmu(
         } else {
             monstunseesu(M_SEEN_FIRE);
         }
-        dmg = halve_damage(dmg, AD_FIRE);
         burn_away_slime();
         /* burn up flammable items on the floor, melt ice terrain */
         mon_spell_hits_spot(mtmp, AD_FIRE, u.ux, u.uy);
         break;
     case AD_COLD:
         pline("You're covered in frost.");
-        if (Cold_immunity) {
+        if (Cold_resistance) {
             shieldeff(u.ux, u.uy);
             pline("But you resist the effects.");
             monstseesu(M_SEEN_COLD);
@@ -362,7 +361,6 @@ castmu(
         } else {
             monstunseesu(M_SEEN_COLD);
         }
-        dmg = halve_damage(dmg,AD_COLD);
         /* freeze water or lava terrain */
         /* FIXME: mon_spell_hits_spot() uses zap_over_floor(); unlike with
          * fire, it does not target susceptible floor items with cold */
@@ -709,7 +707,7 @@ mcast_fire_pillar(struct monst *mtmp, int dmg)
 
     pline("A pillar of fire strikes all around you!");
     orig_dmg = dmg = d(8, 6);
-    if (Fire_immunity) {
+    if (Fire_resistance) {
         shieldeff(u.ux, u.uy);
         monstseesu(M_SEEN_FIRE);
         dmg = 0;
@@ -738,7 +736,7 @@ mcast_lightning(struct monst *mtmp, int dmg)
     pline("A bolt of lightning strikes down at you from above!");
     reflects = ureflects("It bounces off your %s%s.", "");
     orig_dmg = dmg = d(8, 6);
-    if (reflects || Shock_immunity) {
+    if (reflects || Shock_resistance) {
         shieldeff(u.ux, u.uy);
         dmg = 0;
         if (reflects) {
@@ -999,7 +997,6 @@ mcast_weird_rain(int spellnum)
 staticfn void
 mcast_spell(struct monst *mtmp, int dmg, int spellnum)
 {
-    int adtyp = 0;
     if (dmg < 0) {
         impossible("monster cast spell (%d) with negative dmg (%d)?",
                    spellnum, dmg);
@@ -1088,11 +1085,9 @@ mcast_spell(struct monst *mtmp, int dmg, int spellnum)
         dmg = mcast_geyser(dmg);
         break;
     case MCAST_FIRE_PILLAR:
-        adtyp = AD_FIRE;
         dmg = mcast_fire_pillar(mtmp, dmg);
         break;
     case MCAST_LIGHTNING:
-        adtyp = AD_ELEC;
         dmg = mcast_lightning(mtmp, dmg);
         break;
     case MCAST_INSECTS:

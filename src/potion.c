@@ -1067,8 +1067,6 @@ peffect_sickness(struct obj *otmp)
                   fruitname(TRUE));
         if (Role_if(PM_HEALER)) {
             pline("Fortunately, you have been immunized.");
-        } else if (Poison_immunity) {
-            pline("Fortunately, you have a strong immune system.");
         } else {
             char contaminant[BUFSZ];
             int typ = rn2(A_MAX);
@@ -1554,7 +1552,6 @@ peffect_alkahest(struct obj *otmp)
         int dmg;
         pline("Your insides are dissolving!");
         dmg = d(otmp->cursed ? 8 : 10, otmp->blessed ? 8 : 4);
-        adjust_damage(&gy.youmonst, &dmg, AD_ACID);
         losehp(dmg, "drinking universal solvent", KILLED_BY);
         exercise(A_CON, FALSE);
     }
@@ -2551,7 +2548,6 @@ potionhit(struct monst *mon, struct obj *obj, int how)
                       obj->blessed ? " a little"
                                    : obj->cursed ? " a lot" : "");
                 dmg = d(obj->cursed ? 2 : 1, obj->blessed ? 4 : 8);
-                adjust_damage(&gy.youmonst, &dmg, AD_ACID);
                 losehp(dmg, "tonic of acid", KILLED_BY_AN);
             }
             break;
@@ -2560,7 +2556,6 @@ potionhit(struct monst *mon, struct obj *obj, int how)
                 int dmg;
                 pline("You are melting!");
                 dmg = d(obj->cursed ? 4 : 6, obj->blessed ? 8 : 4);
-                adjust_damage(&gy.youmonst, &dmg, AD_ACID);
                 losehp(dmg, "alkahest", KILLED_BY);
             }
             break;
@@ -2822,9 +2817,8 @@ potionbreathe(struct obj *obj)
     case POT_ALKAHEST:
     case POT_ACID: {
         int dmg = rnd((obj->otyp == POT_ACID) ? 8 : 16);
-        if (!Acid_immunity && !u.uinvulnerable) {
+        if (!Acid_resistance && !u.uinvulnerable) {
             You("are dissolving!");
-            adjust_damage(&gy.youmonst, &dmg, AD_ACID);
             losehp(dmg, "acidic vapors", KILLED_BY);
         }
         break;

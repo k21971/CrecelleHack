@@ -74,6 +74,13 @@ enum prop_types {
     SWIMMING          = 52,
     MAGICAL_BREATHING = 53,
     PASSES_WALLS      = 54,
+    /* Vulnerabilities */
+    FIRE_VUL          =  55,
+    COLD_VUL          =  56,
+    SLEEP_VUL         =  57,
+    DISINT_VUL        =  58,
+    SHOCK_VUL         =  59,
+    POISON_VUL        =  60,
     /* Physical attributes */
     SLOW_DIGESTION    = 55,
     HALF_SPDAM        = 56,

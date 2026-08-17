@@ -2898,9 +2898,8 @@ zapyourself(struct obj *obj, boolean ordinary)
     case ELECTRIC_GUITAR:
         learn_it = TRUE;
         orig_dmg = d(12, 6);
-        if (!Shock_immunity) {
+        if (!Shock_resistance) {
             You("shock yourself!");
-            orig_dmg = halve_damage(orig_dmg, AD_ELEC);
             damage = orig_dmg;
             exercise(A_CON, FALSE);
             monstunseesu(M_SEEN_ELEC);
@@ -2922,13 +2921,12 @@ zapyourself(struct obj *obj, boolean ordinary)
     case FIRE_HORN:
         learn_it = TRUE;
         orig_dmg = d(12, 6);
-        if (Fire_immunity) {
+        if (Fire_resistance) {
             shieldeff(u.ux, u.uy);
             You_feel("rather warm.");
             monstseesu(M_SEEN_FIRE);
             ugolemeffects(AD_FIRE, orig_dmg);
         } else {
-            orig_dmg = halve_damage(orig_dmg, AD_FIRE);
             pline("You've set yourself afire!");
             damage = orig_dmg;
             monstunseesu(M_SEEN_FIRE);
@@ -2944,13 +2942,12 @@ zapyourself(struct obj *obj, boolean ordinary)
     case FROST_HORN:
         learn_it = TRUE;
         orig_dmg = d(12, 6);
-        if (Cold_immunity) {
+        if (Cold_resistance) {
             shieldeff(u.ux, u.uy);
             You_feel("a little chill.");
             monstseesu(M_SEEN_COLD);
             ugolemeffects(AD_COLD, orig_dmg);
         } else {
-            orig_dmg = halve_damage(orig_dmg, AD_COLD);
             You("imitate a popsicle!");
             damage = orig_dmg;
             monstunseesu(M_SEEN_COLD);
@@ -4740,13 +4737,12 @@ zhitu(
         break;
     case ZT_FIRE:
         orig_dam = d(nd, 6);
-        if (Fire_immunity) {
+        if (Fire_resistance) {
             shieldeff(sx, sy);
             You("don't feel hot!");
             monstseesu(M_SEEN_FIRE);
             ugolemeffects(AD_FIRE, orig_dam);
         } else {
-            halve_damage(orig_dam, AD_FIRE);
             dam = orig_dam;
             monstunseesu(M_SEEN_FIRE);
         }
@@ -4760,13 +4756,12 @@ zhitu(
         break;
     case ZT_COLD:
         orig_dam = d(nd, 6);
-        if (Cold_immunity) {
+        if (Cold_resistance) {
             shieldeff(sx, sy);
             You("don't feel cold.");
             monstseesu(M_SEEN_COLD);
             ugolemeffects(AD_COLD, orig_dam);
         } else {
-            halve_damage(orig_dam, AD_COLD);
             dam = orig_dam;
             monstunseesu(M_SEEN_COLD);
         }
@@ -4831,13 +4826,12 @@ zhitu(
         return; /* lifesaved */
     case ZT_LIGHTNING:
         orig_dam = d(nd, 6);
-        if (Shock_immunity) {
+        if (Shock_resistance) {
             shieldeff(sx, sy);
             You("aren't affected.");
             monstseesu(M_SEEN_ELEC);
             ugolemeffects(AD_ELEC, orig_dam);
         } else {
-            halve_damage(orig_dam, AD_ELEC);
             dam = orig_dam;
             exercise(A_CON, FALSE);
             monstunseesu(M_SEEN_ELEC);

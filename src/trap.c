@@ -3189,7 +3189,7 @@ immune_to_trap(struct monst *mon, unsigned ttype)
         /*FALLTHRU*/
     case FIRE_TRAP: /* can always destroy items being carried */
         /* harmful if not resistant or if carrying anything that could burn */
-        if (is_you ? !Fire_immunity : !resists_fire(mon))
+        if (is_you ? !Fire_resistance : !resists_fire(mon))
             return TRAP_NOT_IMMUNE;
 
         for (obj = is_you ? gi.invent : mon->minvent; obj; obj = obj->nobj) {
@@ -6783,7 +6783,7 @@ chest_trap(
             int dmg = d(4, 4), orig_dmg = dmg;
 
             You("are jolted by a surge of electricity!");
-            if (Shock_immunity) {
+            if (Shock_resistance) {
                 shieldeff(u.ux, u.uy);
                 You("don't seem to be affected.");
                 monstseesu(M_SEEN_ELEC);
@@ -6791,7 +6791,6 @@ chest_trap(
             } else {
                 monstunseesu(M_SEEN_ELEC);
             }
-            dmg = halve_damage(dmg, AD_ELEC);
             (void) destroy_items(&gy.youmonst, AD_ELEC, orig_dmg);
             if (dmg)
                 losehp(dmg, "electric shock", KILLED_BY_AN);
@@ -7411,7 +7410,7 @@ lava_effects(void)
         You("sink into the %s%s!", waterbody_name(u.ux, u.uy),
             !boil_away ? ", but it only burns slightly"
                        : " and are about to be immolated");
-        if (Fire_immunity)
+        if (Fire_resistance)
             monstseesu(M_SEEN_FIRE);
         else
             monstunseesu(M_SEEN_FIRE);

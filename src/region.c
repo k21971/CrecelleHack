@@ -1272,7 +1272,7 @@ poisongas_damage(NhRegion *reg, int dam, struct monst *mtmp) {
             Your("%s sting.", makeplural(body_part(EYE)));
             make_blinded(1L, FALSE);
         }
-        if (!Poison_immunity) {
+        if (!Poison_resistance) {
             pline("%s is burning your %s!", Something,
                   makeplural(body_part(LUNG)));
             You("cough and spit blood!");
@@ -1585,9 +1585,9 @@ region_danger(void)
             /* completely harmless if you don't need to breathe */
             if (nonliving(gy.youmonst.data) || Breathless)
                 continue;
-            /* minor inconvenience if you're poison immune;
+            /* minor inconvenience if you're poison resistant;
                not harmful enough to be a prayer-level trouble */
-            if (Poison_immunity)
+            if (Poison_resistance)
                 continue;
             ++n;
         }
@@ -1709,7 +1709,7 @@ inside_bonfire(genericptr_t p1, genericptr_t p2)
 
     if (!mtmp) {
         if (m_bonfire_ok(&gy.youmonst) == M_BONFIRE_OK) {
-            if (Fire_immunity) monstseesu(M_SEEN_FIRE); /* Kludge */
+            if (Fire_resistance) monstseesu(M_SEEN_FIRE); /* Kludge */
             return FALSE;
         }
         pline("You're burning up!");
@@ -1718,13 +1718,12 @@ inside_bonfire(genericptr_t p1, genericptr_t p2)
             monstunseesu(M_SEEN_FIRE);
             rehumanize();
             return FALSE;
-        } else if (Fire_immunity) {
+        } else if (Fire_resistance) {
             monstseesu(M_SEEN_FIRE);
             dam = 1;
         } else {
             monstunseesu(M_SEEN_FIRE);
         }
-        dam = halve_damage(dam, AD_FIRE);
         if (rn2(6)) {
             dam += destroy_items(&gy.youmonst, AD_FIRE, dam);
             ignite_items(gi.invent);

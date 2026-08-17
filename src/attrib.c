@@ -281,10 +281,6 @@ losestr(int num, const char *knam, schar k_format)
 void
 poison_strdmg(int strloss, int dmg, const char *knam, schar k_format)
 {
-    if (Poison_resistance) {
-        strloss = (dmg + 1) / 2;
-        dmg = (dmg + 1) / 2;
-    }
     losestr(strloss, knam, k_format);
     losehp(dmg, knam, k_format);
 }
@@ -347,15 +343,11 @@ poisoned(
               isupper((uchar) *reason) ? "" : "The ", reason,
               plural ? "were" : "was");
     }
-    if (Poison_immunity) {
+    if (Poison_resistance) {
         if (blast)
             shieldeff(u.ux, u.uy);
         pline_The("poison doesn't seem to affect you.");
         return;
-    }
-
-    if (Poison_resistance) {
-        fatal = 0;
     }
 
     /* suppress killer prefix if it already has one */
@@ -1015,23 +1007,6 @@ from_what(
         }
 
     } /*wizard*/
-    return buf;
-}
-
-/* This is used specifically for describing immunities in wizard mode. */
-char *
-from_what_item(int propidx)
-{
-    static char buf[BUFSZ];
-    buf[0] = '\0';
-    struct obj *obj;
-    if (wizard) {
-        obj = what_gives(&u.uprops[propidx].extrinsic);
-        if (obj)
-            Sprintf(buf, " because of %s", obj->oartifact
-                                        ? bare_artifactname(obj)
-                                        : ysimple_name(obj));
-    }
     return buf;
 }
 
