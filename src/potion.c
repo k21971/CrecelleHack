@@ -991,13 +991,13 @@ peffect_paralysis(struct obj *otmp)
 staticfn void
 peffect_sleeping(struct obj *otmp)
 {
-    if (Sleep_resistance || Free_action) {
+    if ((how_resistant(SLEEP_RES) == 100) || Free_action) {
         monstseesu(M_SEEN_SLEEP);
         You("yawn.");
     } else {
         You("suddenly fall asleep!");
         monstunseesu(M_SEEN_SLEEP);
-        fall_asleep(-rn1(10, 25 - 12 * bcsign(otmp)), TRUE);
+        fall_asleep(-resist_reduce(rn1(10, 25 - 12 * bcsign(otmp)), SLEEP_RES), TRUE);
     }
 }
 
@@ -1062,7 +1062,7 @@ peffect_sickness(struct obj *otmp)
             losehp(1, "mildly contaminated tonic", KILLED_BY_AN);
         }
     } else {
-        if (Poison_resistance)
+        if (how_resistant(POISON_RES) == 100)
             pline("(But in fact it was biologically contaminated %s.)",
                   fruitname(TRUE));
         if (Role_if(PM_HEALER)) {
@@ -1072,21 +1072,21 @@ peffect_sickness(struct obj *otmp)
             int typ = rn2(A_MAX);
 
             Sprintf(contaminant, "%s%s",
-                    (Poison_resistance) ? "mildly " : "",
+                    (how_resistant(POISON_RES) == 100) ? "mildly " : "",
                     (otmp->fromsink) ? "contaminated tap water"
                     : "contaminated tonic");
             if (!Fixed_abil) {
                 poisontell(typ, FALSE);
-                (void) adjattrib(typ, Poison_resistance ? -1 : -rn1(4, 3),
-                                 1);
+                (void) adjattrib(typ, -(resist_reduce(rn1(4, 3), POISON_RES) + 1),
+                                     1);
             }
-            if (!Poison_resistance) {
+            if (how_resistant(POISON_RES) < 100) {
                 if (otmp->fromsink)
-                    losehp(rnd(10) + 5 * !!(otmp->cursed), contaminant,
-                           KILLED_BY);
+                    losehp(resist_reduce(rnd(10) + 5 * !!(otmp->cursed), POISON_RES), contaminant,
+                            KILLED_BY);
                 else
-                    losehp(rnd(10) + 5 * !!(otmp->cursed), contaminant,
-                           KILLED_BY_AN);
+                    losehp(resist_reduce(rnd(10) + 5 * !!(otmp->cursed), POISON_RES), contaminant,
+                            KILLED_BY_AN);
             } else {
                 /* rnd loss is so that unblessed poorer than blessed */
                 losehp(1 + rn2(2), contaminant,
@@ -2761,9 +2761,9 @@ potionbreathe(struct obj *obj)
         break;
     case POT_SLEEPING:
         kn++;
-        if (!Free_action && !Sleep_resistance) {
+        if (!Free_action && how_resistant(SLEEP_RES) < 100) {
             Norep("You feel rather tired.");
-            nomul(-rnd(5));
+            nomul(-resist_reduce(rnd(5), SLEEP_RES));
             gm.multi_reason = "sleeping off a magical draught";
             gn.nomovemsg = You_can_move_again;
             exercise(A_DEX, FALSE);
@@ -4042,6 +4042,63 @@ mix_gem(struct obj *o1)
         }
     }
     return STRANGE_OBJECT;
+}
+
+/* increase a partial-resistance intrinsic by XX%
+ * ...will automatically cap at 100% */
+void
+incr_resistance(long *which, int incr)
+{
+	long oldval = *which & TIMEOUT;
+	if (oldval + incr > 100) {
+		oldval = 100;
+	} else {
+		oldval += incr;
+	}
+	*which &= ~TIMEOUT;
+	*which |= (oldval | HAVEPARTIAL);
+
+}
+
+/* decrease a partial-resistance intrinsic by XX% */
+void
+decr_resistance(long *which, int incr)
+{
+	long oldval = *which & TIMEOUT;
+	if (oldval - incr < 0) {
+		oldval = 0;
+	} else {
+		oldval -= incr;
+	}
+	*which &= ~TIMEOUT;
+	*which |= (oldval | ((oldval < 1) ? 0 : HAVEPARTIAL));
+
+}
+
+/* Return percent which a player is resistant -- 100% if from external/race/etc. */
+int
+how_resistant(int which)
+{
+	/* externals and level/race based intrinsics always provide 100%
+	 * as do monster resistances */
+	if (u.uprops[which].extrinsic ||
+			(u.uprops[which].intrinsic & (FROMEXPER | FROMRACE)) ||
+			(gy.youmonst.mintrinsics & (1 << (which-1)))) { /* depends on FIRE_RES/MR_FIRE order matching! */
+		return 100;
+	}
+
+	return (u.uprops[which].intrinsic & TIMEOUT);
+}
+
+/* Handles the damage-reduction shuffle necessary to convert 80% resistance
+ * into 20% damage (and keeps the floating-point silliness out of the main lines */
+int
+resist_reduce(int amount, int which)
+{
+	float tmp = 100 - how_resistant(which);
+	tmp /= 100;
+	debugpline2("incoming: %d  outgoing: %d", amount, (int) ((float) amount * tmp));
+	return (int) ((float) amount * tmp);
 }
 
 /*potion.c*/

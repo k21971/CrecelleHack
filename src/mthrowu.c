@@ -1149,7 +1149,7 @@ breamm(struct monst *mtmp, struct attack *mattk, struct monst *mtarg)
                  */
                 if ((!utarget || !rn2(3)) && mtmp->data != &mons[PM_CERBERUS])
                     mtmp->mspec_used = 8 + rn2(18);
-                if (utarget && typ == AD_SLEE && !Sleep_resistance)
+                if (utarget && typ == AD_SLEE && how_resistant(SLEEP_RES) < 100)
                     mtmp->mspec_used += rnd(20);
 
                 /* If this is a pet, it'll get hungry. Minions and

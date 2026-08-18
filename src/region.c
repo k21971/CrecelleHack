@@ -1272,12 +1272,12 @@ poisongas_damage(NhRegion *reg, int dam, struct monst *mtmp) {
             Your("%s sting.", makeplural(body_part(EYE)));
             make_blinded(1L, FALSE);
         }
-        if (!Poison_resistance) {
+        if (how_resistant(POISON_RES) < 100) {
             pline("%s is burning your %s!", Something,
                   makeplural(body_part(LUNG)));
             You("cough and spit blood!");
             wake_nearto(u.ux, u.uy, 2);
-            dam = Maybe_Half_Phys(rnd(dam) + 5);
+            dam = resist_reduce(Maybe_Half_Phys(rnd(dam) + 5), POISON_RES);
             if (Half_gas_damage) /* worn towel */
                 dam = (dam + 1) / 2;
             losehp(dam, "gas cloud", KILLED_BY_AN);

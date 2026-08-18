@@ -339,13 +339,14 @@ castmu(
     switch (mattk->adtyp) {
     case AD_FIRE:
         pline("You're enveloped in flames.");
-        if (Fire_resistance) {
+        if (how_resistant(FIRE_RES) == 100) {
             shieldeff(u.ux, u.uy);
             pline("But you resist the effects.");
             monstseesu(M_SEEN_FIRE);
             dmg = 0;
         } else {
             monstunseesu(M_SEEN_FIRE);
+            dmg = resist_reduce(dmg, FIRE_RES);
         }
         burn_away_slime();
         /* burn up flammable items on the floor, melt ice terrain */
@@ -353,13 +354,14 @@ castmu(
         break;
     case AD_COLD:
         pline("You're covered in frost.");
-        if (Cold_resistance) {
+        if (how_resistant(COLD_RES) == 100) {
             shieldeff(u.ux, u.uy);
             pline("But you resist the effects.");
             monstseesu(M_SEEN_COLD);
             dmg = 0;
         } else {
             monstunseesu(M_SEEN_COLD);
+            dmg = resist_reduce(dmg, COLD_RES);
         }
         /* freeze water or lava terrain */
         /* FIXME: mon_spell_hits_spot() uses zap_over_floor(); unlike with
@@ -707,11 +709,12 @@ mcast_fire_pillar(struct monst *mtmp, int dmg)
 
     pline("A pillar of fire strikes all around you!");
     orig_dmg = dmg = d(8, 6);
-    if (Fire_resistance) {
+    if (how_resistant(FIRE_RES) == 100) {
         shieldeff(u.ux, u.uy);
         monstseesu(M_SEEN_FIRE);
         dmg = 0;
     } else {
+        dmg = resist_reduce(dmg, FIRE_RES);
         monstunseesu(M_SEEN_FIRE);
     }
     if (Half_spell_damage)
@@ -736,7 +739,7 @@ mcast_lightning(struct monst *mtmp, int dmg)
     pline("A bolt of lightning strikes down at you from above!");
     reflects = ureflects("It bounces off your %s%s.", "");
     orig_dmg = dmg = d(8, 6);
-    if (reflects || Shock_resistance) {
+    if (reflects || how_resistant(AD_ELEC) == 100) {
         shieldeff(u.ux, u.uy);
         dmg = 0;
         if (reflects) {
@@ -746,6 +749,7 @@ mcast_lightning(struct monst *mtmp, int dmg)
         monstunseesu(M_SEEN_REFL);
         monstseesu(M_SEEN_ELEC);
     } else {
+        dmg = resist_reduce(dmg, SHOCK_RES);
         monstunseesu(M_SEEN_ELEC | M_SEEN_REFL);
     }
     if (Half_spell_damage)

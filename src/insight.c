@@ -1616,6 +1616,33 @@ attributes_enlightenment(
         you_are("invulnerable", from_what(INVULNERABLE));
     if (Antimagic)
         you_are("magic-protected", from_what(ANTIMAGIC));
+
+
+    /* Partial intrinsic resistances */
+    if ((armpro = magic_negation(&gy.youmonst)) > 0) {
+        Sprintf(buf, "%d%% warded from special attacks", armpro);
+        you_are(buf, "");
+    }
+    Sprintf(buf, "%d%% fire resistant", how_resistant(FIRE_RES));
+    if (Fire_resistance)
+        you_are(buf, "");
+    Sprintf(buf, "%d%% cold resistant", how_resistant(COLD_RES));
+    if (Cold_resistance)
+        you_are(buf, "");
+    Sprintf(buf, "%d%% sleep resistant", how_resistant(SLEEP_RES));
+    if (Sleep_resistance)
+        you_are(buf, "");
+    Sprintf(buf, "%d%% disintegration-resistant", how_resistant(DISINT_RES));
+    if (Disint_resistance)
+        you_are(buf, "");
+    Sprintf(buf, "%d%% shock resistant", how_resistant(SHOCK_RES));
+    if (Shock_resistance)
+        you_are(buf, "");
+    Sprintf(buf, "%d%% poison resistant", how_resistant(POISON_RES));
+    if (Poison_resistance)
+        you_are(buf, "");
+    /* End of partial intrinsic resistances */
+
     if (Fire_resistance)
         you_are("fire resistant", from_what(FIRE_RES));
     item_resistance_message(AD_FIRE, " protected from fire", final);
@@ -1890,10 +1917,6 @@ attributes_enlightenment(
         prot += u.uspellprot;
         if (prot)
             you_have(enlght_combatinc("defense", prot, final, buf), "");
-    }
-    if ((armpro = magic_negation(&gy.youmonst)) > 0) {
-        Sprintf(buf, "%d%% warding from special attacks", armpro);
-        you_have(buf, "");
     }
     if (Half_physical_damage)
         enlght_halfdmg(HALF_PHDAM, final);

@@ -632,7 +632,7 @@ god_zaps_you(aligntyp resp_god)
             else
                 (void) ureflects("%s reflects from your %s.", "It");
             monstseesu(M_SEEN_REFL);
-        } else if (Shock_resistance) {
+        } else if (how_resistant(SHOCK_RES) == 100) {
             shieldeff(u.ux, u.uy);
             pline("It seems not to affect you.");
             monstseesu(M_SEEN_ELEC);
@@ -669,7 +669,7 @@ god_zaps_you(aligntyp resp_god)
             (void) disintegrate_arm(uarm);
         if (uarmu && !uarm && !uarmc)
             (void) disintegrate_arm(uarmu);
-        if (!Disint_resistance) {
+        if (how_resistant(DISINT_RES) < 100) {
             fry_by_god(resp_god, TRUE);
             monstunseesu(M_SEEN_DISINT);
         } else {
@@ -819,11 +819,11 @@ gcrownu(void)
 #define ok_wep(o) ((o) && ((o)->oclass == WEAPON_CLASS || is_weptool(o)))
 
     HSee_invisible |= FROMOUTSIDE;
-    HFire_resistance |= FROMOUTSIDE;
-    HCold_resistance |= FROMOUTSIDE;
-    HShock_resistance |= FROMOUTSIDE;
-    HSleep_resistance |= FROMOUTSIDE;
-    HPoison_resistance |= FROMOUTSIDE;
+    incr_resistance(&HFire_resistance, 100);
+    incr_resistance(&HCold_resistance, 100);
+    incr_resistance(&HShock_resistance, 100);
+    incr_resistance(&HSleep_resistance, 100);
+    incr_resistance(&HPoison_resistance, 100);
     godvoice(u.ualign.type, (char *) 0);
 
     class_gift = STRANGE_OBJECT;
