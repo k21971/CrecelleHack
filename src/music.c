@@ -658,8 +658,10 @@ do_improvisation(struct obj *instr)
         if (instr->oartifact == ART_HORN_OF_THE_HORDE && (instr->age <= svm.moves)) {
             for (int i = 0; i < rn1(materials[instr->material].ac + 2, 2); i++) {
                 mtmp = makemon(&mons[PM_BARBARIAN], u.ux, u.uy, MM_EDOG | NO_MINVENT);
-                if (mtmp) initedog(mtmp, TRUE);
-                EDOG(mtmp)->petstrat = PETSTRAT_AGGRO;
+                if (mtmp) {
+                    initedog(mtmp, TRUE);
+                    EDOG(mtmp)->petstrat = PETSTRAT_AGGRO;
+                }
             }
             instr->age = svm.moves + rnz(200);
         }
