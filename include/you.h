@@ -258,7 +258,8 @@ struct Role {
         guardnum,  /* PM_ of quest guardians (questpgr.c) */
         neminum,   /* PM_ of quest nemesis (questpgr.c) */
         enemy1num, /* specific quest enemies (NON_PM == random) */
-        enemy2num;
+        enemy2num,
+        crownnum;   /* companion for crowning */
     char enemy1sym, /* quest enemies by class (S_) */
         enemy2sym;
     short questarti; /* index (ART_) of quest artifact (questpgr.c) */

@@ -119,7 +119,7 @@ static const struct Role urole_init_data = {
       { 0, 0 }, { 0, 0 }, { 0, 0 }, { 0, 0 } },
     "L", "N", "C",
     "Xxx", "home", "locate",
-    NON_PM, NON_PM, NON_PM, NON_PM, NON_PM, NON_PM, NON_PM,
+    NON_PM, NON_PM, NON_PM, NON_PM, NON_PM, NON_PM, NON_PM, NON_PM,
     0, 0, 0, 0, 0,
     /* Str Int Wis Dex Con Cha */
     { 7, 7, 7, 7, 7, 7 },

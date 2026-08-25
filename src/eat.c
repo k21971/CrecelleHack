@@ -988,6 +988,13 @@ should_givit(int type, struct permonst *ptr)
 
     /* some intrinsics are easier to get than others */
     switch (type) {
+    case POISON_RES:
+        if ((ptr == &mons[PM_KILLER_BEE] || ptr == &mons[PM_SCORPION])
+            && !rn2(4))
+            chance = 1;
+        else
+            chance = 15;
+        break;
     case TELEPORT:
         chance = 10;
         break;
@@ -998,7 +1005,7 @@ should_givit(int type, struct permonst *ptr)
         chance = 1;
         break;
     default:
-        chance = 1; /* the rest use the new system, give it to them all the time */
+        chance = 15;
         break;
     }
 
@@ -1008,7 +1015,9 @@ should_givit(int type, struct permonst *ptr)
 staticfn boolean
 temp_givit(int type, struct permonst *ptr)
 {
-    int chance = (type == STONE_RES) ? 6 : (type == ACID_RES) ? 3 : 0;
+    int chance = (type == STONE_RES) ? 6 : (type == ACID_RES
+        || type == FIRE_RES || type == SLEEP_RES || type == COLD_RES
+        || type == DISINT_RES || type == SHOCK_RES || type == POISON_RES) ? 3 : 0;
 
     return chance ? (ptr->mlevel > rn2(chance)) : FALSE;
 }
@@ -1019,62 +1028,59 @@ temp_givit(int type, struct permonst *ptr)
 staticfn void
 givit(int type, struct permonst *ptr)
 {
-    long percentincrease;
+    int halfnut;
     debugpline1("Attempting to give intrinsic %d", type);
 
     if (!should_givit(type, ptr) && !temp_givit(type, ptr))
         return;
 
     svm.mvitals[ptr->pmidx].know_rcorpse = 1;
-
-    percentincrease = (ptr->cwt / 90);
-    if (percentincrease < 5) { percentincrease = 5; }
+    halfnut = (ptr->cnutrit) / 2;
 
     switch (type) {
-    /* All these use the new system, which is based on corpse weight. */
     case FIRE_RES:
-        debugpline0("Trying to give fire resistance");
-        if ((HFire_resistance & (TIMEOUT | FROMRACE | FROMEXPER)) < 100) {
-            You(Hallucination ? "be chillin'." : "feel slightly more chill.");
-            incr_resistance(&HFire_resistance, percentincrease);
+        debugpline0("Giving timed fire resistance");
+        if (!(HFire_resistance & FROMOUTSIDE)) {
+            You(Hallucination ? "be chillin'." : "feel a momentary chill.");
+            incr_itimeout(&u.uprops[type].intrinsic, rn1(halfnut, halfnut));
         }
         break;
     case SLEEP_RES:
-        debugpline0("Trying to give sleep resistance");
-        if ((HSleep_resistance & (TIMEOUT | FROMRACE | FROMEXPER)) < 100) {
-            You_feel("a bit perkier.");
-            incr_resistance(&HSleep_resistance, percentincrease);
+        debugpline0("Giving timed sleep resistance");
+        if (!(HSleep_resistance & FROMOUTSIDE)) {
+            You_feel("wide awake.");
+            incr_itimeout(&u.uprops[type].intrinsic, rn1(halfnut, halfnut));
         }
         break;
     case COLD_RES:
-        debugpline0("Trying to give cold resistance");
-        if ((HCold_resistance & (TIMEOUT | FROMRACE | FROMEXPER)) < 100) {
-            You_feel("somewhat warmer.");
-            incr_resistance(&HCold_resistance, percentincrease);
+        debugpline0("Giving timed cold resistance");
+        if (!(HCold_resistance & FROMOUTSIDE)) {
+            You_feel("full of hot air.");
+            incr_itimeout(&u.uprops[type].intrinsic, rn1(halfnut, halfnut));
         }
         break;
     case DISINT_RES:
-        debugpline0("Trying to give disintegration resistance");
-        if ((HDisint_resistance & (TIMEOUT | FROMRACE | FROMEXPER)) < 100) {
-            You_feel(Hallucination ? "totally together, man." : "a bit more firm.");
-            incr_resistance(&HDisint_resistance, percentincrease);
+        debugpline0("Giving timed disintegration resistance");
+        if (!(HDisint_resistance & FROMOUTSIDE)) {
+            You_feel(Hallucination ? "totally together, man." : "very firm.");
+            incr_itimeout(&u.uprops[type].intrinsic, rn1(halfnut, halfnut));
         }
         break;
     case SHOCK_RES: /* shock (electricity) resistance */
-        debugpline0("Trying to give shock resistance");
-        if ((HShock_resistance & (TIMEOUT | FROMRACE | FROMEXPER)) < 100) {
+        debugpline0("Giving timed shock resistance");
+        if (!(HShock_resistance & FROMOUTSIDE)) {
             if (Hallucination)
                 You_feel("grounded in reality.");
             else
-                Your("health is slightly more amplified!");
-            incr_resistance(&HShock_resistance, percentincrease);
+                Your("health currently feels amplified!");
+            incr_itimeout(&u.uprops[type].intrinsic, rn1(halfnut, halfnut));
         }
         break;
     case POISON_RES:
-        debugpline0("Trying to give poison resistance");
-        if ((HPoison_resistance & (TIMEOUT | FROMRACE | FROMEXPER)) < 100) {
-            You_feel(how_resistant(POISON_RES) == 100 ? "significantly healthier." : "healthier.");
-            incr_resistance(&HPoison_resistance, percentincrease);
+        debugpline0("Giving timed poison resistance");
+        if (!(HPoison_resistance & FROMOUTSIDE)) {
+            You_feel(Poison_resistance ? "especially healthy." : "healthy.");
+            incr_itimeout(&u.uprops[type].intrinsic, rn1(halfnut, halfnut));
         }
         break;
     case TELEPORT:
@@ -2402,7 +2408,6 @@ eataccessory(struct obj *otmp)
                 accessory_has_effect(otmp);
                 You_feel("wide awake.");
             }
-            incr_resistance(&HSleep_resistance, 100);
             break;
         case AMULET_OF_CHANGE:
             accessory_has_effect(otmp);

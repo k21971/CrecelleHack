@@ -2692,10 +2692,9 @@ extern const char *bottlename(void);
 extern void speed_up(long);
 extern void dye_obj(struct obj *, int, boolean) NONNULLARG1;
 extern const char *dye_to_name(struct obj *) NONNULLARG1;
-extern void incr_resistance(long *, int);
-extern void decr_resistance(long *, int);
 extern int how_resistant(int);
 extern int resist_reduce(int, int);
+extern int partial_armor_resistance(int, struct obj *, boolean);
 
 /* ### pray.c ### */
 

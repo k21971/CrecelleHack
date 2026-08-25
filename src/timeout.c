@@ -678,8 +678,7 @@ nh_timeout(void)
 
         was_flying = Flying;
         for (upp = u.uprops; upp < u.uprops + SIZE(u.uprops); upp++) {
-            if ((!(upp->intrinsic & HAVEPARTIAL)) /* partial intrinsics do not time out */
-                && (upp->intrinsic & TIMEOUT) && !(--upp->intrinsic & TIMEOUT)) {
+            if ((upp->intrinsic & TIMEOUT) && !(--upp->intrinsic & TIMEOUT)) {
                 kptr = find_delayed_killer((int) (upp - u.uprops));
                 switch (upp - u.uprops) {
                 case STONED:
@@ -853,6 +852,7 @@ nh_timeout(void)
                         wielding_corpse(uswapwep, (struct obj *) 0, FALSE);
                     }
                     break;
+                #if 0
                 case FIRE_RES:
                     /* timed fire resistance and timed water walking combine
                     as a way to survive lava after multiple life-saving
@@ -861,29 +861,30 @@ nh_timeout(void)
                     if (!Fire_resistance)
                         Your("temporary ability to survive burning has ended.");
                     break;
-                case FIRE_VUL:
-                    if (Fire_resistance)
+                #endif
+                case FIRE_RES:
+                    if (!Fire_resistance)
                         You("feel cooler.");
                     break;
-                case COLD_VUL:
-                    if (Cold_resistance)
+                case COLD_RES:
+                    if (!Cold_resistance)
                         You("feel warmer.");
                     break;
-                case SLEEP_VUL:
-                    if (Sleep_resistance)
+                case SLEEP_RES:
+                    if (!Sleep_resistance)
                         You("feel more wakeful.");
                     break;
-                case DISINT_VUL:
-                    if (Disint_resistance)
+                case DISINT_RES:
+                    if (!Disint_resistance)
                         You("feel solidified.");
                     break;
-                case SHOCK_VUL:
-                    if (Shock_resistance)
-                        You("feel more grounded.");
+                case SHOCK_RES:
+                    if (!Shock_resistance)
+                        You("feel less grounded.");
                     break;
-                case POISON_VUL:
-                    if (Poison_resistance)
-                        You("feel healthier.");
+                case POISON_RES:
+                    if (!Poison_resistance)
+                        You("feel less healthy.");
                     break;
                 case WWALKING:
                     /* [see fire resistance] */
@@ -987,6 +988,13 @@ nh_timeout(void)
 void
 fall_asleep(int how_long, boolean wakeup_msg)
 {
+    /* If a number greater than zero is passed in (likely due to absorbed
+       sleep damage) gain temporary speed instead */
+    if (how_long > 0) {
+        speed_up(how_long);
+        return;
+    }
+    /* Now the regular function */
     stop_occupation();
     nomul(how_long);
     gm.multi_reason = "sleeping";

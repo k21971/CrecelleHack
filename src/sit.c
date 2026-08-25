@@ -696,11 +696,10 @@ attrcurse(void)
 {
     int ret = 0;
 
-    switch (rnd(14)) {
+    switch (rnd(11)) {
     case 1:
-        if (HFire_resistance) {
-	    HFire_resistance = HFire_resistance & (TIMEOUT | FROMOUTSIDE | HAVEPARTIAL);
-	    decr_resistance(&HFire_resistance, rnd(50) + 50);
+        if (HFire_resistance & INTRINSIC) {
+            HFire_resistance &= ~INTRINSIC;
             You_feel("warmer.");
             ret = FIRE_RES;
             break;
@@ -717,9 +716,8 @@ attrcurse(void)
         FALLTHROUGH;
         /*FALLTHRU*/
     case 3:
-        if (HPoison_resistance) {
-	    HPoison_resistance = HPoison_resistance & (TIMEOUT | FROMOUTSIDE | HAVEPARTIAL);
-	    decr_resistance(&HPoison_resistance, rnd(50) + 50);
+        if (HPoison_resistance & INTRINSIC) {
+            HPoison_resistance &= ~INTRINSIC;
             You_feel("a little sick!");
             ret = POISON_RES;
             break;
@@ -738,9 +736,8 @@ attrcurse(void)
         FALLTHROUGH;
         /*FALLTHRU*/
     case 5:
-        if (HCold_resistance) {
-	    HCold_resistance = HCold_resistance & (TIMEOUT | FROMOUTSIDE | HAVEPARTIAL);
-	    decr_resistance(&HCold_resistance, rnd(50) + 50);
+	    if (HCold_resistance & INTRINSIC) {
+            HCold_resistance &= ~INTRINSIC;
             You_feel("cooler.");
             ret = COLD_RES;
             break;
@@ -805,33 +802,6 @@ attrcurse(void)
             HAggravate_monster &= ~INTRINSIC;
             You_feel("less attractive.");
             ret = AGGRAVATE_MONSTER;
-            break;
-        }
-        FALLTHROUGH;
-        /*FALLTHRU*/
-    case 12:
-        if (HSleep_resistance) {
-            HSleep_resistance = HSleep_resistance & (TIMEOUT | FROMOUTSIDE | HAVEPARTIAL);
-            decr_resistance(&HSleep_resistance, rnd(50) + 50);
-            You_feel("a little tired.");
-            break;
-        }
-        FALLTHROUGH;
-        /*FALLTHRU*/
-    case 13:
-        if (HDisint_resistance) {
-            HDisint_resistance = HDisint_resistance & (TIMEOUT | FROMOUTSIDE | HAVEPARTIAL);
-            decr_resistance(&HDisint_resistance, rnd(50) + 50);
-            You_feel("less firm.");
-            break;
-        }
-        FALLTHROUGH;
-        /*FALLTHRU*/
-    case 14:
-        if (HShock_resistance) {
-            HShock_resistance = HShock_resistance & (TIMEOUT | FROMOUTSIDE | HAVEPARTIAL);
-            decr_resistance(&HShock_resistance, rnd(50) + 50);
-            You_feel("more conductive.");
             break;
         }
         FALLTHROUGH;

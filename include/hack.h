@@ -1126,8 +1126,8 @@ typedef struct nh_file NHFILE;
       NULL, NULL, NULL,                         \
       /* indices: base mon type, pet */         \
       NON_PM, NON_PM,                           \
-      /* quest leader, guardians, nemesis */    \
-      NON_PM, NON_PM, NON_PM,                   \
+      /* quest leader, guardians, nemesis, crowning companion */    \
+      NON_PM, NON_PM, NON_PM, NON_PM,           \
       /* quest enemy types (index, symbol) */   \
       NON_PM, NON_PM, '\0', '\0',               \
       /* quest artifact object index */         \

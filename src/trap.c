@@ -4596,7 +4596,7 @@ dofiretrap(
     }
     pline("A %s %s from %s!", tower_of_flame, box ? "bursts" : "erupts",
           the(box ? xname(box) : surface(u.ux, u.uy)));
-    if (how_resistant(FIRE_RES) == 100) {
+    if (how_resistant(FIRE_RES) >= 100) {
         shieldeff(u.ux, u.uy);
         monstseesu(M_SEEN_FIRE);
         num = rn2(2);
@@ -6783,7 +6783,12 @@ chest_trap(
             int dmg = d(4, 4), orig_dmg = dmg;
 
             You("are jolted by a surge of electricity!");
-            if (how_resistant(SHOCK_RES) == 100) {
+            if (how_resistant(SHOCK_RES) >= 200) {
+                shieldeff(u.ux, u.uy);
+                You("are positively charged!");
+                monstseesu(M_SEEN_ELEC);
+                dmg = resist_reduce(orig_dmg, SHOCK_RES);
+            } else if (how_resistant(SHOCK_RES) >= 100) {
                 shieldeff(u.ux, u.uy);
                 You("don't seem to be affected.");
                 monstseesu(M_SEEN_ELEC);
@@ -7248,7 +7253,7 @@ lava_effects(void)
     if (likes_lava(gy.youmonst.data))
         return FALSE;
 
-    usurvive = how_resistant(FIRE_RES) == 100 || (Wwalking && dmg < u.uhp);
+    usurvive = how_resistant(FIRE_RES) >= 100 || (Wwalking && dmg < u.uhp);
     /*
      * A timely interrupt might manage to salvage your life
      * but not your gear.  For scrolls and potions this

@@ -6348,7 +6348,15 @@ passive(
             break;
         case AD_COLD: /* brown mold or blue jelly */
             if (monnear(mon, u.ux, u.uy)) {
-                if (how_resistant(COLD_RES) == 100) {
+                if (how_resistant(COLD_RES) >= 200) {
+                    shieldeff(u.ux, u.uy);
+                    You_feel("a pleasant chill.");
+                    monstseesu(M_SEEN_COLD);
+                    tmp = resist_reduce(tmp, COLD_RES);
+                    mdamageu(mon, tmp);
+                    learn_it = TRUE;
+                    break;
+                } else if (how_resistant(COLD_RES) >= 100) {
                     shieldeff(u.ux, u.uy);
                     You_feel("a mild chill.");
                     monstseesu(M_SEEN_COLD);
@@ -6383,7 +6391,15 @@ passive(
             break;
         case AD_FIRE:
             if (monnear(mon, u.ux, u.uy)) {
-                if (how_resistant(FIRE_RES) == 100) {
+                if (how_resistant(FIRE_RES) >= 200) {
+                    shieldeff(u.ux, u.uy);
+                    You_feel("a pleasant warmth.");
+                    monstseesu(M_SEEN_FIRE);
+                    tmp = resist_reduce(tmp, FIRE_RES);
+                    mdamageu(mon, tmp);
+                    learn_it = TRUE;
+                    break;
+                } else if (how_resistant(FIRE_RES) >= 100) {
                     shieldeff(u.ux, u.uy);
                     You_feel("mildly warm.");
                     monstseesu(M_SEEN_FIRE);
@@ -6400,7 +6416,15 @@ passive(
             break;
         case AD_ELEC:
             learn_it = TRUE;
-            if (how_resistant(SHOCK_RES) == 100) {
+            if (how_resistant(SHOCK_RES) >= 200) {
+                shieldeff(u.ux, u.uy);
+                You_feel("a pleasant tingling.");
+                monstseesu(M_SEEN_ELEC);
+                tmp = resist_reduce(tmp, SHOCK_RES);
+                mdamageu(mon, tmp);
+                learn_it = TRUE;
+                break;
+            } else if (how_resistant(SHOCK_RES) >= 100) {
                 shieldeff(u.ux, u.uy);
                 You_feel("a mild tingle.");
                 monstseesu(M_SEEN_ELEC);

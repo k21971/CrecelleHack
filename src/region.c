@@ -1596,7 +1596,7 @@ region_danger(void)
             if (likes_fire(gy.youmonst.data))
                 continue;
             /* minor inconvenience if you resist fire */
-            if (Fire_resistance)
+            if (how_resistant(FIRE_RES) >= 100)
                 continue;
             ++n;
         }
@@ -1709,7 +1709,7 @@ inside_bonfire(genericptr_t p1, genericptr_t p2)
 
     if (!mtmp) {
         if (m_bonfire_ok(&gy.youmonst) == M_BONFIRE_OK) {
-            if (Fire_resistance) monstseesu(M_SEEN_FIRE); /* Kludge */
+            if (how_resistant(FIRE_RES) >= 100) monstseesu(M_SEEN_FIRE); /* Kludge */
             return FALSE;
         }
         pline("You're burning up!");
@@ -1718,23 +1718,19 @@ inside_bonfire(genericptr_t p1, genericptr_t p2)
             monstunseesu(M_SEEN_FIRE);
             rehumanize();
             return FALSE;
-        } else if (Fire_resistance) {
+        } else if (how_resistant(FIRE_RES) >= 100) {
             monstseesu(M_SEEN_FIRE);
-            dam = 1;
+            dam = resist_reduce(dam, FIRE_RES);
         } else {
             monstunseesu(M_SEEN_FIRE);
+            dam = 1;
         }
         if (rn2(6)) {
             dam += destroy_items(&gy.youmonst, AD_FIRE, dam);
             ignite_items(gi.invent);
         }
         burn_away_slime();
-        u.uhp -= dam;
-        if (u.uhp < 1) {
-            Sprintf(svk.killer.name, "was consumed in an inferno");
-            svk.killer.format = NO_KILLER_PREFIX;
-            done(DIED);
-        }
+        losehp(dam, "was consumed in an inferno", NO_KILLER_PREFIX);
     } else {
         mtmp = (struct monst *) p2;
         if (m_bonfire_ok(mtmp) == M_BONFIRE_OK)

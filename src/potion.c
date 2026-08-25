@@ -991,7 +991,10 @@ peffect_paralysis(struct obj *otmp)
 staticfn void
 peffect_sleeping(struct obj *otmp)
 {
-    if ((how_resistant(SLEEP_RES) == 100) || Free_action) {
+    if (how_resistant(SLEEP_RES) >= 200) {
+        monstseesu(M_SEEN_SLEEP);
+        fall_asleep(-resist_reduce(rn1(10, 25 - 12 * bcsign(otmp)), SLEEP_RES), TRUE);
+    } else if ((how_resistant(SLEEP_RES) >= 100) || Free_action) {
         monstseesu(M_SEEN_SLEEP);
         You("yawn.");
     } else {
@@ -1062,7 +1065,7 @@ peffect_sickness(struct obj *otmp)
             losehp(1, "mildly contaminated tonic", KILLED_BY_AN);
         }
     } else {
-        if (how_resistant(POISON_RES) == 100)
+        if (how_resistant(POISON_RES) >= 100)
             pline("(But in fact it was biologically contaminated %s.)",
                   fruitname(TRUE));
         if (Role_if(PM_HEALER)) {
@@ -1072,7 +1075,7 @@ peffect_sickness(struct obj *otmp)
             int typ = rn2(A_MAX);
 
             Sprintf(contaminant, "%s%s",
-                    (how_resistant(POISON_RES) == 100) ? "mildly " : "",
+                    (how_resistant(POISON_RES) >= 100) ? "mildly " : "",
                     (otmp->fromsink) ? "contaminated tap water"
                     : "contaminated tonic");
             if (!Fixed_abil) {
@@ -4044,50 +4047,44 @@ mix_gem(struct obj *o1)
     return STRANGE_OBJECT;
 }
 
-/* increase a partial-resistance intrinsic by XX%
- * ...will automatically cap at 100% */
-void
-incr_resistance(long *which, int incr)
-{
-	long oldval = *which & TIMEOUT;
-	if (oldval + incr > 100) {
-		oldval = 100;
-	} else {
-		oldval += incr;
-	}
-	*which &= ~TIMEOUT;
-	*which |= (oldval | HAVEPARTIAL);
-
-}
-
-/* decrease a partial-resistance intrinsic by XX% */
-void
-decr_resistance(long *which, int incr)
-{
-	long oldval = *which & TIMEOUT;
-	if (oldval - incr < 0) {
-		oldval = 0;
-	} else {
-		oldval -= incr;
-	}
-	*which &= ~TIMEOUT;
-	*which |= (oldval | ((oldval < 1) ? 0 : HAVEPARTIAL));
-
-}
-
 /* Return percent which a player is resistant -- 100% if from external/race/etc. */
 int
 how_resistant(int which)
 {
-	/* externals and level/race based intrinsics always provide 100%
+    int ret = 0;
+    /* Now calculate the bonuses from the player's gear */
+    if (uarm) {
+        ret += partial_armor_resistance(which, uarm, TRUE);
+    }
+    if (uarmc) {
+        ret += partial_armor_resistance(which, uarmc, TRUE);
+    }
+    if (uarmh) {
+        ret += partial_armor_resistance(which, uarmh, TRUE);
+    }
+    if (uarmf) {
+        ret += partial_armor_resistance(which, uarmf, TRUE);
+    }
+    if (uarms) {
+        ret += partial_armor_resistance(which, uarms, TRUE);
+    }
+    if (uarmg) {
+        ret += partial_armor_resistance(which, uarmg, TRUE);
+    }
+    if (uarmu) {
+        ret += partial_armor_resistance(which, uarmu, TRUE);
+    }
+
+    /* externals and level/race based intrinsics always provide 100%
 	 * as do monster resistances */
 	if (u.uprops[which].extrinsic ||
-			(u.uprops[which].intrinsic & (FROMEXPER | FROMRACE)) ||
+		u.uprops[which].intrinsic ||
 			(gy.youmonst.mintrinsics & (1 << (which-1)))) { /* depends on FIRE_RES/MR_FIRE order matching! */
-		return 100;
+		ret += 100;
+        ret = max(100, ret);
 	}
 
-	return (u.uprops[which].intrinsic & TIMEOUT);
+	return ret;
 }
 
 /* Handles the damage-reduction shuffle necessary to convert 80% resistance
@@ -4097,8 +4094,50 @@ resist_reduce(int amount, int which)
 {
 	float tmp = 100 - how_resistant(which);
 	tmp /= 100;
+    if (tmp <= 0 && tmp > -1.0) {
+        tmp = 0;
+    } else if (tmp <= -1.0) {
+        tmp = -1.0;
+    }
 	debugpline2("incoming: %d  outgoing: %d", amount, (int) ((float) amount * tmp));
 	return (int) ((float) amount * tmp);
+}
+
+/* armor modifies resistance slightly */
+int
+partial_armor_resistance(int res, struct obj *obj, boolean id)
+{
+    int ret = 0;
+    if (objects[obj->otyp].oc_material != obj->material)
+        ret += MAT_RES(obj->material, res);
+    if ((obj->o_id % 7) == (unsigned int) res)
+        ret += 5;
+    if (id || obj->bknown) {
+        if (obj->blessed)
+            ret += 1;
+        if (obj->cursed)
+            ret -= 1;
+    }
+    if (obj->oprop && (id || obj->pknown)) {
+        if (obj->oprop == OPROP_BOREAL) {
+            if (res == COLD_RES)
+                ret += 30;
+            else if (res == FIRE_RES)
+                ret -= 20;
+        } else if (obj->oprop == OPROP_BLAZING) {
+            if (res == FIRE_RES)
+                ret += 30;
+            else if (res == COLD_RES)
+                ret -= 20;
+        } else if (obj->oprop == OPROP_CRACKLING && res == SHOCK_RES)
+            ret += 30;
+        else if (obj->oprop == OPROP_SUBTLE && res == POISON_RES)
+            ret += 20;
+        else if (obj->oprop == OPROP_ANTIMAGIC)
+            ret -= 5;
+    }
+    ret += objects[obj->otyp].oc_resists[res - 1];
+    return ret;
 }
 
 /*potion.c*/

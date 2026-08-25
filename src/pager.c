@@ -2437,33 +2437,12 @@ do_supplemental_item_info(struct obj *otmp)
         }
     }
     add_menu_str(datawin, "");
-    /* Class info */
-    add_menu_heading(datawin, "Statistics");
-    if (otmp->oclass == WEAPON_CLASS || is_weptool(otmp)) {
-        Sprintf(buf, "Type: %s%sweapon", objects[otmp->otyp].oc_bimanual ? "two-handed " : "one-handed ",
-                                 objects[otmp->otyp].oc_finesse ? "finesse " : "");
-        add_menu_str(datawin, buf);
-        stringify_dmgval(buf, &gy.youmonst, otmp);
-        add_menu_str(datawin, buf);
-        Sprintf(buf, "Adjusted Accuracy: %s%d",
-                (weapon_hit_bonus(otmp) >= 0) ? "+" : "", weapon_hit_bonus(otmp));
-        add_menu_str(datawin, buf);
-    } else {
-        Sprintf(buf, "Class: %s", OBJ_DESCR(objects[(int) otmp->oclass]));
-        add_menu_str(datawin, buf);
-    }
-    /* Appearance */
+    /* Basic info */
+    add_menu_heading(datawin, "Basics");
+    Sprintf(buf, "Class: %s", OBJ_DESCR(objects[(int) otmp->oclass]));
+    add_menu_str(datawin, buf);
     if (OBJ_DESCR(objects[otmp->otyp])) {
         Sprintf(buf, "Appearance: %s", OBJ_DESCR(objects[otmp->otyp]));
-        add_menu_str(datawin, buf);
-    }
-    /* Armor stats */
-    if (otmp->oclass == ARMOR_CLASS) {
-        Sprintf(buf, "AC: %d%s", (ARM_BONUS(otmp) - (otmp->known ? 0 : otmp->spe)),
-                                otmp->known ? "" : "?");
-        add_menu_str(datawin, buf);
-        Sprintf(buf, "MC: %d%%%s", max(0, (objects[otmp->otyp].a_can) - (otmp->known ? otmp->spe : 0)),
-                                 otmp->known ? "" : "?");
         add_menu_str(datawin, buf);
     }
     if (size_matters(otmp)) {
@@ -2486,6 +2465,36 @@ do_supplemental_item_info(struct obj *otmp)
         } else {
             Sprintf(buf, "Harmony: Unknown");
         }
+        add_menu_str(datawin, buf);
+    }
+    /* Statistics */
+    add_menu_heading(datawin, "Statistics");
+    if (otmp->oclass == WEAPON_CLASS || is_weptool(otmp)) {
+        Sprintf(buf, "Type: %s%sweapon", objects[otmp->otyp].oc_bimanual ? "two-handed " : "one-handed ",
+                                 objects[otmp->otyp].oc_finesse ? "finesse " : "");
+        add_menu_str(datawin, buf);
+        stringify_dmgval(buf, &gy.youmonst, otmp);
+        add_menu_str(datawin, buf);
+        Sprintf(buf, "Adjusted Accuracy: %s%d",
+                (weapon_hit_bonus(otmp) >= 0) ? "+" : "", weapon_hit_bonus(otmp));
+        add_menu_str(datawin, buf);
+    }
+    if (otmp->oclass == ARMOR_CLASS) {
+        Sprintf(buf, "Armor Class: %d", (ARM_BONUS(otmp) - (otmp->known ? 0 : otmp->spe)));
+        add_menu_str(datawin, buf);
+        Sprintf(buf, "Magic Cancellation: %d%%", max(0, (objects[otmp->otyp].a_can) - (otmp->known ? otmp->spe : 0)));
+        add_menu_str(datawin, buf);
+        Sprintf(buf, "Fire Resistance: %d%%", partial_armor_resistance(FIRE_RES, otmp, FALSE));
+        add_menu_str(datawin, buf);
+        Sprintf(buf, "Cold Resistance: %d%%", partial_armor_resistance(COLD_RES, otmp, FALSE));
+        add_menu_str(datawin, buf);
+        Sprintf(buf, "Sleep Resistance: %d%%", partial_armor_resistance(SLEEP_RES, otmp, FALSE));
+        add_menu_str(datawin, buf);
+        Sprintf(buf, "Disintegration Resistance: %d%%", partial_armor_resistance(DISINT_RES, otmp, FALSE));
+        add_menu_str(datawin, buf);
+        Sprintf(buf, "Shock Resistance: %d%%", partial_armor_resistance(SHOCK_RES, otmp, FALSE));
+        add_menu_str(datawin, buf);
+        Sprintf(buf, "Poison Resistance: %d%%", partial_armor_resistance(POISON_RES, otmp, FALSE));
         add_menu_str(datawin, buf);
     }
     

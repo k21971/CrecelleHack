@@ -1624,23 +1624,17 @@ attributes_enlightenment(
         you_are(buf, "");
     }
     Sprintf(buf, "%d%% fire resistant", how_resistant(FIRE_RES));
-    if (Fire_resistance)
-        you_are(buf, "");
+    you_are(buf, "");
     Sprintf(buf, "%d%% cold resistant", how_resistant(COLD_RES));
-    if (Cold_resistance)
-        you_are(buf, "");
+    you_are(buf, "");
     Sprintf(buf, "%d%% sleep resistant", how_resistant(SLEEP_RES));
-    if (Sleep_resistance)
-        you_are(buf, "");
+    you_are(buf, "");
     Sprintf(buf, "%d%% disintegration-resistant", how_resistant(DISINT_RES));
-    if (Disint_resistance)
-        you_are(buf, "");
+    you_are(buf, "");
     Sprintf(buf, "%d%% shock resistant", how_resistant(SHOCK_RES));
-    if (Shock_resistance)
-        you_are(buf, "");
+    you_are(buf, "");
     Sprintf(buf, "%d%% poison resistant", how_resistant(POISON_RES));
-    if (Poison_resistance)
-        you_are(buf, "");
+    you_are(buf, "");
     /* End of partial intrinsic resistances */
 
     if (Fire_resistance)

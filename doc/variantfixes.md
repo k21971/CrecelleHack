@@ -17,6 +17,21 @@
 - Increasing the pet handling skill increases the max number of pets you can have
   (and increase it by 1 generally).
 
+## Resistance System
+- Intrinsic resistances granted by corpses are now temporary.
+- Instead of intrinsics, crowning now grants you knowledge of your
+  special spell, a role-dependent tame companion, and adds an oprop
+  to your wielded weapon.
+- Armor grants percentile resistances. Your total resistance is determined
+  by the sum of all armor you are wearing.
+  - For < 0% resistance, damage of the given type is increased.
+  - For 0-99% resistance, damage of the given type is reduced.
+  - For 100-199% resistance, damage of the given type is ignored.
+  - For >= 200% resistance, damage of the given type is absorbed.
+- Intrinsic or extrinsic resistance of the same type yields 100% resistance
+  and sets the minimum resistance to the given damage type to 100%.
+- When sleep damage is absorbed, you become temporarily very fast.
+
 ## Monsters
 - New Monsters:
   - (Head) Butler/Maid/Servant

@@ -836,27 +836,6 @@ oprop_armor_handling(struct obj *otmp, boolean puton)
         return;
     long mask = armcat_to_wornmask(objects[otmp->otyp].oc_armcat);
     switch(otmp->oprop) {
-        case OPROP_BOREAL:
-            if (puton) {
-                ECold_resistance |= mask;
-            } else {
-                ECold_resistance &= ~mask;
-            }
-            break;
-        case OPROP_BLAZING:
-            if (puton) {
-                EFire_resistance |= mask;
-            } else {
-                EFire_resistance &= ~mask;
-            }
-            break;
-        case OPROP_CRACKLING:
-            if (puton) {
-                EShock_resistance |= mask;
-            } else {
-                EShock_resistance &= ~mask;
-            }
-            break;
         case OPROP_SUBTLE:
             if (puton) {
                 EStealth |= mask;

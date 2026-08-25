@@ -339,7 +339,12 @@ castmu(
     switch (mattk->adtyp) {
     case AD_FIRE:
         pline("You're enveloped in flames.");
-        if (how_resistant(FIRE_RES) == 100) {
+        if (how_resistant(FIRE_RES) >= 200) {
+            shieldeff(u.ux, u.uy);
+            pline("But you bask in their heat.");
+            monstseesu(M_SEEN_FIRE);
+            dmg = resist_reduce(dmg, FIRE_RES);
+        } else if (how_resistant(FIRE_RES) >= 100) {
             shieldeff(u.ux, u.uy);
             pline("But you resist the effects.");
             monstseesu(M_SEEN_FIRE);
@@ -354,7 +359,12 @@ castmu(
         break;
     case AD_COLD:
         pline("You're covered in frost.");
-        if (how_resistant(COLD_RES) == 100) {
+        if (how_resistant(COLD_RES) >= 200) {
+            shieldeff(u.ux, u.uy);
+            pline("But you draw strength from it.");
+            monstseesu(M_SEEN_COLD);
+            dmg = resist_reduce(dmg, COLD_RES);
+        } else  if (how_resistant(COLD_RES) >= 100) {
             shieldeff(u.ux, u.uy);
             pline("But you resist the effects.");
             monstseesu(M_SEEN_COLD);
@@ -709,7 +719,11 @@ mcast_fire_pillar(struct monst *mtmp, int dmg)
 
     pline("A pillar of fire strikes all around you!");
     orig_dmg = dmg = d(8, 6);
-    if (how_resistant(FIRE_RES) == 100) {
+    if (how_resistant(FIRE_RES) >= 200) {
+        shieldeff(u.ux, u.uy);
+        monstseesu(M_SEEN_FIRE);
+        dmg = resist_reduce(dmg, FIRE_RES);
+    } else if (how_resistant(FIRE_RES) >= 100) {
         shieldeff(u.ux, u.uy);
         monstseesu(M_SEEN_FIRE);
         dmg = 0;
@@ -739,7 +753,11 @@ mcast_lightning(struct monst *mtmp, int dmg)
     pline("A bolt of lightning strikes down at you from above!");
     reflects = ureflects("It bounces off your %s%s.", "");
     orig_dmg = dmg = d(8, 6);
-    if (reflects || how_resistant(AD_ELEC) == 100) {
+    if (!reflects && how_resistant(AD_ELEC) >= 200) {
+        shieldeff(u.ux, u.uy);
+        dmg = resist_reduce(dmg, SHOCK_RES);
+        monstseesu(M_SEEN_ELEC);
+    } else if (reflects || how_resistant(AD_ELEC) >= 100) {
         shieldeff(u.ux, u.uy);
         dmg = 0;
         if (reflects) {

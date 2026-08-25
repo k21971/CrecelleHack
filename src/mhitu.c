@@ -1578,7 +1578,12 @@ gulpmu(struct monst *mtmp, struct attack *mattk)
     case AD_ELEC:
         if (!mtmp->mcan && rn2(2)) {
             pline_The("air around you crackles with electricity.");
-            if (how_resistant(SHOCK_RES) == 100) {
+            if (how_resistant(SHOCK_RES) >= 200) {
+                shieldeff(u.ux, u.uy);
+                You("absorb the shock.");
+                monstseesu(M_SEEN_ELEC);
+                tmp = resist_reduce(tmp, SHOCK_RES);
+            } else if (how_resistant(SHOCK_RES) >= 100) {
                 shieldeff(u.ux, u.uy);
                 You("seem unhurt.");
                 monstseesu(M_SEEN_ELEC);
@@ -1593,7 +1598,12 @@ gulpmu(struct monst *mtmp, struct attack *mattk)
         break;
     case AD_COLD:
         if (!mtmp->mcan && rn2(2)) {
-            if (how_resistant(COLD_RES) == 100) {
+            if (how_resistant(SHOCK_RES) >= 200) {
+                shieldeff(u.ux, u.uy);
+                You_feel(" pleasantly chilly.");
+                monstseesu(M_SEEN_COLD);
+                tmp = resist_reduce(tmp, AD_COLD);
+            } else if (how_resistant(COLD_RES) >= 100) {
                 shieldeff(u.ux, u.uy);
                 You_feel("mildly chilly.");
                 monstseesu(M_SEEN_COLD);
@@ -1609,7 +1619,12 @@ gulpmu(struct monst *mtmp, struct attack *mattk)
         break;
     case AD_FIRE:
         if (!mtmp->mcan && rn2(2)) {
-            if (how_resistant(FIRE_RES) == 100) {
+            if (how_resistant(FIRE_RES) >= 200) {
+                shieldeff(u.ux, u.uy);
+                You_feel("pleasantly warm");
+                monstseesu(M_SEEN_FIRE);
+                tmp = resist_reduce(tmp, FIRE_RES);
+            } else if (how_resistant(FIRE_RES) >= 100) {
                 shieldeff(u.ux, u.uy);
                 You_feel("mildly hot.");
                 monstseesu(M_SEEN_FIRE);
@@ -2017,10 +2032,12 @@ gazemu(struct monst *mtmp, struct attack *mattk)
 void
 mdamageu(struct monst *mtmp, int n)
 {
+    #if 0
     if (n < 0) {
         impossible("mdamageu for negative damage? (%d)", n);
         n = 0;
     }
+    #endif
 
     disp.botl = TRUE;
     if (Upolyd) {
