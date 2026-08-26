@@ -2050,9 +2050,8 @@ mktrap_victim(struct trap *ttmp)
     if (victim_mnum == PM_HUMAN && rn2(25))
         victim_mnum = rn1(PM_WIZARD - PM_ARCHEOLOGIST, PM_ARCHEOLOGIST);
     otmp = mkcorpstat((IS_BIOME(BIOME_TROPICAL) || rn2(2))
-                        ? SKELETON : CORPSE, NULL, &mons[victim_mnum],
-                        x, y, CORPSTAT_INIT);
-    otmp->age -= (TAINT_AGE + 1); /* died too long ago to safely eat */
+                        ? SKELETON : CORPSE, NULL, &mons[victim_mnum], x, y, CORPSTAT_INIT);
+    otmp->age -= (INEDIBLE_AGE + 1); /* died too long ago to safely eat */
 }
 
 /* pick a random trap type, return NO_TRAP if "too hard" */

@@ -1958,6 +1958,9 @@ extern void newesum(struct monst *) NONNULLARG1;
 extern void free_esum(struct monst *) NONNULLARG1;
 extern int meatgrass(struct monst *) NONNULLARG1;
 extern int meatpaper(struct monst *) NONNULLARG1;
+extern boolean maybe_set_terrain_effects(struct monst *,
+                                         struct permonst *) NONNULLARG1;
+extern void terrain_effects(void);
 
 /* ### mondata.c ### */
 
