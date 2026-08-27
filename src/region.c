@@ -1750,7 +1750,7 @@ inside_bonfire(genericptr_t p1, genericptr_t p2)
         /* Fire res and golem effects */
         if (resists_fire(mtmp) || defended(mtmp, AD_FIRE)) {
             if (canseemon(mtmp))
-                pline_The("%s resists the heat!", Monnam(mtmp));
+                pline("%s resists the heat!", Monnam(mtmp));
             golemeffects(mtmp, AD_FIRE, dam);
             shieldeff(mtmp->mx, mtmp->my);
             dam = 1;

@@ -4938,7 +4938,8 @@ mhitm_ad_sedu(
             return;
         }
         buf[0] = '\0';
-        mintroduce(magr);
+        if (magr->data->mlet == S_NYMPH)
+            mintroduce(magr);
         switch (steal(magr, buf)) {
         case -1:
             mhm->hitflags = M_ATTK_AGR_DIED; /* return 2??? */

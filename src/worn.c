@@ -1064,7 +1064,7 @@ m_dowear_type(
     if (best->otyp == AMULET_OF_CHANGE) {
         if (canseemon(mon)) {
             pline("%s goes through a remarkable transformation!", Monnam(mon));
-            makeknown(obj->otyp);
+            makeknown(best->otyp);
         }
         mon->female = !mon->female;
         m_useup(mon, best);

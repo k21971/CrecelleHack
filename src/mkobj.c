@@ -4610,13 +4610,16 @@ void
 transmute_obj(struct obj *otmp, int newmat)
 {
     int oldmat = otmp->material;
+    int tryct = 0;
     boolean in_invent = (otmp->where == OBJ_INVENT);
     if (otmp->oartifact && rn2(20))
         return;
     if (!newmat) {
         do {
             newmat = 2 + rn2(NUM_MATERIAL_TYPES - 2);
-        } while (newmat == oldmat || newmat == DRAGON_HIDE);
+        } while (newmat == oldmat || newmat == DRAGON_HIDE
+                 || (tryct++ > 200));
+        if (tryct > 200) newmat = oldmat;
     }
     if (in_invent)
         pline("%s!", Yobjnam2(otmp, "vibrate"));

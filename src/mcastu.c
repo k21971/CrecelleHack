@@ -1357,7 +1357,7 @@ m_cure_allies(struct monst *mtmp)
     struct monst *ally;
     int heal_dice = max(3, 3 + mtmp->m_lev / 8);
     for (ally = fmon; ally; ally = ally->nmon) {
-        if (ally->mpeaceful || ally->mtame)
+        if (DEADMONSTER(ally) || ally->mpeaceful || ally->mtame)
             continue;
         if (dist2(ally->mx, ally->my, mtmp->mx, mtmp->my) > 49)
             continue;

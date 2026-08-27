@@ -2971,6 +2971,13 @@ m_detach(
         }
         if (mtmp->data->msound == MS_LEADER)
             leaddead();
+        /* Handle crimson death blood clouds */
+        if (mtmp->data == &mons[PM_CRIMSON_DEATH]) {
+            struct obj fakeobj = cg.zeroobj;
+            fakeobj.cursed = TRUE;
+            fakeobj.otyp = POT_BLOOD;
+            create_gas_cloud(mtmp->mx, mtmp->my, 5, &fakeobj, 8);
+        }
         /* release (drop onto map) all objects carried by mtmp; assumes that
            mtmp->mx,my contains the appropriate location */
         relobj(mtmp, 1, FALSE); /* drop mtmp->minvent, issue newsym(mx,my) */
@@ -3425,14 +3432,6 @@ corpse_chance(
         (void) mkgold((long) rnd(mon->m_lev * 10), mon->mx, mon->my);
         (void) scatter(mon->mx, mon->my, 5, MAY_DESTROY | MAY_HIT | MAY_FRACTURE
                                            | VIS_EFFECTS, (struct obj *) 0);
-        return FALSE;
-    }
-    /* Handle crimson death blood clouds */
-    if (mdat == &mons[PM_CRIMSON_DEATH]) {
-        struct obj fakeobj = cg.zeroobj;
-        fakeobj.cursed = TRUE;
-        fakeobj.otyp = POT_BLOOD;
-        create_gas_cloud(mon->mx, mon->my, 5, &fakeobj, 8);
         return FALSE;
     }
     /* Handle illusion vanishing */

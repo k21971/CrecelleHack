@@ -2408,7 +2408,8 @@ do_supplemental_item_info(struct obj *otmp)
     }
     /* Scroll Writing */
     if ((otmp->oclass == SCROLL_CLASS || otmp->oclass == SPBOOK_CLASS)
-        && objects[otmp->otyp].oc_name_known) {
+        && objects[otmp->otyp].oc_name_known
+        && otmp->otyp != SCR_BLANK_PAPER) {
         Sprintf(buf, "It would cost ~%d ink to write.", cost(otmp));
         add_menu_str(datawin, buf);
     }

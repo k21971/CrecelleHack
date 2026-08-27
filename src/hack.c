@@ -2696,7 +2696,7 @@ escape_from_sticky_mon(coordxy x, coordxy y)
             /* When polymorphed into a sticking monster,
              * u.ustuck means it's stuck to you, not you to it.
              */
-            if (Role_if(PM_GRAPPLER)) {
+            if (Role_if(PM_GRAPPLER) && !u.uswallow) {
                 grappling_finisher(x, y, mtmp);
                 if (m_at(x, y) == mtmp) {
                     nomul(0);
@@ -4807,9 +4807,16 @@ grappling_finisher(coordxy x, coordxy y, struct monst *mtmp)
                                             ? "throttle" : "choke", mon_nam(mtmp));
         }
     }
+    /* Check to make sure the monster has not died somehow */
+    if (DEADMONSTER(mtmp)) {
+        set_ustuck((struct monst *) 0);
+        return TRUE;
+    }
     /* Now do some damage */
     if (dmg) {
+        /* ???????? */
         dmg = (rnd(dmg) + weapon_dam_bonus(uwep));
+        dmg = max(1, dmg);
         setmangry(mtmp, TRUE);
         if (!u.uconduct.killer &&  mtmp->mhp <= dmg) {
             You("knock out %s!", mon_nam(mtmp));

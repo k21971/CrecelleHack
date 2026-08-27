@@ -401,7 +401,7 @@ explode(
             }
         curs_on_u(); /* will flush screen and output */
 
-        if (any_shield && flags.sparkle) { /* simulate shield effect */
+        if (any_shield && flags.sparkle && !wizard) { /* simulate shield effect */
             for (k = 0; k < SHIELD_COUNT; k++) {
                 for (i = 0; i < 3; i++)
                     for (j = 0; j < 3; j++) {

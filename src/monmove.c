@@ -710,10 +710,15 @@ m_everyturn_effect(struct monst *mtmp)
             mtmp->perminvis = 0;
         }
     }
-    /* Yellow dragons do this every turn */
+    /* Some monsters have coating interactions every turn. Coating
+       interactions can lead to explosions, so they generally need
+       to go here where it's safe to kill a monster. */
     if (mtmp->data == &mons[PM_YELLOW_DRAGON] ||
         mtmp->data == &mons[PM_BABY_YELLOW_DRAGON] ||
         mtmp->data == &mons[PM_GIANT_SLUG] ||
+        mtmp->data == &mons[PM_ACID_BLOB] ||
+        mtmp->data == &mons[PM_GELATINOUS_CUBE] ||
+        mtmp->data == &mons[PM_OCHRE_JELLY] ||
         (is_u && uarm && 
             (uarm->otyp == YELLOW_DRAGON_SCALES || 
                 uarm->otyp == YELLOW_DRAGON_SCALE_MAIL))) {
@@ -721,7 +726,11 @@ m_everyturn_effect(struct monst *mtmp)
     } else if (mtmp->data == &mons[PM_WATER_ELEMENTAL] || 
                 mtmp->data == &mons[PM_SQUONK]) {
         floor_spillage(x, y, POT_WATER, NON_PM);
+    } else if (mtmp->data == &mons[PM_SALT_GOLEM]) {
+        floor_alchemy(x, y, SALT_CRYSTAL);
     }
+    if (DEADMONSTER(mtmp))
+        return;
     /* oprop boots do odd things */
     if (is_u && uarmf && uarmf->oprop) {
         switch(uarmf->oprop) {
@@ -763,6 +772,8 @@ m_everyturn_effect(struct monst *mtmp)
                 break;
         }
     }
+    if (DEADMONSTER(mtmp))
+        return;
     /* Drip liquids */
     if (is_u && Dripping && !rn2(3)) {
         if (flags.drip_messages) {
@@ -774,17 +785,13 @@ m_everyturn_effect(struct monst *mtmp)
             floor_spillage(x, y, u.udriptype, NON_PM);
         else add_coating(x, y, COAT_BLOOD, -1 * u.udriptype);
     } else if (is_u && uwep && is_art(uwep, ART_WRATH_OF_SANKIS) && !rn2(3)) {
-        add_coating(x, y, COAT_BLOOD, PM_DWARF);
+        floor_spillage(x, y, COAT_BLOOD, PM_DWARF);
     } else if (!is_u && MON_WEP(mtmp)
                 && is_art(MON_WEP(mtmp), ART_WRATH_OF_SANKIS)  && !rn2(3)) {
-        add_coating(x, y, COAT_BLOOD, PM_DWARF);
+        floor_spillage(x, y, COAT_BLOOD, PM_DWARF);
     } else if (!is_u && mtmp->mdripping) {
         if (mtmp->mdriptype > 0) floor_spillage(x, y, mtmp->mdriptype, NON_PM);
         else add_coating(x, y, COAT_BLOOD, -1 * mtmp->mdriptype);
-    } else if (mtmp->data == &mons[PM_ACID_BLOB] 
-            || mtmp->data == &mons[PM_GELATINOUS_CUBE]
-            || mtmp->data == &mons[PM_OCHRE_JELLY]) {
-        floor_spillage(x, y, POT_ACID, NON_PM);
     }
 }
 
@@ -812,6 +819,7 @@ m_postmove_effect(struct monst *mtmp)
         create_gas_cloud(x, y, 1, 0, 0); /* harmless vapor */
     else if (likes_fire(mtmp->data) && !mtmp->mcan) {
         /* Lets off smoke / vapor in the rain, otherwise starts things on fire. */
+        /* NOTE: If monsters can die here, this needs to be moved to an everyturn effect */
         if (IS_RAINING)
             create_gas_cloud(x, y, 1, 0, 0);
         else
@@ -821,8 +829,6 @@ m_postmove_effect(struct monst *mtmp)
         if (touch_petrifies(&mons[pm]))
             pm = PM_ELF;
         add_coating(x, y, COAT_BLOOD, has_blood(&mons[pm]) ? pm : PM_HUMAN);
-    } else if (mtmp->data == &mons[PM_SALT_GOLEM]) {
-        floor_alchemy(x, y, SALT_CRYSTAL);
     } else if (mtmp->data == &mons[PM_TORNADO]) {
         /* tornados suck up everything */
         remove_coating(x, y, COAT_ALL);

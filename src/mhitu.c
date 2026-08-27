@@ -1400,6 +1400,7 @@ gulpmu(struct monst *mtmp, struct attack *mattk)
             unplacebc(); /* ball&chain go away */
         remove_monster(omx, omy);
         mtmp->mtrapped = 0; /* no longer on old trap */
+        u.usticker = 0; /* no longer grappling anyone */
         place_monster(mtmp, u.ux, u.uy);
         set_ustuck(mtmp);
         newsym(mtmp->mx, mtmp->my);
