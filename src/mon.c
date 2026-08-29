@@ -3707,6 +3707,16 @@ set_ustuck(struct monst *mtmp)
 }
 
 void
+set_usticker(struct monst *mtmp)
+{
+    if (mtmp)
+        u.usticker = 1;
+    else
+        u.usticker = 0;
+    set_ustuck(mtmp);
+}
+
+void
 unstuck(struct monst *mtmp)
 {
     if (u.ustuck == mtmp) {

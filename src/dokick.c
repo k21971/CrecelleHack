@@ -2255,8 +2255,7 @@ dograpple(void)
     } else if (!unsolid(target->data) && rn2(3 + P_SKILL(P_GRAPPLING))) {
         You("grapple %s!", mon_nam(target));
         setmangry(target, TRUE);
-        set_ustuck(target);
-        u.usticker = 1;
+        set_usticker(target);
         touched = TRUE;
     } else {
         You("fail to grapple %s.", mon_nam(target));

@@ -1894,6 +1894,7 @@ extern void mongone(struct monst *) NONNULLARG1;
 extern void monstone(struct monst *) NONNULLARG1;
 extern void monkilled(struct monst *, const char *, int) NONNULLARG1;
 extern void set_ustuck(struct monst *);
+extern void set_usticker(struct monst *);
 extern void unstuck(struct monst *) NONNULLARG1;
 extern void killed(struct monst *) NONNULLARG1;
 extern void xkilled(struct monst *, int) NONNULLARG1;

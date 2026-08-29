@@ -633,8 +633,7 @@ known_hitum(
         /* Grappler grabs */
         if (Role_if(PM_GRAPPLER) && !u.ustuck && mdistu(mon) <= 2) {
             pline_mon(mon, "You grab %s!", mon_nam(mon));
-            u.usticker = 1;
-            set_ustuck(mon);
+            set_usticker(mon);
             setmangry(mon, TRUE);
             return malive;
         }
@@ -3476,8 +3475,7 @@ mhitm_ad_stck(
     if (magr == &gy.youmonst) {
         /* uhitm */
         if (!negated && !sticks(pd) && m_next2u(mdef)) {
-            set_ustuck(mdef); /* it's now stuck to you */
-            u.usticker = 1;
+            set_usticker(mdef); /* it's now stuck to you */
             if (barbs)
                 Your("barbs stick to %s!", y_monnam(mdef));
         }
@@ -3515,8 +3513,7 @@ mhitm_ad_wrap(
                 } else {
                     You("%s yourself around %s!",
                         coil ? "coil" : "swing", mon_nam(mdef));
-                    set_ustuck(mdef);
-                    u.usticker = 1;
+                    set_usticker(mdef);
                     use_skill(P_GRAPPLING, 1);
                 }
             } else if (u.ustuck == mdef && !tailmiss) {
@@ -6020,8 +6017,7 @@ hmonas(struct monst *mon)
                 if (u.ustuck && u.ustuck != mon)
                     uunstick();
                 You("grab %s!", mon_nam(mon));
-                set_ustuck(mon);
-                u.usticker = 1;
+                set_usticker(mon);
                 if (hated_obj && flags.verbose)
                     searmsg(&gy.youmonst, mon, hated_obj, FALSE);
                 sum[i] = damageum(mon, mattk, specialdmg);
