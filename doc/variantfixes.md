@@ -31,6 +31,7 @@
 - Intrinsic or extrinsic resistance of the same type yields 100% resistance
   and sets the minimum resistance to the given damage type to 100%.
 - When sleep damage is absorbed, you become temporarily very fast.
+- Different races begin the game with different levels of resistance.
 
 ## Monsters
 - New Monsters:

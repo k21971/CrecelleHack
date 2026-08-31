@@ -657,6 +657,7 @@ const struct Race races[NUM_RACES + 1] = {
         /*    Str     Int Wis Dex Con Cha */
         { 3, 3, 3, 3, 3, 3 },
         { STR18(100), 18, 18, 18, 18, 18 },
+        { 0, 0, 0, 0, 0, 0 }, /* Race resists */
         /* Init   Lower  Higher */
         { 2, 0, 0, 2, 1, 0 }, /* Hit points */
         { 1, 0, 2, 0, 2, 0 }, /* Energy */
@@ -679,6 +680,7 @@ const struct Race races[NUM_RACES + 1] = {
         /*  Str    Int Wis Dex Con Cha */
         { 3, 3, 3, 3, 3, 3 },
         { 18, 20, 20, 18, 16, 18 },
+        { -20, 0, 0, 0, 0, 0 }, /* Race resists */
         /* Init   Lower  Higher */
         { 1, 0, 0, 1, 1, 0 }, /* Hit points */
         { 2, 0, 3, 0, 3, 0 }, /* Energy */
@@ -701,6 +703,7 @@ const struct Race races[NUM_RACES + 1] = {
         /*    Str     Int Wis Dex Con Cha */
         { 3, 3, 3, 3, 3, 3 },
         { STR18(100), 16, 16, 20, 20, 16 },
+        { 20, -20, -20, 0, 0, 20 }, /* Race resists */
         /* Init   Lower  Higher */
         { 4, 0, 0, 3, 2, 0 }, /* Hit points */
         { 0, 0, 0, 0, 0, 0 }, /* Energy */
@@ -723,6 +726,7 @@ const struct Race races[NUM_RACES + 1] = {
         /*  Str    Int Wis Dex Con Cha */
         { 3, 3, 3, 3, 3, 3 },
         { STR18(50), 19, 18, 18, 18, 18 },
+        { 5, 5, 5, 5, 20, 5 }, /* Race resists */
         /* Init   Lower  Higher */
         { 1, 0, 0, 1, 0, 0 }, /* Hit points */
         { 2, 0, 2, 0, 2, 0 }, /* Energy */
@@ -745,6 +749,7 @@ const struct Race races[NUM_RACES + 1] = {
         /*  Str    Int Wis Dex Con Cha */
         { 3, 3, 3, 3, 3, 3 },
         { STR18(50), 16, 16, 18, 18, 16 },
+        { 0, 0, -20, 0, 0, 0 }, /* Race resists */
         /* Init   Lower  Higher */
         { 1, 0, 0, 1, 0, 0 }, /* Hit points */
         { 1, 0, 1, 0, 1, 0 }, /* Energy */
@@ -765,6 +770,7 @@ const struct Race races[NUM_RACES + 1] = {
         MH_HUMAN | MH_ELF | MH_DWARF | MH_ORC | MH_GNOME | MH_GIANT,
         { 3, 3, 3, 3, 3, 3 },
         { 14, 20, 16, 18, 14, 20 },
+        { -15, -15, -15, 15, -15, 0 }, /* Race resists */
         /* Init   Lower  Higher */
         { 0, 0, 0, 0, 0, 1 }, /* Hit points */
         { 2, 1, 2, 1, 2, 1 }, /* Energy */

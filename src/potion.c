@@ -4075,6 +4075,30 @@ how_resistant(int which)
         ret += partial_armor_resistance(which, uarmu, TRUE);
     }
 
+    /* Race bonuses */ 
+    if (!Upolyd) {
+        ret += gu.urace.race_res[which - 1];
+    }
+
+    #if 0
+    /* Being wet changes your resistances */
+    if (Dripping) {
+        switch (which) {
+            case FIRE_RES:
+                ret += 50;
+                break;
+            case COLD_RES:
+                ret -= 50;
+                break;
+            case SHOCK_RES:
+                ret -= 50;
+                break;
+            default:
+                break;
+        }
+    }
+    #endif
+
     /* externals and level/race based intrinsics always provide 100%
 	 * as do monster resistances */
 	if (u.uprops[which].extrinsic ||

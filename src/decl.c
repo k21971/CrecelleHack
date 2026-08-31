@@ -154,6 +154,8 @@ static const struct Race urace_init_data = {
     /*    Str     Int Wis Dex Con Cha */
     { 3, 3, 3, 3, 3, 3 },
     { STR18(100), 18, 18, 18, 18, 18 },
+    /* Resists */
+    { 0, 0, 0, 0, 0, 0 },
     /* Init   Lower  Higher */
     { 2, 0, 0, 2, 1, 0 }, /* Hit points */
     { 1, 0, 2, 0, 2, 0 }, /* Energy */

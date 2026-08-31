@@ -1158,6 +1158,8 @@ typedef struct nh_file NHFILE;
       0, 0, 0, 0,                               \
       /* Characteristic limits */               \
       {0}, {0},                                 \
+      /* Resistance */                          \
+      {0},                                      \
       /* Level change HP and Pw adjustments */  \
       {0}, {0},                                 \
       0.0                                       \

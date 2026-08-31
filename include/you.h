@@ -340,6 +340,7 @@ struct Race {
     /*** Attributes ***/
     xint16 attrmin[A_MAX];     /* minimum allowable attribute */
     xint16 attrmax[A_MAX];     /* maximum allowable attribute */
+    char race_res[6];          /* starting resistances */
     struct RoleAdvance hpadv; /* hit point advancement */
     struct RoleAdvance enadv; /* energy advancement */
     float geomult;            /* pw mult from terrain for spellcasting */
