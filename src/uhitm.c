@@ -6785,7 +6785,7 @@ boolean
 oprop_effects_pre(struct monst *magr, struct monst *mdef)
 {
     boolean is_u = (magr == &gy.youmonst);
-    boolean icy;
+    boolean icy, pkn = 0;
     struct obj *otmp;
     struct obj *weapon;
     int x, y, dx, dy;
@@ -6813,14 +6813,14 @@ oprop_effects_pre(struct monst *magr, struct monst *mdef)
             otmp = mksobj(ICICLE, FALSE, FALSE);
             otmp->spe = 1;
             throwit(otmp, 0L, FALSE, (struct obj *) 0);
-            weapon->pknown = 1;
+            pkn = 1;
         } else if (weapon->oprop == OPROP_CRACKLING && rn2(2)) {
             if (cansee(dx, dy) && flags.verbose)
                 pline("Lightning arcs from the %s!", simpleonames(weapon));
             gc.current_wand = weapon;
             ubuzz(BZ_U_WAND(BZ_OFS_AD(AD_ELEC)), 1);
             gc.current_wand = 0;
-            weapon->pknown = 1;
+            pkn = 1;
         }
     } else {
         if (weapon->oprop == OPROP_BOREAL && icy) {
@@ -6829,11 +6829,11 @@ oprop_effects_pre(struct monst *magr, struct monst *mdef)
             otmp->spe = 1;
             m_throw(magr, x, y, sgn(gt.tbx), sgn(gt.tby),
                     distmin(x, y, dx, dy), otmp);
-            weapon->pknown = 1;
+            pkn = 1;
         } else if (weapon->oprop == OPROP_CRACKLING && rn2(2)) {
             if (cansee(x, y)) {
                 pline("Lightning arcs from the %s!", simpleonames(weapon));
-                weapon->pknown = 1;
+                pkn = 1;
             }
             gb.buzzer = magr;
             buzz(BZ_M_WAND(BZ_OFS_AD(AD_ELEC)), 1, x, y, sgn(dx - x), sgn(dy - y));
@@ -6843,9 +6843,13 @@ oprop_effects_pre(struct monst *magr, struct monst *mdef)
     if (weapon->oprop == OPROP_BLAZING && !rn2(5)) {
         if (cansee(dx, dy)) {
             pline_The("%s ignites!", simpleonames(weapon));
-            weapon->pknown = 1;
+            pkn = 1;
         }
         create_bonfire(dx, dy, rnd(7), d(2, 4));
+    }
+    if (pkn && !weapon->pknown) {
+        weapon->pknown = 1;
+        update_inventory();
     }
     return DEADMONSTER(mdef);
 }
