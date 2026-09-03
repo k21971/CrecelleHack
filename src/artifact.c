@@ -1643,7 +1643,7 @@ artifact_hit(
                        || (youattack && mdef == u.ustuck));
 
     /* identify the oprop if it is not yet known*/
-    if (realizes_damage && !(otmp->pknown)) {
+    if (realizes_damage && gs.spec_oprop_applies && !(otmp->pknown)) {
         otmp->pknown = 1;
         update_inventory();
     }
