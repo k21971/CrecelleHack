@@ -4807,11 +4807,12 @@ zhitu(
             fall_asleep(-resist_reduce(d(nd, 25), SLEEP_RES), TRUE); /* sleep ray */
         }
         break;
-    case ZT_DEATH:
+    case ZT_DEATH: {
+        int disint_res = how_resistant(DISINT_RES);
         if (abstyp == ZT_BREATH(ZT_DEATH)) {
             boolean disn_prot = inventory_resistance_check(AD_DISN);
 
-            if (how_resistant(DISINT_RES) >= 100) {
+            if (disint_res >= 100) {
                 You("are not disintegrated.");
                 monstseesu(M_SEEN_DISINT);
                 break;
@@ -4847,12 +4848,18 @@ zhitu(
             break;
         }
         monstunseesu(M_SEEN_MAGR);
-        svk.killer.format = KILLED_BY_AN;
-        Strcpy(svk.killer.name, fltxt ? fltxt : "");
-        /* when killed by disintegration breath, don't leave corpse */
-        u.ugrave_arise = (type == -ZT_BREATH(ZT_DEATH)) ? -3 : NON_PM;
-        done(DIED);
+        if (disint_res > 0) {
+            You("aren't disintegrated, but that really hurts!");
+            dam = resist_reduce(d(12, 6), DISINT_RES);
+        } else {
+            svk.killer.format = KILLED_BY_AN;
+            Strcpy(svk.killer.name, fltxt ? fltxt : "");
+            /* when killed by disintegration breath, don't leave corpse */
+            u.ugrave_arise = (type == -ZT_BREATH(ZT_DEATH)) ? -3 : NON_PM;
+            done(DIED);
+        }
         return; /* lifesaved */
+    }
     case ZT_LIGHTNING:
         orig_dam = d(nd, 6);
         if (how_resistant(SHOCK_RES) >= 200) {
