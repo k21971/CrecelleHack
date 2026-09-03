@@ -33,6 +33,14 @@
 - When sleep damage is absorbed, you become temporarily very fast.
 - Different races begin the game with different levels of resistance.
 
+## Races
+- New Race: Anacrusis
+  - Angels that sang the world into existence.
+  - Begin the game with 200% resistance to all elements, but this resistance
+    drops as their voice fails and they waste away. Drops at a rate of 1%
+    every 50 turns, eventually going negative.
+  - Begin with higher attribute totals than other races.
+
 ## Monsters
 - New Monsters:
   - (Head) Butler/Maid/Servant

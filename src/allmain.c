@@ -1055,12 +1055,16 @@ welcome(boolean new_game) /* false => restoring an old game */
         /* guarantee that 'major' event category is never empty */
         livelog_printf(LL_ACHIEVE, "%s the%s entered the dungeon",
                        svp.plname, buf);
+        if (Race_if(PM_ANACRUSIS))
+            pline("Beware: your song is strong, but your voice has already begun to fade...");
     } else {
         /* if restoring in Gehennom, give same hot/smoky message as when
            first entering it */
         hellish_smoke_mesg();
         /* remind player of the level annotation, like in goto_level() */
         print_level_annotation();
+        if (Race_if(PM_ANACRUSIS))
+            You("rouse your tired voice and begin to sing once more.");
     }
 }
 

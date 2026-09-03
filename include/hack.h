@@ -784,7 +784,7 @@ struct role_filter {
     boolean roles[NUM_ROLES + 1];
     short mask;
 };
-#define NUM_RACES (6)
+#define NUM_RACES (7)
 
 struct selectionvar {
     int wid, hei;

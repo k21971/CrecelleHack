@@ -107,7 +107,9 @@ static const struct innate {
   kob_abil[] = { { 1, &HPoison_resistance, "", "" },
                  { 0, 0, 0, 0 } },
 
-  hum_abil[] = { { 0, 0, 0, 0 } };
+  hum_abil[] = { { 0, 0, 0, 0 } },
+
+  anc_abil[] = { { 0, 0, 0, 0 } };
 
 staticfn void exerper(void);
 staticfn int rnd_attr(void);
@@ -854,6 +856,9 @@ check_innate_abil(long *ability, long frommask)
         case PM_HUMAN:
             abil = hum_abil;
             break;
+        case PM_ANACRUSIS:
+            abil = anc_abil;
+            break;
         default:
             break;
         }
@@ -1039,6 +1044,7 @@ adjabil(int oldlevel, int newlevel)
     case PM_HUMAN:
     case PM_DWARF:
     case PM_GNOME:
+    case PM_ANACRUSIS:
     default:
         rabil = 0;
         break;

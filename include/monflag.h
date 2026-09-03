@@ -58,6 +58,7 @@ enum ms_sounds {
     MS_SPELL    = 43,   /* spellcaster not matching any of the above */
     MS_BOAST    = 44,   /* giants */
     MS_GROAN    = 45,   /* zombies groan */
+    MS_SONG     = 46,   /* anacruses sing the first song */
 };
 
 #define MR_FIRE         0x01 /* resists fire */
@@ -217,6 +218,7 @@ enum ms_sounds {
 #define MH_UNDEAD       0x00000080L
 #define MH_GIANT        0x00000100L
 #define MH_KOBOLD       0x00000200L
+#define MH_ANACRUSIS    0x00000400L
 
 /* for mons[].geno (constant during game) */
 #define G_DAY           0x00010000 /* generated only in day */

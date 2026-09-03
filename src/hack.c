@@ -4311,6 +4311,9 @@ maybe_wail(void)
         return;
 
     gw.wailmsg = svm.moves;
+    if (Race_if(PM_ANACRUSIS)) {
+        pline("Your voice wavers...");
+    }
     if (Role_if(PM_WIZARD) || Race_if(PM_ELF) || Role_if(PM_VALKYRIE)) {
         const char *who;
         int i, powercnt;
@@ -4375,7 +4378,7 @@ losehp(int n, const char *knam, schar k_format)
     u.uhp -= n;
     showdamage(n);
     if (u.uhp > u.uhpmax)
-        u.uhpmax = u.uhp; /* perhaps n was negative */
+        u.uhp = u.uhpmax; /* perhaps n was negative */
     if (u.uhp < 1) {
         svk.killer.format = k_format;
         if (svk.killer.name != knam) /* the thing that killed you */

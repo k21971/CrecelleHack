@@ -870,6 +870,21 @@ u_init_race(void)
     case PM_HUMAN:
         /* Nothing special */
         break;
+    
+    case PM_ANACRUSIS:
+        knows_object(FLUTE, FALSE);
+        knows_object(MAGIC_FLUTE, FALSE);
+        knows_object(TOOLED_HORN, FALSE);
+        knows_object(FROST_HORN, FALSE);
+        knows_object(FIRE_HORN, FALSE);
+        knows_object(HORN_OF_PLENTY, FALSE);
+        knows_object(HARP, FALSE);
+        knows_object(MAGIC_HARP, FALSE);
+        knows_object(ACOUSTIC_GUITAR, FALSE);
+        knows_object(ELECTRIC_GUITAR, FALSE);
+        knows_object(LEATHER_DRUM, FALSE);
+        knows_object(DRUM_OF_EARTHQUAKE, FALSE);
+        break;
 
     case PM_ELF:
         /*
@@ -1525,7 +1540,8 @@ u_init_inventory_attrs(void)
         ini_inv(Money);
     u.umoney0 += hidden_gold(TRUE); /* in case sack has gold in it */
 
-    init_attr(Race_if(PM_KOBOLD) ? 60 : 75); /* init attribute values */
+    init_attr(Race_if(PM_KOBOLD) ? 60 
+                : Race_if(PM_ANACRUSIS) ? 85 : 75); /* init attribute values */
     vary_init_attr(); /* minor variation to attrs */
     u_init_carry_attr_boost();
 }

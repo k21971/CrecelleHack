@@ -5814,12 +5814,13 @@ doshout(void)
     } else if (Race_if(PM_KOBOLD)) {
         You("bark something that sounds like \"%s\".", buf);
     } else {
-        You("raise your voice and shout: \"%s\"", buf);
+        You("raise your voice and %s: \"%s\"", Race_if(PM_ANACRUSIS) ? "sing out" : "shout", buf);
         wake_nearby(FALSE);
     }
     /* The main reason for this command: putting this string into the livelog
      * and chronicle. */
-    livelog_printf(LL_SHOUT, "%s \"%s\"", Race_if(PM_KOBOLD) ? "barked" : "shouted", buf);
+    livelog_printf(LL_SHOUT, "%s \"%s\"", Race_if(PM_KOBOLD) ? "barked"
+                                            : Race_if(PM_ANACRUSIS) ? "sang" : "shouted", buf);
     return ECMD_TIME;
 }
 

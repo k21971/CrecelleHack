@@ -4052,6 +4052,7 @@ int
 how_resistant(int which)
 {
     int ret = 0;
+    int race_adjust = 0;
     /* Now calculate the bonuses from the player's gear */
     if (uarm) {
         ret += partial_armor_resistance(which, uarm, TRUE);
@@ -4077,7 +4078,10 @@ how_resistant(int which)
 
     /* Race bonuses */ 
     if (!Upolyd) {
-        ret += gu.urace.race_res[which - 1];
+        race_adjust += gu.urace.race_res[which - 1];
+        if (Race_if(PM_ANACRUSIS))
+            race_adjust -= (svm.moves / 50);
+        ret += race_adjust;
     }
 
     #if 0

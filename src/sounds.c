@@ -443,6 +443,9 @@ growl_sound(struct monst *mtmp)
     case MS_SILENT:
         ret = "commotion";
         break;
+    case MS_SONG:
+        ret = "weep";
+        break;
     default:
         ret = "scream";
     }
@@ -1015,6 +1018,9 @@ domonnoise(struct monst *mtmp)
             Soundeffect(se_groan, 60);
             pline_msg = "groans.";
         }
+        break;
+    case MS_SONG:
+        pline_msg = "sings an eerie melody...";
         break;
     case MS_GURGLE:
         Soundeffect(se_gurgle, 60);
