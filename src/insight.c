@@ -758,6 +758,12 @@ background_enlightenment(int unused_mode UNUSED, int final)
                   : "happened");
         enlght_out(buf);
     }
+    if (Race_if(PM_ANACRUSIS)) {
+        Sprintf(buf, "a voice fading at a rate of 1%% per %ld %s",
+                u.uroleplay.anacrusis_fade,
+                u.uroleplay.anacrusis_rt ? "seconds" : "turns");
+        you_have_X(buf);
+    }
 
     if (!Upolyd) {
         int ulvl = (int) u.ulevel;

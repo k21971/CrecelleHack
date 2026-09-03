@@ -38,7 +38,8 @@
   - Angels that sang the world into existence.
   - Begin the game with 200% resistance to all elements, but this resistance
     drops as their voice fails and they waste away. Drops at a rate of 1%
-    every 50 turns, eventually going negative.
+    every 50 turns by default, eventually going negative. This rate can be
+    altered in the options and also set to move by seconds instead of by turns.
   - Begin with higher attribute totals than other races.
 
 ## Monsters

@@ -4079,8 +4079,13 @@ how_resistant(int which)
     /* Race bonuses */ 
     if (!Upolyd) {
         race_adjust += gu.urace.race_res[which - 1];
-        if (Race_if(PM_ANACRUSIS))
-            race_adjust -= (svm.moves / 50);
+        if (Race_if(PM_ANACRUSIS)) {
+            if (u.uroleplay.anacrusis_rt)
+                race_adjust -= ((timet_delta(getnow(), urealtime.start_timing))
+                                    / u.uroleplay.anacrusis_fade);
+            else
+                race_adjust -= (svm.moves / u.uroleplay.anacrusis_fade);
+        }
         ret += race_adjust;
     }
 
