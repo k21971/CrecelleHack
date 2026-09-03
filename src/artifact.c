@@ -1788,11 +1788,6 @@ artifact_hit(
                 observe_object(otmp);
                 return TRUE;
             } else {
-                if (Prone) {
-                    pline("You are already doubled over, so %s misses!", mon_nam(magr));
-                    *dmgptr = 0;
-                    return TRUE;
-                }
                 if (bigmonst(gy.youmonst.data)) {
                     pline("%s cuts deeply into you!",
                           magr ? Monnam(magr) : wepdesc);
@@ -1819,8 +1814,7 @@ artifact_hit(
                 return FALSE;
             wepdesc = artilist[ART_VORPAL_BLADE].name;
             if (!youdefend) {
-                if (!has_head(mdef->data) || gn.notonhead || u.uswallow
-                    || mdef->mprone) {
+                if (!has_head(mdef->data) || gn.notonhead || u.uswallow) {
                     if (youattack)
                         pline("Somehow, you miss %s wildly.", mon_nam(mdef));
                     else if (vis)
@@ -1849,11 +1843,6 @@ artifact_hit(
                 if (!has_head(gy.youmonst.data)) {
                     pline("Somehow, %s misses you wildly.",
                           magr ? mon_nam(magr) : wepdesc);
-                    *dmgptr = 0;
-                    return TRUE;
-                }
-                if (Prone) {
-                    pline("%s tries to cut your head off, but the blade goes high!", Monnam(magr));
                     *dmgptr = 0;
                     return TRUE;
                 }

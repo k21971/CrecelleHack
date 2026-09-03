@@ -124,8 +124,7 @@
 - You are considered to be fumbling when you drip oil.
 - Bonfires now light items on fire and properly evaporate liquids.
 - Sitting makes you prone.
-- Prone monsters and players cannot be hit by beheading or bisecting attacks
-  (already doubled over).
+- Prone monsters cannot be hit by bisecting attacks (already doubled over).
 - Change "acidic" oprop to "mordant"
 - Salt burns ghosts instead of mummies.
 
