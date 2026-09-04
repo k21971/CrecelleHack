@@ -1965,9 +1965,9 @@ artifact_hit(
                         hittee, !applies ? '.' : '!');
         if (applies) {
             if (youdefend) {
-                make_prone();
+                make_prone(TRUE);
             } else {
-                make_mon_prone(mdef);
+                make_mon_prone(mdef, TRUE);
             }
             *dmgptr += rnd(20);
         }

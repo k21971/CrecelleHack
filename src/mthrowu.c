@@ -452,7 +452,7 @@ ohitmon(
                 damage = 0;
         }
         if (otmp->otyp == BANANA_PEEL) {
-            mtmp->mprone = 1;
+            make_mon_prone(mtmp, TRUE);
             use_skill(P_TRIPPING, 1);
         }
 
@@ -791,7 +791,7 @@ m_throw(
             }
             if (hitu && singleobj->otyp == BANANA_PEEL) {
                 You("tumble to the %s!", surface(u.ux, u.uy));
-                make_prone();
+                make_prone(TRUE);
             }
             if (hitu && singleobj->otyp == EGG) {
                 if (!Stoned && !Stone_resistance

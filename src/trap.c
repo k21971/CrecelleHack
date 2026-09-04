@@ -4346,6 +4346,10 @@ float_up(void)
     /* levitation gives maximum carrying capacity, so encumbrance
        state might be reduced */
     encumber_msg();
+    if (Prone) {
+        u.uprops[PRONE].extrinsic = 0L;
+        disp.botl = TRUE;
+    }
     return;
 }
 
@@ -4519,6 +4523,8 @@ float_down(
            and goto_level does its own pickup() call */
         && on_level(&u.uz, &current_dungeon_level))
         (void) pickup(1);
+    if (Wounded_legs || !mon_enough_legs_to_stand(&gy.youmonst))
+        make_prone(FALSE);
     return 1;
 }
 

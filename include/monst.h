@@ -180,7 +180,8 @@ struct monst {
     Bitfield(mwandexp, 1);  /* mon has experience with wands */
     
     Bitfield(mgenmklev, 1); /* made by the level generation */
-    /* 7 spare bits */
+    Bitfield(mwounded_legs, 1); /* wounded legs */
+    /* 6 spare bits */
 
     unsigned long mstrategy; /* for monsters with mflag3: current strategy */
 #ifdef NHSTDC

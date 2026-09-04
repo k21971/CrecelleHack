@@ -2297,4 +2297,33 @@ udeadinside(void)
                  : "empty";    /* golems plus vortices */
 }
 
+int
+mon_leg_count(struct permonst *ptr)
+{
+    if (nolimbs(ptr) || slithy(ptr))
+        return 0;
+    if (humanoid(ptr))
+        return 2;
+    if (ptr->mlet == S_SPIDER)
+        return 8;
+    if (ptr->mlet == S_ANT)
+        return 6;
+    return 4;
+}
+
+boolean
+mon_enough_legs_to_stand(struct monst *mon)
+{
+    int leg_count = mon_leg_count(mon->data);
+    if ((mon == &gy.youmonst && Wounded_legs)
+        || mon->mwounded_legs)
+        leg_count -= 2;
+    return leg_count > 0;
+}
+
+boolean is_trippable(struct monst *mon)
+{
+    return (mon_leg_count(mon->data) && grounded(mon->data));
+}
+
 /*polyself.c*/

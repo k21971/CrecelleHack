@@ -1348,8 +1348,7 @@ dotrip(void)
         if (Prone)
             You("flounder.");
         else
-            You("trip yourself!");
-        make_prone();
+            make_prone(TRUE);
         return ECMD_TIME;
     }
 
@@ -1377,19 +1376,23 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
     int trip_diff = 10;
     int trip_roll = rn2(20);
     int tmp;
+    if (!is_trippable(mdef)) {
+        if (canseemon(mdef)) {
+            pline("%s cannot be tripped.", Monnam(mdef));
+            return 0;
+        } else {
+            trip_diff += 100;
+            map_invisible(mdef->mx, mdef->my);
+        }
+    }
     if (wep) {
         trip_diff -= 2;
         trip_diff -= wep->spe;
-    }
-    if (!is_trippable(mdef->data)) {
-        trip_diff += 100;
     }
 
     tmp = P_SKILL(P_TRIPPING) - 1;
 
     if (magr == &gy.youmonst) {
-        You("attempt to trip %s.", mon_nam(mdef));
-        display_nhwindow(WIN_MESSAGE, TRUE);
         trip_diff -= tmp;
         trip_diff += (magr->m_lev / 10);
         if (Wounded_legs && !wep)
@@ -1399,7 +1402,7 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
             setmangry(mdef, TRUE);
             if (mdef->mtame) abuse_dog(mdef);
             use_skill(P_TRIPPING, 1);
-            make_mon_prone(mdef);
+            make_mon_prone(mdef, TRUE);
         } else if (wep) {
             pline_mon(mdef, "%s avoids the sweep of %s.",
                 Monnam(mdef), the(xname(wep)));
@@ -1421,13 +1424,9 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
         display_nhwindow(WIN_MESSAGE, TRUE);
         if (trip_roll > trip_diff) {
             if (u.usteed) {
-                pline("%s is knocked to the %s!", Monnam(u.usteed), surface(u.ux, u.uy));
-                u.usteed->mprone = 1;
-                if (t_at(u.ux, u.uy))
-                    (void) mintrap(u.usteed, FORCEBUNGLE);
+                make_mon_prone(u.usteed, TRUE);
             } else {
-                You("are knocked to the %s!", surface(u.ux, u.uy));
-                make_prone();
+                make_prone(TRUE);
             }
         } else {
             You("avoid the trip.");
@@ -1438,20 +1437,36 @@ int trip_monster(struct monst *magr, struct monst *mdef, struct obj *wep) {
     return 0;
 }
 
-/* Make the player prone. */
+/* Knock the player prone. trigger_traps controls whether landing on a trap
+ * triggers it here -- pass FALSE if the trap on this fall has already been
+ * resolved, to avoid a double trigger. No-op if the player isn't currently
+ * eligible to be knocked prone at all. */
 void
-make_prone(void) {
+make_prone(boolean trigger_traps) {
     stairway *stway;
     d_level newlevel;
+    struct trap *trap;
+
+    if (Prone)
+        return;
+
+    if (u.usteed)
+		dismount_steed(DISMOUNT_FELL);
     u.uprops[PRONE].extrinsic = 1L;
     disp.botl = TRUE;
+    You("are knocked to the %s!", surface(u.ux, u.uy));
     selftouch("As you tumble, you");
+    /* Sniff potions */
     if (has_coating(u.ux, u.uy, COAT_POTION)) {
         struct obj fakeobj = cg.zeroobj;
         fakeobj.cursed = TRUE;
         fakeobj.otyp = levl[u.ux][u.uy].pindex;
         potionbreathe(&fakeobj);
     }
+    /* Trigger traps */
+    if (trigger_traps && !u.utrap && (trap = t_at(u.ux, u.uy)) != 0)
+		dotrap(trap, FORCEBUNGLE);
+    /* Fall down the stairs */
     if ((stway = stairway_at(u.ux, u.uy)) != 0 && !stway->up) {
         u.dz = 1;
         stway->u_traversed = TRUE;
@@ -1462,19 +1477,57 @@ make_prone(void) {
 }
 
 void
-make_mon_prone(struct monst *mdef) {
-    newsym(mdef->mx, mdef->my);
+make_mon_prone(struct monst *mdef, boolean trigger_traps) {
+
+    if (DEADMONSTER(mdef) || mdef->mprone)
+        return;
+
+    if (mdef == u.usteed)
+        dismount_steed(DISMOUNT_FELL);
     mdef->mprone = 1;
+    newsym(mdef->mx, mdef->my);
     if (canseemon(mdef))
         pline_mon(mdef, "%s is knocked to the %s!",
                 Monnam(mdef), surface(mdef->mx, mdef->my));
     mselftouch(mdef, "Falling, ", TRUE);
-    if (!DEADMONSTER(mdef)) {
-        if (t_at(mdef->mx, mdef->my))
-            (void) mintrap(mdef, FORCEBUNGLE);
+    if (trigger_traps && !DEADMONSTER(mdef)) {
+        (void) mintrap(mdef, FORCEBUNGLE);
         /* TODO: TRIPPING DOWN STAIRS */
     }
 }
+
+void
+update_proneness(struct monst *mon)
+{
+
+    if (mon == &gy.youmonst) {
+        if (!Prone && is_trippable(mon)
+            && !Flying && !Levitation
+            && !mon_enough_legs_to_stand(mon)) {
+            make_prone(FALSE);
+            return;
+        } else if (Prone && (mon_enough_legs_to_stand(mon) || Flying || Levitation)) {
+            You("get to your %s.", makeplural(body_part(FOOT)));
+            u.uprops[PRONE].extrinsic = 0L;
+			disp.botl = TRUE;
+        } else if (Prone && !could_stand_in_square(mon)) {
+            u.uprops[PRONE].extrinsic = 0L;
+			disp.botl = TRUE;           
+        }
+    } else {
+        if (!mon->mprone && is_trippable(mon)
+            && !mon_enough_legs_to_stand(mon)) {
+            make_mon_prone(mon, FALSE);
+        } else if (mon->mprone && mon_enough_legs_to_stand(mon)) {
+            if (canseemon(mon))
+			    pline("%s regains %s footing.", Monnam(mon), mhis(mon));
+            mon->mprone = 0;
+        } else if (mon->mprone && !could_stand_in_square(mon)) {
+            mon->mprone = 0;
+        }
+    }
+}
+
 
 /* the #kick command */
 int

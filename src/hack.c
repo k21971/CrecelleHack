@@ -3035,12 +3035,7 @@ domove_core(void)
         invocation_message();
     }
 
-    /* Stand up from prone */
-    if (Prone) {
-        You("get to your %s.", makeplural(body_part(FOOT)));
-        u.uprops[PRONE].extrinsic = 0L;
-        disp.botl = TRUE;
-    }
+    update_proneness(&gy.youmonst);
 
     if (Punished) /* put back ball and chain */
         move_bc(0, bc_control, ballx, bally, chainx, chainy);
@@ -4754,8 +4749,8 @@ grappling_finisher(coordxy x, coordxy y, struct monst *mtmp)
         } else {
             You("hit %s with a %s-%s takedown!", 
             mon_nam(mtmp), rn2(2) ? "single" : "double", mbodypart(mtmp, LEG));
-            make_mon_prone(mtmp);
-            make_prone();
+            make_mon_prone(mtmp, FALSE);
+            make_prone(FALSE);
         }
     } else if (future_dist == 2) {
         /* Moving around in front of the target */

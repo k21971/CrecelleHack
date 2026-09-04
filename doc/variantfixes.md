@@ -123,10 +123,11 @@
 - Increased variance of default monster weapon selection.
 - You are considered to be fumbling when you drip oil.
 - Bonfires now light items on fire and properly evaporate liquids.
-- Sitting makes you prone.
 - Prone monsters cannot be hit by bisecting attacks (already doubled over).
 - Change "acidic" oprop to "mordant"
 - Salt burns ghosts instead of mummies.
+- Various improvements to tripping and proneness pulled from ChrisANG's
+  reimplementation in dnethack.
 
 # 1.5.1
 ## Objects

@@ -2022,7 +2022,7 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
             if (!banana_peel) makeknown(POT_OIL);
             if (banana_peel)
                 record_achievement(ACH_BPEEL);
-            make_prone();
+            make_prone(TRUE);
         } else {
             if (canseemon(mon)) {
                 if (!banana_peel) makeknown(POT_OIL);
@@ -2030,7 +2030,7 @@ coateffects(coordxy x, coordxy y, struct monst *mon) {
                             Monnam(mon), banana_peel ? "" : "a patch of ", buf);
             }
             mhurtle(mon, mon->mx - x, mon->my - y, 1);
-            make_mon_prone(mon);
+            make_mon_prone(mon, TRUE);
         }
     } else if (stepper && isyou && has_coating(x, y, COAT_POTION)
         && levl[x][y].pindex == POT_HONEY) {

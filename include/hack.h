@@ -1579,6 +1579,7 @@ typedef uint32_t mmflags_nht;     /* makemon MM_ flags */
 #define distu(xx, yy) dist2((coordxy) (xx), (coordxy) (yy), u.ux, u.uy)
 #define mdistu(mon) distu((mon)->mx, (mon)->my)
 #define onlineu(xx, yy) online2((coordxy)(xx), (coordxy)(yy), u.ux, u.uy)
+#define could_stand_in_square(mon) ((mon) == &gy.youmonst ? !u.uinwater : !is_pool(mon->mx, mon->my))
 
 #define rn1(x, y) (rn2(x) + (y))
 

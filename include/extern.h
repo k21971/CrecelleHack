@@ -868,8 +868,9 @@ extern void container_impact_dmg(struct obj *, coordxy, coordxy) NONNULLARG1;
 extern int dotrip(void);
 extern int dograpple(void);
 extern int trip_monster(struct monst *, struct monst *, struct obj *);
-extern void make_prone(void);
-extern void make_mon_prone(struct monst *) NONNULLPTRS;
+extern void make_prone(boolean);
+extern void make_mon_prone(struct monst *, boolean) NONNULLARG1;
+extern void update_proneness(struct monst *) NONNULLPTRS;
 extern int dokick(void);
 extern boolean ship_object(struct obj *, coordxy, coordxy, boolean);
 extern void obj_delivery(boolean);
@@ -2650,6 +2651,9 @@ extern int poly_gender(void);
 extern void ugolemeffects(int, int);
 extern boolean ugenocided(void);
 extern const char *udeadinside(void);
+extern int mon_leg_count(struct permonst *);
+extern boolean mon_enough_legs_to_stand(struct monst *);
+extern boolean is_trippable(struct monst *);
 
 /* ### potion.c ### */
 

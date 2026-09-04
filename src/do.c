@@ -1379,6 +1379,15 @@ doup(void)
         return ECMD_TIME;
     }
 
+    /* "up" to stand up */
+    if (Prone && mon_enough_legs_to_stand(&gy.youmonst)) {
+        You("get to your %s.", makeplural(body_part(FOOT)));
+        u.uprops[PRONE].extrinsic = 0L;
+        disp.botl = TRUE;
+        return ECMD_TIME;
+    }
+
+
     if (!stway || (stway && !stway->up)) {
         You_cant("go up here.");
         return ECMD_OK;
@@ -1848,6 +1857,7 @@ goto_level(
                       u_locomotion("climb"),
                       (Flying && ga.at_ladder) ? " along" : "",
                       ga.at_ladder ? "ladder" : "stairs");
+            update_proneness(&gy.youmonst);
         } else { /* down */
             stairway *stway = stairway_find_from(&u.uz0, ga.at_ladder);
             if (stway) {

@@ -4699,6 +4699,7 @@ mhitm_ad_legs(
             return;
         }
 #endif
+        mdef->mwounded_legs = 1;
         mhitm_ad_phys(magr, mattk, mdef, mhm);
         if (mhm->done)
             return;
@@ -4747,6 +4748,7 @@ mhitm_ad_legs(
             mhm->damage = 0;
             return;
         }
+        mdef->mwounded_legs = 1;
         mhitm_ad_phys(magr, mattk, mdef, mhm);
         if (mhm->done)
             return;
@@ -5828,7 +5830,8 @@ hmonas(struct monst *mon)
             FALLTHROUGH;
             /*FALLTHRU*/
         case AT_KICK:
-            if (mattk->aatyp == AT_KICK && mtrapped_in_pit(&gy.youmonst))
+            if (mattk->aatyp == AT_KICK
+                && (Wounded_legs || mtrapped_in_pit(&gy.youmonst)))
                 continue;
             FALLTHROUGH;
             /*FALLTHRU*/

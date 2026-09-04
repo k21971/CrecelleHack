@@ -771,8 +771,8 @@ mattacku(struct monst *mtmp)
     if (!ranged && (is_tripper(mtmp->data) 
           || (MON_WEP(mtmp) && is_tripweapon(MON_WEP(mtmp))))
         && !Prone && !Flying && !Levitation && !u.usteed
-        && is_trippable(gy.youmonst.data) && (u.uhp > mtmp->m_lev)
-        && !rn2((10 - u.uac > mtmp->m_lev) ? 8 : 100)) {
+        && is_trippable(&gy.youmonst) && (u.uhp > mtmp->m_lev)
+        && !rn2((10 - u.uac > mtmp->m_lev) ? 20 : 100)) {
         trip_monster(mtmp, &gy.youmonst,
                     (MON_WEP(mtmp) && is_tripweapon(MON_WEP(mtmp)))
                         ? MON_WEP(mtmp) : (struct obj *) 0);
@@ -882,7 +882,8 @@ mattacku(struct monst *mtmp)
         case AT_TUCH:
         case AT_BUTT:
         case AT_TENT:
-            if (mattk->aatyp == AT_KICK && mtrapped_in_pit(mtmp))
+            if (mattk->aatyp == AT_KICK
+                && (mtrapped_in_pit(mtmp) || mtmp->mwounded_legs))
                 continue;
             if (!range2 && (!MON_WEP(mtmp) || mtmp->mconf || Conflict
                             || !touch_petrifies(gy.youmonst.data))) {

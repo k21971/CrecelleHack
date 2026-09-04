@@ -927,6 +927,10 @@ dochug(struct monst *mtmp)
     if (mtmp->mconf && !rn2(50))
         mtmp->mconf = 0;
 
+    /* wounded legs heal */
+    if (mtmp->mwounded_legs && !rn2(60))
+        mtmp->mwounded_legs = 0;
+
     /* stunned monsters get un-stunned with larger probability */
     if (mtmp->mstun && !rn2(10))
         mtmp->mstun = 0;
@@ -2326,13 +2330,7 @@ m_move(struct monst *mtmp, int after)
 
         maybe_unhide_at(mtmp->mx, mtmp->my);
 
-        /* Reset prone */
-        if (mtmp->mprone) {
-            if (canseemon(mtmp)) 
-                pline_mon(mtmp, "%s regains %s footing.",
-                    Monnam(mtmp), mhis(mtmp));
-            mtmp->mprone = 0;
-        }
+        update_proneness(mtmp);
 
         mon_track_add(mtmp, omx, omy);
     } else {

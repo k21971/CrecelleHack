@@ -421,7 +421,8 @@ mattackm(
         case AT_TUCH:
         case AT_BUTT:
         case AT_TENT:
-            if (mattk->aatyp == AT_KICK && mtrapped_in_pit(magr))
+            if (mattk->aatyp == AT_KICK
+                && (mtrapped_in_pit(magr) || magr->mwounded_legs))
                     continue;
             /* Nymph that teleported away on first attack? */
             if (distmin(magr->mx, magr->my, mdef->mx, mdef->my) > 1)

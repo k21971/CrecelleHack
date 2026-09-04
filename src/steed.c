@@ -284,6 +284,16 @@ mount_steed(
         return (FALSE);
     }
 
+    if (Prone) {
+        You_cant("mount up while lying down.");
+        return FALSE;
+    }
+
+    if (mtmp->mprone) {
+        pline("%s is lying down and can't be mounted.", Monnam(mtmp));
+        return FALSE;
+    }
+
     /* Is this a valid monster? */
     otmp = which_armor(mtmp, W_SADDLE);
     if (!otmp) {

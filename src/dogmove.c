@@ -1425,11 +1425,6 @@ dog_move(
         wasseen = canseemon(mtmp);
         remove_monster(omx, omy);
         place_monster(mtmp, nix, niy);
-        if (mtmp->mprone) {
-            mtmp->mprone = 0;
-            if (wasseen)
-                pline_mon(mtmp, "%s regains %s footing.", Monnam(mtmp), mhis(mtmp));
-        }
         if (cursemsg[chi] && (wasseen || canseemon(mtmp))) {
             /* describe top item of pile, not necessarily cursed item itself;
                don't use glyph_at() here--it would return the pet but we want
@@ -1446,6 +1441,7 @@ dog_move(
                   what);
         }
         mon_track_add(mtmp, omx, omy);
+        update_proneness(mtmp);
         /* We have to know if the pet's going to do a combined eat and
          * move before moving it, but it can't eat until after being
          * moved.  Thus the do_eat flag.
