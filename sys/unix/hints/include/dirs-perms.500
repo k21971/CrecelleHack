@@ -11,7 +11,7 @@ SOURCEINSTALL=1
 ifeq "$(WHICH_OS)" "Linux"
 
 PREFIX ?=/opt/nethack/chroot
-HACKDIR ?=/crecellehack-1.5.1
+HACKDIR ?=/crecellehack-1.6.0
 INSTDIR ?=$(PREFIX)$(HACKDIR)
 VARDIR ?=$(INSTDIR)/var
 
