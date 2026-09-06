@@ -1,4 +1,4 @@
-/* NetHack 5.0	allmain.c	$NHDT-Date: 1771213100 2026/02/15 19:38:20 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.286 $ */
+/* NetHack 5.0	allmain.c	$NHDT-Date: 1781973040 2026/06/20 16:30:40 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.304 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2012. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -160,13 +160,6 @@ u_calc_moveamt(int wtcap)
         break;
     }
 
-    if (u.ualign.type == A_CHAOTIC) {
-        if (on_hated_terrain())
-            moveamt -= (moveamt / 4);
-        else if (on_loved_terrain())
-            moveamt += (moveamt / 4);
-    }
-
     u.umovement += moveamt;
     if (u.umovement < 0)
         u.umovement = 0;
@@ -227,6 +220,11 @@ moveloop_core(void)
             numdogs = 0;
 
             svc.context.mon_moving = TRUE;
+            /* call terrain_effects during mon_moving phase */
+            if (gp.pending_terrain_effects) {
+                terrain_effects();
+                gp.pending_terrain_effects = no_terrain_effects;
+            }
             do {
                 monscanmove = movemon();
                 if (u.umovement >= NORMAL_SPEED)
@@ -269,7 +267,7 @@ moveloop_core(void)
 
                 /* Untame excess tame monsters. We have an extra check here so that
                    we do a little bit less integer division. */
-                if (weakdog && numdogs > 1 && numdogs > ACURR(A_CHA) / 3) {
+                if (weakdog && (numdogs > max(1, (ACURR(A_CHA) / 3) + P_SKILL(P_PET_HANDLING)))) {
                     if (canseemon(weakdog))
                         pline_mon(weakdog, "%s goes wild!", Monnam(weakdog));
                     else
@@ -363,8 +361,7 @@ moveloop_core(void)
                     }
                 }
 
-                if (!(u.ualign.type == A_NEUTRAL && on_hated_terrain()))
-                    regen_pw(mvl_wtcap);
+                regen_pw(mvl_wtcap);
 
                 if (!u.uinvulnerable) {
                     if (Teleportation && !rn2(85)) {
@@ -672,9 +669,7 @@ regen_pw(int wtcap)
         && ((wtcap < MOD_ENCUMBER
              && (!(svm.moves % ((MAXULEV + 8 - u.ulevel)
                               * (Role_if(PM_WIZARD) ? 3 : 4)
-                              / 6)))) || Energy_regeneration
-                                      || (u.ualign.type == A_NEUTRAL
-                                            && on_loved_terrain() && !rn2(3)))) {
+                              / 6)))) || Energy_regeneration)) {
         int upper = (int) (ACURR(A_WIS) + ACURR(A_INT)) / 15 + 1;
 
         if (EMagical_breathing)
@@ -951,10 +946,10 @@ newgame(void)
 
     urealtime.realtime = 0L;
     urealtime.start_timing = getnow();
+    program_state.something_worth_saving++; /* useful data now exists */
 #ifdef INSURANCE
     save_currentstate();
 #endif
-    program_state.something_worth_saving++; /* useful data now exists */
 
     /* Success! */
     welcome(TRUE);
@@ -1060,12 +1055,16 @@ welcome(boolean new_game) /* false => restoring an old game */
         /* guarantee that 'major' event category is never empty */
         livelog_printf(LL_ACHIEVE, "%s the%s entered the dungeon",
                        svp.plname, buf);
+        if (Race_if(PM_ANACRUSIS))
+            pline("Beware: your song is strong, but your voice has already begun to fade...");
     } else {
         /* if restoring in Gehennom, give same hot/smoky message as when
            first entering it */
         hellish_smoke_mesg();
         /* remind player of the level annotation, like in goto_level() */
         print_level_annotation();
+        if (Race_if(PM_ANACRUSIS))
+            You("rouse your tired voice and begin to sing once more.");
     }
 }
 

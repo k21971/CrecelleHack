@@ -1,4 +1,4 @@
-/* NetHack 5.0	objects.c	$NHDT-Date: 1596498192 2020/08/03 23:43:12 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.66 $ */
+/* NetHack 5.0	objects.c	$NHDT-Date: 1781973059 2026/06/20 16:30:59 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.76 $ */
 /* Copyright (c) Mike Threepoint, 1989.                           */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -29,7 +29,8 @@ void objects_globals_init(void); /* in hack.h but we're using config.h */
 struct objdescr obj_descr[SIZE(obj_descr_init)];
 struct objclass objects[SIZE(obj_init)];
 
-#define OMAT(id, nam, ac, dens, cost, clr) {nam, ac, dens, cost, clr}
+#define OMAT(id, nam, ac, dens, cost, r1, r2, r3, r4, r5, r6, clr) \
+    {nam, ac, dens, cost, {r1, r2, r3, r4, r5, r6}, clr}
 struct material materials[NUM_MATERIAL_TYPES] = {
     OBJ_MATERIAL_LIST
 };

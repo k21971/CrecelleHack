@@ -1,4 +1,4 @@
-/* NetHack 5.0	polyself.c	$NHDT-Date: 1772101811 2026/02/26 02:30:11 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.227 $ */
+/* NetHack 5.0	polyself.c	$NHDT-Date: 1781973061 2026/06/20 16:31:01 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.233 $ */
 /*      Copyright (C) 1987, 1988, 1989 by Ken Arromdee */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -1049,6 +1049,8 @@ polymon(int mntmp)
             pline(use_thec, monsterc, "shriek");
         if (is_vampire(uptr) || is_vampshifter(&gy.youmonst))
             pline(use_thec, monsterc, "change shape");
+        if (is_cleaner(uptr))
+            pline(use_thec, monsterc, "clean up the floor");
 
         if (lays_eggs(uptr) && flags.female
             && !(uptr == &mons[PM_GIANT_EEL]
@@ -1148,7 +1150,7 @@ break_armor(struct permonst *old)
     struct obj *otmp;
     struct permonst *uptr = gy.youmonst.data;
 
-    boolean breakage = breakarm(uptr) || (old->msize < uptr->msize);
+    boolean breakage = (breakarm(uptr) && old->msize <= uptr->msize) || (old->msize < uptr->msize);
     boolean slippage = sliparm(uptr) || (old->msize > uptr->msize);
 
     if (breakage) {
@@ -1428,7 +1430,17 @@ dobreathe(void)
     if (!getdir((char *) 0))
         return ECMD_CANCEL;
 
-    mattk = attacktype_fordmg(gy.youmonst.data, AT_BREA, AD_ANY);
+    if (uarmh && uarmh->oprop == OPROP_BLAZING) {
+        mattk = attacktype_fordmg(&mons[PM_RED_DRAGON], AT_BREA, AD_ANY);
+    } else if (uarmh && uarmh->oprop == OPROP_ACIDIC) {
+        mattk = attacktype_fordmg(&mons[PM_YELLOW_DRAGON], AT_BREA, AD_ANY);
+    } else if (uarmh && uarmh->oprop == OPROP_CRACKLING) {
+        mattk = attacktype_fordmg(&mons[PM_BLUE_DRAGON], AT_BREA, AD_ANY);
+    } else if (uarmh && uarmh->oprop == OPROP_BOREAL) {
+        mattk = attacktype_fordmg(&mons[PM_WHITE_DRAGON], AT_BREA, AD_ANY);
+    } else {
+        mattk = attacktype_fordmg(gy.youmonst.data, AT_BREA, AD_ANY);
+    }
     if (!mattk)
         impossible("bad breath attack?"); /* mouthwash needed... */
     else if (!u.dx && !u.dy && !u.dz)
@@ -1715,7 +1727,6 @@ dogaze(void)
                         dmg += destroy_items(mtmp, AD_FIRE, orig_dmg);
                         ignite_items(mtmp->minvent);
                     }
-                    adjust_damage(mtmp, &dmg, AD_FIRE);
                     if (dmg)
                         mtmp->mhp -= dmg;
                     if (DEADMONSTER(mtmp))
@@ -2284,6 +2295,35 @@ udeadinside(void)
              : !weirdnonliving(gy.youmonst.data)
                  ? "condemned" /* undead plus manes */
                  : "empty";    /* golems plus vortices */
+}
+
+int
+mon_leg_count(struct permonst *ptr)
+{
+    if (nolimbs(ptr) || slithy(ptr))
+        return 0;
+    if (humanoid(ptr))
+        return 2;
+    if (ptr->mlet == S_SPIDER)
+        return 8;
+    if (ptr->mlet == S_ANT)
+        return 6;
+    return 4;
+}
+
+boolean
+mon_enough_legs_to_stand(struct monst *mon)
+{
+    int leg_count = mon_leg_count(mon->data);
+    if ((mon == &gy.youmonst && Wounded_legs)
+        || mon->mwounded_legs)
+        leg_count -= 2;
+    return leg_count > 0;
+}
+
+boolean is_trippable(struct monst *mon)
+{
+    return (mon_leg_count(mon->data) && grounded(mon->data));
 }
 
 /*polyself.c*/

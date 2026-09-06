@@ -1,4 +1,4 @@
-/* NetHack 5.0	music.c	$NHDT-Date: 1736530208 2025/01/10 09:30:08 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.120 $ */
+/* NetHack 5.0	music.c	$NHDT-Date: 1781973058 2026/06/20 16:30:58 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.126 $ */
 /*      Copyright (c) 1989 by Jean-Christophe Collet */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -658,8 +658,10 @@ do_improvisation(struct obj *instr)
         if (instr->oartifact == ART_HORN_OF_THE_HORDE && (instr->age <= svm.moves)) {
             for (int i = 0; i < rn1(materials[instr->material].ac + 2, 2); i++) {
                 mtmp = makemon(&mons[PM_BARBARIAN], u.ux, u.uy, MM_EDOG | NO_MINVENT);
-                if (mtmp) initedog(mtmp, TRUE);
-                EDOG(mtmp)->petstrat = PETSTRAT_AGGRO;
+                if (mtmp) {
+                    initedog(mtmp, TRUE);
+                    EDOG(mtmp)->petstrat = PETSTRAT_AGGRO;
+                }
             }
             instr->age = svm.moves + rnz(200);
         }

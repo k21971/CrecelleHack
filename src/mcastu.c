@@ -1,4 +1,4 @@
-/* NetHack 5.0	mcastu.c	$NHDT-Date: 1770949988 2026/02/12 18:33:08 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.111 $ */
+/* NetHack 5.0	mcastu.c	$NHDT-Date: 1781973053 2026/06/20 16:30:53 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.122 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2011. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -33,7 +33,7 @@ static int mon_shadow_mage_spells[] = { MCAST_PSI_BOLT, MCAST_DARKNESS, MCAST_HA
                                         MCAST_MIRROR_IMAGE, MCAST_SLEEP_YOU, MCAST_STUN_YOU,
                                         MCAST_DISAPPEAR, MCAST_WEAKEN_YOU, MCAST_DESTRY_ARMR,
                                         MCAST_CURSE_ITEMS, MCAST_SUMMON_MONS, MCAST_DEATH_TOUCH};
-static int mon_vamp_spells[] = { MCAST_OPEN_WOUNDS, MCAST_CURE_SELF, MCAST_BLOODRUSH,
+static int mon_vamp_spells[] = { MCAST_OPEN_WOUNDS, MCAST_CURE_ALLIES, MCAST_BLOODRUSH,
                                         MCAST_DISAPPEAR, MCAST_CURSE_ITEMS, MCAST_BLOOD_SPEAR,
                                         MCAST_BLOOD_RAIN, MCAST_BLOOD_BIND };
 static int mon_cleric_spells[] = { MCAST_OPEN_WOUNDS, MCAST_CURE_SELF, MCAST_CONFUSE_YOU,
@@ -52,7 +52,7 @@ static int mon_undead_spells[] = { MCAST_HASTE_SELF, MCAST_MIRROR_IMAGE, MCAST_S
                                         MCAST_DISAPPEAR, MCAST_WEAKEN_YOU, MCAST_SLEEP_YOU,
                                         MCAST_CURSE_ITEMS, MCAST_CURSE_ITEMS, MCAST_AGGRAVATION,
                                         MCAST_RAISE_DEAD, MCAST_TELEPORT, MCAST_DEATH_TOUCH };
-static int mon_demo_spells[] = { MCAST_PSI_BOLT, MCAST_OPEN_WOUNDS, MCAST_CURE_SELF, 
+static int mon_demo_spells[] = { MCAST_PSI_BOLT, MCAST_OPEN_WOUNDS, MCAST_CURE_ALLIES, 
                                         MCAST_HASTE_SELF, MCAST_STUN_YOU, MCAST_WEAKEN_YOU,
                                         MCAST_DESTRY_ARMR, MCAST_CURSE_ITEMS, MCAST_AGGRAVATION,
                                         MCAST_SUMMON_MONS, MCAST_CHAOS_RAIN, MCAST_DEATH_TOUCH};
@@ -60,6 +60,7 @@ static int mon_trickster_spells[] = { MCAST_PSI_BOLT, MCAST_DISGUISE, MCAST_GREA
                                         MCAST_MIRROR_IMAGE, MCAST_CONFUSE_YOU, MCAST_HASTE_SELF,
                                         MCAST_DISAPPEAR, MCAST_LEVITATE_YOU, MCAST_CURSE_ITEMS,
                                         MCAST_AGGRAVATION, MCAST_SUMMON_MONS, MCAST_TELEPORT };
+static int mon_support_spells[] = { MCAST_OPEN_WOUNDS, MCAST_CURE_ALLIES };
 
 DISABLE_WARNING_FORMAT_NONLITERAL
 
@@ -93,6 +94,7 @@ staticfn void mcast_spell(struct monst *, int, int);
 staticfn boolean is_undirected_spell(int);
 staticfn boolean spell_would_be_useless(struct monst *, int);
 staticfn int spawn_mirror_image(struct monst *, int, int);
+staticfn int m_cure_allies(struct monst *);
 
 /* feedback when frustrated monster couldn't cast a spell */
 staticfn void
@@ -159,10 +161,12 @@ choose_monster_spell(struct monst *mtmp, int adtyp)
     } else if (is_undead(mtmp->data) || mtmp->data == &mons[PM_ORCUS]) {
         list = mon_undead_spells;
         len = SIZE(mon_undead_spells);
-    } else if (mtmp->data->mlet == S_GNOME || mtmp->data->mlet == S_KOBOLD
-                || mtmp->data == &mons[PM_DISPATER]) {
+    } else if (mtmp->data->mlet == S_GNOME || mtmp->data == &mons[PM_DISPATER]) {
         list = mon_trickster_spells;
         len = SIZE(mon_trickster_spells);
+    } else if (is_supporter(mtmp->data)) {
+        list = mon_support_spells;
+        len = SIZE(mon_support_spells);
     } else if (adtyp == AD_CLRC) {
         if (a == A_LAWFUL) {
             list = mon_law_cleric_spells;
@@ -284,7 +288,8 @@ castmu(
     }
 
     nomul(0);
-    if (rn2(ml * 10) < (mtmp->mconf ? 100 : 20)) { /* fumbled attack */
+    if (!is_supporter(mtmp->data) 
+        && (rn2(ml * 10) < (mtmp->mconf ? 100 : 20))) { /* fumbled attack */
         Soundeffect(se_air_crackles, 60);
         if (canseemon(mtmp) && !Deaf) {
             set_msg_xy(mtmp->mx, mtmp->my);
@@ -334,13 +339,19 @@ castmu(
     switch (mattk->adtyp) {
     case AD_FIRE:
         pline("You're enveloped in flames.");
-        if (Fire_immunity) {
+        if (how_resistant(FIRE_RES) >= 200) {
+            shieldeff(u.ux, u.uy);
+            pline("But you bask in their heat.");
+            monstseesu(M_SEEN_FIRE);
+            dmg = resist_reduce(dmg, FIRE_RES);
+        } else if (how_resistant(FIRE_RES) >= 100) {
             shieldeff(u.ux, u.uy);
             pline("But you resist the effects.");
             monstseesu(M_SEEN_FIRE);
             dmg = 0;
         } else {
             monstunseesu(M_SEEN_FIRE);
+            dmg = resist_reduce(dmg, FIRE_RES);
         }
         burn_away_slime();
         /* burn up flammable items on the floor, melt ice terrain */
@@ -348,13 +359,19 @@ castmu(
         break;
     case AD_COLD:
         pline("You're covered in frost.");
-        if (Cold_immunity) {
+        if (how_resistant(COLD_RES) >= 200) {
+            shieldeff(u.ux, u.uy);
+            pline("But you draw strength from it.");
+            monstseesu(M_SEEN_COLD);
+            dmg = resist_reduce(dmg, COLD_RES);
+        } else  if (how_resistant(COLD_RES) >= 100) {
             shieldeff(u.ux, u.uy);
             pline("But you resist the effects.");
             monstseesu(M_SEEN_COLD);
             dmg = 0;
         } else {
             monstunseesu(M_SEEN_COLD);
+            dmg = resist_reduce(dmg, COLD_RES);
         }
         /* freeze water or lava terrain */
         /* FIXME: mon_spell_hits_spot() uses zap_over_floor(); unlike with
@@ -381,10 +398,8 @@ castmu(
         dmg = 0; /* done by the spell casting functions */
         break;
     } /* switch */
-    if (dmg) {
-        adjust_damage(&gy.youmonst, &dmg, mattk->adtyp);
+    if (dmg)
         mdamageu(mtmp, dmg);
-    }
     return ret;
 }
 
@@ -704,11 +719,16 @@ mcast_fire_pillar(struct monst *mtmp, int dmg)
 
     pline("A pillar of fire strikes all around you!");
     orig_dmg = dmg = d(8, 6);
-    if (Fire_immunity) {
+    if (how_resistant(FIRE_RES) >= 200) {
+        shieldeff(u.ux, u.uy);
+        monstseesu(M_SEEN_FIRE);
+        dmg = resist_reduce(dmg, FIRE_RES);
+    } else if (how_resistant(FIRE_RES) >= 100) {
         shieldeff(u.ux, u.uy);
         monstseesu(M_SEEN_FIRE);
         dmg = 0;
     } else {
+        dmg = resist_reduce(dmg, FIRE_RES);
         monstunseesu(M_SEEN_FIRE);
     }
     if (Half_spell_damage)
@@ -733,7 +753,11 @@ mcast_lightning(struct monst *mtmp, int dmg)
     pline("A bolt of lightning strikes down at you from above!");
     reflects = ureflects("It bounces off your %s%s.", "");
     orig_dmg = dmg = d(8, 6);
-    if (reflects || Shock_immunity) {
+    if (!reflects && how_resistant(AD_ELEC) >= 200) {
+        shieldeff(u.ux, u.uy);
+        dmg = resist_reduce(dmg, SHOCK_RES);
+        monstseesu(M_SEEN_ELEC);
+    } else if (reflects || how_resistant(AD_ELEC) >= 100) {
         shieldeff(u.ux, u.uy);
         dmg = 0;
         if (reflects) {
@@ -743,6 +767,7 @@ mcast_lightning(struct monst *mtmp, int dmg)
         monstunseesu(M_SEEN_REFL);
         monstseesu(M_SEEN_ELEC);
     } else {
+        dmg = resist_reduce(dmg, SHOCK_RES);
         monstunseesu(M_SEEN_ELEC | M_SEEN_REFL);
     }
     if (Half_spell_damage)
@@ -994,7 +1019,6 @@ mcast_weird_rain(int spellnum)
 staticfn void
 mcast_spell(struct monst *mtmp, int dmg, int spellnum)
 {
-    int adtyp = 0;
     if (dmg < 0) {
         impossible("monster cast spell (%d) with negative dmg (%d)?",
                    spellnum, dmg);
@@ -1061,6 +1085,7 @@ mcast_spell(struct monst *mtmp, int dmg, int spellnum)
         break;
     case MCAST_BLOOD_BIND:
         mcast_blood_bind(mtmp);
+        dmg = 0;
         break;
     case MCAST_BLOODRUSH:
         if (canseemon(mtmp))
@@ -1082,11 +1107,9 @@ mcast_spell(struct monst *mtmp, int dmg, int spellnum)
         dmg = mcast_geyser(dmg);
         break;
     case MCAST_FIRE_PILLAR:
-        adtyp = AD_FIRE;
         dmg = mcast_fire_pillar(mtmp, dmg);
         break;
     case MCAST_LIGHTNING:
-        adtyp = AD_ELEC;
         dmg = mcast_lightning(mtmp, dmg);
         break;
     case MCAST_INSECTS:
@@ -1155,9 +1178,12 @@ mcast_spell(struct monst *mtmp, int dmg, int spellnum)
         mnexto(mtmp, RLOC_MSG);
         dmg = 0;
         break;
+    case MCAST_CURE_ALLIES:
+        m_cure_allies(mtmp);
+        dmg = 0;
+        break;
     }
-    if (adtyp)
-        adjust_damage(&gy.youmonst, &dmg, adtyp);
+
     if (dmg)
         mdamageu(mtmp, dmg);
 }
@@ -1321,6 +1347,25 @@ spawn_mirror_image(struct monst *mtmp, int x, int y) {
         newsym(illusion->mx, illusion->my);
         if (canseemon(mtmp))
             return 1;
+    }
+    return 0;
+}
+
+staticfn int
+m_cure_allies(struct monst *mtmp)
+{
+    struct monst *ally;
+    int heal_dice = max(3, 3 + mtmp->m_lev / 8);
+    for (ally = fmon; ally; ally = ally->nmon) {
+        if (DEADMONSTER(ally) || ally->mpeaceful || ally->mtame)
+            continue;
+        if (dist2(ally->mx, ally->my, mtmp->mx, mtmp->my) > 49)
+            continue;
+        if (ally->mhp < ally->mhpmax) {
+            if (canseemon(ally))
+                pline_mon(ally, "%s looks better.", Monnam(ally));
+            healmon(ally, d(heal_dice, 6), 0);
+        }
     }
     return 0;
 }

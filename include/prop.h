@@ -1,4 +1,4 @@
-/* NetHack 5.0	prop.h	$NHDT-Date: 1702274027 2023/12/11 05:53:47 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.24 $ */
+/* NetHack 5.0	prop.h	$NHDT-Date: 1781973086 2026/06/20 16:31:26 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.28 $ */
 /* Copyright (c) 1989 Mike Threepoint                             */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -74,6 +74,13 @@ enum prop_types {
     SWIMMING          = 52,
     MAGICAL_BREATHING = 53,
     PASSES_WALLS      = 54,
+    /* Vulnerabilities */
+    FIRE_VUL          =  55,
+    COLD_VUL          =  56,
+    SLEEP_VUL         =  57,
+    DISINT_VUL        =  58,
+    SHOCK_VUL         =  59,
+    POISON_VUL        =  60,
     /* Physical attributes */
     SLOW_DIGESTION    = 55,
     HALF_SPDAM        = 56,
@@ -90,7 +97,8 @@ enum prop_types {
     FREE_ACTION       = 67,
     FIXED_ABIL        = 68,
     PRONE             = 69,
-    LIFESAVED         = 70,
+    PROT_FROM_EXPLOSIONS = 70,
+    LIFESAVED         = 71,
     LAST_PROP = LIFESAVED
 };
 

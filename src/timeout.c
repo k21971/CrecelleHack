@@ -1,4 +1,4 @@
-/* NetHack 5.0	timeout.c	$NHDT-Date: 1776080125 2026/04/13 03:35:25 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.207 $ */
+/* NetHack 5.0	timeout.c	$NHDT-Date: 1781973070 2026/06/20 16:31:10 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.212 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2018. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -78,6 +78,12 @@ static const struct propname {
     { POISON_RES, "poison resistance" },
     { DRAIN_RES, "drain resistance" },
     { SICK_RES, "sickness resistance" },
+    { FIRE_VUL, "fire vulnerability" },
+    { COLD_VUL, "cold vulnerability" },
+    { SLEEP_VUL, "sleep vulnerability" },
+    { DISINT_VUL, "disintegration vulnerability" },
+    { SHOCK_VUL, "shock vulnerability" },
+    { POISON_VUL, "poison vulnerability" },
     { ANTIMAGIC, "magic resistance" },
     { HALLUC_RES, "hallucination resistance" },
     { BLND_RES, "light-induced blindness resistance" },
@@ -111,6 +117,7 @@ static const struct propname {
     { FREE_ACTION, "free action" },
     { FIXED_ABIL, "fixed abilities" },
     { PRONE, "knocked prone" },
+    { PROT_FROM_EXPLOSIONS, "protection from explosions" },
     { LIFESAVED, "life will be saved" },
     {  0, 0 },
 };
@@ -845,6 +852,7 @@ nh_timeout(void)
                         wielding_corpse(uswapwep, (struct obj *) 0, FALSE);
                     }
                     break;
+                #if 0
                 case FIRE_RES:
                     /* timed fire resistance and timed water walking combine
                     as a way to survive lava after multiple life-saving
@@ -852,6 +860,31 @@ nh_timeout(void)
                     if hero has acquired fire resistance in the meantime */
                     if (!Fire_resistance)
                         Your("temporary ability to survive burning has ended.");
+                    break;
+                #endif
+                case FIRE_RES:
+                    if (!Fire_resistance)
+                        You("feel cooler.");
+                    break;
+                case COLD_RES:
+                    if (!Cold_resistance)
+                        You("feel warmer.");
+                    break;
+                case SLEEP_RES:
+                    if (!Sleep_resistance)
+                        You("feel more wakeful.");
+                    break;
+                case DISINT_RES:
+                    if (!Disint_resistance)
+                        You("feel solidified.");
+                    break;
+                case SHOCK_RES:
+                    if (!Shock_resistance)
+                        You("feel less grounded.");
+                    break;
+                case POISON_RES:
+                    if (!Poison_resistance)
+                        You("feel less healthy.");
                     break;
                 case WWALKING:
                     /* [see fire resistance] */
@@ -887,7 +920,7 @@ nh_timeout(void)
                     if (!Breathless) {
                         if (region_danger())
                             You("cough%s",
-                                Poison_immunity ? "." : " and spit blood!");
+                                Poison_resistance ? "." : " and spit blood!");
                     }
                     break;
                 case STRANGLED:
@@ -955,6 +988,13 @@ nh_timeout(void)
 void
 fall_asleep(int how_long, boolean wakeup_msg)
 {
+    /* If a number greater than zero is passed in (likely due to absorbed
+       sleep damage) gain temporary speed instead */
+    if (how_long > 0) {
+        speed_up(how_long);
+        return;
+    }
+    /* Now the regular function */
     stop_occupation();
     nomul(how_long);
     gm.multi_reason = "sleeping";

@@ -1,4 +1,4 @@
-/* NetHack 5.0	muse.c	$NHDT-Date: 1770949988 2026/02/12 18:33:08 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.241 $ */
+/* NetHack 5.0	muse.c	$NHDT-Date: 1781973057 2026/06/20 16:30:57 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.248 $ */
 /*      Copyright (C) 1990 by Ken Arromdee                         */
 /* NetHack may be freely redistributed.  See license for details.  */
 
@@ -1196,7 +1196,7 @@ use_defensive(struct monst *mtmp)
         pline_mon(mtmp, "%s kicks ashes into your %s!", 
                     Monnam(mtmp), body_part(FACE));
         remove_coating(mtmp->mx, mtmp->my, COAT_ASHES);
-        make_blinded(rn1(5, 5), TRUE);
+        make_blinded(rn1(5, 5), FALSE);
         break;
     }
     case MUSE_COAT_BLOOD: {
@@ -1635,6 +1635,7 @@ find_offensive(struct monst *mtmp)
             && obj->otyp != POT_HEALING && obj->otyp != POT_EXTRA_HEALING
             && obj->otyp != POT_FULL_HEALING
             && mtmp->data->mlet != S_NYMPH
+            && !is_cleaner(mtmp->data)
             && has_coating(u.ux, u.uy, COAT_POTION)
             && levl[u.ux][u.uy].pindex != POT_WATER
             && (levl[u.ux][u.uy].pindex == POT_HAZARDOUS_WASTE || !rn2(10)
@@ -1973,6 +1974,8 @@ mbhit(
             gb.bhitpos.y -= ddy;
             break;
         }
+        if (otyp == WAN_AQUA_BOLT)
+            floor_spillage(x, y, POT_WATER, 0);
     }
 }
 
@@ -2052,7 +2055,8 @@ use_offensive(struct monst *mtmp)
         gb.buzzer = 0;
         /* note: 'otmp' might have been destroyed (drawbridge destruction) */
         gm.m_using = FALSE;
-        if (gm.m.has_offense == MUSE_WAN_STRIKING)
+        if (gm.m.has_offense == MUSE_WAN_STRIKING
+            || gm.m.has_offense == MUSE_WAN_AQUA_BOLT)
             mtmp->mwandexp = TRUE;
         return 2;
     case MUSE_SCR_EARTH: {
@@ -2146,7 +2150,7 @@ use_offensive(struct monst *mtmp)
             (void) destroy_mitem(mtmp, POTION_CLASS, AD_FIRE);
             ignite_items(mtmp->minvent);
             num = (2 * (rn1(3, 3) + 2 * bcsign(otmp)) + 1) / 3;
-            if (Fire_immunity)
+            if (Fire_resistance)
                 You("are not harmed.");
             burn_away_slime();
             if (Half_spell_damage)
@@ -2280,6 +2284,7 @@ rnd_offensive_item(struct monst *mtmp)
 #define MUSE_GREASE 11
 #define MUSE_DIP_WEAPON 12
 #define MUSE_BURY_BONES 13
+#define MUSE_CLEAN_OBJ 14
 
 boolean
 find_misc(struct monst *mtmp)
@@ -2390,6 +2395,7 @@ find_misc(struct monst *mtmp)
            grease if the player is slithy or a mind flayer and we have something
            greasable in the applicable slot. */
         if (obj->otyp == CAN_OF_GREASE && obj->spe > 0
+            && !is_cleaner(mtmp->data)
             && ((is_mind_flayer(gy.youmonst.data) && mtmp->misc_worn_check & W_ARMH) 
                 || (slithy(gy.youmonst.data) && mtmp->misc_worn_check & W_ARM))) {
                 for (obj2 = mtmp->minvent; obj2; obj2 = obj2->nobj) {
@@ -2404,10 +2410,19 @@ find_misc(struct monst *mtmp)
         }
         nomore(MUSE_DIP_WEAPON);
         if ((mtmp->data != &mons[PM_PESTILENCE] && obj->otyp == POT_SICKNESS
-                && mwep && !mwep->opoisoned && is_poisonable(mwep))
+                && mwep && !mwep->opoisoned && is_poisonable(mwep)
+                && !is_cleaner(mtmp->data))
             ||  (mwep && mwep->cursed && obj->otyp == POT_WATER && obj->blessed)) {
                 gm.m.misc = obj;
                 gm.m.has_misc = MUSE_DIP_WEAPON;
+        }
+        nomore(MUSE_CLEAN_OBJ);
+        if (is_cleaner(mtmp->data)
+            && (obj->greased
+                || (is_poisonable(obj) && !permapoisoned(obj) && obj->opoisoned)
+                || (erosion_matters(obj) && (obj->oeroded || obj->oeroded2)))) {
+            gm.m.misc = obj;
+            gm.m.has_misc = MUSE_CLEAN_OBJ;
         }
         nomore(MUSE_BURY_BONES);
         if (likes_bones(mtmp->data)
@@ -2455,7 +2470,9 @@ find_misc(struct monst *mtmp)
             gm.m.has_misc = MUSE_POT_POLYMORPH;
         }
         nomore(MUSE_BAG);
-        if (Is_container(obj) && obj->otyp != BAG_OF_TRICKS && !rn2(5)
+        if (Is_container(obj) && obj->otyp != BAG_OF_TRICKS
+            && obj->otyp != BAG_OF_WINDS
+            && !rn2(5)
             && !SchroedingersBox(obj)
             && !gm.m.has_misc && Has_contents(obj)
             && !obj->olocked && !obj->otrapped) {
@@ -2783,6 +2800,19 @@ use_misc(struct monst *mtmp)
         else if (otmp->otyp == POT_WATER)
             otmp2->cursed = 0;
         m_useup(mtmp, otmp);
+        return 0;
+    case MUSE_CLEAN_OBJ:
+        if (otmp->oeroded || otmp->oeroded2) {
+            if (flags.verbose && canseemon(mtmp))
+                pline("%s destroys %s.", Monnam(mtmp), an(xname(otmp)));
+            m_useupall(mtmp, otmp);
+        } else {
+            otmp->greased = 0;
+            if (is_poisonable(otmp))
+                otmp->opoisoned = 0;
+            if (flags.verbose && canseemon(mtmp))
+                pline("%s polishes %s.", Monnam(mtmp), an(xname(otmp)));
+        }
         return 0;
     case MUSE_BURY_BONES:
         mon_bury_obj(mtmp, otmp);

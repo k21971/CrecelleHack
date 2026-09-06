@@ -1,4 +1,4 @@
-/* NetHack 5.0	artifact.c	$NHDT-Date: 1715889721 2024/05/16 20:02:01 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.236 $ */
+/* NetHack 5.0	artifact.c	$NHDT-Date: 1781973041 2026/06/20 16:30:41 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.264 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2013. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -1147,18 +1147,18 @@ spec_applies(const struct artifact *weap, struct monst *mtmp)
 
         switch (weap->attk.adtyp) {
         case AD_FIRE:
-            return !(yours ? Fire_resistance : resists_fire(mtmp));
+            return !(!yours ? resists_fire(mtmp) : (how_resistant(FIRE_RES) > 99) ? TRUE : FALSE);
         case AD_COLD:
-            return !(yours ? Cold_resistance : resists_cold(mtmp));
+            return !(!yours ? resists_cold(mtmp) : (how_resistant(COLD_RES) > 99) ? TRUE : FALSE);
         case AD_ACID:
             return !(yours ? Acid_resistance : resists_acid(mtmp));
         case AD_ELEC:
-            return !(yours ? Shock_resistance : resists_elec(mtmp));
+            return !(!yours ? resists_elec(mtmp) : (how_resistant(SHOCK_RES) > 99) ? TRUE : FALSE);
         case AD_MAGM:
         case AD_STUN:
             return !(yours ? Antimagic : (rn2(100) < ptr->mr));
         case AD_DRST:
-            return !(yours ? Poison_resistance : resists_poison(mtmp));
+            return !(!yours ? resists_poison(mtmp) : (how_resistant(POISON_RES) > 99) ? TRUE : FALSE);
         case AD_DRLI:
             return !(yours ? Drain_resistance : resists_drli(mtmp));
         case AD_STON:
@@ -1769,6 +1769,11 @@ artifact_hit(
                 if (gn.notonhead)
                     return FALSE;
 
+                if (mdef->mprone) {
+                    pline("%s is already doubled over, so you miss!", Monnam(mdef));
+                    *dmgptr = 0;
+                    return (boolean) (youattack || vis);
+                }
                 if (bigmonst(mdef->data)) {
                     if (youattack)
                         You("slice deeply into %s!", mon_nam(mdef));
@@ -1855,7 +1860,9 @@ artifact_hit(
             }
         }
     }
-    if (spec_ability(otmp, SPFX_DRLI) || otmp->oprop == OPROP_HUNGRY) {
+    /* technically, there is no way to get here with Stormbringer without special damage, but check anyway */
+    if ((spec_ability(otmp, SPFX_DRLI) && gs.spec_dbon_applies) ||
+        (otmp->oprop == OPROP_HUNGRY && gs.spec_oprop_applies)) {
         /* some non-living creatures (golems, vortices) are vulnerable to
            life drain effects so can get "<Arti> draws the <life>" feedback */
         const char *life = nonliving(mdef->data) ? "animating force" : "life";
@@ -1958,9 +1965,9 @@ artifact_hit(
                         hittee, !applies ? '.' : '!');
         if (applies) {
             if (youdefend) {
-                make_prone();
+                make_prone(TRUE);
             } else {
-                make_mon_prone(mdef);
+                make_mon_prone(mdef, TRUE);
             }
             *dmgptr += rnd(20);
         }
@@ -2121,6 +2128,7 @@ staticfn int
 invoke_create_portal(struct obj *obj)
 {
     int i, num_ok_dungeons, last_ok_dungeon = 0;
+    boolean entered_planes = FALSE;
     d_level newlev;
     winid tmpwin = create_nhwindow(NHW_MENU);
     anything any;
@@ -2170,8 +2178,13 @@ invoke_create_portal(struct obj *obj)
         newlev.dlevel = svd.dungeons[i].entry_lev;
     else
         newlev.dlevel = svd.dungeons[i].dunlev_ureached;
-
-    if (u.uhave.amulet || In_endgame(&u.uz) || In_endgame(&newlev)
+    /* check if player is in the endgame */
+    for (i = 0; u.uachieved[i]; ++i)
+        if (u.uachieved[i] == ACH_ENDG) {
+            entered_planes = TRUE;
+            break;
+        }
+    if (u.uhave.amulet || entered_planes
         || newlev.dnum == u.uz.dnum || !next_to_u()) {
         You_feel("very disoriented for a moment.");
     } else {

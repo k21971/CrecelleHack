@@ -1,4 +1,4 @@
-/* NetHack 5.0	mhitu.c	$NHDT-Date: 1775259433 2026/04/03 15:37:13 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.341 $ */
+/* NetHack 5.0	mhitu.c	$NHDT-Date: 1781973054 2026/06/20 16:30:54 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.347 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2012. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -453,7 +453,7 @@ getmattk(
        against cold resistant foes; change the touch damage from cold to
        physical if target will resist */
     } else if (indx == 0 && attk->aatyp == AT_TUCH && attk->adtyp == AD_COLD
-               && (udefend ? Cold_immunity : resists_cold(mdef))
+               && (udefend ? Cold_resistance : resists_cold(mdef))
                /* don't substitute if target is immune to normal damage */
                && mdef->data != &mons[PM_SHADE]) {
         *alt_attk_buf = *attk;
@@ -771,8 +771,8 @@ mattacku(struct monst *mtmp)
     if (!ranged && (is_tripper(mtmp->data) 
           || (MON_WEP(mtmp) && is_tripweapon(MON_WEP(mtmp))))
         && !Prone && !Flying && !Levitation && !u.usteed
-        && is_trippable(gy.youmonst.data) && (u.uhp > mtmp->m_lev)
-        && !rn2((10 - u.uac > mtmp->m_lev) ? 8 : 100)) {
+        && is_trippable(&gy.youmonst) && (u.uhp > mtmp->m_lev)
+        && !rn2((10 - u.uac > mtmp->m_lev) ? 20 : 100)) {
         trip_monster(mtmp, &gy.youmonst,
                     (MON_WEP(mtmp) && is_tripweapon(MON_WEP(mtmp)))
                         ? MON_WEP(mtmp) : (struct obj *) 0);
@@ -882,7 +882,8 @@ mattacku(struct monst *mtmp)
         case AT_TUCH:
         case AT_BUTT:
         case AT_TENT:
-            if (mattk->aatyp == AT_KICK && mtrapped_in_pit(mtmp))
+            if (mattk->aatyp == AT_KICK
+                && (mtrapped_in_pit(mtmp) || mtmp->mwounded_legs))
                 continue;
             if (!range2 && (!MON_WEP(mtmp) || mtmp->mconf || Conflict
                             || !touch_petrifies(gy.youmonst.data))) {
@@ -1400,6 +1401,7 @@ gulpmu(struct monst *mtmp, struct attack *mattk)
             unplacebc(); /* ball&chain go away */
         remove_monster(omx, omy);
         mtmp->mtrapped = 0; /* no longer on old trap */
+        u.usticker = 0; /* no longer grappling anyone */
         place_monster(mtmp, u.ux, u.uy);
         set_ustuck(mtmp);
         newsym(mtmp->mx, mtmp->my);
@@ -1578,7 +1580,12 @@ gulpmu(struct monst *mtmp, struct attack *mattk)
     case AD_ELEC:
         if (!mtmp->mcan && rn2(2)) {
             pline_The("air around you crackles with electricity.");
-            if (Shock_immunity) {
+            if (how_resistant(SHOCK_RES) >= 200) {
+                shieldeff(u.ux, u.uy);
+                You("absorb the shock.");
+                monstseesu(M_SEEN_ELEC);
+                tmp = resist_reduce(tmp, SHOCK_RES);
+            } else if (how_resistant(SHOCK_RES) >= 100) {
                 shieldeff(u.ux, u.uy);
                 You("seem unhurt.");
                 monstseesu(M_SEEN_ELEC);
@@ -1586,13 +1593,19 @@ gulpmu(struct monst *mtmp, struct attack *mattk)
                 tmp = 0;
             } else {
                 monstunseesu(M_SEEN_ELEC);
+                tmp = resist_reduce(tmp, SHOCK_RES);
             }
         } else
             tmp = 0;
         break;
     case AD_COLD:
         if (!mtmp->mcan && rn2(2)) {
-            if (Cold_immunity) {
+            if (how_resistant(SHOCK_RES) >= 200) {
+                shieldeff(u.ux, u.uy);
+                You_feel(" pleasantly chilly.");
+                monstseesu(M_SEEN_COLD);
+                tmp = resist_reduce(tmp, AD_COLD);
+            } else if (how_resistant(COLD_RES) >= 100) {
                 shieldeff(u.ux, u.uy);
                 You_feel("mildly chilly.");
                 monstseesu(M_SEEN_COLD);
@@ -1601,13 +1614,19 @@ gulpmu(struct monst *mtmp, struct attack *mattk)
             } else {
                 You("are freezing to death!");
                 monstunseesu(M_SEEN_COLD);
+                tmp = resist_reduce(tmp, COLD_RES);
             }
         } else
             tmp = 0;
         break;
     case AD_FIRE:
         if (!mtmp->mcan && rn2(2)) {
-            if (Fire_immunity) {
+            if (how_resistant(FIRE_RES) >= 200) {
+                shieldeff(u.ux, u.uy);
+                You_feel("pleasantly warm");
+                monstseesu(M_SEEN_FIRE);
+                tmp = resist_reduce(tmp, FIRE_RES);
+            } else if (how_resistant(FIRE_RES) >= 100) {
                 shieldeff(u.ux, u.uy);
                 You_feel("mildly hot.");
                 monstseesu(M_SEEN_FIRE);
@@ -1616,6 +1635,7 @@ gulpmu(struct monst *mtmp, struct attack *mattk)
             } else {
                 You("are burning to a crisp!");
                 monstunseesu(M_SEEN_FIRE);
+                tmp = resist_reduce(tmp, FIRE_RES);
             }
             burn_away_slime();
         } else
@@ -1650,8 +1670,6 @@ gulpmu(struct monst *mtmp, struct attack *mattk)
             tmp = 1;
 
         tmp = Maybe_Half_Phys(tmp);
-    } else {
-        adjust_damage(&gy.youmonst, &tmp, AD_FIRE);
     }
 
     gm.mswallower = mtmp; /* match gulpmm() */
@@ -1945,13 +1963,14 @@ gazemu(struct monst *mtmp, struct attack *mattk)
                 pline_mon(mtmp, "%s attacks you with a fiery gaze!",
                           Monnam(mtmp));
                 stop_occupation();
-                if (Fire_immunity) {
+                if (how_resistant(FIRE_RES) < 100) {
                     shieldeff(u.ux, u.uy);
                     pline_The("fire doesn't feel hot!");
                     monstseesu(M_SEEN_FIRE);
                     ugolemeffects(AD_FIRE, d(12, 6));
                     dmg = 0;
                 } else {
+                    dmg = resist_reduce(dmg, FIRE_RES);
                     monstunseesu(M_SEEN_FIRE);
                 }
                 burn_away_slime();
@@ -1961,21 +1980,19 @@ gazemu(struct monst *mtmp, struct attack *mattk)
                     (void) destroy_items(&gy.youmonst, AD_FIRE, orig_dmg);
                     ignite_items(gi.invent);
                 }
-                if (dmg) {
-                    adjust_damage(&gy.youmonst, &dmg, AD_FIRE);
+                if (dmg)
                     mdamageu(mtmp, dmg);
-                }
             }
         }
         break;
 #ifdef PM_BEHOLDER /* work in progress */
     case AD_SLEE:
-        if (mcanseeu && gm.multi >= 0 && !rn2(5) && !Sleep_resistance) {
+        if (mcanseeu && gm.multi >= 0 && !rn2(5) && (how_resistant(SLEEP_RES) < 100)) {
             if (cancelled) {
                 react = 6;                      /* "tired" */
                 already = (mtmp->mfrozen != 0); /* can't happen... */
             } else {
-                fall_asleep(-rnd(10), TRUE);
+                fall_asleep(-resist_reduce(rnd(10), SLEEP_RES), TRUE);
                 pline("%s gaze makes you very sleepy...",
                       s_suffix(Monnam(mtmp)));
                 monstunseesu(M_SEEN_SLEEP);
@@ -2017,10 +2034,12 @@ gazemu(struct monst *mtmp, struct attack *mattk)
 void
 mdamageu(struct monst *mtmp, int n)
 {
+    #if 0
     if (n < 0) {
         impossible("mdamageu for negative damage? (%d)", n);
         n = 0;
     }
+    #endif
 
     disp.botl = TRUE;
     if (Upolyd) {
@@ -2770,7 +2789,7 @@ passiveum(
         }
     else
         tmp = 0;
-    adjust_damage(mtmp, &tmp, oldu_mattk->adtyp);
+
     return assess_dmg(mtmp, tmp);
 }
 
@@ -2833,101 +2852,5 @@ attack_contact_slots(struct monst *magr, int aatyp)
     }
     return 0;
 }
-
-/* Reduce via resistance */
-int
-adjust_damage(struct monst *mon, int *dmgptr, int adtyp)
-{
-    boolean halved = FALSE;
-    boolean is_u = (mon == &gy.youmonst);
-    boolean wet = (is_u && Dripping) || (!is_u && mon->mdripping);
-    int mult = 1;
-
-    /* Sometimes this function gets called on zero damage attacks. In
-       that case we simply bail. */
-    if (!*dmgptr)
-        return *dmgptr;
-
-    switch (adtyp) {
-    case AD_FIRE:
-        if (wet) {
-            if (is_u) {
-                pline("The liquid covering you protects you.");
-                make_dripping(0, 0, NON_PM);
-            } else {
-                if (canseemon(mon))
-                    pline("The liquid covering %s protects %s.", mon_nam(mon), mhis(mon));
-                mon->mdripping = 0;
-            }
-            *dmgptr = 1;
-            break;
-        }
-        if (is_u ? Fire_resistance : resists_fire(mon))
-            halved = TRUE;
-        break;
-    case AD_COLD:
-        if (wet) {
-            if (is_u) {
-                pline("The liquid covering you freezes!");
-                make_dripping(0, 0, NON_PM);
-            } else {
-                if (canseemon(mon))
-                    pline("The liquid covering %s freezes!", mon_nam(mon));
-                mon->mdripping = 0;
-            }
-        }
-        if (is_u ? Cold_resistance : resists_cold(mon))
-            halved = TRUE;
-        break;
-    case AD_ELEC:
-        if (wet) {
-            if (is_u) {
-                pline("The liquid covering you conducts the shock!");
-                make_dripping(0, 0, NON_PM);
-            } else {
-                if (canseemon(mon))
-                    pline("The liquid covering %s conducts the shock!", mon_nam(mon));
-                mon->mdripping = 0;
-            }
-            if (!Shock_resistance)
-                mult = 2;
-            break;
-        }
-        if (is_u ? Shock_resistance : resists_cold(mon))
-            halved = TRUE;
-        break;
-    case AD_DRST:
-    case AD_DRCO:
-    case AD_DRDX:
-        if (is_u ? Poison_resistance : resists_poison(mon))
-            halved = TRUE;
-        break;
-    case AD_DISN:
-        if (is_u ? Disint_resistance : resists_disint(mon))
-            halved = TRUE;
-        break;
-    case AD_ACID:
-        if (is_u ? Acid_resistance : resists_acid(mon))
-            halved = TRUE;
-        break;
-/* Half physical damage is handled elsewhere. */
-#if 0
-    case AD_PHYS:
-        if (is_u && Half_physical_damage)
-            halved = TRUE;
-        break;
-    case AD_CLRC:
-    case AD_SPEL:
-        if (is_u && Half_spell_damage)
-            halved = TRUE;
-        break;
-#endif
-    }
-    if (halved)
-        *dmgptr = (*dmgptr + 1) / 2;
-    *dmgptr *= mult;
-    return *dmgptr;
-}
-#undef ld
 
 /*mhitu.c*/

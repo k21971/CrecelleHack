@@ -1,4 +1,4 @@
-/* NetHack 5.0	insight.c	$NHDT-Date: 1777004419 2026/04/23 20:20:19 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.134 $ */
+/* NetHack 5.0	insight.c	$NHDT-Date: 1781973051 2026/06/20 16:30:51 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.139 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -758,6 +758,12 @@ background_enlightenment(int unused_mode UNUSED, int final)
                   : "happened");
         enlght_out(buf);
     }
+    if (Race_if(PM_ANACRUSIS)) {
+        Sprintf(buf, "a voice fading at a rate of 1%% per %ld %s",
+                u.uroleplay.anacrusis_fade,
+                u.uroleplay.anacrusis_rt ? "seconds" : "turns");
+        you_have_X(buf);
+    }
 
     if (!Upolyd) {
         int ulvl = (int) u.ulevel;
@@ -784,25 +790,6 @@ background_enlightenment(int unused_mode UNUSED, int final)
                     (ulvl < 18) ? "to attain" : "for", (ulvl + 1));
         }
         you_have(buf, "");
-    }
-
-    /* terrain boosts */
-    Sprintf(buf, "%s changes depending on terrain:", u.ualign.type == A_CHAOTIC ? "speed"
-                                                : u.ualign.type == A_LAWFUL ? "AC"
-                                                    : "energy regeneration");
-    you_have(buf, "");
-    if (Race_if(PM_DWARF)) {
-        Snprintf(buf, sizeof(buf), "a preference for bare earth");
-        you_have(buf, "");
-    }
-    for (int i = 0; i < NUM_COATINGS; i++) {
-        if (all_coatings[i].val & gu.urace.lovecoat) {
-            Snprintf(buf, sizeof(buf), "a preference for %sterrain", all_coatings[i].adj);
-            you_have(buf, "");
-        } else if (all_coatings[i].val & gu.urace.hatecoat) {
-            Snprintf(buf, sizeof(buf), "a distaste for %sterrain", all_coatings[i].adj);
-            you_have(buf, "");
-        }
     }
 #ifdef SCORE_ON_BOTL
     if (flags.showscore) {
@@ -1635,43 +1622,50 @@ attributes_enlightenment(
         you_are("invulnerable", from_what(INVULNERABLE));
     if (Antimagic)
         you_are("magic-protected", from_what(ANTIMAGIC));
+
+
+    /* Partial intrinsic resistances */
+    if ((armpro = magic_negation(&gy.youmonst)) > 0) {
+        Sprintf(buf, "%d%% warded from special attacks", armpro);
+        you_are(buf, "");
+    }
+    Sprintf(buf, "%d%% fire resistant", how_resistant(FIRE_RES));
+    you_are(buf, "");
+    Sprintf(buf, "%d%% cold resistant", how_resistant(COLD_RES));
+    you_are(buf, "");
+    Sprintf(buf, "%d%% sleep resistant", how_resistant(SLEEP_RES));
+    you_are(buf, "");
+    Sprintf(buf, "%d%% disintegration-resistant", how_resistant(DISINT_RES));
+    you_are(buf, "");
+    Sprintf(buf, "%d%% shock resistant", how_resistant(SHOCK_RES));
+    you_are(buf, "");
+    Sprintf(buf, "%d%% poison resistant", how_resistant(POISON_RES));
+    you_are(buf, "");
+    /* End of partial intrinsic resistances */
+
     if (Fire_resistance)
         you_are("fire resistant", from_what(FIRE_RES));
-    if (Fire_immunity)
-        you_are("immune to fire", from_what_item(FIRE_RES));
     item_resistance_message(AD_FIRE, " protected from fire", final);
     if (Cold_resistance)
         you_are("cold resistant", from_what(COLD_RES));
-    if (Cold_immunity)
-        you_are("immune to cold", from_what_item(COLD_RES));
     item_resistance_message(AD_COLD, " protected from cold", final);
     if (Sleep_resistance)
         you_are("sleep resistant", from_what(SLEEP_RES));
-    if (Sleep_immunity)
-        you_are("immune to sleep", from_what_item(SLEEP_RES));
     if (Disint_resistance)
         you_are("disintegration resistant", from_what(DISINT_RES));
-    if (Disint_immunity)
-        you_are("immune to disintegration", from_what_item(DISINT_RES));
     item_resistance_message(AD_DISN, " protected from disintegration", final);
     if (Shock_resistance)
         you_are("shock resistant", from_what(SHOCK_RES));
-    if (Shock_immunity)
-        you_are("immune to shock", from_what_item(SHOCK_RES));
     item_resistance_message(AD_ELEC, " protected from electric shocks",
                             final);
     if (Poison_resistance)
         you_are("poison resistant", from_what(POISON_RES));
-    if (Poison_immunity)
-        you_are("immune to poison", from_what_item(POISON_RES));
     if (Acid_resistance) {
         Sprintf(buf, "%.20s%.30s",
                 temp_resist(ACID_RES) ? "temporarily " : "",
                 "acid resistant");
         you_are(buf, from_what(ACID_RES));
     }
-    if (Acid_immunity)
-        you_are("immune to acid", from_what_item(ACID_RES));
     item_resistance_message(AD_ACID, " protected from acid", final);
     if (Drain_resistance)
         you_are("level-drain resistant", from_what(DRAIN_RES));
@@ -1924,10 +1918,6 @@ attributes_enlightenment(
         if (prot)
             you_have(enlght_combatinc("defense", prot, final, buf), "");
     }
-    if ((armpro = magic_negation(&gy.youmonst)) > 0) {
-        Sprintf(buf, "%d%% warding from special attacks", armpro);
-        you_have(buf, "");
-    }
     if (Half_physical_damage)
         enlght_halfdmg(HALF_PHDAM, final);
     if (Half_spell_damage)
@@ -1955,6 +1945,9 @@ attributes_enlightenment(
     if (Protection_from_shape_changers)
         you_are("protected from shape changers",
                 from_what(PROT_FROM_SHAPE_CHANGERS));
+    if (Protection_from_explosions)
+        you_are("protected from explosions",
+                from_what(PROT_FROM_EXPLOSIONS));
     if (Unchanging) {
         const char *what = 0;
 
@@ -2170,7 +2163,7 @@ doattributes(void)
     if (wizard || discover)
         mode |= MAGICENLIGHTENMENT;
 
-    if (flags.dnh_enlightenment)
+    if (flags.attributes_menu)
         enlightenment_dnh(mode);
     else
         enlightenment(mode, ENL_GAMEINPROGRESS);

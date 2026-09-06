@@ -2649,6 +2649,14 @@ optfn_name(
 
         if ((op = string_for_env_opt(allopt[optidx].name, opts, FALSE))
             != empty_optstr) {
+#ifdef WIN32
+            /*
+             * Under windows, if we already set flags.debug with -D
+             * on the command line, leave that alone.
+             */
+            if (flags.debug && !strcmpi(svp.plname, "wizard"))
+                return optn_ok;
+#endif
             nmcpy(svp.plname, op, PL_NSIZ);
         } else
             return optn_err;
@@ -3123,8 +3131,8 @@ optfn_paranoid_confirmation(
                          " %s", paranoia[i].argname);
         }
         /* note: always leaves enough room for caller to tack on '\n' */
-        opts[0] = '\0';
-        (void) strncat(opts, tmpbuf[0] ? &tmpbuf[1] : "none", BUFSZ - 1);
+        Snprintf(opts, BUFSZ - 1, "%s",
+                 tmpbuf[0] ? &tmpbuf[1] : "none");
         return optn_ok;
     }
     if (req == do_handler) {
@@ -3709,6 +3717,41 @@ optfn_role(
     if (req == get_cnf_val) {
         op = get_cnf_role_opt(optidx);
         Strcpy(opts, op ? op : "none");
+        return optn_ok;
+    }
+    return optn_ok;
+}
+
+staticfn int
+optfn_anacrusis_fade(
+    int optidx, int req, boolean negated,
+    char *opts, char *op)
+{
+    if (req == do_init) {
+        u.uroleplay.anacrusis_fade = DEFAULT_ANACRUSIS_FADE;
+        return optn_ok;
+    }
+    if (req == do_set) {
+        /* pile limit: when walking over objects, number which triggers
+           "there are several/many objects here" instead of listing them
+         */
+
+        op = string_for_opt(opts, negated);
+        if ((negated && op == empty_optstr)
+            || (!negated && op != empty_optstr))
+            u.uroleplay.anacrusis_fade = negated ? DEFAULT_ANACRUSIS_FADE : atol(op);
+        else if (negated) {
+            bad_negation(allopt[optidx].name, TRUE);
+            return optn_err;
+        } else /* op == empty_optstr */
+            u.uroleplay.anacrusis_fade = DEFAULT_ANACRUSIS_FADE;
+        /* sanity check */
+        if (u.uroleplay.anacrusis_fade < 0)
+            u.uroleplay.anacrusis_fade = DEFAULT_ANACRUSIS_FADE;
+        return optn_ok;
+    }
+    if (req == get_val || req == get_cnf_val) {
+        Sprintf(opts, "%ld", u.uroleplay.anacrusis_fade);
         return optn_ok;
     }
     return optn_ok;
@@ -5404,7 +5447,7 @@ optfn_boolean(
 #ifndef IDLECHECKPOINT
         case opt_idlecheckpoint:
             pline("There is no underlying support for 'idlecheckpoint'"
-                  " compiled in."); 
+                  " compiled in.");
             iflags.idlecheckpoint = FALSE;
             give_opt_msg = FALSE;
             break;
@@ -5798,8 +5841,13 @@ handler_disclose(void)
     start_menu(tmpwin, MENU_BEHAVE_STANDARD);
     any = cg.zeroany;
     for (i = 0; i < NUM_DISCLOSURE_OPTIONS; i++) {
-        Sprintf(buf, "%-12s[%c%c]", disclosure_names[i],
-                flags.end_disclose[i], disclosure_options[i]);
+        if (iflags.menu_tab_sep) {
+            Sprintf(buf, "%s\t[%c%c]", disclosure_names[i],
+                    flags.end_disclose[i], disclosure_options[i]);
+        } else {
+            Sprintf(buf, "%-12s[%c%c]", disclosure_names[i],
+                    flags.end_disclose[i], disclosure_options[i]);
+        }
         any.a_int = i + 1;
         add_menu(tmpwin, &nul_glyphinfo, &any, disclosure_options[i],
                  0, ATR_NONE, clr, buf, MENU_ITEMFLAGS_NONE);
@@ -7534,7 +7582,7 @@ allopt_array_init(void)
                 if (allopt[i].opttyp == BoolOpt && i != opt_ascii_map)
                     allopt[i].initval = allopt[i].opt_in_out;
 #endif
-		*(allopt[i].addr) = allopt[i].initval;
+                *(allopt[i].addr) = allopt[i].initval;
             }
         }
         heed_all_options();
@@ -9070,9 +9118,10 @@ doset(void) /* changing options via menu by Per Liboriussen */
                     getlin(buf, abuf);
                     if (abuf[0] == '\033')
                         continue;
-                    Sprintf(buf, "%s:", allopt[opt_indx].name);
-                    (void) strncat(eos(buf), abuf,
-                                   (sizeof buf - 1 - strlen(buf)));
+                    Snprintf(buf, sizeof buf,
+                             "%s:%s",
+                             allopt[opt_indx].name,
+                             abuf);
                     /* pass the buck */
                     (void) parseoptions(buf, FALSE, FALSE);
                 }

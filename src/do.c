@@ -1,4 +1,4 @@
-/* NetHack 5.0	do.c	$NHDT-Date: 1774269965 2026/03/23 04:46:05 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.404 $ */
+/* NetHack 5.0	do.c	$NHDT-Date: 1781973045 2026/06/20 16:30:45 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.411 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Derek S. Ray, 2015. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -135,9 +135,9 @@ boulder_hits_pool(
                 int dmg;
 
                 You("are hit by molten %s%c",
-                    hliquid("lava"), Fire_resistance ? '.' : '!');
+                    hliquid("lava"), (how_resistant(FIRE_RES) > 50) ? '.' : '!');
                 burn_away_slime();
-                dmg = d((Fire_resistance ? 1 : 3), 6);
+                dmg = resist_reduce(d(3, 6), FIRE_RES);
                 losehp(Maybe_Half_Phys(dmg), /* lava damage */
                        "molten lava", KILLED_BY);
             } else if (!fills_up && flags.verbose
@@ -646,6 +646,11 @@ dosinkring(struct obj *obj)
         nosink = TRUE;
         /* for S_room case, same message as for teleportation is given */
         ideed = (levl[u.ux][u.uy].typ != ROOM);
+        break;
+    case RIN_PROTECTION_FROM_EXPLOSIONS:
+        nosink = TRUE;
+        levl[u.ux][u.uy].typ = ROOM;
+        pline_The("sink suddenly implodes!");
         break;
     default:
         ideed = FALSE;
@@ -1374,6 +1379,15 @@ doup(void)
         return ECMD_TIME;
     }
 
+    /* "up" to stand up */
+    if (Prone && mon_enough_legs_to_stand(&gy.youmonst)) {
+        You("get to your %s.", makeplural(body_part(FOOT)));
+        u.uprops[PRONE].extrinsic = 0L;
+        disp.botl = TRUE;
+        return ECMD_TIME;
+    }
+
+
     if (!stway || (stway && !stway->up)) {
         You_cant("go up here.");
         return ECMD_OK;
@@ -1450,8 +1464,10 @@ save_currentstate(void)
     if (flags.ins_chkpt) {
         /* write out just-attained level, with pets and everything */
         nhfp = currentlevel_rewrite();
-        if (!nhfp)
+        if (!nhfp) {
+            program_state.in_checkpoint--;
             return;
+        }
         if (nhfp->structlevel)
             bufon(nhfp->fd);
         nhfp->mode = WRITING;
@@ -1729,12 +1745,13 @@ goto_level(
     if (cant_go_back) {
         /* discard unreachable levels; keep #0 */
         for (l_idx = maxledgerno(); l_idx > 0; --l_idx)
-            if (!leaving_tutorial || ledger_to_dnum(l_idx) == tutorial_dnum
-                || ledger_to_dnum(l_idx) == maze_dnum)
+            if ((!leaving_tutorial || ledger_to_dnum(l_idx) == tutorial_dnum)
+                && ledger_to_dnum(l_idx) != maze_dnum)
                 delete_levelfile(l_idx);
         /* mark #overview data for all dungeon branches as uninteresting */
         for (l_idx = 0; l_idx < svn.n_dgns; ++l_idx)
-            if (!leaving_tutorial || l_idx == tutorial_dnum)
+            if ((!leaving_tutorial || l_idx == tutorial_dnum)
+                && l_idx != maze_dnum)
                 remdun_mapseen(l_idx);
         /* get rid of mons & objs scheduled to migrate to discarded levels */
         discard_migrations();
@@ -1807,7 +1824,7 @@ goto_level(
         if (!ttrap) {
             if ((u.uevent.qexpelled
                 && (Is_qstart(&u.uz0) || Is_qstart(&u.uz)))
-                || (Is_magicmaze(&u.uz0) || Is_magicmaze(&u.uz))) {
+                || (In_magicmaze(&u.uz0) || In_magicmaze(&u.uz))) {
                 /* we're coming back from or going into the quest home level,
                    after already getting expelled once. The portal back
                    doesn't exist anymore - see expulsion(). */
@@ -1840,6 +1857,7 @@ goto_level(
                       u_locomotion("climb"),
                       (Flying && ga.at_ladder) ? " along" : "",
                       ga.at_ladder ? "ladder" : "stairs");
+            update_proneness(&gy.youmonst);
         } else { /* down */
             stairway *stway = stairway_find_from(&u.uz0, ga.at_ladder);
             if (stway) {
@@ -1963,18 +1981,22 @@ goto_level(
         if (new && on_level(&u.uz, &astral_level)) {
             final_level(); /* guardian angel,&c */
             record_achievement(ACH_ASTR); /* reached Astral level */
-        } else if (newdungeon && u.uhave.amulet) {
+        } else if (newdungeon && u.uhave.amulet && new) {
             if (Role_if(PM_ROGUE)) {
                 /* Rogues have to deal with extra angry mplayers */
                 if (new && !on_level(&u.uz, &astral_level))
                     create_mplayers(rn1(3, 3), TRUE);
                 /* force confrontation with quest leader you robbed */
-                makemon(&mons[roles[flags.rogvictim].ldrnum], u.ux, u.uy, MM_NOWAIT);
+                mtmp = makemon(&mons[roles[flags.rogvictim].ldrnum], u.ux, u.uy, MM_NOWAIT);
                 verbalize("We've finally found you, %s!", svp.plname);
-                if (roles[flags.rogvictim].ldrnum == PM_MASTER_OF_THIEVES)
+                if (roles[flags.rogvictim].ldrnum == PM_MASTER_OF_THIEVES) {
+                    mtmp->mpeaceful = 0;
+                    /* not your fault */
+                    set_malign(mtmp);
                     verbalize("I'm expelling you from the guild... in a casket!");
-                else
+                } else {
                     verbalize("Now give back what you stole from us!");
+                }
             } else {
                 resurrect(); /* force confrontation with Wizard */
             }
@@ -2305,6 +2327,7 @@ revive_corpse(struct obj *corpse)
                     pline("%s disappears%s!", The(cname), effect);
                 }
             }
+            (void) maybe_set_terrain_effects(mtmp, 0);
             break;
 
         case OBJ_MINVENT: /* probably a nymph's */

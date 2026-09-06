@@ -1,4 +1,4 @@
-/* NetHack 5.0	mhitm.c	$NHDT-Date: 1732979463 2024/11/30 07:11:03 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.253 $ */
+/* NetHack 5.0	mhitm.c	$NHDT-Date: 1781973054 2026/06/20 16:30:54 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.269 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2011. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -421,7 +421,8 @@ mattackm(
         case AT_TUCH:
         case AT_BUTT:
         case AT_TENT:
-            if (mattk->aatyp == AT_KICK && mtrapped_in_pit(magr))
+            if (mattk->aatyp == AT_KICK
+                && (mtrapped_in_pit(magr) || magr->mwounded_legs))
                     continue;
             /* Nymph that teleported away on first attack? */
             if (distmin(magr->mx, magr->my, mdef->mx, mdef->my) > 1)
@@ -1498,7 +1499,6 @@ passivemm(
         tmp = 0;
 
  assess_dmg:
-    adjust_damage(magr, &tmp, mddat->mattk[i].adtyp);
     if ((magr->mhp -= tmp) <= 0) {
         monkilled(magr, "", (int) mddat->mattk[i].adtyp);
         return (mdead | mhit | M_ATTK_AGR_DIED);

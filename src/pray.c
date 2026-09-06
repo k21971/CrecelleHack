@@ -1,4 +1,4 @@
-/* NetHack 5.0	pray.c	$NHDT-Date: 1762680996 2025/11/09 01:36:36 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.244 $ */
+/* NetHack 5.0	pray.c	$NHDT-Date: 1781973062 2026/06/20 16:31:02 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.253 $ */
 /* Copyright (c) Benson I. Margulies, Mike Stephenson, Steve Linhart, 1989. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -632,7 +632,7 @@ god_zaps_you(aligntyp resp_god)
             else
                 (void) ureflects("%s reflects from your %s.", "It");
             monstseesu(M_SEEN_REFL);
-        } else if (Shock_immunity) {
+        } else if (how_resistant(SHOCK_RES) >= 100) {
             shieldeff(u.ux, u.uy);
             pline("It seems not to affect you.");
             monstseesu(M_SEEN_ELEC);
@@ -669,7 +669,7 @@ god_zaps_you(aligntyp resp_god)
             (void) disintegrate_arm(uarm);
         if (uarmu && !uarm && !uarmc)
             (void) disintegrate_arm(uarmu);
-        if (!Disint_resistance) {
+        if (how_resistant(DISINT_RES) < 100) {
             fry_by_god(resp_god, TRUE);
             monstunseesu(M_SEEN_DISINT);
         } else {
@@ -814,16 +814,11 @@ gcrownu(void)
 {
     struct obj *obj;
     const char *what;
+    struct monst *mtmp;
     boolean already_exists, in_hand;
     short class_gift;
 #define ok_wep(o) ((o) && ((o)->oclass == WEAPON_CLASS || is_weptool(o)))
 
-    HSee_invisible |= FROMOUTSIDE;
-    HFire_resistance |= FROMOUTSIDE;
-    HCold_resistance |= FROMOUTSIDE;
-    HShock_resistance |= FROMOUTSIDE;
-    HSleep_resistance |= FROMOUTSIDE;
-    HPoison_resistance |= FROMOUTSIDE;
     godvoice(u.ualign.type, (char *) 0);
 
     class_gift = STRANGE_OBJECT;
@@ -990,6 +985,8 @@ gcrownu(void)
         obj->oeroded = obj->oeroded2 = 0;
         obj->oerodeproof = TRUE;
         obj->bknown = obj->rknown = 1; /* ok to skip set_bknown() */
+        if (!obj->oprop)
+            add_oprop_to_object(obj, 0);
         if (obj->spe < 1)
             obj->spe = 1;
         /* acquire skill in this weapon */
@@ -999,6 +996,25 @@ gcrownu(void)
         You_feel("unworthy.");
     }
     update_inventory();
+
+    /* Extra stuff: due to the partial resistance system, we can no
+       longer afford to just give the player a bunch of intrinsics.
+       Instead we'll do a couple other things:
+       - First, grant knowledge of the role's special spell. It helps
+         set roles apart from one another and thanks to the spell boosting
+         and spell power systems in this variant even non-casters have a
+         chance to actually use their spell.
+        - Second, grant a companion dependent upon the role. This
+          is mostly for flavor purposes.
+        - Third, grant a property to the wielded weapon, if there is one. */
+    if (force_learn_spell(gu.urole.spelspec) != '\0') {
+        pline("Divine knowledge floods your mind.");
+    }
+    pline("%s sends a faithful companion to accompany you!", align_gname(u.ualign.type));
+    mtmp = makemon(&mons[gu.urole.crownnum], u.ux, u.uy, MM_EDOG | NO_MINVENT);
+    if (mtmp) {
+        initedog(mtmp, TRUE);
+    }
 
     /* lastly, confer an extra skill slot/credit beyond the
        up-to-29 you can get from gaining experience levels */
@@ -1838,7 +1854,10 @@ bestow_artifact(uchar max_giftvalue)
                             artiname(otmp->oartifact),
                             align_gname(u.ualign.type));
             /* make sure we can use this weapon */
-            unrestrict_weapon_skill(weapon_type(otmp));
+            if (otmp->oartifact == ART_SELENIC_SEAT)
+                unrestrict_weapon_skill(P_RIDING);
+            else
+                unrestrict_weapon_skill(weapon_type(otmp));
             if (!Hallucination && !Blind) {
                 observe_object(otmp);
                 makeknown(otmp->otyp);

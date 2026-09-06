@@ -1,4 +1,4 @@
-/* NetHack 5.0	explode.c	$NHDT-Date: 1736530208 2025/01/10 09:30:08 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.122 $ */
+/* NetHack 5.0	explode.c	$NHDT-Date: 1781973049 2026/06/20 16:30:49 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.128 $ */
 /*      Copyright (C) 1990 by Ken Arromdee */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -40,25 +40,25 @@ explosionmask(
                 res = EXPL_HERO;
             break;
         case AD_FIRE:
-            if (Fire_resistance)
+            if (how_resistant(FIRE_RES) > 50)
                 res = EXPL_HERO;
             break;
         case AD_COLD:
-            if (Cold_resistance)
+            if (how_resistant(COLD_RES) > 50)
                 res = EXPL_HERO;
             break;
         case AD_DISN:
             if ((olet == WAND_CLASS)
                 ? (nonliving(m->data) || is_demon(m->data))
-                : Disint_resistance)
+                : how_resistant(DISINT_RES) > 50)
                 res = EXPL_HERO;
             break;
         case AD_ELEC:
-            if (Shock_resistance)
+            if (how_resistant(SHOCK_RES) > 50)
                 res = EXPL_HERO;
             break;
         case AD_DRST:
-            if (Poison_resistance)
+            if (how_resistant(POISON_RES) > 50)
                 res = EXPL_HERO;
             break;
         case AD_ACID:
@@ -401,7 +401,7 @@ explode(
             }
         curs_on_u(); /* will flush screen and output */
 
-        if (any_shield && flags.sparkle) { /* simulate shield effect */
+        if (any_shield && flags.sparkle && !wizard) { /* simulate shield effect */
             for (k = 0; k < SHIELD_COUNT; k++) {
                 for (i = 0; i < 3; i++)
                     for (j = 0; j < 3; j++) {
@@ -611,6 +611,8 @@ explode(
             You("are unharmed!");
         } else if (adtyp == AD_PHYS || adtyp == AD_ACID)
             damu = Maybe_Half_Phys(damu);
+        if (Protection_from_explosions)
+            damu /= 2;
         if (adtyp == AD_FIRE) {
             (void) burnarmor(&gy.youmonst);
             ignite_items(gi.invent);

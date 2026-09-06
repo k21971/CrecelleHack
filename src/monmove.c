@@ -1,4 +1,4 @@
-/* NetHack 5.0	monmove.c	$NHDT-Date: 1737392015 2025/01/20 08:53:35 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.266 $ */
+/* NetHack 5.0	monmove.c	$NHDT-Date: 1781973056 2026/06/20 16:30:56 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.284 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Michael Allison, 2006. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -630,6 +630,10 @@ mind_blast(struct monst *mtmp)
     if (mtmp->mpeaceful
         && (!Conflict || resist_conflict(mtmp))) {
         pline("It feels quite soothing.");
+    } else if (uarmh && uarmh->oprop == OPROP_ANTIMAGIC) {
+        pline("Your helmet nullifies it.");
+        uarmh->pknown = 1;
+        update_inventory();
     } else if (!u.uinvulnerable) {
         int dmg;
         boolean m_sen = sensemon(mtmp);
@@ -706,9 +710,15 @@ m_everyturn_effect(struct monst *mtmp)
             mtmp->perminvis = 0;
         }
     }
-    /* Yellow dragons do this every turn */
+    /* Some monsters have coating interactions every turn. Coating
+       interactions can lead to explosions, so they generally need
+       to go here where it's safe to kill a monster. */
     if (mtmp->data == &mons[PM_YELLOW_DRAGON] ||
         mtmp->data == &mons[PM_BABY_YELLOW_DRAGON] ||
+        mtmp->data == &mons[PM_GIANT_SLUG] ||
+        mtmp->data == &mons[PM_ACID_BLOB] ||
+        mtmp->data == &mons[PM_GELATINOUS_CUBE] ||
+        mtmp->data == &mons[PM_OCHRE_JELLY] ||
         (is_u && uarm && 
             (uarm->otyp == YELLOW_DRAGON_SCALES || 
                 uarm->otyp == YELLOW_DRAGON_SCALE_MAIL))) {
@@ -716,7 +726,11 @@ m_everyturn_effect(struct monst *mtmp)
     } else if (mtmp->data == &mons[PM_WATER_ELEMENTAL] || 
                 mtmp->data == &mons[PM_SQUONK]) {
         floor_spillage(x, y, POT_WATER, NON_PM);
+    } else if (mtmp->data == &mons[PM_SALT_GOLEM]) {
+        floor_alchemy(x, y, SALT_CRYSTAL);
     }
+    if (DEADMONSTER(mtmp))
+        return;
     /* oprop boots do odd things */
     if (is_u && uarmf && uarmf->oprop) {
         switch(uarmf->oprop) {
@@ -750,10 +764,16 @@ m_everyturn_effect(struct monst *mtmp)
                 floor_spillage(x, y, POT_WATER, 0);
                 uarmf->pknown = 1;
                 break;
+            case OPROP_ANTIMAGIC:
+                remove_coating(x, y, COAT_ALL);
+                uarmf->pknown = 1;
+                break;
             default:
                 break;
         }
     }
+    if (DEADMONSTER(mtmp))
+        return;
     /* Drip liquids */
     if (is_u && Dripping && !rn2(3)) {
         if (flags.drip_messages) {
@@ -765,17 +785,13 @@ m_everyturn_effect(struct monst *mtmp)
             floor_spillage(x, y, u.udriptype, NON_PM);
         else add_coating(x, y, COAT_BLOOD, -1 * u.udriptype);
     } else if (is_u && uwep && is_art(uwep, ART_WRATH_OF_SANKIS) && !rn2(3)) {
-        add_coating(x, y, COAT_BLOOD, PM_DWARF);
+        floor_spillage(x, y, COAT_BLOOD, PM_DWARF);
     } else if (!is_u && MON_WEP(mtmp)
                 && is_art(MON_WEP(mtmp), ART_WRATH_OF_SANKIS)  && !rn2(3)) {
-        add_coating(x, y, COAT_BLOOD, PM_DWARF);
+        floor_spillage(x, y, COAT_BLOOD, PM_DWARF);
     } else if (!is_u && mtmp->mdripping) {
         if (mtmp->mdriptype > 0) floor_spillage(x, y, mtmp->mdriptype, NON_PM);
         else add_coating(x, y, COAT_BLOOD, -1 * mtmp->mdriptype);
-    } else if (mtmp->data == &mons[PM_ACID_BLOB] 
-            || mtmp->data == &mons[PM_GELATINOUS_CUBE]
-            || mtmp->data == &mons[PM_OCHRE_JELLY]) {
-        floor_spillage(x, y, POT_ACID, NON_PM);
     }
 }
 
@@ -803,6 +819,7 @@ m_postmove_effect(struct monst *mtmp)
         create_gas_cloud(x, y, 1, 0, 0); /* harmless vapor */
     else if (likes_fire(mtmp->data) && !mtmp->mcan) {
         /* Lets off smoke / vapor in the rain, otherwise starts things on fire. */
+        /* NOTE: If monsters can die here, this needs to be moved to an everyturn effect */
         if (IS_RAINING)
             create_gas_cloud(x, y, 1, 0, 0);
         else
@@ -812,8 +829,6 @@ m_postmove_effect(struct monst *mtmp)
         if (touch_petrifies(&mons[pm]))
             pm = PM_ELF;
         add_coating(x, y, COAT_BLOOD, has_blood(&mons[pm]) ? pm : PM_HUMAN);
-    } else if (mtmp->data == &mons[PM_SALT_GOLEM]) {
-        floor_alchemy(x, y, SALT_CRYSTAL);
     } else if (mtmp->data == &mons[PM_TORNADO]) {
         /* tornados suck up everything */
         remove_coating(x, y, COAT_ALL);
@@ -847,6 +862,13 @@ m_postmove_effect(struct monst *mtmp)
                 if (!canseemon(mtmp)) You_hear("churning air.");
             }
         }
+    }
+    /* Servants mop up gross things */
+    if (is_cleaner(mtmp->data) && !is_u
+        && has_coating(x, y, COAT_DIRTY)) {
+        remove_coating(x, y, COAT_DIRTY);
+        if (flags.verbose && canseemon(mtmp))
+            pline_mon(mtmp, "%s mops up the %s.", Monnam(mtmp), surface(x, y));
     }
 }
 
@@ -904,6 +926,10 @@ dochug(struct monst *mtmp)
     /* confused monsters get unconfused with small probability */
     if (mtmp->mconf && !rn2(50))
         mtmp->mconf = 0;
+
+    /* wounded legs heal */
+    if (mtmp->mwounded_legs && !rn2(60))
+        mtmp->mwounded_legs = 0;
 
     /* stunned monsters get un-stunned with larger probability */
     if (mtmp->mstun && !rn2(10))
@@ -1094,7 +1120,7 @@ dochug(struct monst *mtmp)
             /*FALLTHRU*/
         case MMOVE_NOTHING: /* no movement, but it can still attack you */
         case MMOVE_DONE: /* absolutely no movement */
-            /* vault guard might have vanished */
+            /* vault guard might have vanished; PARKEDMONSTER(mtmp) */
             if (mtmp->isgd && (DEADMONSTER(mtmp) || mtmp->mx == 0))
                 return 1; /* behave as if it died */
             /* During hallucination, monster appearance should
@@ -1176,6 +1202,8 @@ mon_would_take_item(struct monst *mtmp, struct obj *otmp)
         return FALSE;
     if (mtmp->mtame && otmp->cursed)
         return FALSE; /* note: will get overridden if mtmp will eat otmp */
+    if (is_cleaner(mtmp->data) && pctload < 80)
+        return TRUE;
     if (is_unicorn(mtmp->data) && otmp->material != GEMSTONE)
         return FALSE;
     if (!mindless(mtmp->data) && !is_animal(mtmp->data) && pctload < 75
@@ -1615,6 +1643,11 @@ m_search_items(
     }
 
  finish_search:
+    if (minr < SQSRCHRADIUS && *appr == 0) {
+        /* This is specifically for servants and other peaceful
+           monsters that still seek out items. */
+        *appr = 1;
+    }
     if (minr < SQSRCHRADIUS && *appr == -1) {
         if (distmin(omx, omy, mtmp->mux, mtmp->muy) <= 3) {
             *ggx = mtmp->mux;
@@ -2081,18 +2114,20 @@ m_move(struct monst *mtmp, int after)
         boolean should_see = (couldsee(omx, omy)
                               && (levl[ggx][ggy].lit || !levl[omx][omy].lit)
                               && (dist2(omx, omy, ggx, ggy) <= 36));
-        #endif
+        #else
         boolean should_see = (distmin(omx, omy, ggx, ggy) <= 1)
                                 || (has_telepathy(mtmp)
                                     && mdistu(mtmp) <= u.unblind_telepat_range);
         if (mtmp->mcansee) {
             if (couldsee(omx, omy)) {
                 if (infravision(mtmp->data)
-                    || (gv.viz_array[ggy][ggx] & TEMP_LIT)) {
+                    || (gv.viz_array[ggy][ggx] & TEMP_LIT)
+                    || levl[ggx][ggy].lit) {
                     should_see = TRUE;
                 }
             }
         }
+        #endif
 
         if (!mtmp->mcansee
             || (should_see && Invis && !perceives(ptr) && rn2(11))
@@ -2134,6 +2169,9 @@ m_move(struct monst *mtmp, int after)
             getitems = TRUE;
         }
     }
+    
+    if (is_cleaner(mtmp->data) && mtmp->mpeaceful)
+        getitems = TRUE;
 
     if (getitems && m_search_items(mtmp, &ggx, &ggy, &mmoved, &appr))
         return postmov(mtmp, ptr, omx, omy, mmoved,
@@ -2292,13 +2330,7 @@ m_move(struct monst *mtmp, int after)
 
         maybe_unhide_at(mtmp->mx, mtmp->my);
 
-        /* Reset prone */
-        if (mtmp->mprone) {
-            if (canseemon(mtmp)) 
-                pline_mon(mtmp, "%s regains %s footing.",
-                    Monnam(mtmp), mhis(mtmp));
-            mtmp->mprone = 0;
-        }
+        update_proneness(mtmp);
 
         mon_track_add(mtmp, omx, omy);
     } else {
@@ -2585,7 +2617,7 @@ stuff_prevents_passage(struct monst *mtmp)
             && typ != STETHOSCOPE && typ != BLINDFOLD && typ != TOWEL
             && typ != PEA_WHISTLE && typ != MAGIC_WHISTLE
             && typ != MAGIC_MARKER && typ != TIN_OPENER && typ != SKELETON_KEY
-            && typ != LOCK_PICK)
+            && typ != LOCK_PICK && typ != BAG_OF_WINDS)
             return TRUE;
         if (Is_container(obj) && obj->cobj)
             return TRUE;

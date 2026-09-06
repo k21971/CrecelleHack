@@ -1,4 +1,4 @@
-/* NetHack 5.0	uhitm.c	$NHDT-Date: 1752823766 2025/07/17 23:29:26 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.477 $ */
+/* NetHack 5.0	uhitm.c	$NHDT-Date: 1781973071 2026/06/20 16:31:11 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.503 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2012. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -554,7 +554,8 @@ do_attack(struct monst *mtmp)
                 You("begin bashing monsters with %s.", yname(uwep));
             else if (!cantwield(gy.youmonst.data))
                 You("begin %s monsters with your %s %s.",
-                    ing_suffix(Role_if(PM_MONK) ? "strike" : "bash"),
+                    ing_suffix(Role_if(PM_MONK) ? "strike"
+                                : Role_if(PM_GRAPPLER) ? "grab" : "bash"),
                     uarmg ? "gloved" : "bare", /* Del Lamb */
                     makeplural(body_part(HAND)));
         }
@@ -632,8 +633,8 @@ known_hitum(
         /* Grappler grabs */
         if (Role_if(PM_GRAPPLER) && !u.ustuck && mdistu(mon) <= 2) {
             pline_mon(mon, "You grab %s!", mon_nam(mon));
-            u.usticker = 1;
-            set_ustuck(mon);
+            set_usticker(mon);
+            setmangry(mon, TRUE);
             return malive;
         }
 
@@ -877,6 +878,7 @@ staticfn void
 hmon_hitmon_barehands(struct _hitmon_data *hmd, struct monst *mon)
 {
     long spcdmgflg, hatedhit = 0L; /* worn masks */
+    struct obj *hated_obj = NULL;
     int spec_dmg = 0;
 
     if (hmd->mdat == &mons[PM_SHADE]) {
@@ -898,7 +900,7 @@ hmon_hitmon_barehands(struct _hitmon_data *hmd, struct monst *mon)
     spcdmgflg = uarmg ? W_ARMG
               : (((hmd->twohits == 0 || hmd->twohits == 1) ? W_RINGR : 0L)
                  | ((hmd->twohits == 0 || hmd->twohits == 2) ? W_RINGL : 0L));
-    spec_dmg += special_dmgval(&gy.youmonst, mon, spcdmgflg, (struct obj **) 0);
+    spec_dmg += special_dmgval(&gy.youmonst, mon, spcdmgflg, &hated_obj);
     hmd->dmg += spec_dmg;
 
     /* copy hatedhit info back into struct _hitmon_data *hmd */
@@ -918,7 +920,7 @@ hmon_hitmon_barehands(struct _hitmon_data *hmd, struct monst *mon)
         hmd->barehand_hated_rings = 0;
         break;
     }
-    if (spec_dmg) {
+    if (hated_obj) {
         hmd->hatedmsg = TRUE;
         hmd->hatedobj = TRUE;
     }
@@ -1400,6 +1402,7 @@ hmon_hitmon_misc_obj(
         }
         hmd->hittxt = TRUE;
         hmd->get_dmg_bonus = FALSE;
+        make_mdripping(mon, POT_ACID);
         break;
     default:
         if ((objects[obj->otyp].oc_material == VEGGY ||
@@ -1938,11 +1941,6 @@ hmon_hitmon(
         hmon_hitmon_stagger(&hmd, mon, obj);
     } else if (!hmd.unarmed && hmd.dmg > 1 && !thrown && !Upolyd
                && !u.twoweap && uwep) {
-        maybe_knockback = TRUE;
-    }
-
-    /* Grapplers always get knockback if not polyd */
-    if (Role_if(PM_GRAPPLER) && !thrown && !Upolyd) {
         maybe_knockback = TRUE;
     }
 
@@ -2693,11 +2691,12 @@ mhitm_ad_fire(
                 /* KMH -- this is okay with unchanging */
                 rehumanize();
                 return;
-            } else if (Fire_immunity) {
+            } else if (how_resistant(FIRE_RES) < 100) {
                 pline_The("fire doesn't feel hot!");
                 monstseesu(M_SEEN_FIRE);
                 mhm->damage = 0;
             } else {
+                mhm->damage = resist_reduce(mhm->damage, FIRE_RES);
                 monstunseesu(M_SEEN_FIRE);
             }
             if ((int) magr->m_lev > rn2(20)) {
@@ -2774,11 +2773,12 @@ mhitm_ad_cold(
         hitmsg(magr, mattk);
         if (!mhitm_mgc_atk_negated(magr, mdef, TRUE)) {
             pline("You're covered in frost!");
-            if (Cold_immunity) {
+            if (how_resistant(COLD_RES) < 100) {
                 pline_The("frost doesn't seem cold!");
                 monstseesu(M_SEEN_COLD);
                 mhm->damage = 0;
             } else {
+                mhm->damage = resist_reduce(mhm->damage, COLD_RES);
                 monstunseesu(M_SEEN_COLD);
             }
             if ((int) magr->m_lev > rn2(20))
@@ -2832,11 +2832,12 @@ mhitm_ad_elec(
         hitmsg(magr, mattk);
         if (!mhitm_mgc_atk_negated(magr, mdef, TRUE)) {
             You("get zapped!");
-            if (Shock_immunity) {
+            if (how_resistant(SHOCK_RES) < 100) {
                 pline_The("zap doesn't shock you!");
                 monstseesu(M_SEEN_ELEC);
                 mhm->damage = 0;
             } else {
+                mhm->damage = resist_reduce(mhm->damage, SHOCK_RES);
                 monstunseesu(M_SEEN_ELEC);
             }
             if ((int) magr->m_lev > rn2(20))
@@ -3474,8 +3475,7 @@ mhitm_ad_stck(
     if (magr == &gy.youmonst) {
         /* uhitm */
         if (!negated && !sticks(pd) && m_next2u(mdef)) {
-            set_ustuck(mdef); /* it's now stuck to you */
-            u.usticker = 1;
+            set_usticker(mdef); /* it's now stuck to you */
             if (barbs)
                 Your("barbs stick to %s!", y_monnam(mdef));
         }
@@ -3513,8 +3513,7 @@ mhitm_ad_wrap(
                 } else {
                     You("%s yourself around %s!",
                         coil ? "coil" : "swing", mon_nam(mdef));
-                    set_ustuck(mdef);
-                    u.usticker = 1;
+                    set_usticker(mdef);
                     use_skill(P_GRAPPLING, 1);
                 }
             } else if (u.ustuck == mdef && !tailmiss) {
@@ -3665,7 +3664,7 @@ mhitm_ad_slee(
                 return;
             }
             monstunseesu(M_SEEN_SLEEP);
-            fall_asleep(-rnd(10), TRUE);
+            fall_asleep(-resist_reduce(rnd(10), SLEEP_RES), TRUE);
             if (Blind)
                 You("are put to sleep!");
             else
@@ -4700,6 +4699,7 @@ mhitm_ad_legs(
             return;
         }
 #endif
+        mdef->mwounded_legs = 1;
         mhitm_ad_phys(magr, mattk, mdef, mhm);
         if (mhm->done)
             return;
@@ -4748,6 +4748,7 @@ mhitm_ad_legs(
             mhm->damage = 0;
             return;
         }
+        mdef->mwounded_legs = 1;
         mhitm_ad_phys(magr, mattk, mdef, mhm);
         if (mhm->done)
             return;
@@ -4936,6 +4937,8 @@ mhitm_ad_sedu(
             return;
         }
         buf[0] = '\0';
+        if (magr->data->mlet == S_NYMPH)
+            mintroduce(magr);
         switch (steal(magr, buf)) {
         case -1:
             mhm->hitflags = M_ATTK_AGR_DIED; /* return 2??? */
@@ -5025,12 +5028,14 @@ mhitm_ad_ssex(struct monst *magr, struct attack *mattk, struct monst *mdef,
     } else if (mdef == &gy.youmonst) {
         /* mhitu */
         if (SYSOPT_SEDUCE) {
-            if (could_seduce(magr, mdef, mattk) == 1 && !magr->mcan)
+            if (could_seduce(magr, mdef, mattk) == 1 && !magr->mcan) {
+                mintroduce(magr);
                 if (doseduce(magr)) {
                     mhm->hitflags = M_ATTK_AGR_DONE;
                     mhm->done = TRUE;
                     return;
                 }
+            }
             return;
         }
         mhitm_ad_sedu(magr, mattk, mdef, mhm);
@@ -5099,7 +5104,6 @@ mhitm_adtyping(
     default:
         mhm->damage = 0;
     }
-    adjust_damage(mdef, &(mhm->damage), mattk->adtyp);
 }
 
 int
@@ -5449,7 +5453,6 @@ gulpum(struct monst *mdef, struct attack *mattk)
                 break;
             }
             end_engulf();
-            adjust_damage(mdef, &dam, mattk->adtyp);
             mdef->mhp -= dam;
             if (DEADMONSTER(mdef)) {
                 killed(mdef);
@@ -5531,7 +5534,6 @@ mhitm_knockback(
     int chance = 6; /* 1/6 chance of attack knocking back a monster */
     boolean u_agr = (magr == &gy.youmonst);
     boolean u_def = (mdef == &gy.youmonst);
-    boolean wrasslin = (u_agr && Role_if(PM_GRAPPLER) && u.usticker && u.ustuck == mdef);
     boolean was_u = FALSE, dismount = FALSE;
     struct obj *wep = weapon_used ? (u_agr ? uwep : MON_WEP(magr))
                                   : (struct obj *) 0;
@@ -5539,7 +5541,7 @@ mhitm_knockback(
     if (wep && is_art(wep, ART_OGRESMASHER))
         chance = 2;
 
-    if (rn2(chance) && !wrasslin)
+    if (rn2(chance))
         return FALSE;
 
     /* only certain attacks qualify for knockback */
@@ -5553,7 +5555,7 @@ mhitm_knockback(
     /* don't knockback if attacker also wants to grab or engulf */
     if ((attacktype(magr->data, AT_ENGL)
         || attacktype(magr->data, AT_HUGS)
-        || sticks(magr->data)) && !wrasslin)
+        || sticks(magr->data)))
         return FALSE;
 
     /* decide where the first step will place the target; not accurate
@@ -5595,10 +5597,10 @@ mhitm_knockback(
         return FALSE;
 
     /* attacker must be much larger than defender */
-    if ((!(magr->data->msize > (mdef->data->msize + 1)) && !wrasslin))
+    if (!(magr->data->msize > (mdef->data->msize + 1)))
         return FALSE;
     /* no knockback with a flimsy or non-blunt weapon */
-    if (wep && (is_flimsy(wep) || !is_blunt_weapon(wep)) && !wrasslin)
+    if (wep && (is_flimsy(wep) || !is_blunt_weapon(wep)))
         return FALSE;
 
     /* needs a solid physical hit */
@@ -5630,9 +5632,7 @@ mhitm_knockback(
                    : "back";
 
     /* give the message */
-    if (wrasslin && canseemon(mdef) && !uwep) {
-        pline_mon(mdef, "You dropkick %s!", mon_nam(mdef));
-    } else if (u_def || canseemon(mdef)) {
+    if (u_def || canseemon(mdef)) {
         Strcpy(magrbuf, u_agr ? "You" : Monnam(magr));
         Strcpy(mdefbuf, (u_def || was_u) ? "you" : y_monnam(mdef));
         if (was_u)
@@ -5678,8 +5678,6 @@ mhitm_knockback(
             if (!was_u)
                 *hitflags |= M_ATTK_DEF_DIED;
         } else if (!rn2(4)) {
-            if (Role_if(PM_GRAPPLER) && u.uen == u.uenmax)
-                pline_mon(mdef, "%s is stunned! Now's your chance!", Monnam(mdef));
             mdef->mstun = 1;
             /* if steed and hero were knocked back, update attacker's idea
                of where hero is */
@@ -5832,7 +5830,8 @@ hmonas(struct monst *mon)
             FALLTHROUGH;
             /*FALLTHRU*/
         case AT_KICK:
-            if (mattk->aatyp == AT_KICK && mtrapped_in_pit(&gy.youmonst))
+            if (mattk->aatyp == AT_KICK
+                && (Wounded_legs || mtrapped_in_pit(&gy.youmonst)))
                 continue;
             FALLTHROUGH;
             /*FALLTHRU*/
@@ -6021,8 +6020,7 @@ hmonas(struct monst *mon)
                 if (u.ustuck && u.ustuck != mon)
                     uunstick();
                 You("grab %s!", mon_nam(mon));
-                set_ustuck(mon);
-                u.usticker = 1;
+                set_usticker(mon);
                 if (hated_obj && flags.verbose)
                     searmsg(&gy.youmonst, mon, hated_obj, FALSE);
                 sum[i] = damageum(mon, mattk, specialdmg);
@@ -6146,7 +6144,6 @@ passive(
     int mhit = mhitb ? M_ATTK_HIT : M_ATTK_MISS;
     int malive = maliveb ? M_ATTK_HIT : M_ATTK_MISS;
     boolean learn_it = FALSE;
-    boolean do_damage = FALSE;
 
     for (i = 0;; i++) {
         if (i >= NATTK)
@@ -6351,7 +6348,15 @@ passive(
             break;
         case AD_COLD: /* brown mold or blue jelly */
             if (monnear(mon, u.ux, u.uy)) {
-                if (Cold_immunity) {
+                if (how_resistant(COLD_RES) >= 200) {
+                    shieldeff(u.ux, u.uy);
+                    You_feel("a pleasant chill.");
+                    monstseesu(M_SEEN_COLD);
+                    tmp = resist_reduce(tmp, COLD_RES);
+                    mdamageu(mon, tmp);
+                    learn_it = TRUE;
+                    break;
+                } else if (how_resistant(COLD_RES) >= 100) {
                     shieldeff(u.ux, u.uy);
                     You_feel("a mild chill.");
                     monstseesu(M_SEEN_COLD);
@@ -6360,6 +6365,8 @@ passive(
                 }
                 monstunseesu(M_SEEN_COLD);
                 You("are suddenly very cold!");
+                tmp = resist_reduce(tmp, COLD_RES);
+                mdamageu(mon, tmp);
                 /* monster gets stronger with your heat! */
                 healmon(mon, (tmp + rn2(2)) / 2, (tmp + 1) / 2);
                 /* at a certain point, the monster will reproduce! */
@@ -6368,7 +6375,6 @@ passive(
                     (void) split_mon(mon, &gy.youmonst);
                 spread_mold(mon->mx, mon->my, mon->data);
                 learn_it = TRUE;
-                do_damage = TRUE;
             }
             break;
         case AD_STUN: /* specifically yellow mold */
@@ -6385,7 +6391,15 @@ passive(
             break;
         case AD_FIRE:
             if (monnear(mon, u.ux, u.uy)) {
-                if (Fire_immunity) {
+                if (how_resistant(FIRE_RES) >= 200) {
+                    shieldeff(u.ux, u.uy);
+                    You_feel("a pleasant warmth.");
+                    monstseesu(M_SEEN_FIRE);
+                    tmp = resist_reduce(tmp, FIRE_RES);
+                    mdamageu(mon, tmp);
+                    learn_it = TRUE;
+                    break;
+                } else if (how_resistant(FIRE_RES) >= 100) {
                     shieldeff(u.ux, u.uy);
                     You_feel("mildly warm.");
                     monstseesu(M_SEEN_FIRE);
@@ -6395,13 +6409,22 @@ passive(
                 monstunseesu(M_SEEN_FIRE);
                 You("are suddenly very hot!");
                 spread_mold(mon->mx, mon->my, mon->data);
+                tmp = resist_reduce(tmp, FIRE_RES);
+                mdamageu(mon, tmp); /* fire damage */
                 learn_it = TRUE;
-                do_damage = TRUE;
             }
             break;
         case AD_ELEC:
             learn_it = TRUE;
-            if (Shock_immunity) {
+            if (how_resistant(SHOCK_RES) >= 200) {
+                shieldeff(u.ux, u.uy);
+                You_feel("a pleasant tingling.");
+                monstseesu(M_SEEN_ELEC);
+                tmp = resist_reduce(tmp, SHOCK_RES);
+                mdamageu(mon, tmp);
+                learn_it = TRUE;
+                break;
+            } else if (how_resistant(SHOCK_RES) >= 100) {
                 shieldeff(u.ux, u.uy);
                 You_feel("a mild tingle.");
                 monstseesu(M_SEEN_ELEC);
@@ -6410,7 +6433,8 @@ passive(
             }
             monstunseesu(M_SEEN_ELEC);
             You("are jolted with electricity!");
-            do_damage = TRUE;
+            tmp = resist_reduce(tmp, SHOCK_RES);
+            mdamageu(mon, tmp);
             break;
         case AD_HONY:
             if (canseemon(mon)) {
@@ -6422,14 +6446,6 @@ passive(
         default:
             break;
         }
-    }
-    /* kludge to avoid damage for non-damaging passives. - K*/
-    if (do_damage
-        && (ptr->mattk[i].adtyp == AD_FIRE
-            || ptr->mattk[i].adtyp == AD_COLD
-            || ptr->mattk[i].adtyp == AD_ELEC)) {
-        adjust_damage(&gy.youmonst, &tmp, ptr->mattk[i].adtyp);
-        mdamageu(mon, tmp);
     }
     if (learn_it) learn_mattack(mon->mnum, i);
     return (malive | mhit);
@@ -6772,7 +6788,7 @@ boolean
 oprop_effects_pre(struct monst *magr, struct monst *mdef)
 {
     boolean is_u = (magr == &gy.youmonst);
-    boolean icy;
+    boolean icy, pkn = 0;
     struct obj *otmp;
     struct obj *weapon;
     int x, y, dx, dy;
@@ -6800,14 +6816,14 @@ oprop_effects_pre(struct monst *magr, struct monst *mdef)
             otmp = mksobj(ICICLE, FALSE, FALSE);
             otmp->spe = 1;
             throwit(otmp, 0L, FALSE, (struct obj *) 0);
-            weapon->pknown = 1;
+            pkn = 1;
         } else if (weapon->oprop == OPROP_CRACKLING && rn2(2)) {
             if (cansee(dx, dy) && flags.verbose)
                 pline("Lightning arcs from the %s!", simpleonames(weapon));
             gc.current_wand = weapon;
             ubuzz(BZ_U_WAND(BZ_OFS_AD(AD_ELEC)), 1);
             gc.current_wand = 0;
-            weapon->pknown = 1;
+            pkn = 1;
         }
     } else {
         if (weapon->oprop == OPROP_BOREAL && icy) {
@@ -6816,11 +6832,11 @@ oprop_effects_pre(struct monst *magr, struct monst *mdef)
             otmp->spe = 1;
             m_throw(magr, x, y, sgn(gt.tbx), sgn(gt.tby),
                     distmin(x, y, dx, dy), otmp);
-            weapon->pknown = 1;
+            pkn = 1;
         } else if (weapon->oprop == OPROP_CRACKLING && rn2(2)) {
             if (cansee(x, y)) {
                 pline("Lightning arcs from the %s!", simpleonames(weapon));
-                weapon->pknown = 1;
+                pkn = 1;
             }
             gb.buzzer = magr;
             buzz(BZ_M_WAND(BZ_OFS_AD(AD_ELEC)), 1, x, y, sgn(dx - x), sgn(dy - y));
@@ -6830,9 +6846,13 @@ oprop_effects_pre(struct monst *magr, struct monst *mdef)
     if (weapon->oprop == OPROP_BLAZING && !rn2(5)) {
         if (cansee(dx, dy)) {
             pline_The("%s ignites!", simpleonames(weapon));
-            weapon->pknown = 1;
+            pkn = 1;
         }
         create_bonfire(dx, dy, rnd(7), d(2, 4));
+    }
+    if (pkn && !weapon->pknown) {
+        weapon->pknown = 1;
+        update_inventory();
     }
     return DEADMONSTER(mdef);
 }

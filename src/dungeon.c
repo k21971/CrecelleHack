@@ -1,4 +1,4 @@
-/* NetHack 5.0	dungeon.c	$NHDT-Date: 1737343478 2025/01/19 19:24:38 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.228 $ */
+/* NetHack 5.0	dungeon.c	$NHDT-Date: 1781973047 2026/06/20 16:30:47 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.239 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2012. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -12,6 +12,10 @@
 #define X_START "x-strt"
 #define X_LOCATE "x-loca"
 #define X_GOAL "x-goal"
+
+#define BIOME(id, nam) { nam }
+struct biome all_biomes[] = { BIOME_LIST };
+#undef BIOME
 
 struct proto_dungeon {
     struct tmpdungeon tmpdungeon[MAXDUNGEON];
@@ -1059,11 +1063,22 @@ init_dungeon_dungeons(
     pd->tmpdungeon[dngidx].chance = dgn_chance;
     pd->tmpdungeon[dngidx].entry_lev = dgn_entry;
 
-    /* FIXME: these should have length checks */
+    if (Strlen(dgn_fill) >= sizeof svd.dungeons[dngidx].fill_lvl)
+        panic("fill_lvl too long for dungeon %d", dngidx);
     Strcpy(svd.dungeons[dngidx].fill_lvl, dgn_fill);
+
+    if (Strlen(dgn_name) >= sizeof svd.dungeons[dngidx].dname)
+        panic("dname too long for dungeon %d", dngidx);
     Strcpy(svd.dungeons[dngidx].dname, dgn_name);
+
+    if (Strlen(dgn_protoname) >= sizeof svd.dungeons[dngidx].proto)
+        panic("proto too long for dungeon %d", dngidx);
     Strcpy(svd.dungeons[dngidx].proto, dgn_protoname);
+
+    if (Strlen(dgn_themerms) >= sizeof svd.dungeons[dngidx].themerms)
+        panic("themerms too long for dungeon %d", dngidx);
     Strcpy(svd.dungeons[dngidx].themerms, dgn_themerms);
+
     /* FIXME: accept "none", convert that to '\0' */
     svd.dungeons[dngidx].boneid = *dgn_bonetag ? *dgn_bonetag : 0;
     free((genericptr) dgn_fill);
@@ -2892,7 +2907,8 @@ init_mapseen(d_level *lev)
 
 #define OF_INTEREST(feat) \
     ((feat).nfount || (feat).nsink || (feat).nthrone || (feat).naltar   \
-     || (feat).ngrave || (feat).ntree || (feat).nshop || (feat).ntemple)
+     || (feat).ngrave || (feat).ntree || (feat).nshop || (feat).ntemple \
+     || ((feat).msbiome && flags.biome_overview))
   /* || (feat).water || (feat).ice || (feat).lava */
 
 /* returns true if this level has something interesting to print out */
@@ -3132,6 +3148,7 @@ recalc_mapseen(void)
     }
     mptr->flags.knownbones = 0;
     mptr->flags.sokosolved = In_sokoban(&u.uz) && !Sokoban;
+    mptr->feat.msbiome = svl.level.flags.biome;
     /* mptr->flags.bigroom retains previous value when hero can't see */
     if (!Blind)
         mptr->flags.bigroom = Is_bigroom(&u.uz);
@@ -3578,6 +3595,9 @@ print_mapseen(
     if (In_endgame(&mptr->lev))
         Sprintf(buf, "%s%s:", (final != -1) ? TAB : "",
                 endgamelevelname(tmpbuf, i));
+    else if (mptr->feat.msbiome && flags.biome_overview)
+        Sprintf(buf, "%sLevel %d [%s]:", (final != -1) ? TAB : "", i,
+                all_biomes[mptr->feat.msbiome].name);
     else
         Sprintf(buf, "%sLevel %d:", (final != -1) ? TAB : "", i);
 

@@ -1,4 +1,4 @@
-/* NetHack 5.0	trap.c	$NHDT-Date: 1741926700 2025/03/13 20:31:40 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.621 $ */
+/* NetHack 5.0	trap.c	$NHDT-Date: 1781973071 2026/06/20 16:31:11 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.645 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2013. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -320,6 +320,18 @@ erode_obj(
         }
         if (ef_flags & EF_PAY)
             costly_alteration(otmp, cost_type);
+
+        /* burnt wooden objects will sometimes leave behind charcoal */
+        if (type == ERODE_BURN && otmp->material == WOOD && !rn2(4)) {
+            struct obj *remains = mksobj(HUNK_OF_CHARCOAL, TRUE, FALSE);
+            if (uvictim)
+                hold_another_object(remains, "You drop the hot %s.",
+                                    doname(remains), "You drop: ");
+            else if (victim)
+                add_to_minv(victim, remains);
+            else
+                place_object(remains,otmp->ox, otmp->oy);          
+        }
 
         /* similar to lava, extract all items before deleting any containers */
         if (Has_contents(otmp)) {
@@ -1970,7 +1982,6 @@ trapeffect_fire_trap(
         struct permonst *mptr = mtmp->data;
         int orig_dmg = d(2, 4);
 
-        adjust_damage(mtmp, &orig_dmg, AD_FIRE);
         if (in_sight)
             pline_mon(mtmp,
                  "A %s erupts from the %s under %s!", tower_of_flame,
@@ -3178,7 +3189,7 @@ immune_to_trap(struct monst *mon, unsigned ttype)
         /*FALLTHRU*/
     case FIRE_TRAP: /* can always destroy items being carried */
         /* harmful if not resistant or if carrying anything that could burn */
-        if (is_you ? !Fire_immunity : !resists_fire(mon))
+        if (is_you ? !Fire_resistance : !resists_fire(mon))
             return TRAP_NOT_IMMUNE;
 
         for (obj = is_you ? gi.invent : mon->minvent; obj; obj = obj->nobj) {
@@ -4335,6 +4346,10 @@ float_up(void)
     /* levitation gives maximum carrying capacity, so encumbrance
        state might be reduced */
     encumber_msg();
+    if (Prone) {
+        u.uprops[PRONE].extrinsic = 0L;
+        disp.botl = TRUE;
+    }
     return;
 }
 
@@ -4508,6 +4523,8 @@ float_down(
            and goto_level does its own pickup() call */
         && on_level(&u.uz, &current_dungeon_level))
         (void) pickup(1);
+    if (Wounded_legs || !mon_enough_legs_to_stand(&gy.youmonst))
+        make_prone(FALSE);
     return 1;
 }
 
@@ -4577,7 +4594,7 @@ dofiretrap(
     if ((box && !carried(box)) ? is_pool(box->ox, box->oy) : Underwater) {
         pline("A cascade of steamy bubbles erupts from %s!",
               the(box ? xname(box) : surface(u.ux, u.uy)));
-        if (Fire_resistance)
+        if (how_resistant(FIRE_RES) > 50)
             You("are uninjured.");
         else
             losehp(rnd(3), "boiling water", KILLED_BY);
@@ -4585,7 +4602,7 @@ dofiretrap(
     }
     pline("A %s %s from %s!", tower_of_flame, box ? "bursts" : "erupts",
           the(box ? xname(box) : surface(u.ux, u.uy)));
-    if (Fire_immunity) {
+    if (how_resistant(FIRE_RES) >= 100) {
         shieldeff(u.ux, u.uy);
         monstseesu(M_SEEN_FIRE);
         num = rn2(2);
@@ -4618,7 +4635,7 @@ dofiretrap(
     } else {
         int uhpmin = minuhpmax(1), olduhpmax = u.uhpmax;
 
-        num = d(2, 4);
+        num = resist_reduce(d(2, 4), FIRE_RES);
         if (u.uhpmax > uhpmin) {
             u.uhpmax -= rn2(min(u.uhpmax, num + 1)), disp.botl = TRUE;
         } /* note: no 'else' here */
@@ -4629,7 +4646,6 @@ dofiretrap(
         }
         if (u.uhp > u.uhpmax)
             u.uhp = u.uhpmax, disp.botl = TRUE;
-        adjust_damage(&gy.youmonst, &num, AD_FIRE);
         monstunseesu(M_SEEN_FIRE);
     }
     if (!num)
@@ -6773,15 +6789,20 @@ chest_trap(
             int dmg = d(4, 4), orig_dmg = dmg;
 
             You("are jolted by a surge of electricity!");
-            if (Shock_immunity) {
+            if (how_resistant(SHOCK_RES) >= 200) {
+                shieldeff(u.ux, u.uy);
+                You("are positively charged!");
+                monstseesu(M_SEEN_ELEC);
+                dmg = resist_reduce(orig_dmg, SHOCK_RES);
+            } else if (how_resistant(SHOCK_RES) >= 100) {
                 shieldeff(u.ux, u.uy);
                 You("don't seem to be affected.");
                 monstseesu(M_SEEN_ELEC);
                 dmg = 0;
             } else {
                 monstunseesu(M_SEEN_ELEC);
+                dmg = resist_reduce(orig_dmg, SHOCK_RES);
             }
-            adjust_damage(&gy.youmonst, &dmg, AD_ELEC);
             (void) destroy_items(&gy.youmonst, AD_ELEC, orig_dmg);
             if (dmg)
                 losehp(dmg, "electric shock", KILLED_BY_AN);
@@ -7227,7 +7248,7 @@ lava_effects(void)
     boolean usurvive, boil_away;
     unsigned protect_oid = 0;
     int burncount = 0, burnmesgcount = 0;
-    const int dmg = d(6, 6); /* only applicable for water walking */
+    const int dmg = resist_reduce(d(6, 6), FIRE_RES);  /* only applicable for water walking */
 
     if (iflags.in_lava_effects) {
         debugpline0("Skipping recursive lava_effects().");
@@ -7238,7 +7259,7 @@ lava_effects(void)
     if (likes_lava(gy.youmonst.data))
         return FALSE;
 
-    usurvive = Fire_resistance || (Wwalking && dmg < u.uhp);
+    usurvive = how_resistant(FIRE_RES) >= 100 || (Wwalking && dmg < u.uhp);
     /*
      * A timely interrupt might manage to salvage your life
      * but not your gear.  For scrolls and potions this
@@ -7298,7 +7319,7 @@ lava_effects(void)
         ++burncount;
     }
 
-    if (!Fire_resistance) {
+    if (how_resistant(FIRE_RES) < 100) {
         if (Wwalking) {
             pline_The("%s here burns you!", hliquid("lava"));
             if (usurvive) {
@@ -7392,7 +7413,7 @@ lava_effects(void)
 
         return TRUE;
     } else if (!Wwalking && (!u.utrap || u.utraptype != TT_LAVA)) {
-        boil_away = !Fire_resistance;
+        boil_away = how_resistant(FIRE_RES) < 100;
         /* if not fire resistant, sink_into_lava() will quickly be fatal;
            hero needs to escape immediately */
         set_utrap((unsigned) (rn1(4, 4) + ((boil_away ? 2
@@ -7401,7 +7422,7 @@ lava_effects(void)
         You("sink into the %s%s!", waterbody_name(u.ux, u.uy),
             !boil_away ? ", but it only burns slightly"
                        : " and are about to be immolated");
-        if (Fire_immunity)
+        if (Fire_resistance)
             monstseesu(M_SEEN_FIRE);
         else
             monstunseesu(M_SEEN_FIRE);
@@ -7434,7 +7455,7 @@ sink_into_lava(void)
            enough to become stuck in lava, but it can happen without
            resistance if water walking boots allow survival and then
            get burned up; u.utrap time will be quite short in that case */
-        if (!Fire_resistance)
+        if (how_resistant(FIRE_RES) < 100)
             u.uhp = (u.uhp + 2) / 3;
 
         u.utrap -= (1 << 8);

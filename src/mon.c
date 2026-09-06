@@ -1,4 +1,4 @@
-/* NetHack 5.0	mon.c	$NHDT-Date: 1770949988 2026/02/12 18:33:08 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.621 $ */
+/* NetHack 5.0	mon.c	$NHDT-Date: 1781062909 2026/06/09 19:41:49 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.634 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Derek S. Ray, 2015. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -349,6 +349,9 @@ m_poisongas_ok(struct monst *mtmp)
     if ((mtmp->data->mlet == S_EEL || Is_waterlevel(&u.uz))
         && is_pool(px, py))
         return M_POISONGAS_OK;
+    /* gas masks block vapor effects */
+    if (is_you && ublindf && ublindf->otyp == GAS_MASK)
+        return M_POISONGAS_OK;
     /* exclude monsters with poison gas breath attack:
        adult green dragon and Chromatic Dragon (and iron golem,
        but nonliving() and breathless() tests also catch that) */
@@ -357,7 +360,7 @@ m_poisongas_ok(struct monst *mtmp)
         return M_POISONGAS_OK;
     if (is_you && (u.uinvulnerable || Breathless || Underwater))
         return M_POISONGAS_OK;
-    if (is_you ? Poison_immunity : resists_poison(mtmp))
+    if (is_you ? Poison_resistance : resists_poison(mtmp))
         return M_POISONGAS_MINOR;
     return M_POISONGAS_BAD;
 }
@@ -369,7 +372,7 @@ m_bonfire_ok(struct monst *mtmp)
     boolean is_you = (mtmp == &gy.youmonst);
     if (likes_fire(mtmp->data))
         return M_BONFIRE_OK;
-    if (is_you ? Fire_immunity : resists_fire(mtmp))
+    if (is_you ? Fire_resistance : resists_fire(mtmp))
         return M_BONFIRE_MINOR;
     return M_BONFIRE_BAD;
 }
@@ -872,11 +875,11 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_BLACK_HOLE: case PM_CRIMSON_DEATH: case PM_TORNADO:
 
     case PM_NIGHTCRAWLER: case PM_BABY_LONG_WORM: case PM_BABY_PURPLE_WORM:
-    case PM_MAIL_WORM:
+    case PM_MAIL_WORM: case PM_GIANT_SLUG:
     case PM_FROSTWURM: case PM_PURPLE_WORM:
 
     case PM_GRID_BUG: case PM_XAN: case PM_YELLOW_LIGHT: case PM_BLACK_LIGHT:
-    case PM_ZRUTY: case PM_COUATL: case PM_ALEAX: case PM_ANGEL:
+    case PM_ZRUTY: case PM_COUATL: case PM_ALEAX: case PM_ANACRUSIS: case PM_ANGEL:
     case PM_KI_RIN: case PM_ARCHON:
 
     case PM_BAT: case PM_KESTREL: case PM_GIANT_BAT: case PM_FALCON:
@@ -916,7 +919,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_RED_NAGA: case PM_BLACK_NAGA: case PM_GOLDEN_NAGA:
     case PM_GUARDIAN_NAGA:
 
-    case PM_OGRE: case PM_OGRE_LEADER: case PM_OGRE_TYRANT:
+    case PM_OGRE: case PM_OGRE_LEADER: case PM_OGRE_MAGE: case PM_OGRE_TYRANT:
 
     case PM_QUANTUM_MECHANIC: case PM_GENETIC_ENGINEER:
     case PM_RUST_MONSTER: case PM_DISENCHANTER:
@@ -947,6 +950,7 @@ make_corpse(struct monst *mtmp, unsigned int corpseflags)
     case PM_GUARD: case PM_PRISONER: case PM_ORACLE:
     case PM_ALIGNED_CLERIC: case PM_HIGH_CLERIC:
     case PM_SOLDIER: case PM_SERGEANT: case PM_NURSE:
+    case PM_SERVANT: case PM_HEAD_SERVANT:
     case PM_LIEUTENANT: case PM_CAPTAIN: case PM_WATCHMAN:
     case PM_WATCH_CAPTAIN:
 
@@ -1344,7 +1348,7 @@ movemon_singlemon(struct monst *mtmp)
        off the map too; gd_move() decides whether the temporary
        corridor can be removed and guard discarded (via clearing
        mon->isgd flag so that dmonsfree() will get rid of mon) */
-    if (mtmp->isgd && !mtmp->mx && !(mtmp->mstate & MON_MIGRATING)) {
+    if (PARKEDMONSTER(mtmp) && !(mtmp->mstate & MON_MIGRATING)) {
         /* parked at <0,0>; eventually isgd should get set to false */
         if (svm.moves > mtmp->mlstmv) {
             (void) gd_move(mtmp);
@@ -1874,11 +1878,15 @@ mon_give_prop(struct monst *mtmp, int prop)
     case POISON_RES:
         msg = "%s looks healthy.";
         break;
+    case TELEPAT:
+        msg = "%s twitches slightly.";
+        break;
     default:
         return; /* can't give it */
         break;
     }
-    intrinsic = res_to_mr(prop);
+    /* res_to_mr should include all MR2 resistances as well */
+    intrinsic = prop == TELEPAT ? MR2_TELEPATHY : res_to_mr(prop);
 
     /* Don't give message if it already had this property intrinsically, but
        still do grant the intrinsic if it only had it from mresists.
@@ -1981,6 +1989,12 @@ mpickstuff(struct monst *mtmp)
     if (!mtmp->mtame && *in_rooms(mtmp->mx, mtmp->my, SHOPBASE) && rn2(25))
         return FALSE;
 
+    /* pets should respect their owner's wishes */
+    if (mtmp->mtame && has_edog(mtmp)
+         && (EDOG(mtmp)->petstrat & PETSTRAT_NOAPPORT))
+         return FALSE;
+
+
     /* item in a pool, but monster can't swim */
     if (!could_reach_item(mtmp, mtmp->mx, mtmp->my))
         return FALSE;
@@ -1997,6 +2011,7 @@ mpickstuff(struct monst *mtmp)
         if (mon_would_take_item(mtmp, otmp)) {
 
             if (otmp->otyp == CORPSE && mtmp->data->mlet != S_NYMPH 
+                && !is_cleaner(mtmp->data)
                 && mtmp->data != &mons[PM_BLACK_HOLE]
                 && mtmp->data != &mons[PM_TORNADO]
                 /* let a handful of corpse types thru to can_carry() */
@@ -2164,6 +2179,9 @@ can_carry(struct monst *mtmp, struct obj *otmp)
         return 0;
     if (mtmp->isshk)
         return iquan; /* no limit */
+    if (is_cleaner(mdat) || mtmp->data == &mons[PM_BLACK_HOLE]
+         || mtmp->data == &mons[PM_TORNADO])
+        return (otmp->oclass == ROCK_CLASS) ? 0 : iquan;
     if (mtmp->mpeaceful && !mtmp->mtame)
         return 0;
     /* otherwise players might find themselves obligated to violate
@@ -2189,41 +2207,6 @@ staticfn boolean
 monlineu(struct monst *mon, int nx, int ny)
 {
     return online2(nx, ny, mon->mux, mon->muy);
-}
-
-/* Does the monster pursue you down a corridor or wait it out?
-   This is really expensive, especially when called repeatedly.
-   TODO: Find another way to do this. */
-staticfn boolean
-mon_avoids_chokepoint(struct monst *mon) {
-    int score = 0;
-    int x, y;
-    /* Rule out the easy ones. Monsters don't use ambush
-       tactics in mazes because that would probably confuse
-       their AI. Monsters will also not pull these tactics
-       unless a player is specifically in a corridor, simply
-       to cut down on the amount of iteration. */
-    if (mon->mpeaceful || !is_ambusher(mon->data)
-        || passes_walls(mon->data)
-        || levl[mon->mx][mon->my].typ == CORR
-        || levl[mon->mx][mon->my].typ == SCORR
-        || svl.level.flags.is_maze_lev
-        || (levl[u.ux][u.uy].typ != CORR && levl[u.ux][u.uy].typ != SCORR))
-        return 0;
-    /* If the player is badly hurt, it's time to go in. */
-    if (u.uhp * 2 <= u.uhpmax)
-        return 0;
-    /* Loop over player's surroundings. */
-    for (int dx = -1; dx <= 1; dx++) {
-        for (int dy = -1; dy <= 1; dy++) {
-            x = u.ux + dx;
-            y = u.uy + dy;
-            if (!dx && !dy) continue;
-            if (!isok(x, y) || IS_STWALL(levl[x][y].typ)) score++;
-        }
-    }
-    if (score >= 6) return 1;
-    return 0;
 }
 
 /* return flags based on monster data, for mfndpos() */
@@ -2283,9 +2266,8 @@ mon_allowflags(struct monst *mtmp)
     /* unicorn may not be able to avoid hero on a noteleport level */
     if (is_unicorn(mtmp->data) && !noteleport_level(mtmp))
         allowflags |= NOTONL;
-    if (mon_avoids_chokepoint(mtmp)) {
+    if (is_supporter(mtmp->data) && !mtmp->mpeaceful)
         allowflags |= NOTONL;
-    }
     if (gy.youmonst.data == &mons[PM_STRAW_GOLEM]
         && is_bird(mtmp->data)) {
         /* birds don't want to get near scarecrows. */
@@ -2989,6 +2971,13 @@ m_detach(
         }
         if (mtmp->data->msound == MS_LEADER)
             leaddead();
+        /* Handle crimson death blood clouds */
+        if (mtmp->data == &mons[PM_CRIMSON_DEATH]) {
+            struct obj fakeobj = cg.zeroobj;
+            fakeobj.cursed = TRUE;
+            fakeobj.otyp = POT_BLOOD;
+            create_gas_cloud(mtmp->mx, mtmp->my, 5, &fakeobj, 8);
+        }
         /* release (drop onto map) all objects carried by mtmp; assumes that
            mtmp->mx,my contains the appropriate location */
         relobj(mtmp, 1, FALSE); /* drop mtmp->minvent, issue newsym(mx,my) */
@@ -3000,9 +2989,9 @@ m_detach(
         shkgone(mtmp);
     if (mtmp->wormno)
         wormgone(mtmp);
+    mtmp->mstate &= ~TERRAIN_FALLOUT_MASK;
     if (In_endgame(&u.uz))
         mtmp->mstate |= MON_ENDGAME_FREE;
-
     if ((mtmp->mstate & MON_DETACH) != 0) {
         impossible("m_detach: %s is already detached?",
                    minimal_monnam(mtmp, FALSE));
@@ -3445,14 +3434,6 @@ corpse_chance(
                                            | VIS_EFFECTS, (struct obj *) 0);
         return FALSE;
     }
-    /* Handle crimson death blood clouds */
-    if (mdat == &mons[PM_CRIMSON_DEATH]) {
-        struct obj fakeobj = cg.zeroobj;
-        fakeobj.cursed = TRUE;
-        fakeobj.otyp = POT_BLOOD;
-        create_gas_cloud(mon->mx, mon->my, 5, &fakeobj, 8);
-        return FALSE;
-    }
     /* Handle illusion vanishing */
     if (mdat == &mons[PM_ILLUSION]) {
         /* Illusions killed while undiscovered yield a message. */
@@ -3716,11 +3697,23 @@ set_ustuck(struct monst *mtmp)
 
     disp.botl = TRUE;
     u.ustuck = mtmp;
+    if (u.ustuck_mid)
+        u.ustuck_mid = 0;
     if (!u.ustuck) {
         u.uswallow = 0;
         u.uswldtim = 0;
         u.usticker = 0;
     }
+}
+
+void
+set_usticker(struct monst *mtmp)
+{
+    if (mtmp)
+        u.usticker = 1;
+    else
+        u.usticker = 0;
+    set_ustuck(mtmp);
 }
 
 void
@@ -3876,7 +3869,7 @@ xkilled(
         int otyp;
 
         /* illogical but traditional "treasure drop" */
-        if (!rn2(6) && !(svm.mvitals[mndx].mvflags & G_NOCORPSE)
+        if (is_deathdropper(mdat)
             /* no extra item from swallower or steed */
             && (x != u.ux || y != u.uy)
             /* no extra item from kops--too easy to abuse */
@@ -4217,6 +4210,7 @@ elemental_clog(struct monst *mon)
         if (mtmp) {
             int mx = mtmp->mx, my = mtmp->my;
 
+            mtmp->mstate &= ~TERRAIN_FALLOUT_MASK;
             mtmp->mstate |= MON_OBLITERATE;
             mongone(mtmp);
             /* places in the code might still reference mtmp->mx, mtmp->my */
@@ -4336,6 +4330,7 @@ mnearto(
            but for the moment it is leaving */
         mon_leaving_level(othermon);
         othermon->mx = othermon->my = 0; /* 'othermon' is not on the map */
+        othermon->mstate &= ~TERRAIN_FALLOUT_MASK;
         othermon->mstate |= MON_OFFMAP;
     }
 
@@ -5183,7 +5178,7 @@ pick_animal(void)
     /* rogue level should use monsters represented by uppercase letters
        only, but since chameleons aren't generated there (not uppercase!)
        we don't perform a lot of retries */
-    if (Is_rogue_level(&u.uz) && !isupper(monsym(&mons[res])))
+    if (Is_rogue_level(&u.uz) && !isupper((int) monsym(&mons[res])))
         res = ga.animal_list[rn2(ga.animal_list_count)];
     return res;
 }
@@ -5541,7 +5536,7 @@ select_newcham_form(struct monst *mon)
         } while (--tryct > 0 && !validspecmon(mon, mndx)
                  /* try harder to select uppercase monster on rogue level */
                  && (tryct > 40 && Is_rogue_level(&u.uz)
-                     && !isupper(monsym(&mons[mndx]))));
+                     && !isupper((int) monsym(&mons[mndx]))));
     }
     return mndx;
 }
@@ -5651,7 +5646,7 @@ newcham(
             /* for the first several tries we require upper-case on
                the rogue level (after that, we take whatever we get) */
             if (tryct > 15 && Is_rogue_level(&u.uz)
-                && mdat && !isupper(monsym(mdat)))
+                && mdat && !isupper((int) monsym(mdat)))
                 mdat = 0;
             if (mdat)
                 break;
@@ -5808,6 +5803,7 @@ newcham(
     if (!(mtmp->misc_worn_check & W_ARMG))
         mselftouch(mtmp, "No longer petrify-resistant, ",
                    !svc.context.mon_moving);
+    (void) maybe_set_terrain_effects(mtmp, olddata);
     check_gear_next_turn(mtmp);
 
     /* This ought to re-test can_carry() on each item in the inventory
@@ -5854,6 +5850,69 @@ newcham(
     }
 
     return 1;
+}
+
+boolean
+maybe_set_terrain_effects(struct monst *mtmp, struct permonst *oldmdat)
+{
+    struct permonst *mdat = mtmp->data;
+    boolean changed = FALSE;
+
+    /* mtmp is in liquid */
+    if (is_pool(mtmp->mx, mtmp->my) || Is_waterlevel(&u.uz)
+         || is_lava(mtmp->mx, mtmp->my)
+         || IS_FOUNTAIN(levl[mtmp->mx][mtmp->my].typ)) {
+            /* mtmp is a non-flyer/floater/levitator */
+        boolean above_water =
+                    ((is_flyer(mdat) || is_floater(mdat))
+                     && !(mtmp == u.usteed && (Flying || Levitation))),
+                was_above_water =
+                    (oldmdat
+                     && ((is_flyer(oldmdat) || is_floater(oldmdat))
+                         && !(mtmp == u.usteed && (Flying || Levitation))));
+        if (!above_water) {
+                changed = (!oldmdat || (above_water != was_above_water));
+            gp.pending_terrain_effects |= nonflyer_vs_liquid;
+            mtmp->mstate |= (long) nonflyer_vs_liquid;
+        }
+
+        /* swimmer/amphibious/breathless to something that is not */
+        if (!cant_drown(mdat)) {
+            if (!changed)
+                changed =
+                    (!oldmdat || ((cant_drown(oldmdat) != cant_drown(mdat))));
+            gp.pending_terrain_effects |= candrown_vs_liquid;
+            mtmp->mstate |= (long) candrown_vs_liquid;
+        }
+    }
+    /* TODO: handle other terrains that could be harmful to a
+       revived mon or polymorphed mon */
+
+    return changed;
+}
+
+/*
+ * The terrain is what it is, but the monster changed
+ * in some way (polymorphed or newly revived), and has
+ * been flagged as problematic with the terrain.
+ */
+void
+terrain_effects(void)
+{
+    struct monst *mtmp, *mtmp2;
+
+    for (mtmp = fmon; mtmp; mtmp = mtmp2) {
+        mtmp2 = mtmp->nmon;
+        if ((mtmp->mstate & TERRAIN_FALLOUT_MASK) != 0) {
+            /* nonflyer_vs_liquid */
+            if (!DEADMONSTER(mtmp)
+                && ((mtmp->mstate & (long) (nonflyer_vs_liquid | candrown_vs_liquid)) != 0))
+                (void) minliquid(mtmp);
+
+            /* always clear these bits, even if DEADMONSTER */
+            mtmp->mstate &= ~TERRAIN_FALLOUT_MASK;
+        }
+    }
 }
 
 /* sometimes an egg will be special */
@@ -6345,8 +6404,9 @@ adj_erinys(unsigned abuse)
         pm->mattk[2].damd = 4;
     }
 
-    /* also adjust level and difficulty */
-    pm->mlevel = min(7 + u.ualign.abuse, 50);
+    /* also adjust level and difficulty;
+       mlevel >= 50 has a special meaning, so don't exceed 49 */
+    pm->mlevel = min(7 + u.ualign.abuse, 49);
     pm->difficulty = min(10 + (u.ualign.abuse / 3), 25);
 }
 

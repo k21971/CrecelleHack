@@ -1,4 +1,4 @@
-/* NetHack 5.0	attrib.c	$NHDT-Date: 1777000050 2026/04/23 19:07:30 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.137 $ */
+/* NetHack 5.0	attrib.c	$NHDT-Date: 1781973041 2026/06/20 16:30:41 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.142 $ */
 /*      Copyright 1988, 1989, 1990, 1992, M. Stephenson           */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -107,7 +107,9 @@ static const struct innate {
   kob_abil[] = { { 1, &HPoison_resistance, "", "" },
                  { 0, 0, 0, 0 } },
 
-  hum_abil[] = { { 0, 0, 0, 0 } };
+  hum_abil[] = { { 0, 0, 0, 0 } },
+
+  anc_abil[] = { { 0, 0, 0, 0 } };
 
 staticfn void exerper(void);
 staticfn int rnd_attr(void);
@@ -281,10 +283,6 @@ losestr(int num, const char *knam, schar k_format)
 void
 poison_strdmg(int strloss, int dmg, const char *knam, schar k_format)
 {
-    if (Poison_resistance) {
-        strloss = (dmg + 1) / 2;
-        dmg = (dmg + 1) / 2;
-    }
     losestr(strloss, knam, k_format);
     losehp(dmg, knam, k_format);
 }
@@ -347,15 +345,17 @@ poisoned(
               isupper((uchar) *reason) ? "" : "The ", reason,
               plural ? "were" : "was");
     }
-    if (Poison_immunity) {
+    if (how_resistant(POISON_RES) >= 200) {
+        if (blast)
+            shieldeff(u.ux, u.uy);
+        pline("Your body neutralizes and absorbs the poison.");
+        healup(d(4, 6), 0, 0, 0);
+        return;
+    } else if (how_resistant(POISON_RES) >= 100) {
         if (blast)
             shieldeff(u.ux, u.uy);
         pline_The("poison doesn't seem to affect you.");
         return;
-    }
-
-    if (Poison_resistance) {
-        fatal = 0;
     }
 
     /* suppress killer prefix if it already has one */
@@ -375,7 +375,7 @@ poisoned(
      *  this operates on u.uhp[max] even when hero is polymorphed....
      */
 
-    i = !fatal ? 1 : rn2(fatal + (thrown_weapon ? 20 : 0));
+    i = resist_reduce(!fatal ? 1 : rn2(fatal + (thrown_weapon ? 20 : 0)), POISON_RES);
     if (i == 0 && typ != A_CHA) {
         /* sometimes survivable instant kill */
         loss = 6 + d(4, 6); /* 6 + 4d6 => 10..34 */
@@ -401,14 +401,14 @@ poisoned(
         boolean cloud = !strcmp(reason, "gas cloud");
 
         /* HP damage; more likely--but less severe--with missiles */
-        loss = thrown_weapon ? rnd(6) : rn1(10, 6);
+        loss = resist_reduce(thrown_weapon ? rnd(6) : rn1(10, 6), POISON_RES);
         if ((blast || cloud) && Half_gas_damage) /* worn towel */
             loss = (loss + 1) / 2;
         losehp(loss, pkiller, kprefix); /* poison damage */
     } else {
         /* attribute loss; if typ is A_STR, reduction in current and
            maximum HP will occur once strength has dropped down to 3 */
-        loss = (thrown_weapon || !fatal) ? 1 : d(2, 2); /* was rn1(3,3) */
+        loss = (thrown_weapon || !fatal) ? 1 : resist_reduce(d(2, 2), POISON_RES); /* was rn1(3,3) */
         /* check that a stat change was made */
         if (adjattrib(typ, -loss, 1))
             poisontell(typ, TRUE);
@@ -504,7 +504,6 @@ restore_attrib(void)
 void
 exercise(int i, boolean inc_or_dec)
 {
-    int alter;
     debugpline0("Exercise:");
 
     /* no physical exercise while polymorphed; the body's temporary */
@@ -521,8 +520,7 @@ exercise(int i, boolean inc_or_dec)
          *
          *      Note: *YES* ACURR is the right one to use.
          */
-        alter = (inc_or_dec) ? (rn2(19) > ACURR(i)) : -rn2(2);
-        AEXE(i) += use_skill(i + P_FIRST_ATTR, alter);
+        AEXE(i) += (inc_or_dec) ? (rn2(19) > ACURR(i)) : -rn2(2);
         debugpline3("%s, %s AEXE = %d",
                     (i == A_STR) ? "Str" : (i == A_WIS) ? "Wis" : (i == A_DEX)
                                                                       ? "Dex"
@@ -672,7 +670,7 @@ exerchk(void)
                 goto nextattrib;
 
             debugpline1("exerchk: changing %d.", i);
-            if (use_skill(i + P_FIRST_ATTR, mod_val * 20)) {
+            if (adjattrib(i, mod_val, -1)) {
                 debugpline1("exerchk: changed %d.", i);
                 /* if you actually changed an attrib - zero accumulation */
                 AEXE(i) = ax = 0;
@@ -858,6 +856,9 @@ check_innate_abil(long *ability, long frommask)
         case PM_HUMAN:
             abil = hum_abil;
             break;
+        case PM_ANACRUSIS:
+            abil = anc_abil;
+            break;
         default:
             break;
         }
@@ -1020,23 +1021,6 @@ from_what(
     return buf;
 }
 
-/* This is used specifically for describing immunities in wizard mode. */
-char *
-from_what_item(int propidx)
-{
-    static char buf[BUFSZ];
-    buf[0] = '\0';
-    struct obj *obj;
-    if (wizard) {
-        obj = what_gives(&u.uprops[propidx].extrinsic);
-        if (obj)
-            Sprintf(buf, " because of %s", obj->oartifact
-                                        ? bare_artifactname(obj)
-                                        : ysimple_name(obj));
-    }
-    return buf;
-}
-
 RESTORE_WARNING_FORMAT_NONLITERAL
 
 void
@@ -1060,6 +1044,7 @@ adjabil(int oldlevel, int newlevel)
     case PM_HUMAN:
     case PM_DWARF:
     case PM_GNOME:
+    case PM_ANACRUSIS:
     default:
         rabil = 0;
         break;
@@ -1077,6 +1062,7 @@ adjabil(int oldlevel, int newlevel)
         }
         prevabil = *(abil->ability);
         if (oldlevel < abil->ulevel && newlevel >= abil->ulevel) {
+
             /* Abilities gained at level 1 can never be lost
              * via level loss, only via means that remove _any_
              * sort of ability.  A "gain" of such an ability from

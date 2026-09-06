@@ -1,4 +1,4 @@
-/* NetHack 5.0	fountain.c	$NHDT-Date: 1699582923 2023/11/10 02:22:03 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.100 $ */
+/* NetHack 5.0	fountain.c	$NHDT-Date: 1781973050 2026/06/20 16:30:50 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.121 $ */
 /*      Copyright Scott R. Turner, srt@ucla, 10/27/86 */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -305,14 +305,15 @@ drinkfountain(void)
             break;
         case 21: /* Poisonous */
             pline_The("water is contaminated!");
-            if (Poison_immunity) {
+            if (how_resistant(POISON_RES) >= 100) {
                 pline("Perhaps it is runoff from the nearby %s farm.",
                       fruitname(FALSE));
                 losehp(rnd(4), "unrefrigerated sip of juice", KILLED_BY_AN);
                 break;
             }
-            poison_strdmg(rn1(4, 3), rnd(10), "contaminated water",
-                          KILLED_BY);
+            poison_strdmg(resist_reduce(rn1(4, 3), POISON_RES),
+                            resist_reduce(rnd(10), POISON_RES),
+                            "contaminated water", KILLED_BY);
             exercise(A_CON, FALSE);
             break;
         case 22: /* Fountain of snakes! */
@@ -642,11 +643,15 @@ drinksink(void)
         break;
     case 2:
         You("take a sip of scalding hot %s.", hliquid("water"));
-        if (Fire_resistance) {
+        if (how_resistant(FIRE_RES) >= 200) {
+            pline("It is quite pleasant.");
+            losehp(resist_reduce(rnd(6), FIRE_RES), "sipping boiling water", KILLED_BY);
+            monstseesu(M_SEEN_FIRE);
+        } else if (how_resistant(FIRE_RES) >= 100) {
             pline("It seems quite tasty.");
             monstseesu(M_SEEN_FIRE);
         } else {
-            losehp(rnd(6), "sipping boiling water", KILLED_BY);
+            losehp(resist_reduce(rnd(6), FIRE_RES), "sipping boiling water", KILLED_BY);
             monstunseesu(M_SEEN_FIRE);
         }
         /* boiling water burns considered fire damage */

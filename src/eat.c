@@ -1,4 +1,4 @@
-/* NetHack 5.0	eat.c	$NHDT-Date: 1740534854 2025/02/25 17:54:14 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.344 $ */
+/* NetHack 5.0	eat.c	$NHDT-Date: 1781973048 2026/06/20 16:30:48 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.354 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Robert Patrick Rankin, 2012. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -411,6 +411,11 @@ food_disappears(struct obj *obj)
 {
     if (obj == svc.context.victual.piece)
         svc.context.victual = zero_victual; /* victual.piece = 0, .o_id = 0 */
+
+    if (obj == svc.context.tin.tin) {
+        svc.context.tin.tin = (struct obj *) 0;
+        svc.context.tin.o_id = 0;
+    }
 
     if (obj->timed)
         obj_stop_timers(obj);
@@ -1010,7 +1015,9 @@ should_givit(int type, struct permonst *ptr)
 staticfn boolean
 temp_givit(int type, struct permonst *ptr)
 {
-    int chance = (type == STONE_RES) ? 6 : (type == ACID_RES) ? 3 : 0;
+    int chance = (type == STONE_RES) ? 6 : (type == ACID_RES
+        || type == FIRE_RES || type == SLEEP_RES || type == COLD_RES
+        || type == DISINT_RES || type == SHOCK_RES || type == POISON_RES) ? 3 : 0;
 
     return chance ? (ptr->mlevel > rn2(chance)) : FALSE;
 }
@@ -1021,57 +1028,59 @@ temp_givit(int type, struct permonst *ptr)
 staticfn void
 givit(int type, struct permonst *ptr)
 {
+    int halfnut;
     debugpline1("Attempting to give intrinsic %d", type);
 
     if (!should_givit(type, ptr) && !temp_givit(type, ptr))
         return;
 
     svm.mvitals[ptr->pmidx].know_rcorpse = 1;
+    halfnut = (ptr->cnutrit) / 2;
 
     switch (type) {
     case FIRE_RES:
-        debugpline0("Trying to give fire resistance");
+        debugpline0("Giving timed fire resistance");
         if (!(HFire_resistance & FROMOUTSIDE)) {
             You(Hallucination ? "be chillin'." : "feel a momentary chill.");
-            HFire_resistance |= FROMOUTSIDE;
+            incr_itimeout(&u.uprops[type].intrinsic, rn1(halfnut, halfnut));
         }
         break;
     case SLEEP_RES:
-        debugpline0("Trying to give sleep resistance");
+        debugpline0("Giving timed sleep resistance");
         if (!(HSleep_resistance & FROMOUTSIDE)) {
             You_feel("wide awake.");
-            HSleep_resistance |= FROMOUTSIDE;
+            incr_itimeout(&u.uprops[type].intrinsic, rn1(halfnut, halfnut));
         }
         break;
     case COLD_RES:
-        debugpline0("Trying to give cold resistance");
+        debugpline0("Giving timed cold resistance");
         if (!(HCold_resistance & FROMOUTSIDE)) {
             You_feel("full of hot air.");
-            HCold_resistance |= FROMOUTSIDE;
+            incr_itimeout(&u.uprops[type].intrinsic, rn1(halfnut, halfnut));
         }
         break;
     case DISINT_RES:
-        debugpline0("Trying to give disintegration resistance");
+        debugpline0("Giving timed disintegration resistance");
         if (!(HDisint_resistance & FROMOUTSIDE)) {
             You_feel(Hallucination ? "totally together, man." : "very firm.");
-            HDisint_resistance |= FROMOUTSIDE;
+            incr_itimeout(&u.uprops[type].intrinsic, rn1(halfnut, halfnut));
         }
         break;
     case SHOCK_RES: /* shock (electricity) resistance */
-        debugpline0("Trying to give shock resistance");
+        debugpline0("Giving timed shock resistance");
         if (!(HShock_resistance & FROMOUTSIDE)) {
             if (Hallucination)
                 You_feel("grounded in reality.");
             else
                 Your("health currently feels amplified!");
-            HShock_resistance |= FROMOUTSIDE;
+            incr_itimeout(&u.uprops[type].intrinsic, rn1(halfnut, halfnut));
         }
         break;
     case POISON_RES:
-        debugpline0("Trying to give poison resistance");
+        debugpline0("Giving timed poison resistance");
         if (!(HPoison_resistance & FROMOUTSIDE)) {
             You_feel(Poison_resistance ? "especially healthy." : "healthy.");
-            HPoison_resistance |= FROMOUTSIDE;
+            incr_itimeout(&u.uprops[type].intrinsic, rn1(halfnut, halfnut));
         }
         break;
     case TELEPORT:
@@ -1962,7 +1971,8 @@ eatcorpse(struct obj *otmp)
         pline("Ecch - that must have been poisonous!");
         svm.mvitals[mnum].know_pcorpse = 1;
         if (!Poison_resistance) {
-            poison_strdmg(rnd(4), rnd(15),
+            poison_strdmg(resist_reduce(rnd(4), POISON_RES),
+                          resist_reduce(rnd(15), POISON_RES),
                           !glob ? "poisonous corpse" : "poisonous glob",
                           KILLED_BY_AN);
         } else
@@ -2394,11 +2404,10 @@ eataccessory(struct obj *otmp)
             break;
         case RIN_FREE_ACTION:
             /* Give sleep resistance instead */
-            if (!(HSleep_resistance & FROMOUTSIDE))
+            if (how_resistant(SLEEP_RES) < 100) {
                 accessory_has_effect(otmp);
-            if (!Sleep_resistance)
                 You_feel("wide awake.");
-            HSleep_resistance |= FROMOUTSIDE;
+            }
             break;
         case AMULET_OF_CHANGE:
             accessory_has_effect(otmp);
@@ -2415,6 +2424,10 @@ eataccessory(struct obj *otmp)
                 makeknown(typ);
                 rehumanize();
             }
+            break;
+        case RIN_PROTECTION_FROM_EXPLOSIONS:
+            pline("Your %s implodes.", body_part(STOMACH));
+            morehungry(300);
             break;
         case AMULET_OF_STRANGULATION: /* bad idea! */
             /* no message--this gives no permanent effect */
@@ -2506,7 +2519,12 @@ eatspecial(void)
                             : "You're back in the salt mines.");
         if (otmp->otyp == SALT_CRYSTAL)
             makeknown(otmp->otyp);
-        exercise(A_CON,FALSE);
+        exercise(A_CON, FALSE);
+    }
+    if (otmp->material == COAL) {
+        pline("Tastes like burnt marshmallows.");
+        makeknown(HUNK_OF_CHARCOAL);
+        exercise(A_CON, TRUE);
     }
 
     if (otmp == uwep && otmp->quan == 1L)
@@ -2734,11 +2752,11 @@ edibility_prompts(struct obj *otmp)
         /* Rotten */
         Snprintf(buf, sizeof buf, "%s like %s could be rotten!",
                  foodsmell, it_or_they);
-    } else if (cadaver && poisonous(&mons[mnum]) && !Poison_resistance) {
+    } else if (cadaver && poisonous(&mons[mnum]) && how_resistant(POISON_RES) < 100) {
         /* poisonous */
         Snprintf(buf, sizeof buf, "%s like %s might be poisonous!",
                  foodsmell, it_or_they);
-    } else if (otmp->otyp == APPLE && otmp->cursed && !Sleep_resistance) {
+    } else if (otmp->otyp == APPLE && otmp->cursed && how_resistant(SLEEP_RES) < 100) {
         /* causes sleep, for long enough to be dangerous */
         Snprintf(buf, sizeof buf, "%s like %s might have been poisoned.",
                  foodsmell, it_or_they);
@@ -2848,8 +2866,10 @@ doeat_nonfood(struct obj *otmp)
 
     if (otmp->oclass == WEAPON_CLASS && otmp->opoisoned) {
         pline("Ecch - that must have been poisonous!");
-        if (!Poison_resistance) {
-            poison_strdmg(rnd(4), rnd(15), xname(otmp), KILLED_BY_AN);
+        if (how_resistant(POISON_RES) < 100) {
+            poison_strdmg(resist_reduce(rnd(4), POISON_RES),
+                            resist_reduce(rnd(15), POISON_RES),
+                            xname(otmp), KILLED_BY_AN);
         } else
             You("seem unaffected by the poison.");
     } else if (!nodelicious) {
@@ -2878,6 +2898,10 @@ doeat(void)
 
     if (Strangled) {
         pline("If you can't breathe air, how can you consume solids?");
+        return ECMD_OK;
+    }
+    if (ublindf && ublindf->otyp == GAS_MASK) {
+        pline("Your mask is too cumbersome to eat with.");
         return ECMD_OK;
     }
     if (!(otmp = floorfood("eat", 0)))
@@ -3383,7 +3407,8 @@ lesshungry(int num)
                     && (svc.context.victual.reqtime
                         - svc.context.victual.usedtime) > 1) {
                     /* food with one bite left will not survive a stop */
-                    if (!paranoid_query(ParanoidEating, "Continue eating?")) {
+                    if (!(uarmh && uarmh->oprop == OPROP_HUNGRY)
+                        && !paranoid_query(ParanoidEating, "Continue eating?")) {
                         reset_eat();
                         gn.nomovemsg = (char *) 0;
                     }

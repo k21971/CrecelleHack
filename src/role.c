@@ -1,4 +1,4 @@
-/* NetHack 5.0	role.c	$NHDT-Date: 1737607158 2025/01/22 20:39:18 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.107 $ */
+/* NetHack 5.0	role.c	$NHDT-Date: 1781973065 2026/06/20 16:31:05 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.111 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985-1999. */
 /*-Copyright (c) Robert Patrick Rankin, 2012. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -49,10 +49,11 @@ const struct Role roles[NUM_ROLES+1] = {
       PM_MINION_OF_HUHETOTL,
       NON_PM,
       PM_HUMAN_MUMMY,
+      PM_UMBER_HULK,
       S_SNAKE,
       S_MUMMY,
       ART_ORB_OF_DETECTION,
-      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC,
+      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_ANACRUSIS,
       ROLE_MALE | ROLE_FEMALE | ROLE_LAWFUL | ROLE_NEUTRAL,
       /* Str Int Wis Dex Con Cha */
       { 7, 10, 10, 7, 7, 7 },
@@ -68,7 +69,7 @@ const struct Role roles[NUM_ROLES+1] = {
       10,
       A_INT,
       SPE_MAGIC_MAPPING,
-      -4 },
+      -4, 20 },
     { { "Barbarian", 0 },
       { { "Plunderer", "Plunderess" },
         { "Pillager", 0 },
@@ -90,10 +91,11 @@ const struct Role roles[NUM_ROLES+1] = {
       PM_THOTH_AMON,
       PM_OGRE,
       PM_TROLL,
+      PM_EARTH_ELEMENTAL,
       S_OGRE,
       S_TROLL,
       ART_HEART_OF_AHRIMAN,
-      MH_HUMAN |  MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_KOBOLD,
+      MH_HUMAN |  MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_KOBOLD | MH_ANACRUSIS,
       ROLE_MALE | ROLE_FEMALE | ROLE_NEUTRAL | ROLE_CHAOTIC,
       /* Str Int Wis Dex Con Cha */
       { 16, 7, 7, 15, 16, 6 },
@@ -109,7 +111,7 @@ const struct Role roles[NUM_ROLES+1] = {
       8,
       A_INT,
       SPE_HASTE_SELF,
-      -4 },
+      -4, 40 },
     { { "Caveman", "Cavewoman" },
       { { "Troglodyte", 0 },
         { "Aborigine", 0 },
@@ -131,10 +133,11 @@ const struct Role roles[NUM_ROLES+1] = {
       PM_CHROMATIC_DRAGON,
       PM_BUGBEAR,
       PM_HILL_GIANT,
+      PM_MASTODON,
       S_HUMANOID,
       S_GIANT,
       ART_SCEPTRE_OF_MIGHT,
-      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_KOBOLD,
+      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_KOBOLD | MH_ANACRUSIS,
       ROLE_MALE | ROLE_FEMALE | ROLE_LAWFUL | ROLE_NEUTRAL,
       /* Str Int Wis Dex Con Cha */
       { 10, 7, 7, 7, 8, 6 },
@@ -150,7 +153,7 @@ const struct Role roles[NUM_ROLES+1] = {
       8,
       A_INT,
       SPE_DIG,
-      -4 },
+      -4, 25 },
     { { "Grappler", 0 },
       { { "Jobber", 0 },
         { "Tin Can", 0 },
@@ -172,10 +175,11 @@ const struct Role roles[NUM_ROLES+1] = {
       PM_HEEL,
       PM_OWLBEAR,
       PM_ROPE_GOLEM,
+      PM_YETI,
       S_YETI,
       S_ELEMENTAL,
       ART_BELT_OF_CHAMPIONS,
-      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_KOBOLD,
+      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_KOBOLD | MH_ANACRUSIS,
       ROLE_MALE | ROLE_FEMALE | ROLE_LAWFUL | ROLE_NEUTRAL | ROLE_CHAOTIC,
       /* Str Int Wis Dex Con Cha */
       { 10, 7, 6, 7, 16, 8 },
@@ -191,7 +195,7 @@ const struct Role roles[NUM_ROLES+1] = {
       10,
       A_WIS,
       SPE_JUMPING,
-      -4 },
+      -4, 10 },
     { { "Healer", 0 },
       { { "Rhizotomist", 0 },
         { "Empiric", 0 },
@@ -213,10 +217,11 @@ const struct Role roles[NUM_ROLES+1] = {
       PM_CYCLOPS,
       PM_GIANT_RAT,
       PM_SNAKE,
+      PM_NURSE,
       S_RODENT,
       S_YETI,
       ART_STAFF_OF_AESCULAPIUS,
-      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_KOBOLD,
+      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_KOBOLD | MH_ANACRUSIS,
       ROLE_MALE | ROLE_FEMALE | ROLE_NEUTRAL,
       /* Str Int Wis Dex Con Cha */
       { 7, 7, 13, 7, 11, 16 },
@@ -232,7 +237,7 @@ const struct Role roles[NUM_ROLES+1] = {
       10,
       A_WIS,
       SPE_CURE_SICKNESS,
-      -4 },
+      -4, 10 },
     { { "Knight", 0 },
       { { "Gallant", 0 },
         { "Esquire", 0 },
@@ -254,10 +259,11 @@ const struct Role roles[NUM_ROLES+1] = {
       PM_IXOTH,
       PM_QUASIT,
       PM_OCHRE_JELLY,
+      PM_KI_RIN,
       S_IMP,
       S_JELLY,
       ART_MAGIC_MIRROR_OF_MERLIN,
-      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC,
+      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_ANACRUSIS,
       ROLE_MALE | ROLE_FEMALE | ROLE_LAWFUL,
       /* Str Int Wis Dex Con Cha */
       { 13, 7, 14, 8, 10, 17 },
@@ -273,7 +279,7 @@ const struct Role roles[NUM_ROLES+1] = {
       9,
       A_WIS,
       SPE_TURN_UNDEAD,
-      -4 },
+      -4, 10 },
     { { "Monk", 0 },
       { { "Candidate", 0 },
         { "Novice", 0 },
@@ -295,10 +301,11 @@ const struct Role roles[NUM_ROLES+1] = {
       PM_MASTER_KAEN,
       PM_EARTH_ELEMENTAL,
       PM_XORN,
+      PM_WATER_ELEMENTAL,
       S_ELEMENTAL,
       S_XORN,
       ART_EYES_OF_THE_OVERWORLD,
-      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_KOBOLD,
+      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_KOBOLD | MH_ANACRUSIS,
       ROLE_MALE | ROLE_FEMALE | ROLE_LAWFUL | ROLE_NEUTRAL | ROLE_CHAOTIC,
       /* Str Int Wis Dex Con Cha */
       { 10, 7, 8, 8, 7, 7 },
@@ -314,7 +321,7 @@ const struct Role roles[NUM_ROLES+1] = {
       20,
       A_WIS,
       SPE_RESTORE_ABILITY,
-      -4 },
+      -4, 20 },
     { { "Priest", "Priestess" },
       { { "Aspirant", 0 },
         { "Acolyte", 0 },
@@ -336,10 +343,11 @@ const struct Role roles[NUM_ROLES+1] = {
       PM_NALZOK,
       PM_HUMAN_ZOMBIE,
       PM_WRAITH,
+      PM_ALEAX,
       S_ZOMBIE,
       S_WRAITH,
       ART_MITRE_OF_HOLINESS,
-      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_KOBOLD,
+      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_KOBOLD | MH_ANACRUSIS,
       ROLE_MALE | ROLE_FEMALE | ROLE_LAWFUL | ROLE_NEUTRAL | ROLE_CHAOTIC,
       /* Str Int Wis Dex Con Cha */
       { 7, 7, 10, 7, 7, 7 },
@@ -355,7 +363,7 @@ const struct Role roles[NUM_ROLES+1] = {
       10,
       A_WIS,
       SPE_REMOVE_CURSE,
-      -4 },
+      -4, 25 },
     /* Note:  Rogue precedes Ranger so that use of `-R' on the command line
        retains its traditional meaning. */
     { { "Rogue", 0 },
@@ -379,10 +387,11 @@ const struct Role roles[NUM_ROLES+1] = {
       PM_MASTER_ASSASSIN,
       PM_LEPRECHAUN,
       PM_GUARDIAN_NAGA,
+      PM_GOLD_GOLEM,
       S_NYMPH,
       S_NAGA,
       ART_MASTER_KEY_OF_THIEVERY,
-      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_KOBOLD,
+      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_KOBOLD | MH_ANACRUSIS,
       ROLE_MALE | ROLE_FEMALE | ROLE_CHAOTIC,
       /* Str Int Wis Dex Con Cha */
       { 7, 7, 7, 10, 7, 6 },
@@ -398,7 +407,7 @@ const struct Role roles[NUM_ROLES+1] = {
       9,
       A_INT,
       SPE_DETECT_TREASURE,
-      -4 },
+      -4, 5 },
     { { "Ranger", 0 },
       {
 #if 0 /* OBSOLETE */
@@ -434,10 +443,11 @@ const struct Role roles[NUM_ROLES+1] = {
       PM_SCORPIUS,
       PM_FOREST_CENTAUR,
       PM_SCORPION,
+      PM_WUMPUS,
       S_CENTAUR,
       S_SPIDER,
       ART_LONGBOW_OF_DIANA,
-      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_KOBOLD,
+      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_KOBOLD | MH_ANACRUSIS,
       ROLE_MALE | ROLE_FEMALE | ROLE_NEUTRAL | ROLE_CHAOTIC,
       /* Str Int Wis Dex Con Cha */
       { 13, 13, 13, 9, 13, 7 },
@@ -453,7 +463,7 @@ const struct Role roles[NUM_ROLES+1] = {
       10,
       A_INT,
       SPE_INVISIBILITY,
-      -4 },
+      -4, 30 },
     { { "Samurai", 0 },
       { { "Hatamoto", 0 },       /* Banner Knight */
         { "Ronin", 0 },          /* no allegiance */
@@ -475,10 +485,11 @@ const struct Role roles[NUM_ROLES+1] = {
       PM_ASHIKAGA_TAKAUJI,
       PM_WOLF,
       PM_STALKER,
+      PM_LARGE_DOG,
       S_DOG,
       S_ELEMENTAL,
       ART_TSURUGI_OF_MURAMASA,
-      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC,
+      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_ANACRUSIS,
       ROLE_MALE | ROLE_FEMALE | ROLE_LAWFUL,
       /* Str Int Wis Dex Con Cha */
       { 10, 8, 7, 10, 17, 6 },
@@ -494,7 +505,7 @@ const struct Role roles[NUM_ROLES+1] = {
       8,
       A_INT,
       SPE_CLAIRVOYANCE,
-      -4 },
+      -4, 40 },
     { { "Tourist", 0 },
       { { "Rambler", 0 },
         { "Sightseer", 0 },
@@ -516,6 +527,7 @@ const struct Role roles[NUM_ROLES+1] = {
       PM_MASTER_OF_THIEVES,
       PM_GIANT_SPIDER,
       PM_FOREST_CENTAUR,
+      PM_GIANT_MIMIC,
       S_SPIDER,
       S_CENTAUR,
       ART_YENDORIAN_EXPRESS_CARD,
@@ -535,7 +547,7 @@ const struct Role roles[NUM_ROLES+1] = {
       10,
       A_INT,
       SPE_CHARM_MONSTER,
-      -4 },
+      -4, 15 },
     { { "Valkyrie", 0 },
       { { "Stripling", 0 },
         { "Skirmisher", 0 },
@@ -557,10 +569,11 @@ const struct Role roles[NUM_ROLES+1] = {
       PM_LORD_SURTUR,
       PM_FIRE_ANT,
       PM_FIRE_GIANT,
+      PM_WINTER_WOLF,
       S_ANT,
       S_GIANT,
       ART_ORB_OF_FATE,
-      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC,
+      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_ANACRUSIS,
       ROLE_FEMALE | ROLE_LAWFUL | ROLE_NEUTRAL,
       /* Str Int Wis Dex Con Cha */
       { 10, 7, 7, 7, 10, 7 },
@@ -576,7 +589,7 @@ const struct Role roles[NUM_ROLES+1] = {
       9,
       A_WIS,
       SPE_CONE_OF_COLD,
-      -4 },
+      -4, 15 },
     { { "Wizard", 0 },
       { { "Evoker", 0 },
         { "Conjurer", 0 },
@@ -598,10 +611,11 @@ const struct Role roles[NUM_ROLES+1] = {
       PM_DARK_ONE,
       PM_VAMPIRE_BAT,
       PM_XORN,
+      PM_LARGE_CAT,
       S_BAT,
       S_WRAITH,
       ART_EYE_OF_THE_AETHIOPICA,
-      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_KOBOLD,
+      MH_HUMAN | MH_DWARF | MH_ELF | MH_GNOME | MH_ORC | MH_KOBOLD | MH_ANACRUSIS,
       ROLE_MALE | ROLE_FEMALE | ROLE_NEUTRAL | ROLE_CHAOTIC,
       /* Str Int Wis Dex Con Cha */
       { 7, 10, 7, 7, 7, 7 },
@@ -617,7 +631,7 @@ const struct Role roles[NUM_ROLES+1] = {
       10,
       A_INT,
       SPE_MAGIC_MISSILE,
-      -4 },
+      -4, 5 },
     /* Array terminator */
     UNDEFINED_ROLE,
 };
@@ -640,13 +654,35 @@ const struct Race races[NUM_RACES + 1] = {
         MH_HUMAN,
         0,
         MH_GNOME | MH_ORC | MH_KOBOLD,
-        COAT_FROST, COAT_MUD,
         /*    Str     Int Wis Dex Con Cha */
         { 3, 3, 3, 3, 3, 3 },
         { STR18(100), 18, 18, 18, 18, 18 },
+        { 0, 0, 0, 0, 0, 0 }, /* Race resists */
         /* Init   Lower  Higher */
         { 2, 0, 0, 2, 1, 0 }, /* Hit points */
-        { 1, 0, 2, 0, 2, 0 }  /* Energy */
+        { 1, 0, 2, 0, 2, 0 }, /* Energy */
+        0.0
+    },
+    {
+        "anacrusis",
+        "anacrusis",
+        "choir",
+        "Anc",
+        { 0, 0 },
+        PM_ANACRUSIS,
+        PM_HUMAN_MUMMY,
+        PM_HUMAN_ZOMBIE,
+        MH_ANACRUSIS | ROLE_MALE | ROLE_FEMALE | ROLE_LAWFUL | ROLE_NEUTRAL | ROLE_CHAOTIC,
+        MH_ANACRUSIS,
+        MH_ANACRUSIS,
+        0,
+        { 3, 3, 3, 3, 3, 3 },
+        { 18, 20, 20, 20, 14, 20 },
+        { 200, 200, 200, 200, 200, 200 }, /* Race resists */
+        /* Init   Lower  Higher */
+        { 2, 0, 0, 2, 1, 0 }, /* Hit points */
+        { 1, 0, 2, 0, 2, 0 }, /* Energy */
+        0.3
     },
     {
         "elf",
@@ -662,13 +698,14 @@ const struct Race races[NUM_RACES + 1] = {
         MH_ELF,
         MH_ELF,
         MH_ORC | MH_KOBOLD,
-        COAT_GRASS, COAT_ASHES,
         /*  Str    Int Wis Dex Con Cha */
         { 3, 3, 3, 3, 3, 3 },
         { 18, 20, 20, 18, 16, 18 },
+        { -20, 0, 0, 0, 0, 0 }, /* Race resists */
         /* Init   Lower  Higher */
         { 1, 0, 0, 1, 1, 0 }, /* Hit points */
-        { 2, 0, 3, 0, 3, 0 }  /* Energy */
+        { 2, 0, 3, 0, 3, 0 }, /* Energy */
+        0.9,
     },
     {
         "dwarf",
@@ -684,13 +721,14 @@ const struct Race races[NUM_RACES + 1] = {
         MH_DWARF,
         MH_DWARF | MH_GNOME,
         MH_ORC | MH_KOBOLD,
-        0, COAT_GRASS,
         /*    Str     Int Wis Dex Con Cha */
         { 3, 3, 3, 3, 3, 3 },
         { STR18(100), 16, 16, 20, 20, 16 },
+        { 20, -20, -20, 0, 0, 20 }, /* Race resists */
         /* Init   Lower  Higher */
         { 4, 0, 0, 3, 2, 0 }, /* Hit points */
-        { 0, 0, 0, 0, 0, 0 }  /* Energy */
+        { 0, 0, 0, 0, 0, 0 }, /* Energy */
+        0.8,
     },
     {
         "gnome",
@@ -706,13 +744,35 @@ const struct Race races[NUM_RACES + 1] = {
         MH_GNOME,
         MH_DWARF | MH_GNOME,
         MH_HUMAN | MH_KOBOLD,
-        COAT_POTION, COAT_FUNGUS,
         /*  Str    Int Wis Dex Con Cha */
         { 3, 3, 3, 3, 3, 3 },
         { STR18(50), 19, 18, 18, 18, 18 },
+        { 5, 5, 5, 5, 20, 5 }, /* Race resists */
         /* Init   Lower  Higher */
         { 1, 0, 0, 1, 0, 0 }, /* Hit points */
-        { 2, 0, 2, 0, 2, 0 }  /* Energy */
+        { 2, 0, 2, 0, 2, 0 }, /* Energy */
+        0.7
+    },
+    {
+        "kobold",
+        "kobold",
+        "koboldedom",
+        "Kob",
+        { 0, 0 },
+        PM_KOBOLD,
+        PM_KOBOLD_MUMMY,
+        PM_KOBOLD_ZOMBIE,
+        MH_KOBOLD | ROLE_MALE | ROLE_FEMALE | ROLE_CHAOTIC | ROLE_NEUTRAL,
+        MH_KOBOLD,
+        MH_KOBOLD,
+        MH_HUMAN | MH_ELF | MH_DWARF | MH_ORC | MH_GNOME | MH_GIANT,
+        { 3, 3, 3, 3, 3, 3 },
+        { 14, 20, 16, 18, 14, 20 },
+        { -15, -15, -15, 15, -15, 0 }, /* Race resists */
+        /* Init   Lower  Higher */
+        { 0, 0, 0, 0, 0, 1 }, /* Hit points */
+        { 2, 1, 2, 1, 2, 1 }, /* Energy */
+        0.5,
     },
     {
         "orc",
@@ -728,33 +788,14 @@ const struct Race races[NUM_RACES + 1] = {
         MH_ORC,
         0,
         MH_HUMAN | MH_ELF | MH_DWARF | MH_KOBOLD,
-        COAT_BLOOD, COAT_MUD,
         /*  Str    Int Wis Dex Con Cha */
         { 3, 3, 3, 3, 3, 3 },
         { STR18(50), 16, 16, 18, 18, 16 },
+        { 0, 0, -20, 0, 0, 0 }, /* Race resists */
         /* Init   Lower  Higher */
         { 1, 0, 0, 1, 0, 0 }, /* Hit points */
-        { 1, 0, 1, 0, 1, 0 }  /* Energy */
-    },
-    {
-        "kobold",
-        "kobold",
-        "koboldedom",
-        "Kobold",
-        { 0, 0 },
-        PM_KOBOLD,
-        PM_KOBOLD_MUMMY,
-        PM_KOBOLD_ZOMBIE,
-        MH_KOBOLD | ROLE_MALE | ROLE_FEMALE | ROLE_CHAOTIC | ROLE_NEUTRAL,
-        MH_KOBOLD,
-        MH_KOBOLD,
-        MH_HUMAN | MH_ELF | MH_DWARF | MH_ORC | MH_GNOME | MH_GIANT,
-        COAT_MUD, COAT_FROST,
-        { 3, 3, 3, 3, 3, 3 },
-        { 14, 20, 16, 18, 14, 20 },
-        /* Init   Lower  Higher */
-        { 0, 0, 0, 0, 0, 1 }, /* Hit points */
-        { 2, 1, 2, 1, 2, 1 }  /* Energy */
+        { 1, 0, 1, 0, 1, 0 }, /* Energy */
+        0.6,
     },
     /* Array terminator */
     UNDEFINED_RACE,
@@ -2245,7 +2286,9 @@ Hello(struct monst *mtmp)
                "Velkommen"; /* Norse */
     }
     /* TOD-Specific Greetings */
-    if (u.uenvirons.tod == TOD_EVENING)
+    if (Race_if(PM_ANACRUSIS))
+        return "Well sung";
+    else if (u.uenvirons.tod == TOD_EVENING)
         return "Good evening";
     else if (u.uenvirons.tod == TOD_MORNING)
         return (mtmp && is_vampire(mtmp->data)) ? "Good morrow" : "Good morning";
@@ -2265,6 +2308,8 @@ Goodbye(void)
     case PM_VALKYRIE:
         return "Farvel"; /* Norse */
     }
+    if (Race_if(PM_ANACRUSIS))
+        return "Rest now";
     if (night())
         return "Good night";
     return "Goodbye";
@@ -2955,35 +3000,6 @@ plsel_startmenu(int ttyrows, int aspect)
     add_menu_str(win, qbuf);
     if (maybe_skip_seps(ttyrows, aspect) != 2)
         add_menu_str(win, "");
-    if (flags.char_blurbs && WINDOWPORT(curses)) {
-        /* character verbs to ease in variant newcomers. */
-        if (ROLE >= 0) {
-            qt_to_win(roles[ROLE].name.m, win);
-            if (maybe_skip_seps(ttyrows, aspect) != 2) {
-                add_menu_str(win, "");
-                add_menu_str(win, "");
-            }
-        }
-        if (RACE >= 0) {
-            qt_to_win(races[RACE].noun, win);
-            if (maybe_skip_seps(ttyrows, aspect) != 2) {
-                add_menu_str(win, "");
-                add_menu_str(win, "");
-            }
-        }
-        if (GEND >= 0) {
-            add_menu_str(win, "Gender is immaterial. The dungeon shall consume you the same.");
-            if (maybe_skip_seps(ttyrows, aspect) != 2)
-                add_menu_str(win, "");
-        }
-        if (ALGN >= 0) {
-            qt_to_win(aligns[ALGN].adj, win);
-            if (maybe_skip_seps(ttyrows, aspect) != 2) {
-                add_menu_str(win, "");
-                add_menu_str(win, "");
-            }
-        }
-    }
     return win;
 }
 

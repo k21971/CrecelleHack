@@ -1,4 +1,4 @@
-/* NetHack 5.0	mthrowu.c	$NHDT-Date: 1737392015 2025/01/20 08:53:35 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.173 $ */
+/* NetHack 5.0	mthrowu.c	$NHDT-Date: 1781973057 2026/06/20 16:30:57 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.192 $ */
 /* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. */
 /*-Copyright (c) Pasi Kallinen, 2016. */
 /* NetHack may be freely redistributed.  See license for details. */
@@ -151,6 +151,8 @@ thitu(
             losehp(dam, knm, kprefix); /* acid damage */
             exercise(A_STR, FALSE);
         }
+        if (is_acid)
+            make_dripping(rnd(6), POT_ACID, NON_PM);
         return 1;
     }
 }
@@ -178,6 +180,10 @@ drop_throw(
         return TRUE;
     } else {
         broken = (ohit && should_mulch_missile(obj));
+    }
+
+    if (broken) {
+        handle_thrown_coatings(obj, x, y);
     }
 
     if (broken && obj) {
@@ -224,6 +230,8 @@ monmulti(
             multishot++;
         /* fake players treated as skilled (regardless of role limits) */
         else if (is_mplayer(mtmp->data))
+            multishot++;
+        else if (is_cleaner(mtmp->data))
             multishot++;
 
         /* this portion is different from hero multishot; from slash'em?
@@ -435,6 +443,7 @@ ohitmon(
                 else if (verbose && !gm.mtarget)
                     pline("It is burned!");
             }
+            make_mdripping(mtmp, POT_ACID);
         }
         if (otmp->otyp == EGG && touch_petrifies(&mons[otmp->corpsenm])) {
             if (!munstone(mtmp, FALSE))
@@ -443,7 +452,7 @@ ohitmon(
                 damage = 0;
         }
         if (otmp->otyp == BANANA_PEEL) {
-            mtmp->mprone = 1;
+            make_mon_prone(mtmp, TRUE);
             use_skill(P_TRIPPING, 1);
         }
 
@@ -534,7 +543,7 @@ u_catch_thrown_obj(struct obj *otmp)
     int catch_chance = 100 - ACURR(A_DEX)
                        - ((Role_if(PM_MONK) || Role_if(PM_ROGUE)) ? 20 : 0);
 
-    if (!Blind && !Confusion && !Stunned && !Fumbling
+    if (!Blind && !Confusion && !Stunned && !Fumbling && !Unaware
         && otmp->oclass != VENOM_CLASS
         && !nohands(gy.youmonst.data) && freehand()
         && calc_capacity(otmp->owt) <= SLT_ENCUMBER && !rn2(catch_chance)) {
@@ -636,7 +645,8 @@ m_throw(
     }
 
     if (MT_FLIGHTCHECK(TRUE, 0)) {
-        (void) drop_throw(singleobj, 0, gb.bhitpos.x, gb.bhitpos.y);
+        if (singleobj) /* hits_bars can null singleobj */
+            (void) drop_throw(singleobj, 0, gb.bhitpos.x, gb.bhitpos.y);
         return;
     }
     gm.mesg_given = 0; /* a 'missile misses' message has not yet been shown */
@@ -781,7 +791,7 @@ m_throw(
             }
             if (hitu && singleobj->otyp == BANANA_PEEL) {
                 You("tumble to the %s!", surface(u.ux, u.uy));
-                make_prone();
+                make_prone(TRUE);
             }
             if (hitu && singleobj->otyp == EGG) {
                 if (!Stoned && !Stone_resistance
@@ -1139,7 +1149,7 @@ breamm(struct monst *mtmp, struct attack *mattk, struct monst *mtarg)
                  */
                 if ((!utarget || !rn2(3)) && mtmp->data != &mons[PM_CERBERUS])
                     mtmp->mspec_used = 8 + rn2(18);
-                if (utarget && typ == AD_SLEE && !Sleep_resistance)
+                if (utarget && typ == AD_SLEE && how_resistant(SLEEP_RES) < 100)
                     mtmp->mspec_used += rnd(20);
 
                 /* If this is a pet, it'll get hungry. Minions and

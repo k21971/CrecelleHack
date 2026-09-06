@@ -1,4 +1,4 @@
-/* NetHack 5.0	wizcmds.c	$NHDT-Date: 1736530208 2025/01/10 09:30:08 $  $NHDT-Branch: NetHack-3.7 $:$NHDT-Revision: 1.21 $ */
+/* NetHack 5.0	wizcmds.c	$NHDT-Date: 1781973074 2026/06/20 16:31:14 $  $NHDT-Branch: NetHack-5.0 $:$NHDT-Revision: 1.36 $ */
 /*-Copyright (c) Robert Patrick Rankin, 2024. */
 /* NetHack may be freely redistributed.  See license for details. */
 
@@ -97,7 +97,9 @@ makemap_unmakemon(struct monst *mtmp, boolean migratory)
            monsters won't get out of sync; it is not on the map but
            mongone() -> m_detach() -> mon_leaving_level() copes with that */
         mtmp->mstate |= MON_OFFMAP;
-        mtmp->mstate &= ~(MON_MIGRATING | MON_LIMBO | MON_ENDGAME_MIGR);
+        mtmp->mstate &= ~(MON_MIGRATING | MON_LIMBO | MON_ENDGAME_MIGR
+                          | TERRAIN_FALLOUT_MASK);
+        /* FIXME: will post-5.0.0 MON_PARKED need to be dealt with here? */
         mtmp->nmon = fmon;
         fmon = mtmp;
     }
@@ -202,38 +204,40 @@ wiz_map(void)
 int
 wiz_biome(void)
 {
-    char buf[BUFSZ], dummy = '\0';
-    int newbiome = 0;
-    int ret;
+    winid win;
+    anything any;
+    int newbiome, ret;
+    menu_item *selected = NULL;
 
     if (y_n("Regenerate all biomes in current dungeon?") == 'y') {
         init_biomes(u.uz.dnum);
-        pline("Regenerated the biomes of the current dungeon.");
+        pline("Regenerated the biome skeleton of the current dungeon.");
         return ECMD_OK;
     }
-    /* Input */
-    buf[0] = '\0'; /* in case EDIT_GETLIN is enabled */
-    getlin("Set current biome to which index?", buf);
-    (void) mungspaces(buf);
-    if (buf[0] == '\033' || buf[0] == '\0')
-        ret = 0;
-    else
-        ret = sscanf(buf, "%d%c", &newbiome, &dummy);
-    /* Result */
-    if (ret != 1) {
-        pline1(Never_mind);
-        return ECMD_OK;
+
+    any = cg.zeroany;
+    win = create_nhwindow(NHW_MENU);
+    start_menu(win, MENU_BEHAVE_STANDARD);
+    for (int i = 0; i < BIOME_MAX; i++) {
+        any.a_int = i + 1;
+        add_menu(win, &nul_glyphinfo, &any, 0, 0,
+                 ATR_NONE, NO_COLOR, all_biomes[i].name,
+                 MENU_ITEMFLAGS_NONE);
     }
-    if (newbiome >= BIOME_MAX || newbiome < 0) {
-        pline("Invalid biome; biome must be less than %d", BIOME_MAX);
-        return ECMD_OK;
+    end_menu(win, "Set current level to which biome?");
+    ret = select_menu(win, PICK_ONE, &selected);
+    if (ret > 0) {
+        newbiome = selected[0].item.a_int - 1;
+        for (int j = 0; j < DGN_BIOMES; j++) {
+            if (svd.dungeons[u.uz.dnum].biome_cutoff[j] > u.uz.dlevel)
+                svd.dungeons[u.uz.dnum].biome_ids[j] = newbiome;
+        }
+        svl.level.flags.biome = newbiome;
+        pline("Set biome to %s.", all_biomes[svl.level.flags.biome].name);
     }
-    for (int i = 0; i < DGN_BIOMES; i++) {
-        if (svd.dungeons[u.uz.dnum].biome_cutoff[i] > u.uz.dlevel)
-            svd.dungeons[u.uz.dnum].biome_ids[i] = newbiome;
-    }
-    svl.level.flags.biome = newbiome;
-    pline("Set biome to %d.", svl.level.flags.biome);
+    destroy_nhwindow(win);
+    free((genericptr_t) selected);
+    wiz_makemap();
     return ECMD_OK;
 }
 
@@ -2035,10 +2039,8 @@ wizcustom_callback(winid win, int glyphnum, char *id)
     extern glyph_map glyphmap[MAX_GLYPH];
     glyph_map *cgm;
     int clr = NO_COLOR;
-    char buf[BUFSZ], bufa[BUFSZ], bufb[BUFSZ], bufc[BUFSZ], bufd[BUFSZ],
-        bufu[BUFSZ];
+    char buf[BUFSZ], bufa[BUFSZ], bufb[BUFSZ], bufc[BUFSZ], bufu[BUFSZ];
     anything any;
-    uint8 *cp;
 
     if (win && id) {
         cgm = &glyphmap[glyphnum];
@@ -2054,9 +2056,11 @@ wizcustom_callback(winid win, int glyphnum, char *id)
             bufu[0] = '\0';
 #ifdef ENHANCED_SYMBOLS
             if (cgm->u && cgm->u->utf8str) {
+                uint8 *cp;
                 Sprintf(bufu, "U+%04lx", (unsigned long) cgm->u->utf32ch);
                 cp = cgm->u->utf8str;
                 while (*cp) {
+                    char bufd[BUFSZ];
                     Sprintf(bufd, " <%d>", (int) *cp);
                     Strcat(bufu, bufd);
                     cp++;
