@@ -1185,7 +1185,7 @@ magic_negation(struct monst *mon)
     for (o = is_you ? gi.invent : mon->minvent; o; o = o->nobj) {
         /* a_can field is only applicable for armor (which must be worn) */
         if ((o->owornmask & W_ARMOR) != 0L) {
-            mc += max(0, (objects[o->otyp].a_can) - o->spe);
+            mc += objects[o->otyp].a_can;
         } else if ((o->owornmask & W_AMUL) != 0L && o->otyp == AMULET_OF_GUARDING) {
             mc += 30;
         }
@@ -1264,7 +1264,7 @@ hitmu(struct monst *mtmp, struct attack *mattk)
     }
 
     if (MON_WEP(mtmp) && MON_WEP(mtmp)->oprop) {
-        oprop_effects_pre(mtmp, &gy.youmonst);
+        oprop_effects_pre(mtmp, &gy.youmonst, MON_WEP(mtmp));
     }
 
     /*  First determine the base damage done */

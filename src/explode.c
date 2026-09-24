@@ -606,13 +606,12 @@ explode(
         /* do property damage first, in case we end up leaving bones */
         if (adtyp == AD_FIRE)
             burn_away_slime();
-        if (Invulnerable) {
+        if (Invulnerable || Protection_from_explosions) {
             damu = 0;
-            You("are unharmed!");
+            if (flags.verbose)
+                You("are unharmed!");
         } else if (adtyp == AD_PHYS || adtyp == AD_ACID)
             damu = Maybe_Half_Phys(damu);
-        if (Protection_from_explosions)
-            damu /= 2;
         if (adtyp == AD_FIRE) {
             (void) burnarmor(&gy.youmonst);
             ignite_items(gi.invent);
@@ -646,10 +645,14 @@ explode(
                 rehumanize();
             } else {
                 if (olet == MON_EXPLODE) {
-                    if (generic) /* explosion was unseen; str=="explosion", */
-                        ; /* svk.killer.name=="gas spore's explosion". */
-                    else if (str != svk.killer.name && str != hallu_buf)
+                    if (generic) {
+                        /* explosion was unseen; str=="explosion", */
+                        /* svk.killer.name=="gas spore's explosion" */
+                        if (!strcmp(str, "explosion"))
+                            Strcpy(svk.killer.name, str);
+                    } else if (str != svk.killer.name && str != hallu_buf) {
                         Strcpy(svk.killer.name, str);
+                    }
                     svk.killer.format = KILLED_BY_AN;
                 } else if (olet == TRAP_EXPLODE) {
                     svk.killer.format = NO_KILLER_PREFIX;

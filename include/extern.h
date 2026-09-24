@@ -905,6 +905,7 @@ extern boolean breaktest(struct obj *) NONNULLARG1;
 extern boolean walk_path(coord *, coord *,
                          boolean(*)(void *, coordxy, coordxy), genericptr_t) NONNULLARG12;
 extern void handle_thrown_coatings(struct obj *, coordxy x, coordxy y) NONNULLARG1;
+extern boolean should_vanish_oprop_ammunition(struct obj *);
 
 /* ### drawing.c ### */
 
@@ -2703,6 +2704,7 @@ extern void speed_up(long);
 extern void dye_obj(struct obj *, int, boolean) NONNULLARG1;
 extern const char *dye_to_name(struct obj *) NONNULLARG1;
 extern int how_resistant(int);
+extern int how_resistant_core(int, boolean);
 extern int resist_reduce(int, int);
 extern int partial_armor_resistance(int, struct obj *, boolean);
 
@@ -3672,7 +3674,7 @@ extern boolean disguised_as_non_mon(struct monst *) NONNULLARG1;
 extern boolean disguised_as_mon(struct monst *) NONNULLARG1;
 extern int flash_hits_mon(struct monst *, struct obj *) NONNULLARG12;
 extern void light_hits_gremlin(struct monst *, int) NONNULLARG1;
-extern boolean oprop_effects_pre(struct monst *, struct monst *);
+extern boolean oprop_effects_pre(struct monst *, struct monst *, struct obj *) NONNULLARG12;
 extern void spread_mold(coordxy x, coordxy y, struct permonst *);
 
 

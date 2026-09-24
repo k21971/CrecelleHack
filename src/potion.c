@@ -1057,6 +1057,11 @@ peffect_object_detection(struct obj *otmp)
 staticfn void
 peffect_sickness(struct obj *otmp)
 {
+    /* If over 200% poison resistant, potions of sickness heal you instead. */
+    if (how_resistant(POISON_RES) >= 200) {
+        peffect_full_healing(otmp);
+        return;
+    }
     pline("Yecch!  This stuff tastes like poison.");
     if (otmp->blessed) {
         pline("(But in fact it was mildly stale %s.)", fruitname(TRUE));
@@ -1166,8 +1171,8 @@ peffect_gain_ability(struct obj *otmp)
             gp.potion_unkn++;
             return;
         }
-        adjattrib(highest, -1, 0);
-        adjattrib(lowest, 1, 0);
+        adjattrib(highest, -2, 0);
+        adjattrib(lowest, 2, 0);
     } else if (Fixed_abil) {
         gp.potion_nothing++;
     } else {
@@ -1203,7 +1208,7 @@ peffect_gain_ability(struct obj *otmp)
                             ATR_NONE, NO_COLOR, attrname, MENU_ITEMFLAGS_NONE);
             }
             any.a_char = '*';
-            add_menu(win, &nul_glyphinfo, &any, 0, '*', ATR_NONE,
+            add_menu(win, &nul_glyphinfo, &any, any.a_char, '*', ATR_NONE,
                         NO_COLOR,
                         "pick one randomly", MENU_ITEMFLAGS_NONE);
             end_menu(win, "What attribute do you want to increase?");
@@ -2672,6 +2677,7 @@ potionbreathe(struct obj *obj)
         }
         break;
     case POT_FULL_HEALING:
+full_heal_breathe:
         if (Upolyd && u.mh < u.mhmax)
             u.mh++, disp.botl = TRUE;
         if (u.uhp < u.uhpmax)
@@ -2703,6 +2709,8 @@ potionbreathe(struct obj *obj)
         exercise(A_CON, TRUE);
         break;
     case POT_SICKNESS:
+        if (how_resistant(POISON_RES))
+            goto full_heal_breathe;
         if (!Role_if(PM_HEALER)) {
             if (Upolyd) {
                 if (u.mh <= 5)
@@ -4051,29 +4059,35 @@ mix_gem(struct obj *o1)
 int
 how_resistant(int which)
 {
+    return how_resistant_core(which, TRUE);
+}
+
+int
+how_resistant_core(int which, boolean id)
+{
     int ret = 0;
     int race_adjust = 0;
     /* Now calculate the bonuses from the player's gear */
     if (uarm) {
-        ret += partial_armor_resistance(which, uarm, TRUE);
+        ret += partial_armor_resistance(which, uarm, id);
     }
     if (uarmc) {
-        ret += partial_armor_resistance(which, uarmc, TRUE);
+        ret += partial_armor_resistance(which, uarmc, id);
     }
     if (uarmh) {
-        ret += partial_armor_resistance(which, uarmh, TRUE);
+        ret += partial_armor_resistance(which, uarmh, id);
     }
     if (uarmf) {
-        ret += partial_armor_resistance(which, uarmf, TRUE);
+        ret += partial_armor_resistance(which, uarmf, id);
     }
     if (uarms) {
-        ret += partial_armor_resistance(which, uarms, TRUE);
+        ret += partial_armor_resistance(which, uarms, id);
     }
     if (uarmg) {
-        ret += partial_armor_resistance(which, uarmg, TRUE);
+        ret += partial_armor_resistance(which, uarmg, id);
     }
     if (uarmu) {
-        ret += partial_armor_resistance(which, uarmu, TRUE);
+        ret += partial_armor_resistance(which, uarmu, id);
     }
 
     /* Race bonuses */ 
@@ -4110,12 +4124,14 @@ how_resistant(int which)
 
     /* externals and level/race based intrinsics always provide 100%
 	 * as do monster resistances */
-	if (u.uprops[which].extrinsic ||
-		u.uprops[which].intrinsic ||
-			(gy.youmonst.mintrinsics & (1 << (which-1)))) { /* depends on FIRE_RES/MR_FIRE order matching! */
-		ret += 100;
-        ret = max(100, ret);
-	}
+    if (id) {
+        if (u.uprops[which].extrinsic ||
+            u.uprops[which].intrinsic ||
+                (gy.youmonst.mintrinsics & (1 << (which-1)))) { /* depends on FIRE_RES/MR_FIRE order matching! */
+            ret += 100;
+            ret = max(100, ret);
+        }
+    }
 
 	return ret;
 }
@@ -4165,11 +4181,11 @@ partial_armor_resistance(int res, struct obj *obj, boolean id)
         } else if (obj->oprop == OPROP_CRACKLING && res == SHOCK_RES)
             ret += 30;
         else if (obj->oprop == OPROP_SUBTLE && res == POISON_RES)
-            ret += 20;
+            ret += 30;
         else if (obj->oprop == OPROP_ANTIMAGIC)
             ret -= 5;
     }
-    ret += objects[obj->otyp].oc_resists[res - 1];
+    ret += OBJ_RESIST(objects[obj->otyp], res);
     return ret;
 }
 

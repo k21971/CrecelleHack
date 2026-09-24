@@ -1,3 +1,29 @@
+# 1.6.1
+
+## Objects
+- Harmonic weapon effects now occur when the player or
+  monsters use ranged weapons or polearms.
+- Harmonic launchers bestow their oprops upon the ammo that they
+  fire (if it does not already have an oprop). Harmonic missiles
+  cannot be recovered.
+- Partial resistances vary based on object appearance. A number of
+  objects have had their resistances altered to compensate for this.
+
+## Game Balance
+- Potions of gain ability grant 2 ability points.
+- Hungry weapons only have a 25% chance to drain levels.
+- Blessed longbow of diana creates harmonic arrows.
+- Monsters in Gehennom or the endgame spawn with harmonic ammunition.
+- Allow viewing of partial resistances in regular play.
+- Remove effect of enchantment on magic cancellation, preventing leakage
+  of BUC status.
+- If over 200% poison resistant, potions of sickness function as potions of
+  full healing.
+- Buff resistance provided by dragon scales.
+- Protection from explosions now provides complete explosion immunity.
+- Buff crackling and blazing oprops, and allow briny and mordant to spread liquid.
+- Force-attacking with an oprop weapon can do things now.
+
 # 1.6
 
 ## Game Balance

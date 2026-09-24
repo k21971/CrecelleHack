@@ -620,7 +620,7 @@ known_hitum(
 
     /* Icicles fired from weapon could kill something before the attack finishes. */
     if (weapon && weapon->oprop) {
-        if (oprop_effects_pre(&gy.youmonst, mon))
+        if (oprop_effects_pre(&gy.youmonst, mon, weapon))
             return FALSE;
     }
 
@@ -6785,29 +6785,25 @@ light_hits_gremlin(struct monst *mon, int dmg)
    weapon routine, potentially killing a monster before 
    the attack is completed. */
 boolean
-oprop_effects_pre(struct monst *magr, struct monst *mdef)
+oprop_effects_pre(struct monst *magr, struct monst *mdef, struct obj *weapon)
 {
     boolean is_u = (magr == &gy.youmonst);
     boolean icy, pkn = 0;
     struct obj *otmp;
-    struct obj *weapon;
     int x, y, dx, dy;
 
     if (is_u) {
         x = u.ux, y = u.uy;
         dx = mdef->mx, dy = mdef->my;
-        weapon = uwep;
     } else if (mdef == &gy.youmonst) {
         x = magr->mx, y = magr->my;
         dx = u.ux, dy = u.uy;
-        weapon = MON_WEP(magr);
     } else {
         x = magr->mx, y = magr->my;
         dx = mdef->mx, dy = mdef->my;
-        weapon = MON_WEP(magr);
     }
 
-    if (!weapon)
+    if (!weapon || !weapon->oprop)
         return DEADMONSTER(mdef);
 
     icy = (has_coating(x, y, COAT_FROST) || levl[x][y].typ == ICE);
@@ -6843,13 +6839,26 @@ oprop_effects_pre(struct monst *magr, struct monst *mdef)
             gb.buzzer = 0;
         }
     }
+    /* Universal stuff */
     if (weapon->oprop == OPROP_BLAZING && !rn2(5)) {
         if (cansee(dx, dy)) {
             pline_The("%s ignites!", simpleonames(weapon));
             pkn = 1;
         }
         create_bonfire(dx, dy, rnd(7), d(2, 4));
+    } else if (weapon->oprop == OPROP_ACIDIC) {
+        /* message? */
+        if (rn2(20))
+            floor_spillage(dx, dy, POT_ACID, NON_PM);
+        else
+            potion_splatter(dx, dy, POT_ACID, NON_PM);
+    } else if (weapon->oprop == OPROP_BRINY) {
+        if (rn2(20))
+            floor_spillage(dx, dy, POT_WATER, NON_PM);
+        else
+            potion_splatter(dx, dy, POT_ACID, NON_PM);
     }
+    /* Make it known */
     if (pkn && !weapon->pknown) {
         weapon->pknown = 1;
         update_inventory();

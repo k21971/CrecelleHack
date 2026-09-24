@@ -1178,10 +1178,14 @@ oprop_applies(struct obj *otmp, struct monst *mtmp)
         return 0;
 
     switch(otmp->oprop) {
+    case OPROP_BLAZING:
+        return !(!yours ? resists_fire(mtmp) : (how_resistant(FIRE_RES) > 99) ? TRUE : FALSE);
+    case OPROP_BOREAL:
+        return !(!yours ? resists_cold(mtmp) : (how_resistant(COLD_RES) > 99) ? TRUE : FALSE);
+    case OPROP_CRACKLING:
+        return !(!yours ? resists_elec(mtmp) : (how_resistant(SHOCK_RES) > 99) ? TRUE : FALSE);
     case OPROP_ACIDIC:
         return !(yours ? Acid_resistance : resists_acid(mtmp));
-    case OPROP_BOREAL:
-        return !(yours ? Cold_resistance : resists_cold(mtmp));
     case OPROP_HUNGRY:
         return !(yours ? Drain_resistance : resists_drli(mtmp));
     }
@@ -1254,6 +1258,8 @@ oprop_dbon(struct obj *otmp, struct monst *mon, int tmp UNUSED)
                 ret = d(1, 8);
                 break;
             case OPROP_BOREAL:
+            case OPROP_BLAZING:
+            case OPROP_CRACKLING:
                 ret = d(1, 4);
                 break;
             default:
@@ -1671,16 +1677,16 @@ artifact_hit(
             *dmgptr = 1000;
     }
     /* the four basic attacks: fire, cold, shock and missiles */
-    if (attacks(AD_FIRE, otmp)) {
+    if (attacks(AD_FIRE, otmp) || otmp->oprop == OPROP_BLAZING) {
         if (realizes_damage)
             pline_The("fiery %s %s %s%c",
                       weapon_simple_name(otmp),
-                      !gs.spec_dbon_applies
+                      !(gs.spec_dbon_applies || gs.spec_oprop_applies)
                           ? "hits"
                           : (mdef->data == &mons[PM_WATER_ELEMENTAL])
                                 ? "vaporizes part of"
                                 : "burns",
-                      hittee, !gs.spec_dbon_applies ? '.' : '!');
+                      hittee, !(gs.spec_dbon_applies || gs.spec_oprop_applies) ? '.' : '!');
         if (!rn2(4)) {
             int itemdmg = destroy_items(mdef, AD_FIRE, *dmgptr);
             if (!youdefend)
@@ -1717,12 +1723,12 @@ artifact_hit(
         }
         return realizes_damage;
     }
-    if (attacks(AD_ELEC, otmp)) {
+    if (attacks(AD_ELEC, otmp) || otmp->oprop == OPROP_CRACKLING) {
         if (realizes_damage)
             pline_The("%s hits%s %s%c",
                       weapon_simple_name(otmp),
-                      !gs.spec_dbon_applies ? "" : "!  Lightning strikes",
-                      hittee, !gs.spec_dbon_applies ? '.' : '!');
+                      !(gs.spec_dbon_applies || gs.spec_oprop_applies) ? "" : "!  Lightning strikes",
+                      hittee, !(gs.spec_dbon_applies || gs.spec_oprop_applies) ? '.' : '!');
         if (gs.spec_dbon_applies)
             wake_nearto(mdef->mx, mdef->my, 4 * 4);
         if (!rn2(5)) {
@@ -1862,7 +1868,8 @@ artifact_hit(
     }
     /* technically, there is no way to get here with Stormbringer without special damage, but check anyway */
     if ((spec_ability(otmp, SPFX_DRLI) && gs.spec_dbon_applies) ||
-        (otmp->oprop == OPROP_HUNGRY && gs.spec_oprop_applies)) {
+        (otmp->oprop == OPROP_HUNGRY && gs.spec_oprop_applies
+         && !rn2(4))) {
         /* some non-living creatures (golems, vortices) are vulnerable to
            life drain effects so can get "<Arti> draws the <life>" feedback */
         const char *life = nonliving(mdef->data) ? "animating force" : "life";
@@ -2214,6 +2221,7 @@ invoke_create_ammo(struct obj *obj)
         if (otmp->spe < 0)
             otmp->spe = 0;
         otmp->quan += rnd(10);
+        add_oprop_to_object(otmp, 0);
     } else if (obj->cursed) {
         if (otmp->spe > 0)
             otmp->spe = 0;
@@ -2839,7 +2847,7 @@ retouch_object(
                 tmp = rnd(sear_damage(obj->material) / 2), dmg += Maybe_Half_Phys(tmp);
             if (bane)
                 dmg += rnd(10);
-            Sprintf(buf, "handling %s (made of %s)", what, MAT_NAME(obj->material));
+            Sprintf(buf, "handling %s", what);
             losehp(dmg, buf, KILLED_BY);
             exercise(A_CON, FALSE);
         }
